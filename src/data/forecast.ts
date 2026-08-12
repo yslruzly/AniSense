@@ -1,0 +1,93 @@
+import { LSTMPoint } from "../types";
+
+// ─── LSTM Forecast Data ───────────────────────────────────────────────────────
+export const LSTM_DATA: Record<string, { current: number; trend: "up" | "down" | "stable"; series: LSTMPoint[] }> = {
+  Rice: {
+    current: 51, trend: "up",
+    series: [
+      { day: "D-6", actual: 48, predicted: 48.1, lower: 46.8, upper: 49.4 },
+      { day: "D-5", actual: 49, predicted: 49.3, lower: 48.0, upper: 50.6 },
+      { day: "D-4", actual: 50, predicted: 49.8, lower: 48.5, upper: 51.1 },
+      { day: "D-3", actual: 49, predicted: 49.5, lower: 48.2, upper: 50.8 },
+      { day: "D-2", actual: 50, predicted: 50.2, lower: 48.9, upper: 51.5 },
+      { day: "D-1", actual: 51, predicted: 51.0, lower: 49.7, upper: 52.3 },
+      { day: "Now", actual: 51, predicted: 51.0, lower: 49.7, upper: 52.3 },
+      { day: "+1", actual: null, predicted: 52.3, lower: 50.8, upper: 53.8 },
+      { day: "+2", actual: null, predicted: 53.1, lower: 51.4, upper: 54.8 },
+      { day: "+3", actual: null, predicted: 53.8, lower: 51.9, upper: 55.7 },
+      { day: "+4", actual: null, predicted: 54.2, lower: 52.1, upper: 56.3 },
+      { day: "+5", actual: null, predicted: 54.9, lower: 52.6, upper: 57.2 },
+      { day: "+6", actual: null, predicted: 55.5, lower: 53.0, upper: 58.0 },
+      { day: "+7", actual: null, predicted: 55.8, lower: 53.2, upper: 58.4 },
+    ],
+  },
+  Onions: {
+    current: 45, trend: "down",
+    series: [
+      { day: "D-6", actual: 50, predicted: 49.8, lower: 48.2, upper: 51.4 },
+      { day: "D-5", actual: 49, predicted: 49.1, lower: 47.5, upper: 50.7 },
+      { day: "D-4", actual: 48, predicted: 48.2, lower: 46.6, upper: 49.8 },
+      { day: "D-3", actual: 47, predicted: 47.4, lower: 45.8, upper: 49.0 },
+      { day: "D-2", actual: 46, predicted: 46.5, lower: 44.9, upper: 48.1 },
+      { day: "D-1", actual: 45, predicted: 45.6, lower: 44.0, upper: 47.2 },
+      { day: "Now", actual: 45, predicted: 45.0, lower: 43.4, upper: 46.6 },
+      { day: "+1", actual: null, predicted: 44.2, lower: 42.4, upper: 46.0 },
+      { day: "+2", actual: null, predicted: 43.6, lower: 41.7, upper: 45.5 },
+      { day: "+3", actual: null, predicted: 43.1, lower: 41.1, upper: 45.1 },
+      { day: "+4", actual: null, predicted: 42.8, lower: 40.7, upper: 44.9 },
+      { day: "+5", actual: null, predicted: 42.4, lower: 40.2, upper: 44.6 },
+      { day: "+6", actual: null, predicted: 42.0, lower: 39.8, upper: 44.2 },
+      { day: "+7", actual: null, predicted: 41.8, lower: 39.5, upper: 44.1 },
+    ],
+  },
+  Calamansi: {
+    current: 160, trend: "up",
+    series: [
+      { day: "D-6", actual: 150, predicted: 151.0, lower: 148.0, upper: 154.0 },
+      { day: "D-5", actual: 153, predicted: 153.5, lower: 150.5, upper: 156.5 },
+      { day: "D-4", actual: 155, predicted: 154.8, lower: 151.8, upper: 157.8 },
+      { day: "D-3", actual: 157, predicted: 156.2, lower: 153.2, upper: 159.2 },
+      { day: "D-2", actual: 158, predicted: 157.5, lower: 154.5, upper: 160.5 },
+      { day: "D-1", actual: 160, predicted: 159.0, lower: 156.0, upper: 162.0 },
+      { day: "Now", actual: 160, predicted: 160.0, lower: 157.0, upper: 163.0 },
+      { day: "+1", actual: null, predicted: 162.5, lower: 159.0, upper: 166.0 },
+      { day: "+2", actual: null, predicted: 164.0, lower: 160.5, upper: 167.5 },
+      { day: "+3", actual: null, predicted: 165.5, lower: 161.5, upper: 169.5 },
+      { day: "+4", actual: null, predicted: 166.8, lower: 162.8, upper: 170.8 },
+      { day: "+5", actual: null, predicted: 168.0, lower: 163.5, upper: 172.5 },
+      { day: "+6", actual: null, predicted: 169.2, lower: 164.5, upper: 173.9 },
+      { day: "+7", actual: null, predicted: 170.0, lower: 165.0, upper: 175.0 },
+    ],
+  },
+  Corn: {
+    current: 70, trend: "stable",
+    series: [
+      { day: "D-6", actual: 66, predicted: 66.2, lower: 64.5, upper: 67.9 },
+      { day: "D-5", actual: 67, predicted: 67.1, lower: 65.4, upper: 68.8 },
+      { day: "D-4", actual: 68, predicted: 67.8, lower: 66.1, upper: 69.5 },
+      { day: "D-3", actual: 69, predicted: 68.9, lower: 67.2, upper: 70.6 },
+      { day: "D-2", actual: 69, predicted: 69.2, lower: 67.5, upper: 70.9 },
+      { day: "D-1", actual: 70, predicted: 69.8, lower: 68.1, upper: 71.5 },
+      { day: "Now", actual: 70, predicted: 70.0, lower: 68.3, upper: 71.7 },
+      { day: "+1", actual: null, predicted: 70.2, lower: 68.3, upper: 72.1 },
+      { day: "+2", actual: null, predicted: 70.5, lower: 68.5, upper: 72.5 },
+      { day: "+3", actual: null, predicted: 70.3, lower: 68.2, upper: 72.4 },
+      { day: "+4", actual: null, predicted: 70.6, lower: 68.4, upper: 72.8 },
+      { day: "+5", actual: null, predicted: 70.4, lower: 68.1, upper: 72.7 },
+      { day: "+6", actual: null, predicted: 70.7, lower: 68.3, upper: 73.1 },
+      { day: "+7", actual: null, predicted: 70.8, lower: 68.4, upper: 73.2 },
+    ],
+  },
+};
+
+// ─── ARIMA Data & AI Advisor ──────────────────────────────────────────────────
+export const ARIMA_DATA: Record<string, { d1: number; d2: number; d3: number }> = {
+  Rice: { d1: 51.8, d2: 52.4, d3: 52.9 },
+  Corn: { d1: 34.3, d2: 34.5, d3: 34.4 },
+  Onions: { d1: 44.5, d2: 44.0, d3: 43.6 },
+  Tomatoes: { d1: 38.9, d2: 39.6, d3: 40.2 },
+  Calamansi: { d1: 60.8, d2: 61.3, d3: 61.9 },
+  Mango: { d1: 73.1, d2: 74.2, d3: 74.8 },
+  Garlic: { d1: 27.8, d2: 27.5, d3: 27.2 },
+  Squash: { d1: 21.5, d2: 21.2, d3: 20.8 },
+};
