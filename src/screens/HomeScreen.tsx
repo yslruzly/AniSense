@@ -44,23 +44,23 @@ export function HomeScreen({ onNavigate, onProfile, isOffline, lastUpdated, user
 
   return (
     <div className="screen">
-      {/* Green header */}
-      <div className="home-header">
-        <div className="home-top">
-          <div>
-            <div className="home-greeting">{greeting},<br />{firstName}! 👋</div>
-            <div className="home-date">{dateStr}</div>
-          </div>
-          <button className="home-ava-btn" onClick={onProfile}>{userInitials}</button>
-        </div>
-        {/* Online/offline status */}
-        <div className="home-status">
-          <div className="home-status-dot" style={{ background: isOffline ? "var(--error)" : "var(--palay)", animation: isOffline ? "pulse 1.5s infinite" : "none" }} />
-          <span className="home-status-txt">{isOffline ? t("home_offline_cached") : t("online")}</span>
-        </div>
-      </div>
-
       <div className="scroll screen-enter">
+        {/* Greeting card, on a lowland bukid rather than a flat colour. */}
+        <div className="home-header">
+          <div className="home-top">
+            <div>
+              <div className="home-greeting">{greeting},<br />{firstName}! 👋</div>
+              <div className="home-date">{dateStr}</div>
+            </div>
+            <button className="home-ava-btn" onClick={onProfile}>{userInitials}</button>
+          </div>
+          {/* Online/offline status */}
+          <div className="home-status">
+            <div className="home-status-dot" style={{ background: isOffline ? "var(--error)" : "var(--palay)", animation: isOffline ? "pulse 1.5s infinite" : "none" }} />
+            <span className="home-status-txt">{isOffline ? t("home_offline_cached") : t("online")}</span>
+          </div>
+        </div>
+
         {/* Quick Stats */}
         <div className="g2">
           <div className="card" style={{ borderLeft: "4px solid var(--tanim)" }}>

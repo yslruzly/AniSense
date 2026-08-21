@@ -8,6 +8,7 @@ import { UserRole } from "../types";
 import { RICE_VARIETIES, CROP_GROUPS } from "../data/crops";
 import { Hdr } from "../components/layout/Hdr";
 import { CropIcon } from "../components/icons";
+import { cropPhoto } from "../data/cropPhotos";
 
 // ─── Market Screen ────────────────────────────────────────────────────────────
 export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userInitials = "JD", userRole }: { onProfile: () => void; isOffline: boolean; lastUpdated: string; onBack: () => void; userInitials?: string; userRole?: UserRole }) {
@@ -105,8 +106,12 @@ export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userIn
         )}
 
         {prices.status === "ready" && filtered.map(c => (
-          <div className={`mkt-row ${c.change >= 0 ? "up" : "down"}`} key={c.id}>
-            <div className="mkt-row-ico"><CropIcon crop={c.group} size={20} /></div>
+          <div className="mkt-row" key={c.id}>
+            <div className="mkt-row-ico">
+              {cropPhoto(c.id)
+                ? <img src={cropPhoto(c.id)} alt="" loading="lazy" decoding="async" />
+                : <CropIcon crop={c.group} size={20} />}
+            </div>
             <div>
               <div className="mkt-row-name">{c.name}</div>
               <div className="mkt-row-unit">{tn(c.group)}</div>

@@ -6,6 +6,7 @@ import { Expense, BuyerTransaction } from "../types";
 import { EXPENSES } from "../data/expenses";
 import { Hdr } from "../components/layout/Hdr";
 import { CropIcon, ExpenseIcon } from "../components/icons";
+import { CropEmoji } from "../components/CropEmoji";
 import { PieChart } from "../components/charts/PieChart";
 import { MonthlyTrendsChart } from "../components/charts/MonthlyTrendsChart";
 import { CropExpenseSummary } from "../components/analytics/CropExpenseSummary";
@@ -220,7 +221,7 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
               <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
                 {farmerCrops.map(c => (
                   <div key={c} style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 99, padding: "4px 12px", fontSize: "var(--fs-label)", fontWeight: 700, display: "flex", alignItems: "center", gap: 5 }}>
-                    <CropIcon crop={c} size={12} /> {tn(c)}
+                    <CropEmoji crop={c} size={14} /> {tn(c)}
                   </div>
                 ))}
               </div>
@@ -611,7 +612,7 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
                   {farmerCrops.map(c => (
                     <button key={c} onClick={() => setForm(d => ({ ...d, crop: c }))}
                       style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 12, border: `2px solid ${form.crop === c ? "var(--tanim)" : "var(--line)"}`, background: form.crop === c ? "var(--tanim-sk)" : "var(--paper)", color: form.crop === c ? "var(--tanim)" : "var(--text-muted)", fontFamily: "inherit", fontSize: "var(--fs-label)", fontWeight: 700, cursor: "pointer" }}>
-                      <CropIcon crop={c} size={14} /> {tn(c)}
+                      <CropEmoji crop={c} size={16} /> {tn(c)}
                     </button>
                   ))}
                 </div>

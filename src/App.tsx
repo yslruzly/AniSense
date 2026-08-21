@@ -43,7 +43,9 @@ export default function App() {
   // underneath it. Auth and the app headers are ink; the rest is paper.
   useEffect(() => {
     if (!isAuthed) { setStatusBar(authScreen === "splash" ? "dark" : "light"); return; }
-    setStatusBar(active === "home" ? "dark" : "light");
+    // Home used to open on a full-bleed ink header; the greeting is a card on
+    // paper now, so the bar matches the paper like every other screen.
+    setStatusBar("light");
   }, [isAuthed, authScreen, active]);
 
   // Back during auth walks the flow backwards rather than exiting mid-signup.

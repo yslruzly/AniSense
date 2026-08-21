@@ -1,3 +1,5 @@
+import riceFieldWide from "../assets/rice-field-wide.webp";
+
 export const appCss = `
   /* Tokens (colour, type ramp, radii, motion) live in styles/tokens.ts,
      injected once at the root of App.tsx. */
@@ -153,11 +155,11 @@ export const appCss = `
   .mkt-row {
     display:flex; align-items:center; gap:12px; padding:13px 14px;
     border-radius:14px; background:var(--white); border:1px solid var(--paper-alt);
-    border-left:4px solid transparent;
   }
-  .mkt-row.up   { border-left-color:var(--tanim); }
-  .mkt-row.down { border-left-color:var(--error); }
-  .mkt-row-ico  { width:42px; height:42px; border-radius:12px; background:var(--green-bg); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .mkt-row-ico  { width:42px; height:42px; border-radius:12px; background:var(--green-bg); display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden; }
+  /* The photo fills the tile. A faint inset edge stops a pale crop (milled
+     rice, garlic) from bleeding into the white row behind it. */
+  .mkt-row-ico img { width:100%; height:100%; object-fit:cover; display:block; box-shadow: inset 0 0 0 1px rgba(22,33,27,.10); }
   .mkt-row-name { font-size: var(--fs-label); font-weight:700; color:var(--text); }
   .mkt-row-unit { font-size: var(--fs-label); color:var(--text-muted); margin-top:1px; }
   .mkt-row-right { margin-left:auto; text-align:right; flex-shrink:0; }
@@ -555,20 +557,37 @@ export const appCss = `
   .version-txt { text-align: center; font-size: var(--fs-label); color: var(--text-faint); padding: 8px 0 12px; }
 
   /* ── Home / Summary Screen (Senior-friendly) ── */
+  /* A card now, not a full-bleed band: it scrolls with the content and sits on
+     the same 16px gutter as the stat cards under it. The bukid is scrimmed hard
+     enough that white text holds over the pale flooded terraces. */
   .home-header {
-    background: var(--ink);
-    padding: 22px 18px 20px; color: #fff; flex-shrink: 0; position: relative;
+    position: relative; isolation: isolate; overflow: hidden;
+    border-radius: var(--radius-lg); padding: 20px 18px 18px; color: #fff;
+    box-shadow: 0 14px 30px -16px rgba(22,33,27,.45);
   }
-  .home-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
-  .home-greeting { font-family: var(--font-display); font-size: var(--fs-title); font-weight: 700; line-height: 1.25; }
-  .home-date     { font-size: var(--fs-label); opacity: .88; margin-top: 4px; }
+  .home-header::before {
+    content: ""; position: absolute; inset: 0; z-index: -1;
+    background-image:
+      linear-gradient(100deg, rgba(16,21,18,.80) 0%, rgba(16,21,18,.60) 42%, rgba(16,21,18,.26) 100%),
+      url(${riceFieldWide});
+    background-size: cover, cover;
+    background-position: center, center;
+  }
+  .home-top { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; }
+  /* The scrim is light enough to show the field, so the type carries its own
+     shadow rather than leaning entirely on the wash behind it. */
+  .home-greeting {
+    font-family: var(--font-display); font-size: var(--fs-title); font-weight: 700; line-height: 1.25;
+    text-shadow: 0 1px 4px rgba(11,15,12,.55);
+  }
+  .home-date { font-size: var(--fs-label); opacity: .94; margin-top: 4px; text-shadow: 0 1px 3px rgba(11,15,12,.6); }
   .home-ava-btn  {
     width: 56px; height: 56px; border-radius: 50%;
     background: var(--lime); border: none;
     display: flex; align-items: center; justify-content: center;
     font-size: var(--fs-body); font-weight: 800; color: var(--ink); cursor: pointer; flex-shrink: 0;
   }
-  .home-status { display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.14); border-radius:99px; padding:7px 13px; width:fit-content; }
+  .home-status { display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); border-radius:99px; padding:7px 13px; width:fit-content; }
   .home-status-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
   .home-status-txt { font-size: var(--fs-label); font-weight:600; opacity:.92; }
 
