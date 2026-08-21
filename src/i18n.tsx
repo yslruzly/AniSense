@@ -570,7 +570,7 @@ export const translations: Dict = {
   // ── Role ──────────────────────────────────────────────────────────────────
   role_pick_one: {
     en: "Tap one. We'll set up the app to match.",
-    tl: "Pindutin ang isa. Iaayos namin ang app ayon dito.",
+    tl: "Pumili lamang ng isa.",
   },
 
   // ── Form helpers ──────────────────────────────────────────────────────────

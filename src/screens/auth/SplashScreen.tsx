@@ -55,12 +55,11 @@ export function SplashScreen({ onSignIn, onSignUp }: { onSignIn: () => void; onS
     : `${tn(group)} ${t("splash_board_today")}`;
 
   return (
-    <div className="a-screen">
+    <div className="a-screen a-welcome-shell">
       <div className="a-welcome a-stagger">
         <div className="a-brandrow">
           <span className="a-brandmark"><AniSenseLogo size={26} /></span>
           <span className="a-brandname">AniSense</span>
-          <span className="a-place">Cabanatuan</span>
         </div>
 
         <div className="a-board">

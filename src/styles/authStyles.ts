@@ -17,15 +17,18 @@ export const authCss = `
   @media (max-width: 430px) {
     .auth-outer { padding: 0; background: var(--paper); align-items: flex-start; }
   }
+  /* The shell is a definite height, never a minimum. With min-height the shell
+     had no height to size its children against, so a tall step (the signup
+     form) stretched the whole frame instead of scrolling inside it. */
   .auth-shell {
-    width: 390px; min-height: 844px; background: var(--paper);
+    width: 390px; height: 844px; max-height: calc(100dvh - 48px); background: var(--paper);
     border-radius: 34px; box-shadow: 0 30px 60px rgba(0,0,0,.5), 0 0 0 9px #050706, 0 0 0 10px #313A35;
     overflow: hidden; display: flex; flex-direction: column; position: relative;
     font-size: var(--fs-body); color: var(--ink);
   }
   @media (max-width: 430px) {
     .auth-shell {
-      width: 100vw; min-height: 100dvh; border-radius: 0; box-shadow: none;
+      width: 100vw; height: 100dvh; max-height: none; border-radius: 0; box-shadow: none;
       /* Without these the dock button sits under the gesture pill, and the
          status bar clips the back arrow. dvh alone does not account for either. */
       padding-top: var(--safe-top);
@@ -34,8 +37,10 @@ export const authCss = `
   }
 
   /* ── Shared primitives ─────────────────────────────────────────────────── */
-  .a-screen { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--paper); }
-  .a-scroll { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 0 22px; }
+  /* min-height: 0 on both, or a tall child sets the floor and the column grows
+     past the shell rather than handing the overflow to .a-scroll. */
+  .a-screen { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; background: var(--paper); }
+  .a-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 22px; }
   .a-scroll::-webkit-scrollbar { width: 0; }
   .a-title { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-display); line-height: 1.15; letter-spacing: -.02em; }
   .a-title.on-ink { color: #fff; }
@@ -63,6 +68,8 @@ export const authCss = `
     transition: transform 120ms var(--ease-out), background-color 140ms ease;
   }
   .a-iconbtn:active { transform: scale(.94); }
+  /* The ink variant disappears on paper, so screens outside the ink head get this. */
+  .a-iconbtn.on-paper { background: var(--card); box-shadow: inset 0 0 0 2px var(--line); }
 
   .a-inkhead { background: var(--ink); padding: 14px 22px 30px; border-radius: 0 0 26px 26px; }
   .a-badge {
@@ -81,7 +88,6 @@ export const authCss = `
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
   .a-brandname { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-lead); color: #fff; letter-spacing: -.01em; }
-  .a-place { margin-left: auto; font-size: var(--fs-label); color: rgba(255,255,255,.62); font-family: var(--font-display); font-weight: 500; }
 
   /* ── Entry choreography (stagger 40–280ms, ease-out) ───────────────────── */
   .a-stagger > * { opacity: 0; transform: translateY(10px); animation: a-rise 460ms var(--ease-out) forwards; }
@@ -133,11 +139,16 @@ export const authCss = `
   /* The welcome screen sits on a Cordillera rice terrace. The scrim stays hard
      under the brand row and under the buttons, and opens through the middle so
      the glass board has something worth blurring behind it. */
+  /* The photo lives on the screen, which never scrolls, so it stays put while
+     the content scrolls over it on a short handset. */
+  .a-welcome-shell { background: var(--ink); position: relative; isolation: isolate; }
   .a-welcome {
-    flex: 1; display: flex; flex-direction: column; background: var(--ink);
-    padding: 20px 22px 26px; position: relative; isolation: isolate;
+    flex: 1; min-height: 0; display: flex; flex-direction: column;
+    padding: 20px 22px 26px;
+    overflow-y: auto; overscroll-behavior: contain;
   }
-  .a-welcome::before {
+  .a-welcome::-webkit-scrollbar { width: 0; }
+  .a-welcome-shell::before {
     content: ""; position: absolute; inset: 0; z-index: -1;
     background-image:
       linear-gradient(180deg,

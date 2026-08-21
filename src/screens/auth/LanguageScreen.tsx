@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { haptic } from "../../lib/platform";
-import { Check } from "lucide-react";
+import { ArrowLeft, Check } from "lucide-react";
 import { AniSenseLogo } from "../../components/AniSenseLogo";
 import { useLang, Lang } from "../../i18n";
 
 // ─── Language Gate ────────────────────────────────────────────────────────────
-// First run only. Language used to live inside Profile, which meant a Tagalog
-// reader had to navigate an English app to find the Tagalog switch.
-export function LanguageScreen({ onDone }: { onDone: () => void }) {
+// The first step of signing in or signing up, ahead of the role picker. Language
+// used to live inside Profile, which meant a Tagalog reader had to navigate an
+// English app to find the Tagalog switch.
+export function LanguageScreen({ onDone, onBack }: { onDone: () => void; onBack?: () => void }) {
   const { t, lang, setLang } = useLang();
   const [choice, setChoice] = useState<Lang>(lang);
 
@@ -18,7 +19,6 @@ export function LanguageScreen({ onDone }: { onDone: () => void }) {
 
   const confirm = () => {
     setLang(choice);
-    localStorage.setItem("anisense-lang-chosen", "1");
     onDone();
   };
 
@@ -26,6 +26,11 @@ export function LanguageScreen({ onDone }: { onDone: () => void }) {
     <div className="a-screen">
       <div className="a-scroll a-stagger" style={{ paddingTop: 44 }}>
         <div>
+          {onBack && (
+            <button className="a-iconbtn on-paper" onClick={onBack} aria-label={t("back")} style={{ marginBottom: 22 }}>
+              <ArrowLeft size={24} color="var(--ink)" strokeWidth={2.4} />
+            </button>
+          )}
           <div className="a-langmark"><AniSenseLogo size={44} /></div>
         </div>
         <div>

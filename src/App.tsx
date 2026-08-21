@@ -24,9 +24,9 @@ import { ProfileScreen } from "./screens/ProfileScreen";
 // ─── App Root ─────────────────────────────────────────────────────────────────
 export default function App() {
   // ── Auth state ──
-  const [authScreen, setAuthScreen] = useState<AuthScreen>(
-    () => (localStorage.getItem("anisense-lang-chosen") ? "splash" : "lang")
-  );
+  // The welcome board is the root. Language is now the first step of signing in
+  // or signing up rather than a one-time gate ahead of the app.
+  const [authScreen, setAuthScreen] = useState<AuthScreen>("splash");
   const [authFlow, setAuthFlow] = useState<"signin" | "signup">("signup");
   const [selectedRole, setSelectedRole] = useState<UserRole>(null);
   const [isAuthed, setIsAuthed] = useState(false);
@@ -50,9 +50,9 @@ export default function App() {
   useHardwareBack(() => {
     if (isAuthed) return false;
     if (authScreen === "signin") { setAuthScreen("role"); return true; }
-    if (authScreen === "role")   { setAuthScreen("splash"); return true; }
-    if (authScreen === "splash" && localStorage.getItem("anisense-lang-chosen")) return false;
-    return false;
+    if (authScreen === "role")   { setAuthScreen("lang"); return true; }
+    if (authScreen === "lang")   { setAuthScreen("splash"); return true; }
+    return false; // splash is the root, so back exits
   }, !isAuthed);
 
   // In the app, back goes up to home; on home it falls through and exits.
@@ -111,18 +111,21 @@ export default function App() {
         <div className="auth-outer">
           <div className="auth-shell">
             {authScreen === "lang" && (
-              <LanguageScreen onDone={() => setAuthScreen("splash")} />
+              <LanguageScreen
+                onDone={() => setAuthScreen("role")}
+                onBack={() => setAuthScreen("splash")}
+              />
             )}
             {authScreen === "splash" && (
               <SplashScreen
-                onSignIn={() => { setAuthFlow("signin"); setAuthScreen("role"); }}
-                onSignUp={() => { setAuthFlow("signup"); setAuthScreen("role"); }}
+                onSignIn={() => { setAuthFlow("signin"); setAuthScreen("lang"); }}
+                onSignUp={() => { setAuthFlow("signup"); setAuthScreen("lang"); }}
               />
             )}
             {authScreen === "role" && (
               <RoleScreen
                 flow={authFlow}
-                onBack={() => setAuthScreen("splash")}
+                onBack={() => setAuthScreen("lang")}
                 onSelect={handleRoleSelect}
               />
             )}
