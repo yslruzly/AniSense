@@ -604,10 +604,13 @@ export const appCss = `
   .lstm-note { font-size: var(--fs-label); color:var(--text-faint); line-height:1.55; padding:9px 11px; background:var(--bg); border-radius:10px; border-left:3px solid var(--palay); }
 
   /* ── Profile ── */
+  /* A card in the scroll, so it takes the same corner as everything around it
+     rather than running square to the screen edge. */
   .prof-hero {
-    background: var(--ink);
-    padding: 32px 18px 26px; display: flex; flex-direction: column; align-items: center;
-    color: #fff; flex-shrink: 0;
+    background: var(--ink); border-radius: var(--radius-lg);
+    padding: 32px 20px 26px; display: flex; flex-direction: column; align-items: center;
+    color: #fff; flex-shrink: 0; text-align: center;
+    box-shadow: 0 14px 30px -18px rgba(22,33,27,.5);
   }
   .prof-ava-wrap { position: relative; margin-bottom: 13px; }
   .prof-ava {
@@ -622,7 +625,11 @@ export const appCss = `
     display: flex; align-items: center; justify-content: center; font-size: var(--fs-label);
   }
   .prof-name  { font-family: var(--font-display); font-size: var(--fs-lead); font-weight: 700; margin-bottom: 3px; }
-  .prof-role  { font-size: var(--fs-label); opacity: .85; margin-bottom: 11px; }
+  .prof-role { font-size: var(--fs-label); font-weight: 700; opacity: .95; margin-bottom: 3px; }
+  .prof-loc {
+    font-size: var(--fs-label); opacity: .72; line-height: 1.4;
+    margin-bottom: 13px; max-width: 270px;
+  }
   .prof-crops { display: flex; gap: 7px; flex-wrap: wrap; justify-content: center; }
   .crop-tag   { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); border-radius: 99px; padding: 4px 11px; font-size: var(--fs-label); font-weight: 600; color: #fff; }
 

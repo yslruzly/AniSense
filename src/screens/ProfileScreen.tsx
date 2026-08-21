@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, Camera, ShoppingCart, Wheat, Bell, ChevronRight, Globe, Lock, HelpCircle, Settings, LogOut, Phone, Mail, MapPin, Calendar } from "lucide-react";
+import { ArrowLeft, Camera, Bell, ChevronRight, Globe, Lock, HelpCircle, Settings, LogOut, Phone, Mail, MapPin, Calendar } from "lucide-react";
 import { useLang, LanguageToggle } from "../i18n";
 import { Screen, UserRole, FarmerProfile } from "../types";
 import { CropEmoji } from "../components/CropEmoji";
@@ -83,12 +83,11 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
               style={{ background: "rgba(255,255,255,0.2)", border: "1px solid rgba(255,255,255,0.5)", borderRadius: 8, padding: "6px 12px", color: "#fff", fontFamily: "inherit", fontSize: "var(--fs-body)", fontWeight: 700, textAlign: "center", width: "100%", marginBottom: 4, outline: "none" }} />
             : <div className="prof-name">{profile.name}</div>
           }
-          <div className="prof-role" style={{ display: "flex", alignItems: "center", gap: 5 }}>
-            {userRole === "buyer"
-              ? <><ShoppingCart size={13} color="rgba(255,255,255,0.8)" /> {t("role_buyer")} · {profile.location}</>
-              : <><Wheat size={13} color="rgba(255,255,255,0.8)" /> {t("role_farmer")} · {profile.location}</>
-            }
-          </div>
+          {/* Role and location on their own lines. Run together behind an icon,
+              a barangay-level address wrapped around the glyph and left it
+              stranded beside two lines of text. */}
+          <div className="prof-role">{userRole === "buyer" ? t("role_buyer") : t("role_farmer")}</div>
+          <div className="prof-loc">{profile.location}</div>
           <div className="prof-crops">
             {(editing ? draft : profile).crops.map(c => (
               <span key={c} className="crop-tag" style={{ display: "flex", alignItems: "center", gap: 4 }}>
