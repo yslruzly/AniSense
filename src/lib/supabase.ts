@@ -6,7 +6,7 @@
 //   1. Create a Supabase project and run supabase/schema.sql
 //   2. Copy .env.example → .env and paste your project URL + anon key
 //
-// The anon key is SAFE to ship inside the Android app — Row Level Security
+// The anon key is SAFE to ship inside the Android app; Row Level Security
 // (defined in schema.sql) is what actually protects the data.
 
 import { createClient } from "@supabase/supabase-js";
@@ -16,7 +16,7 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  // Don't crash the app in dev — screens still using mock data work fine.
+  // Don't crash the app in dev; screens still using mock data work fine.
   // Any real service call will fail loudly with a clear message instead.
   console.warn(
     "[AniSense] Supabase is not configured yet. " +
@@ -47,10 +47,10 @@ export const supabase = createClient(
       storage: capacitorStorage,
       autoRefreshToken: true,   // keeps the user logged in indefinitely
       persistSession: true,
-      detectSessionInUrl: false, // we use OTP codes, not magic links — no URL handling needed
+      detectSessionInUrl: false, // we use OTP codes, not magic links, so no URL handling needed
     },
   }
 );
 
-/** True once .env is filled in — use to gate features while developing. */
+/** True once .env is filled in; use to gate features while developing. */
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);

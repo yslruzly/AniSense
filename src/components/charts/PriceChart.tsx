@@ -16,19 +16,19 @@ export function PriceChart({ data }: { data: PricePoint[] }) {
       <svg viewBox={`0 0 ${W} ${H}`} className="chart-svg">
         {[30, 45, 60].map(t => (
           <g key={t}>
-            <line x1={P.l} y1={y(t)} x2={W - P.r} y2={y(t)} stroke="#e9e0d2" strokeWidth="1" strokeDasharray="4 4" />
-            <text x={P.l - 3} y={y(t) + 3} fontSize="9" fill="#aa9d8a" textAnchor="end">{t}</text>
+            <line x1={P.l} y1={y(t)} x2={W - P.r} y2={y(t)} stroke="var(--line)" strokeWidth="1" strokeDasharray="4 4" />
+            <text x={P.l - 3} y={y(t) + 3} fontSize="9" fill="var(--text-faint)" textAnchor="end">{t}</text>
           </g>
         ))}
-        <path d={path("rice")} fill="none" stroke="#2f9e63" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        <path d={path("corn")} fill="none" stroke="#d19b27" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        <path d={path("vegetables")} fill="none" stroke="#5c86b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <path d={path("rice")} fill="none" stroke="var(--tanim)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <path d={path("corn")} fill="none" stroke="var(--gold-text)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <path d={path("vegetables")} fill="none" stroke="var(--tanim)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         {data.map((d, i) => (
-          <text key={d.day} x={x(i)} y={H - 3} fontSize="9" fill="#aa9d8a" textAnchor="middle">{d.day}</text>
+          <text key={d.day} x={x(i)} y={H - 3} fontSize="9" fill="var(--text-faint)" textAnchor="middle">{d.day}</text>
         ))}
       </svg>
       <div className="legend">
-        {[["#2f9e63", "Rice"], ["#d19b27", "Corn"], ["#5c86b8", "Vegetables"]].map(([c, l]) => (
+        {[["var(--tanim)", "Rice"], ["var(--gold-text)", "Corn"], ["var(--tanim)", "Vegetables"]].map(([c, l]) => (
           <span key={l} className="leg-item"><span className="leg-dot" style={{ background: c }} /> {tn(l)}</span>
         ))}
       </div>

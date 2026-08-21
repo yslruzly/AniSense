@@ -27,8 +27,8 @@ export function WeatherScreen({ onProfile, onBack, userInitials = "JD" }: { onPr
 
   return (
     <div className="screen">
-      <Hdr icon={<CloudSun size={20} color="#2e7d4f" />} title={t("wx_title")} sub={t("wx_sub")} onProfile={onProfile} onBack={onBack} userInitials={userInitials} />
-      <div className="scroll">
+      <Hdr icon={<CloudSun size={20} color="var(--tanim)" />} title={t("wx_title")} sub={t("wx_sub")} onProfile={onProfile} onBack={onBack} userInitials={userInitials} />
+      <div className="scroll screen-enter">
         <div className="wx-hero">
           <div className="wx-ico"><CloudSun size={52} color="rgba(255,255,255,0.95)" /></div>
           <div className="wx-temp">28°C</div>
@@ -37,21 +37,21 @@ export function WeatherScreen({ onProfile, onBack, userInitials = "JD" }: { onPr
         </div>
 
         {bestWindowLabel && (
-          <div className="adv-banner" style={{ background: "#e6f2e9", border: "1px solid #b3d9c0" }}>
-            <Sprout size={18} color="#1e5c3a" style={{ flexShrink: 0, marginTop: 1 }} />
+          <div className="adv-banner" style={{ background: "var(--tanim-sk)", border: "1px solid var(--line)" }}>
+            <Sprout size={18} color="var(--tanim-deep)" style={{ flexShrink: 0, marginTop: 1 }} />
             <div>
-              <div className="adv-banner-txt" style={{ color: "#1e5c3a" }}>{t("wx_best_window")}: {bestWindowLabel}</div>
-              <div className="adv-banner-sub" style={{ color: "#1e5c3a" }}>{t("wx_best_window_sub")}</div>
+              <div className="adv-banner-txt" style={{ color: "var(--tanim-deep)" }}>{t("wx_best_window")}: {bestWindowLabel}</div>
+              <div className="adv-banner-sub" style={{ color: "var(--tanim-deep)" }}>{t("wx_best_window_sub")}</div>
             </div>
           </div>
         )}
 
         <div className="g2">
           {[
-            { icon: <Droplets size={20} color="#2e7d4f" />, val: "72%", lbl: t("wx_humidity") },
-            { icon: <Wind size={20} color="#2e7d4f" />, val: "14 km/h", lbl: t("wx_wind") },
-            { icon: <CloudSun size={20} color="#2f5586" />, val: "35%", lbl: t("wx_rain_chance") },
-            { icon: <AlertTriangle size={20} color="#8a5d0c" />, val: t("wx_uv_high"), lbl: t("wx_uv") },
+            { icon: <Droplets size={20} color="var(--tanim)" />, val: "72%", lbl: t("wx_humidity") },
+            { icon: <Wind size={20} color="var(--tanim)" />, val: "14 km/h", lbl: t("wx_wind") },
+            { icon: <CloudSun size={20} color="var(--tanim-deep)" />, val: "35%", lbl: t("wx_rain_chance") },
+            { icon: <AlertTriangle size={20} color="var(--gold-text)" />, val: t("wx_uv_high"), lbl: t("wx_uv") },
           ].map(({ icon, val, lbl }) => (
             <div key={lbl} className="card">
               <div className="stat-ico">{icon}</div>
@@ -77,9 +77,9 @@ export function WeatherScreen({ onProfile, onBack, userInitials = "JD" }: { onPr
         <div className="card">
           <div className="card-title">{t("wx_advisory")}</div>
           {[
-            { cls: "adv-good", icon: <CheckCircle size={14} color="#1e5c3a" />, msg: t("wx_adv_good") },
-            ...(rainDay ? [{ cls: "adv-warn", icon: <AlertTriangle size={14} color="#6f4a08" />, msg: `${t("wx_adv_rain")} ${rainDay.day} — ${t("wx_adv_harvest")}` }] : []),
-            { cls: "adv-info", icon: <Droplets size={14} color="#2f5586" />, msg: t("wx_adv_humidity") },
+            { cls: "adv-good", icon: <CheckCircle size={14} color="var(--tanim-deep)" />, msg: t("wx_adv_good") },
+            ...(rainDay ? [{ cls: "adv-warn", icon: <AlertTriangle size={14} color="var(--gold-text)" />, msg: `${t("wx_adv_rain")} ${rainDay.day}: ${t("wx_adv_harvest")}` }] : []),
+            { cls: "adv-info", icon: <Droplets size={14} color="var(--tanim-deep)" />, msg: t("wx_adv_humidity") },
           ].map(({ cls, icon, msg }) => (
             <div key={msg} className={`adv-item ${cls}`}><span>{icon}</span><span>{msg}</span></div>
           ))}

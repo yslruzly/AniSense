@@ -1,10 +1,15 @@
 import { useState } from "react";
 import { Screen, AuthScreen, UserRole, FarmDetails } from "./types";
 import { useOffline } from "./hooks/useOffline";
+import { useHardwareBack } from "./hooks/useHardwareBack";
+import { setStatusBar, initKeyboard } from "./lib/platform";
+import { useEffect } from "react";
+import { tokensCss } from "./styles/tokens";
 import { authCss } from "./styles/authStyles";
 import { appCss } from "./styles/appStyles";
 import { BUYER_TRANSACTIONS } from "./data/expenses";
 import { BottomNav } from "./components/layout/BottomNav";
+import { LanguageScreen } from "./screens/auth/LanguageScreen";
 import { SplashScreen } from "./screens/auth/SplashScreen";
 import { RoleScreen } from "./screens/auth/RoleScreen";
 import { AuthFormScreen } from "./screens/auth/AuthFormScreen";
@@ -19,7 +24,9 @@ import { ProfileScreen } from "./screens/ProfileScreen";
 // ─── App Root ─────────────────────────────────────────────────────────────────
 export default function App() {
   // ── Auth state ──
-  const [authScreen, setAuthScreen] = useState<AuthScreen>("splash");
+  const [authScreen, setAuthScreen] = useState<AuthScreen>(
+    () => (localStorage.getItem("anisense-lang-chosen") ? "splash" : "lang")
+  );
   const [authFlow, setAuthFlow] = useState<"signin" | "signup">("signup");
   const [selectedRole, setSelectedRole] = useState<UserRole>(null);
   const [isAuthed, setIsAuthed] = useState(false);
@@ -29,6 +36,31 @@ export default function App() {
   // ── App state ──
   const [active, setActive] = useState<Screen>("home");
   const { isOffline, lastUpdated } = useOffline();
+
+  useEffect(() => { initKeyboard(); }, []);
+
+  // The status bar sits over the content, so it has to follow whatever screen is
+  // underneath it. Auth and the app headers are ink; the rest is paper.
+  useEffect(() => {
+    if (!isAuthed) { setStatusBar(authScreen === "splash" ? "dark" : "light"); return; }
+    setStatusBar(active === "home" ? "dark" : "light");
+  }, [isAuthed, authScreen, active]);
+
+  // Back during auth walks the flow backwards rather than exiting mid-signup.
+  useHardwareBack(() => {
+    if (isAuthed) return false;
+    if (authScreen === "signin") { setAuthScreen("role"); return true; }
+    if (authScreen === "role")   { setAuthScreen("splash"); return true; }
+    if (authScreen === "splash" && localStorage.getItem("anisense-lang-chosen")) return false;
+    return false;
+  }, !isAuthed);
+
+  // In the app, back goes up to home; on home it falls through and exits.
+  useHardwareBack(() => {
+    if (!isAuthed) return false;
+    if (active !== "home") { setActive("home"); return true; }
+    return false;
+  }, isAuthed);
 
   const [farmerProfile, setFarmerProfile] = useState({
     name: "Juan Dela Cruz",
@@ -74,9 +106,13 @@ export default function App() {
   if (!isAuthed) {
     return (
       <>
+        <style>{tokensCss}</style>
         <style>{authCss}</style>
         <div className="auth-outer">
           <div className="auth-shell">
+            {authScreen === "lang" && (
+              <LanguageScreen onDone={() => setAuthScreen("splash")} />
+            )}
             {authScreen === "splash" && (
               <SplashScreen
                 onSignIn={() => { setAuthFlow("signin"); setAuthScreen("role"); }}
@@ -125,6 +161,7 @@ export default function App() {
 
   return (
     <>
+      <style>{tokensCss}</style>
       <style>{appCss}</style>
       <div className="outer">
         <div className="shell">

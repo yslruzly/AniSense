@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { EmptyState, ErrorState, SkeletonList } from "../components/states";
+import { useResource } from "../hooks/useResource";
+import { fetchPrices } from "../services/prices";
 import { LayoutDashboard, MapPin, Wheat, TrendingUp, TrendingDown, Search, Clock } from "lucide-react";
 import { useLang } from "../i18n";
 import { UserRole } from "../types";
@@ -9,10 +12,11 @@ import { CropIcon } from "../components/icons";
 // ─── Market Screen ────────────────────────────────────────────────────────────
 export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userInitials = "JD", userRole }: { onProfile: () => void; isOffline: boolean; lastUpdated: string; onBack: () => void; userInitials?: string; userRole?: UserRole }) {
   const { t, tn } = useLang();
-  const ALL_ITEMS = [
-    ...RICE_VARIETIES.map(c => ({ ...c, group: "Rice" })),
-    ...CROP_GROUPS.flatMap(g => g.varieties.map(v => ({ ...v, group: g.group }))),
-  ];
+  // Prices now arrive through a resource, so this screen has a real loading
+  // path, a real failure path, and a real offline path instead of assuming
+  // the data is simply present.
+  const prices = useResource(fetchPrices, []);
+  const ALL_ITEMS = prices.data ?? [];
   const categories = ["All", "Rice", ...CROP_GROUPS.map(g => g.group)];
   const [activeCat, setActiveCat] = useState("All");
   const [search, setSearch] = useState("");
@@ -28,8 +32,8 @@ export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userIn
 
   return (
     <div className="screen">
-      <Hdr icon={<LayoutDashboard size={20} color="#2e7d4f" />} title={t("market_title")} sub={t("market_sub")} onProfile={onProfile} onBack={onBack} userInitials={userInitials} />
-      <div className="scroll">
+      <Hdr icon={<LayoutDashboard size={20} color="var(--tanim)" />} title={t("market_title")} sub={t("market_sub")} onProfile={onProfile} onBack={onBack} userInitials={userInitials} />
+      <div className="scroll screen-enter">
         <div className="hero">
           <div>
             <div className="hero-greet">{t("market_hello")}, {userInitials}! 👋</div>
@@ -43,29 +47,29 @@ export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userIn
           <div className="sec-sub">{ALL_ITEMS.length} {t("market_tracked")}</div>
         </div>
 
-        <div className="movers-row">
+        {prices.status === "ready" && <div className="movers-row">
           <div className="movers-col">
-            <div className="movers-col-title" style={{ color: "#1f7a49" }}><TrendingUp size={14} /> {t("market_top_gainers")}</div>
+            <div className="movers-col-title" style={{ color: "var(--tanim)" }}><TrendingUp size={14} /> {t("market_top_gainers")}</div>
             {topGainers.map(c => (
               <div className="mover-item" key={c.id}>
                 <span className="mover-item-name">{c.name}</span>
-                <span className="mover-item-chg" style={{ color: "#2f9e63" }}>+{c.change}%</span>
+                <span className="mover-item-chg" style={{ color: "var(--tanim)" }}>+{c.change}%</span>
               </div>
             ))}
           </div>
           <div className="movers-col">
-            <div className="movers-col-title" style={{ color: "#9a3325" }}><TrendingDown size={14} /> {t("market_top_decliners")}</div>
+            <div className="movers-col-title" style={{ color: "var(--error)" }}><TrendingDown size={14} /> {t("market_top_decliners")}</div>
             {topLosers.map(c => (
               <div className="mover-item" key={c.id}>
                 <span className="mover-item-name">{c.name}</span>
-                <span className="mover-item-chg" style={{ color: "#c74133" }}>{c.change}%</span>
+                <span className="mover-item-chg" style={{ color: "var(--error)" }}>{c.change}%</span>
               </div>
             ))}
           </div>
-        </div>
+        </div>}
 
         <div className="search-box">
-          <Search size={16} color="#aa9d8a" />
+          <Search size={16} color="var(--text-faint)" />
           <input placeholder={t("market_search_ph")} value={search} onChange={e => setSearch(e.target.value)} />
         </div>
 
@@ -79,32 +83,51 @@ export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userIn
           {filtered.length} {filtered.length === 1 ? t("market_crop_count_one") : t("market_crops_count")}{activeCat !== "All" ? ` ${t("market_in")} ${tn(activeCat)}` : ""}
         </div>
 
-        {filtered.length === 0 && <div className="empty-msg">{t("market_no_match")}</div>}
+        {prices.showSkeleton && <SkeletonList rows={6} label={t("state_loading_prices")} />}
 
-        {filtered.map(c => (
+        {prices.status === "error" && (
+          <ErrorState
+            title={t("state_error_title")}
+            body={t("state_error_body")}
+            retryLabel={t("state_retry")}
+            onRetry={prices.reload}
+          />
+        )}
+
+        {prices.status === "ready" && filtered.length === 0 && (
+          <EmptyState
+            icon={<Search size={26} aria-hidden="true" />}
+            title={t("state_no_match_title")}
+            body={t("state_no_match_body")}
+            action={search ? t("state_clear_search") : undefined}
+            onAction={search ? () => setSearch("") : undefined}
+          />
+        )}
+
+        {prices.status === "ready" && filtered.map(c => (
           <div className={`mkt-row ${c.change >= 0 ? "up" : "down"}`} key={c.id}>
             <div className="mkt-row-ico"><CropIcon crop={c.group} size={20} /></div>
             <div>
               <div className="mkt-row-name">{c.name}</div>
-              <div className="mkt-row-unit">{tn(c.group)} · {t("per_kg")}</div>
+              <div className="mkt-row-unit">{tn(c.group)}</div>
             </div>
             <div className="mkt-row-right">
-              <div className="mkt-row-price">₱{c.pricePerKg}</div>
-              <div className="mkt-row-chg" style={{ color: c.change >= 0 ? "#2f9e63" : "#c74133" }}>
-                {c.change >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />} {c.change >= 0 ? "+" : ""}{c.change}%
+              <div className="mkt-row-price">₱{c.pricePerKg}<span className="unit-suffix">{t("per_kg_short")}</span></div>
+              <div className="mkt-row-chg" style={{ color: c.change >= 0 ? "var(--tanim)" : "var(--error)" }}>
+                {c.change >= 0 ? <TrendingUp size={15} /> : <TrendingDown size={15} />} {c.change >= 0 ? "+" : ""}{c.change}%
               </div>
             </div>
           </div>
         ))}
 
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: isOffline ? "#152b1e" : "#e6f2e9", border: `1px solid ${isOffline ? "#4d4237" : "#cfe7d6"}`, borderRadius: 10, padding: "9px 14px" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: isOffline ? "var(--ink)" : "var(--tanim-sk)", border: `1px solid ${isOffline ? "var(--text-soft)" : "var(--tanim-sk)"}`, borderRadius: 10, padding: "9px 14px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-            <div style={{ width: 8, height: 8, borderRadius: "50%", background: isOffline ? "#d4553f" : "#2f9e63", flexShrink: 0, animation: isOffline ? "pulse 1.5s infinite" : "none" }} />
-            <span style={{ fontSize: 13, fontWeight: 600, color: isOffline ? "#faf6ef" : "#1e5c3a" }}>{isOffline ? t("market_offline_cached") : t("market_up_to_date")}</span>
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: isOffline ? "var(--error)" : "var(--tanim)", flexShrink: 0, animation: isOffline ? "pulse 1.5s infinite" : "none" }} />
+            <span style={{ fontSize: "var(--fs-label)", fontWeight: 600, color: isOffline ? "var(--paper)" : "var(--tanim-deep)" }}>{isOffline ? t("market_offline_cached") : t("market_up_to_date")}</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            <Clock size={12} color={isOffline ? "#aa9d8a" : "#2e7d4f"} />
-            <span style={{ fontSize: 12, color: isOffline ? "#aa9d8a" : "#2e7d4f", fontWeight: 500 }}>{lastUpdated}</span>
+            <Clock size={12} color={isOffline ? "var(--text-faint)" : "var(--tanim)"} />
+            <span style={{ fontSize: "var(--fs-label)", color: isOffline ? "var(--text-faint)" : "var(--tanim)", fontWeight: 500 }}>{lastUpdated}</span>
           </div>
         </div>
       </div>

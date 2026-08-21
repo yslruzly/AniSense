@@ -1,4 +1,5 @@
 import React from "react";
+import { haptic } from "../../lib/platform";
 import { Home as HomeIcon, LayoutDashboard, ShoppingCart, Banknote, User } from "lucide-react";
 import { useLang } from "../../i18n";
 import { Screen } from "../../types";
@@ -16,7 +17,7 @@ export function BottomNav({ active, onNavigate }: { active: Screen; onNavigate: 
   return (
     <div className="bnav">
       {items.map(it => (
-        <button key={it.id} className={`ntab ${active === it.id ? "on" : ""}`} onClick={() => onNavigate(it.id)}>
+        <button key={it.id} className={`ntab ${active === it.id ? "on" : ""}`} onClick={() => { haptic.select(); onNavigate(it.id); }}>
           <span className="ntab-ico">{it.ico}</span>
           <span className="ntab-lbl">{it.lbl}</span>
         </button>

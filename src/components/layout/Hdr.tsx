@@ -7,8 +7,8 @@ export function Hdr({ icon, title, sub, onProfile, onBack, userInitials = "JD", 
     <div className="hdr">
       <div className="hdr-brand">
         {onBack && (
-          <button onClick={onBack} style={{ background: "#e6f2e9", border: "1px solid #cfe7d6", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", marginRight: 8, flexShrink: 0 }}>
-            <ArrowLeft size={16} color="#2e7d4f" />
+          <button onClick={onBack} style={{ background: "var(--tanim-sk)", border: "1px solid var(--tanim-sk)", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", marginRight: 8, flexShrink: 0 }}>
+            <ArrowLeft size={16} color="var(--tanim)" />
           </button>
         )}
         <span className="hdr-icon">{icon}</span>
@@ -20,7 +20,7 @@ export function Hdr({ icon, title, sub, onProfile, onBack, userInitials = "JD", 
       <div className="hdr-right">
         {extra}
         <div className="notif">
-          <Bell size={19} color="#4d4237" />
+          <Bell size={19} color="var(--text-soft)" />
           <span className="nbadge">3</span>
         </div>
         <div className="ava" onClick={onProfile} style={{ cursor: onProfile ? "pointer" : "default" }}>{userInitials}</div>

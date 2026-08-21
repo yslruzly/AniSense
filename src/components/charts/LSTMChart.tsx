@@ -41,34 +41,34 @@ export function LSTMChart({ series }: { series: LSTMPoint[] }) {
       {/* Y grid */}
       {ticks.map(t => (
         <g key={t}>
-          <line x1={P.l} y1={y(t)} x2={W - P.r} y2={y(t)} stroke="#f1e9dc" strokeWidth="1" />
-          <text x={P.l - 3} y={y(t) + 3} fontSize="8.5" fill="#aa9d8a" textAnchor="end">{t}</text>
+          <line x1={P.l} y1={y(t)} x2={W - P.r} y2={y(t)} stroke="var(--paper-alt)" strokeWidth="1" />
+          <text x={P.l - 3} y={y(t) + 3} fontSize="8.5" fill="var(--text-faint)" textAnchor="end">{t}</text>
         </g>
       ))}
 
       {/* Vertical "Now" divider */}
-      <line x1={x(nowIdx)} y1={P.t} x2={x(nowIdx)} y2={H - P.b} stroke="#b9a5e2" strokeWidth="1" strokeDasharray="3 2" />
-      <text x={x(nowIdx)} y={P.t - 1} fontSize="8" fill="#6d4bb8" textAnchor="middle">NOW</text>
+      <line x1={x(nowIdx)} y1={P.t} x2={x(nowIdx)} y2={H - P.b} stroke="var(--palay)" strokeWidth="1" strokeDasharray="3 2" />
+      <text x={x(nowIdx)} y={P.t - 1} fontSize="8" fill="var(--ink-2)" textAnchor="middle">NOW</text>
 
       {/* Confidence band (future only) */}
-      <path d={bandPath} fill="#e2d8f2" opacity="0.6" />
+      <path d={bandPath} fill="var(--tanim-sk)" opacity="0.6" />
 
-      {/* Predicted line (full — dashed for future) */}
-      <path d={predPath.split("L").slice(0, nowIdx + 1).join("L")} fill="none" stroke="#6d4bb8" strokeWidth="1.5" strokeDasharray="none" strokeLinecap="round" strokeLinejoin="round" />
-      <path d={"M" + predPath.split("L").slice(nowIdx).join("L")} fill="none" stroke="#6d4bb8" strokeWidth="1.5" strokeDasharray="4 2" strokeLinecap="round" strokeLinejoin="round" />
+      {/* Predicted line (full, dashed for future) */}
+      <path d={predPath.split("L").slice(0, nowIdx + 1).join("L")} fill="none" stroke="var(--ink-2)" strokeWidth="1.5" strokeDasharray="none" strokeLinecap="round" strokeLinejoin="round" />
+      <path d={"M" + predPath.split("L").slice(nowIdx).join("L")} fill="none" stroke="var(--ink-2)" strokeWidth="1.5" strokeDasharray="4 2" strokeLinecap="round" strokeLinejoin="round" />
 
       {/* Actual line */}
-      <path d={actualPath} fill="none" stroke="#2e7d4f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d={actualPath} fill="none" stroke="var(--tanim)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
 
       {/* Dots for actual */}
       {series.filter(d => d.actual !== null).map((d, i) => (
-        <circle key={i} cx={x(i)} cy={y(d.actual!)} r="2.5" fill="#2e7d4f" />
+        <circle key={i} cx={x(i)} cy={y(d.actual!)} r="2.5" fill="var(--tanim)" />
       ))}
 
-      {/* X labels — show select labels */}
+      {/* X labels: show select labels */}
       {series.map((d, i) => {
         if (!["D-6", "D-3", "Now", "+3", "+7"].includes(d.day)) return null;
-        return <text key={d.day} x={x(i)} y={H - 3} fontSize="8.5" fill={d.day === "Now" ? "#6d4bb8" : "#aa9d8a"} textAnchor="middle" fontWeight={d.day === "Now" ? "700" : "400"}>{d.day}</text>;
+        return <text key={d.day} x={x(i)} y={H - 3} fontSize="8.5" fill={d.day === "Now" ? "var(--ink-2)" : "var(--text-faint)"} textAnchor="middle" fontWeight={d.day === "Now" ? "700" : "400"}>{d.day}</text>;
       })}
     </svg>
   );

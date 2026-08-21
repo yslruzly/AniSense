@@ -1,6 +1,6 @@
 // ─── Auth Service ─────────────────────────────────────────────────────────────
 // Everything about signing up, verifying (email code + SMS code), signing in,
-// and the user's profile row. NOT wired into the UI yet — see SETUP_DATABASE.md
+// and the user's profile row. NOT wired into the UI yet; see SETUP_DATABASE.md
 // Step 7 for exactly where each function goes.
 
 import { Session } from "@supabase/supabase-js";
@@ -18,7 +18,7 @@ export function toE164Phone(phRaw: string): string {
 }
 
 // ─── Sign up (email + password) ───────────────────────────────────────────────
-// Sends the user a 6-digit code by email (after you set up the email template —
+// Sends the user a 6-digit code by email (after you set up the email template in
 // SETUP_DATABASE.md Step 4). The profiles row is auto-created by the DB trigger.
 export async function signUpWithEmail(opts: {
   name: string;

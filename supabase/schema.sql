@@ -1,5 +1,5 @@
 -- ═══════════════════════════════════════════════════════════════════════════
--- AniSense — Database Schema
+-- AniSense Database Schema
 -- Run this ONCE in your Supabase project: Dashboard → SQL Editor → New query
 -- → paste everything → Run. (See SETUP_DATABASE.md, Step 2.)
 -- ═══════════════════════════════════════════════════════════════════════════

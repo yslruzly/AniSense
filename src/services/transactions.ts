@@ -1,5 +1,5 @@
 // ─── Transactions Service ─────────────────────────────────────────────────────
-// Buyer checkout + purchase history. Replaces the BUYER_TRANSACTIONS mock —
+// Buyer checkout + purchase history. Replaces the BUYER_TRANSACTIONS mock;
 // see SETUP_DATABASE.md Step 7.
 
 import { supabase } from "../lib/supabase";
@@ -22,7 +22,7 @@ interface TransactionRow {
 
 /**
  * The signed-in buyer's purchase history (ExpensesScreen buyer view).
- * Offline: serves the last-fetched history — check `fromCache` for the banner.
+ * Offline: serves the last-fetched history; check `fromCache` for the banner.
  */
 export async function fetchMyPurchases(): Promise<FetchResult<BuyerTransaction[]>> {
   return cachedFetch("purchases", async () => {
@@ -48,7 +48,7 @@ export async function fetchMyPurchases(): Promise<FetchResult<BuyerTransaction[]
 /**
  * Checkout: one transaction row per cart item (TradeScreen handleCheckout).
  * Needs the seller's user id, so look it up from each listing first.
- * Online-only by design — a purchase must be confirmed against live listings
+ * Online-only by design; a purchase must be confirmed against live listings
  * (the item could already be sold). Offline → throws a friendly message.
  */
 export async function checkout(cart: CartItem[]) {

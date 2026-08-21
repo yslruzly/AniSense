@@ -27,31 +27,31 @@ export function PredictedPriceCard({ farmerCrops = ["Rice", "Corn"] }: { farmerC
   return (
     <div className="card">
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-        <span style={{ background: "#22406b", color: "#b4c8e0", fontSize: 11, fontWeight: 700, padding: "3px 8px", borderRadius: 99, display: "flex", alignItems: "center", gap: 4 }}>
-          <TrendingUp size={12} color="#b4c8e0" /> ARIMA FORECAST
+        <span style={{ background: "var(--tanim-deep)", color: "var(--line)", fontSize: "var(--fs-label)", fontWeight: 700, padding: "3px 8px", borderRadius: 99, display: "flex", alignItems: "center", gap: 4 }}>
+          <TrendingUp size={12} color="var(--line)" /> ARIMA FORECAST
         </span>
-        <span style={{ fontSize: 15, fontWeight: 700, color: "var(--text)" }}>{t("ana_predicted")}</span>
+        <span style={{ fontSize: "var(--fs-label)", fontWeight: 700, color: "var(--text)" }}>{t("ana_predicted")}</span>
       </div>
-      <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 12 }}>{t("ana_based_on")}</div>
+      <div style={{ fontSize: "var(--fs-label)", color: "var(--text-muted)", marginBottom: 12 }}>{t("ana_based_on")}</div>
       {items.map(r => (
         <div key={r.name} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: "1px solid var(--border)" }}>
-          <div style={{ width: 36, height: 36, borderRadius: 10, background: "#e6f2e9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: "var(--tanim-sk)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <CropIcon crop={r.name} size={16} />
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text)", marginBottom: 2 }}>{tn(r.name)}</div>
-            <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{t("ana_current")}: ₱{r.current}/kg</div>
+            <div style={{ fontSize: "var(--fs-label)", fontWeight: 700, color: "var(--text)", marginBottom: 2 }}>{tn(r.name)}</div>
+            <div style={{ fontSize: "var(--fs-label)", color: "var(--text-muted)" }}>{t("ana_current")}: ₱{r.current}/kg</div>
           </div>
           <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 17, fontWeight: 800, color: r.up ? "#2e7d4f" : "#c74133" }}>₱{r.predicted.toFixed(1)}</div>
-            <div style={{ fontSize: 12, fontWeight: 600, color: r.up ? "#2e7d4f" : "#c74133", display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 2 }}>
-              {r.up ? <TrendingUp size={12} color="#2e7d4f" /> : <TrendingDown size={12} color="#c74133" />}
+            <div style={{ fontSize: "var(--fs-body)", fontWeight: 800, color: r.up ? "var(--tanim)" : "var(--error)" }}>₱{r.predicted.toFixed(1)}</div>
+            <div style={{ fontSize: "var(--fs-label)", fontWeight: 600, color: r.up ? "var(--tanim)" : "var(--error)", display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 2 }}>
+              {r.up ? <TrendingUp size={12} color="var(--tanim)" /> : <TrendingDown size={12} color="var(--error)" />}
               {r.up ? "+" : ""}{r.diff.toFixed(1)} ({r.up ? "+" : ""}{r.pct}%)
             </div>
           </div>
         </div>
       ))}
-      <div style={{ fontSize: 11, color: "#aa9d8a", marginTop: 10, textAlign: "center" }}>
+      <div style={{ fontSize: "var(--fs-label)", color: "var(--text-faint)", marginTop: 10, textAlign: "center" }}>
         {t("ana_forecast_note")}
       </div>
     </div>

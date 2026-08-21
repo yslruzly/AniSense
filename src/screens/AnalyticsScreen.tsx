@@ -16,8 +16,8 @@ export function AnalyticsScreen({ onProfile, onBack, userInitials = "JD", farmer
 
   return (
     <div className="screen">
-      <Hdr icon={<BarChart2 size={20} color="#2e7d4f" />} title={t("ana_title")} sub={t("ana_sub")} onProfile={onProfile} onBack={onBack} userInitials={userInitials} />
-      <div className="scroll">
+      <Hdr icon={<BarChart2 size={20} color="var(--tanim)" />} title={t("ana_title")} sub={t("ana_sub")} onProfile={onProfile} onBack={onBack} userInitials={userInitials} />
+      <div className="scroll screen-enter">
         <div>
           <div className="sec-title">{t("ana_glance")}</div>
           <div className="sec-sub">{t("ana_glance_sub")}</div>
@@ -43,10 +43,10 @@ export function AnalyticsScreen({ onProfile, onBack, userInitials = "JD", farmer
           <div className="card-title">{t("ana_performance")}</div>
           <div className="perf-grid">
             {CROPS.map(c => (
-              <div key={c.id} className="perf-card" style={{ background: c.change >= 0 ? "#dff2e5" : "#f9e4dc" }}>
+              <div key={c.id} className="perf-card" style={{ background: c.change >= 0 ? "var(--tanim-sk)" : "var(--error-sk)" }}>
                 <div className="perf-name">{c.name}</div>
-                <div className="perf-price">₱{c.pricePerKg}</div>
-                <div className="perf-chg" style={{ color: c.change >= 0 ? "#2f9e63" : "#c74133" }}>
+                <div className="perf-price">₱{c.pricePerKg}<span className="unit-suffix">{t("per_kg_short")}</span></div>
+                <div className="perf-chg" style={{ color: c.change >= 0 ? "var(--tanim)" : "var(--error)" }}>
                   {c.change >= 0 ? "▲" : "▼"} {Math.abs(c.change)}%
                 </div>
               </div>

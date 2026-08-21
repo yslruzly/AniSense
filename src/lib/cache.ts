@@ -3,7 +3,7 @@
 // storage (@capacitor/preferences → SharedPreferences on Android), and when a
 // fetch fails (offline / bad signal) the last-known data is served instead.
 //
-// Usage — services wrap their server calls with cachedFetch():
+// Usage: services wrap their server calls with cachedFetch():
 //   const { data, fromCache, updatedAt } = await fetchListings();
 //   if (fromCache) → show the "offline, as of {updatedAt}" banner (already in the UI)
 
@@ -25,7 +25,7 @@ export async function cacheGet<T>(key: string): Promise<CacheEntry<T> | null> {
   try {
     return JSON.parse(value) as CacheEntry<T>;
   } catch {
-    return null; // corrupted entry — treat as no cache
+    return null; // corrupted entry: treat as no cache
   }
 }
 

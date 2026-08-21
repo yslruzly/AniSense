@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// AniSense i18n — English / Filipino (Tagalog)
+// AniSense i18n: English / Filipino (Tagalog)
 //
 // HOW TO USE
 // 1. Put this file in src/ (next to App.tsx).
@@ -38,6 +38,8 @@ export const translations: Dict = {
   online: { en: "Online", tl: "Online" },
   offline: { en: "Offline", tl: "Offline" },
   per_kg: { en: "per kg", tl: "kada kilo" },
+  /** Compact suffix that sits directly against a figure: ₱24.50/kilo */
+  per_kg_short: { en: "/kg", tl: "/kilo" },
   good_morning: { en: "Good Morning", tl: "Magandang Umaga" },
   good_afternoon: { en: "Good Afternoon", tl: "Magandang Hapon" },
   good_evening: { en: "Good Evening", tl: "Magandang Gabi" },
@@ -101,12 +103,12 @@ export const translations: Dict = {
   auth_or: { en: "or", tl: "o" },
 
   // ── Crop picker ───────────────────────────────────────────────────────────
-  crops_title: { en: "Your Crop Specialization", tl: "Iyong Espesyalisasyon sa Pananim" },
+  crops_title: { en: "What you grow", tl: "Anong tinatanim mo?" },
   crops_sub: {
     en: "Select all the crops you grow or plan to grow.",
     tl: "Piliin ang lahat ng pananim na itinatanim mo o balak mong itanim.",
   },
-  crops_select_label: { en: "Select your crops", tl: "Piliin ang iyong mga pananim" },
+  crops_select_label: { en: "Select your crops", tl: "Piliin ang mga tinatanim mo" },
   crops_selected: { en: "selected", tl: "ang napili" },
   crops_continue_with: { en: "Continue with", tl: "Magpatuloy gamit ang" },
   crops_crops: { en: "crops", tl: "pananim" },
@@ -127,11 +129,11 @@ export const translations: Dict = {
   nav_profile: { en: "Profile", tl: "Profile" },
 
   // ── Home ──────────────────────────────────────────────────────────────────
-  home_crops_rising: { en: "Crops Rising Today", tl: "Tumataas na Pananim Ngayon" },
+  home_crops_rising: { en: "Going up today", tl: "Tumataas na Pananim Ngayon" },
   home_crops_up: { en: "crops up in price", tl: "pananim na tumaas ang presyo" },
   home_total_expenses: { en: "Total Expenses", tl: "Kabuuang Gastos" },
   home_this_month: { en: "This Month", tl: "Ngayong Buwan" },
-  home_current_prices: { en: "Current Prices", tl: "Kasalukuyang Presyo" },
+  home_current_prices: { en: "Current Prices", tl: "Presyo ngayon" },
   home_tap_market: { en: "Tap Market for full details", tl: "Pindutin ang Merkado para sa detalye" },
   home_what_to_do: { en: "What would you like to do?", tl: "Ano ang gusto mong gawin?" },
   home_tap_any: { en: "Tap any button to open", tl: "Pindutin ang kahit anong button" },
@@ -163,8 +165,8 @@ export const translations: Dict = {
   market_no_match: { en: "No crops match your search.", tl: "Walang pananim na tumugma sa hinanap mo." },
   market_up_to_date: { en: "Prices up to date", tl: "Napapanahon ang mga presyo" },
   market_offline_cached: {
-    en: "Offline — showing cached prices",
-    tl: "Offline — lumang presyo ang ipinapakita",
+    en: "Offline: showing cached prices",
+    tl: "Offline: lumang presyo ang ipinapakita",
   },
 
   // ── Trade / Marketplace ───────────────────────────────────────────────────
@@ -179,7 +181,7 @@ export const translations: Dict = {
     en: "Search crops, sellers, locations...",
     tl: "Maghanap ng pananim, nagbebenta, lugar...",
   },
-  trade_select_category: { en: "Select Crop Category", tl: "Piliin ang Uri ng Pananim" },
+  trade_select_category: { en: "Pick a crop type", tl: "Piliin ang Uri ng Pananim" },
   trade_active_listings: { en: "Active Listings", tl: "Aktibong Paninda" },
   trade_avg_price: { en: "Avg. Price/kg", tl: "Avg. Presyo/kilo" },
   trade_total_kg: { en: "Total kg Available", tl: "Kabuuang Kilo" },
@@ -189,10 +191,10 @@ export const translations: Dict = {
   trade_sort_newest: { en: "Newest first", tl: "Pinakabago muna" },
   trade_sort_price_asc: { en: "Price: Low to High", tl: "Presyo: Mababa pataas" },
   trade_sort_price_desc: { en: "Price: High to Low", tl: "Presyo: Mataas pababa" },
-  trade_sort_rating: { en: "Top Rated Sellers", tl: "Pinakamataas na Rating" },
+  trade_sort_rating: { en: "Best-rated sellers", tl: "Pinakamataas ang rating" },
   trade_kg_available: { en: "kg available", tl: "kilong available" },
-  trade_call_seller: { en: "Call Seller", tl: "Tawagan ang Nagbebenta" },
-  trade_view_details: { en: "View Details", tl: "Tingnan ang Detalye" },
+  trade_call_seller: { en: "Call seller", tl: "Tawagan ang nagbebenta" },
+  trade_view_details: { en: "View details", tl: "Tingnan ang detalye" },
   trade_no_listings: {
     en: "No listings found. Try a different search or filter.",
     tl: "Walang nahanap na paninda. Subukan ang ibang hanap o filter.",
@@ -237,7 +239,7 @@ export const translations: Dict = {
   exp_title: { en: "Expenses", tl: "Mga Gastos" },
   exp_sub: { en: "Farm cost tracker", tl: "Tala ng gastos sa bukid" },
   exp_total_month: {
-    en: "Total Farm Expenses this Month",
+    en: "Farm expenses this month",
     tl: "Kabuuang Gastos sa Bukid Ngayong Buwan",
   },
   exp_vs_last_month: { en: "vs last month", tl: "kumpara noong nakaraang buwan" },
@@ -250,7 +252,7 @@ export const translations: Dict = {
     tl: "Wala pang gastos ngayong buwan. Magdagdag ng gastos para makita ang buod.",
   },
   exp_by_specialization: {
-    en: "By Crop Specialization This Month",
+    en: "By crop this month",
     tl: "Ayon sa Pananim Ngayong Buwan",
   },
   exp_total: { en: "Total", tl: "Kabuuan" },
@@ -291,11 +293,11 @@ export const translations: Dict = {
     en: "Predictions are not guaranteed. Always verify with local market conditions.",
     tl: "Hindi garantisado ang mga taya. Laging suriin ang aktwal na presyo sa merkado.",
   },
-  ana_performance: { en: "Price Performance — All Crops", tl: "Galaw ng Presyo — Lahat ng Pananim" },
+  ana_performance: { en: "Price Performance: All Crops", tl: "Galaw ng Presyo: Lahat ng Pananim" },
   ana_predicted: { en: "3-Day Predicted Price", tl: "3-Araw na Tayang Presyo" },
   ana_based_on: {
     en: "Based on your crop specialization",
-    tl: "Batay sa iyong mga pananim",
+    tl: "Batay sa mga tinatanim mo",
   },
   ana_current: { en: "Current", tl: "Kasalukuyan" },
   ana_sell: { en: "SELL", tl: "IBENTA" },
@@ -315,8 +317,8 @@ export const translations: Dict = {
   wx_advisory: { en: "Farming Advisory", tl: "Payo sa Pagsasaka" },
   wx_best_window: { en: "Best window for fieldwork", tl: "Pinakamainam na araw para sa bukid" },
   wx_best_window_sub: {
-    en: "Clear, dry conditions ahead — good for planting, spraying, or drying harvest.",
-    tl: "Maaliwalas at tuyo — mainam para magtanim, mag-spray, o magbilad ng ani.",
+    en: "Clear, dry conditions ahead. Good for planting, spraying, or drying harvest.",
+    tl: "Maaliwalas at tuyo. Mainam para magtanim, mag-spray, o magbilad ng ani.",
   },
   wx_adv_good: {
     en: "Good conditions for rice planting this week",
@@ -325,15 +327,15 @@ export const translations: Dict = {
   wx_adv_rain: { en: "Possible rain on", tl: "Posibleng umulan sa" },
   wx_adv_harvest: { en: "harvest now", tl: "mag-ani na" },
   wx_adv_humidity: {
-    en: "Humidity is rising — check crops for early signs of fungal disease",
-    tl: "Tumataas ang halumigmig — suriin ang pananim laban sa amag o sakit",
+    en: "Humidity is rising. Check crops for early signs of fungal disease",
+    tl: "Tumataas ang halumigmig. Suriin ang pananim laban sa amag o sakit",
   },
 
   // ── Profile ───────────────────────────────────────────────────────────────
   prof_title: { en: "My Profile", tl: "Aking Profile" },
   prof_farmer: { en: "Farmer Account", tl: "Account ng Magsasaka" },
   prof_buyer: { en: "Buyer Account", tl: "Account ng Mamimili" },
-  prof_stats: { en: "My Farm Statistics", tl: "Estadistika ng Aking Bukid" },
+  prof_stats: { en: "My farm at a glance", tl: "Estadistika ng Aking Bukid" },
   prof_years_farming: { en: "Years Farming", tl: "Taon sa Pagsasaka" },
   prof_monthly_revenue: { en: "Monthly Revenue", tl: "Buwanang Kita" },
   prof_active_listings: { en: "Active Listings", tl: "Aktibong Paninda" },
@@ -386,10 +388,10 @@ export const translations: Dict = {
   err_select_crop: { en: "Please select at least one crop.", tl: "Pumili ng kahit isang pananim." },
 
   // ── Extra: farm details step (farmer signup) ─────────────────────────────
-  farm_details_title: { en: "About Your Farm", tl: "Tungkol sa Iyong Bukid" },
+  farm_details_title: { en: "About your farm", tl: "Tungkol sa bukid mo" },
   farm_details_sub: {
     en: "Tell us a bit about your farming background.",
-    tl: "Magkwento nang kaunti tungkol sa iyong pagsasaka.",
+    tl: "Ikwento mo nang kaunti ang pagsasaka mo.",
   },
   farm_years_lbl: { en: "Years of Farming", tl: "Taon sa Pagsasaka" },
   farm_years_ph: { en: "e.g. 12", tl: "hal. 12" },
@@ -404,16 +406,16 @@ export const translations: Dict = {
     tl: "Maglagay ng wastong bilang ng taon (0–80).",
   },
   err_phone_required: { en: "Phone number is required.", tl: "Kailangan ang numero ng telepono." },
-  crops_setting_up: { en: "Setting up your profile…", tl: "Inaayos ang iyong profile…" },
+  crops_setting_up: { en: "Setting up your profile…", tl: "Inaayos ang profile mo…" },
 
   // ── Extra: home ───────────────────────────────────────────────────────────
-  home_offline_cached: { en: "Offline — cached data", tl: "Offline — naka-save na datos" },
+  home_offline_cached: { en: "Offline: cached data", tl: "Offline: naka-save na datos" },
   home_advisory: { en: "Today's Advisory", tl: "Payo Ngayon" },
   home_advisory_sub: { en: "From your local DA office", tl: "Mula sa lokal na opisina ng DA" },
   home_adv_planting: { en: "Good planting conditions", tl: "Mainam ang panahon sa pagtatanim" },
   home_adv_planting_sub: {
     en: "Rice and corn seedlings can be transplanted this week.",
-    tl: "Maaaring ilipat ang punla ng palay at mais ngayong linggo.",
+    tl: "Pwede nang ilipat ang punla ng palay at mais ngayong linggo.",
   },
   home_adv_rain: { en: "Rain expected Wednesday", tl: "Inaasahang uulan sa Miyerkules" },
   home_adv_rain_sub: {
@@ -426,22 +428,22 @@ export const translations: Dict = {
 
   // ── Extra: trade / marketplace ────────────────────────────────────────────
   trade_select_variety: { en: "Select Variety", tl: "Piliin ang Klase" },
-  trade_post_title: { en: "Post your crops", tl: "I-post ang iyong pananim" },
-  trade_post_sub: { en: "Sell your harvest", tl: "Ibenta ang iyong ani" },
+  trade_post_title: { en: "Post your crops", tl: "I-post ang pananim mo" },
+  trade_post_sub: { en: "Sell your harvest", tl: "Ibenta ang ani mo" },
   trade_edit_listing: { en: "Edit Listing", tl: "I-edit ang Paninda" },
-  trade_edit_listing_sub: { en: "Update your listing", tl: "I-update ang iyong paninda" },
+  trade_edit_listing_sub: { en: "Update your listing", tl: "I-update ang paninda mo" },
   trade_step_type: { en: "What type of crop?", tl: "Anong uri ng pananim?" },
-  trade_step_type_sub: { en: "Tap your crop type", tl: "Pindutin ang uri ng iyong pananim" },
+  trade_step_type_sub: { en: "Tap your crop type", tl: "Pindutin ang uri ng pananim mo" },
   trade_step_variety: { en: "Which variety?", tl: "Aling klase?" },
   trade_step_variety_sub: { en: "Select the specific variety", tl: "Piliin ang tiyak na klase" },
   trade_step_price: { en: "How much per kilo? (₱/kg)", tl: "Magkano kada kilo? (₱/kg)" },
   trade_step_price_sub: { en: "Enter the price in pesos", tl: "Ilagay ang presyo sa piso" },
   trade_step_qty: { en: "How many kilos to sell?", tl: "Ilang kilo ang ibebenta?" },
   trade_step_qty_sub: { en: "Enter the quantity in kilos", tl: "Ilagay ang dami sa kilo" },
-  trade_step_desc: { en: "Describe your product", tl: "Ilarawan ang iyong produkto" },
+  trade_step_desc: { en: "Describe your product", tl: "Ilarawan ang produkto mo" },
   trade_step_desc_sub: { en: "State if fresh, clean, etc.", tl: "Sabihin kung sariwa, malinis, atbp." },
   trade_step_loc: { en: "Where are you located?", tl: "Saan ka matatagpuan?" },
-  trade_step_loc_sub: { en: "Your city or barangay", tl: "Ang iyong lungsod o barangay" },
+  trade_step_loc_sub: { en: "Your city or barangay", tl: "Ang lungsod o barangay mo" },
   trade_ph_price: { en: "Example: 48", tl: "Halimbawa: 48" },
   trade_ph_qty: { en: "Example: 500", tl: "Halimbawa: 500" },
   trade_ph_desc: {
@@ -454,7 +456,7 @@ export const translations: Dict = {
   trade_remove_title: { en: "Remove Listing?", tl: "Alisin ang Paninda?" },
   trade_remove_sub: {
     en: "Your listing will be permanently deleted. This cannot be undone.",
-    tl: "Permanenteng mabubura ang iyong paninda. Hindi na ito maibabalik.",
+    tl: "Mabubura nang tuluyan ang paninda mo. Hindi na ito maibabalik.",
   },
   trade_yes_remove: { en: "Yes, Remove", tl: "Oo, Alisin" },
   err_desc_required: { en: "Description is required.", tl: "Kailangan ang paglalarawan." },
@@ -463,7 +465,7 @@ export const translations: Dict = {
   err_loc_required: { en: "Location is required.", tl: "Kailangan ang lokasyon." },
   cart_order_sent: {
     en: "Your order has been sent to the sellers. They will contact you shortly.",
-    tl: "Naipadala na ang iyong order sa mga nagbebenta. Makikipag-ugnayan sila sa iyo.",
+    tl: "Naipadala na ang order mo. Sila na ang lalapit sa iyo.",
   },
   cart_txn_recorded: { en: "Transaction recorded", tl: "Naitala ang transaksyon" },
   seller_about: { en: "About the Seller", tl: "Tungkol sa Nagbebenta" },
@@ -522,17 +524,109 @@ export const translations: Dict = {
     tl: "Inaasahang bababa ng ₱{x}/kg ang presyo. Magbenta na bago pa bumaba.",
   },
   ana_watch_reason: {
-    en: "Mixed signals — monitor closely before deciding.",
-    tl: "Halo-halong senyales — bantayan muna bago magdesisyon.",
+    en: "Mixed signals. Monitor closely before deciding.",
+    tl: "Halo-halong senyales. Bantayan muna bago magdesisyon.",
   },
   ana_lstm_note: {
-    en: "Predictions generated by an LSTM neural network trained on 3 years of Nueva Ecija market data. Confidence intervals shown at 95%. Not financial advice — always verify with local market conditions.",
-    tl: "Ang mga taya ay galing sa LSTM neural network na sinanay sa 3 taong datos ng merkado ng Nueva Ecija. 95% ang confidence interval. Hindi ito payong pinansyal — laging suriin ang aktwal na presyo sa merkado.",
+    en: "Predictions generated by an LSTM neural network trained on 3 years of Nueva Ecija market data. Confidence intervals shown at 95%. Not financial advice. Always verify with local market conditions.",
+    tl: "Ang mga taya ay galing sa LSTM neural network na sinanay sa 3 taong datos ng merkado ng Nueva Ecija. 95% ang confidence interval. Hindi ito payong pinansyal. Laging suriin ang aktwal na presyo sa merkado.",
   },
   ana_forecast_note: {
     en: "Forecast is indicative only. Verify with local market conditions.",
     tl: "Pahiwatig lamang ang taya. Suriin ang aktwal na presyo sa merkado.",
   },
+
+  // ── Language gate (first run) ─────────────────────────────────────────────
+  lang_title: { en: "Choose your language", tl: "Piliin ang wika" },
+  lang_sub: { en: "Piliin ang wika", tl: "Choose your language" },
+  lang_tl: { en: "Tagalog", tl: "Tagalog" },
+  lang_tl_desc: {
+    en: "Ito ang gagamitin sa buong app",
+    tl: "Ito ang gagamitin sa buong app",
+  },
+  lang_en: { en: "English", tl: "English" },
+  lang_en_desc: {
+    en: "Use English across the app",
+    tl: "Use English across the app",
+  },
+  lang_change_later: {
+    en: "You can change this any time in Settings.",
+    tl: "Pwede mo itong palitan anumang oras sa Setting.",
+  },
+
+  // ── Welcome / price board ─────────────────────────────────────────────────
+  splash_board_label: { en: "Palay today", tl: "Palay ngayon" },
+  /** Suffix for the other crop groups on the welcome board: "Onions today". */
+  splash_board_today: { en: "today", tl: "ngayon" },
+  splash_from_yesterday: { en: "from yesterday", tl: "mula kahapon" },
+  splash_last_update: { en: "Last updated 6:05 AM", tl: "Huling update 6:05 ng umaga" },
+  splash_lines: {
+    en: "Prices, marketplace, expenses,\nand weather: all in one place.",
+    tl: "Presyo, bentahan, gastos, at panahon:\nnasa isang lugar na lang.",
+  },
+  splash_have_account: { en: "I already have an account", tl: "Mayroon na akong account" },
+  splash_free: { en: "Free. No paid account.", tl: "Libre. Walang bayad na account." },
+
+  // ── Role ──────────────────────────────────────────────────────────────────
+  role_pick_one: {
+    en: "Tap one. We'll set up the app to match.",
+    tl: "Pindutin ang isa. Iaayos namin ang app ayon dito.",
+  },
+
+  // ── Form helpers ──────────────────────────────────────────────────────────
+  auth_show: { en: "Show", tl: "Ipakita" },
+  auth_hide: { en: "Hide", tl: "Itago" },
+  auth_help_cp: {
+    en: "We'll send your confirmation here.",
+    tl: "Dito namin ipapadala ang kumpirmasyon.",
+  },
+  auth_help_pw: {
+    en: "6 letters or numbers, or more.",
+    tl: "6 na letra o numero pataas.",
+  },
+  auth_help_years: {
+    en: "Roughly how long you've been farming.",
+    tl: "Humigit-kumulang na taon mo nang pagsasaka.",
+  },
+  auth_forgot: { en: "Forgot your password?", tl: "Nakalimutan ang password?" },
+  crops_none_yet: { en: "None selected yet", tl: "Wala pang napili" },
+
+  // ── Empty / error / loading states ────────────────────────────────────────
+  // "No results" and "nothing yet" are deliberately different messages.
+  state_no_match_title: { en: "No crop found", tl: "Walang nahanap na pananim" },
+  state_no_match_body: {
+    en: "Nothing matches that search. Check the spelling, or clear it to see everything.",
+    tl: "Walang tugma sa hinahanap mo. Tingnan ang baybay, o burahin para makita lahat.",
+  },
+  state_clear_search: { en: "Clear search", tl: "Burahin ang hinahanap" },
+
+  state_no_expenses_title: { en: "No expenses yet", tl: "Wala pang gastos" },
+  state_no_expenses_body: {
+    en: "Record seeds, fertilizer, and labor here. Your totals per crop build up from these.",
+    tl: "Itala dito ang binhi, abono, at upa sa tao. Dito magmumula ang kabuuan kada pananim.",
+  },
+  state_add_first_expense: { en: "Record first expense", tl: "Itala ang unang gastos" },
+
+  state_no_filtered_exp_title: { en: "Nothing in this filter", tl: "Walang laman ang salaan" },
+  state_no_filtered_exp_body: {
+    en: "You have expenses recorded, just none matching this filter.",
+    tl: "May naitala kang gastos, pero walang tugma sa salaang ito.",
+  },
+  state_show_all: { en: "Show all", tl: "Ipakita lahat" },
+
+  state_no_purchases_title: { en: "No purchases yet", tl: "Wala pang binili" },
+  state_no_purchases_body: {
+    en: "Crops you buy from farmers will appear here.",
+    tl: "Makikita dito ang mga aning binili mo sa magsasaka.",
+  },
+
+  state_error_title: { en: "Couldn't load prices", tl: "Hindi makuha ang presyo" },
+  state_error_body: {
+    en: "Check your signal and try again. Saved prices are still shown below.",
+    tl: "Tingnan ang signal at subukan ulit. Nasa ibaba pa rin ang naka-save na presyo.",
+  },
+  state_retry: { en: "Try again", tl: "Subukan ulit" },
+  state_loading_prices: { en: "Loading prices", tl: "Kinukuha ang presyo" },
 };
 
 // ── Data-name labels (crop groups, expense categories) ───────────────────────

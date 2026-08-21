@@ -1,5 +1,5 @@
 // ─── Listings Service ─────────────────────────────────────────────────────────
-// Marketplace CRUD. Replaces the LISTINGS mock in TradeScreen —
+// Marketplace CRUD. Replaces the LISTINGS mock in TradeScreen;
 // see SETUP_DATABASE.md Step 7.
 
 import { supabase } from "../lib/supabase";
@@ -42,7 +42,7 @@ function toListing(row: ListingRow): Listing {
 
 /**
  * All active listings, newest first. Offline: serves the last-fetched list
- * (read-only browsing) — check `fromCache` to show the offline banner.
+ * (read-only browsing); check `fromCache` to show the offline banner.
  */
 export async function fetchListings(): Promise<FetchResult<Listing[]>> {
   return cachedFetch("listings", async () => {

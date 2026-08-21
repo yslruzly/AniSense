@@ -1,6 +1,6 @@
 // ─── Types ────────────────────────────────────────────────────────────────────
 export type Screen = "home" | "market" | "expenses" | "analytics" | "trade" | "weather" | "profile";
-export type AuthScreen = "splash" | "role" | "signin" | "signup";
+export type AuthScreen = "lang" | "splash" | "role" | "signin" | "signup";
 export type UserRole = "farmer" | "buyer" | null;
 export type FarmDetails = { years: string; location: string; phone: string };
 export interface CropPrice {

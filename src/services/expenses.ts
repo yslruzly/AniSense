@@ -3,7 +3,7 @@
 // can add/edit/delete expenses; changes apply to the local cache instantly and
 // are queued in the outbox, then synced to Supabase when connectivity returns.
 //
-// Replaces `useState([...EXPENSES])` in ExpensesScreen — see SETUP_DATABASE.md
+// Replaces `useState([...EXPENSES])` in ExpensesScreen; see SETUP_DATABASE.md
 // Step 7. RLS guarantees each farmer only ever sees their own rows.
 
 import { supabase } from "../lib/supabase";
@@ -104,7 +104,7 @@ export async function addExpense(form: ExpenseForm): Promise<Expense> {
     await mutateCache(list => [exp, ...list]);
     return exp;
   } catch (err) {
-    if (!isNetworkError(err)) throw err; // real rejection (validation/RLS) — surface it
+    if (!isNetworkError(err)) throw err; // real rejection (validation/RLS): surface it
     const exp: Expense = {
       id: `local-${Date.now()}`,
       description: form.description,
@@ -126,7 +126,7 @@ export async function updateExpense(id: string, form: ExpenseForm): Promise<void
       ? { ...e, description: form.description, category: form.category, amount: form.amount, date: form.date, icon: form.category, crop: form.crop }
       : e);
 
-  // Rows created offline haven't reached the server yet — queue the edit; the
+  // Rows created offline haven't reached the server yet, so queue the edit; the
   // outbox will remap the local id to the real one after the insert syncs.
   if (id.startsWith("local-")) {
     await mutateCache(apply);

@@ -132,38 +132,38 @@ export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }
 
   return (
     <div className="screen">
-      <Hdr icon={<ShoppingCart size={20} color="#2e7d4f" />} title={t("trade_title")} sub="Nueva Ecija" onProfile={onProfile} onBack={onBack} userInitials={userInitials}
+      <Hdr icon={<ShoppingCart size={20} color="var(--tanim)" />} title={t("trade_title")} sub="Nueva Ecija" onProfile={onProfile} onBack={onBack} userInitials={userInitials}
         extra={userRole === "buyer" ? (
           <button onClick={() => setShowCart(true)} className="cart-badge-wrap cart-btn-icon">
-            <ShoppingCart size={17} color="#2e7d4f" />
+            <ShoppingCart size={17} color="var(--tanim)" />
             {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
           </button>
         ) : undefined}
       />
-      <div className="scroll">
+      <div className="scroll screen-enter">
         <div className="mp-title-row">
           <div>
             <div className="mp-title">{t("trade_marketplace")}</div>
             <div className="mp-sub">{t("trade_sub")}</div>
           </div>
           {userRole !== "buyer" && (
-            <button onClick={openPost} style={{ background: "#2e7d4f", color: "#fff", border: "none", borderRadius: 14, padding: "14px 18px", fontFamily: "inherit", fontSize: 16, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", gap: 8, flexShrink: 0, boxShadow: "0 2px 8px rgba(22,163,74,0.25)" }}>
+            <button onClick={openPost} style={{ background: "var(--tanim)", color: "#fff", border: "none", borderRadius: 14, padding: "14px 18px", fontFamily: "inherit", fontSize: "var(--fs-body)", fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", gap: 8, flexShrink: 0, boxShadow: "0 2px 8px rgba(11,107,65,0.25)" }}>
               <Plus size={20} color="#fff" /> {t("trade_sell")}
             </button>
           )}
         </div>
 
         <div className="search-box" style={{ padding: "13px 16px", borderRadius: 12 }}>
-          <Search size={18} color="#aa9d8a" />
+          <Search size={18} color="var(--text-faint)" />
           <input placeholder={t("trade_search_ph")} value={search} onChange={e => setSearch(e.target.value)}
-            style={{ fontSize: 15 }} />
+            style={{ fontSize: "var(--fs-label)" }} />
         </div>
 
         {/* ── Filter Row ── */}
         <div className="mp-filter-row">
 
           {/* Section label */}
-          <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-muted)", marginBottom: 2 }}>
+          <div style={{ fontSize: "var(--fs-label)", fontWeight: 700, color: "var(--text-muted)", marginBottom: 2 }}>
             {t("trade_select_category")}
           </div>
 
@@ -173,7 +173,7 @@ export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }
               <button key={cat} className={`cat-tab ${category === cat ? "active" : ""}`} onClick={() => selectCategory(cat)}>
                 <div className="cat-tab-ico">
                   {cat === "All Crops"
-                    ? <Wheat size={20} color={category === cat ? "#2e7d4f" : "#82735f"} />
+                    ? <Wheat size={20} color={category === cat ? "var(--tanim)" : "var(--text-muted)"} />
                     : <CropIcon crop={cat} size={20} />
                   }
                 </div>
@@ -182,15 +182,15 @@ export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }
             ))}
           </div>
 
-          {/* Row 2: Variety grid — only when category selected */}
+          {/* Row 2: Variety grid, only when category selected */}
           {subVarieties.length > 0 && (
             <>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-muted)", marginTop: 4 }}>
-                {t("trade_select_variety")} — {tn(category)}
+              <div style={{ fontSize: "var(--fs-label)", fontWeight: 700, color: "var(--text-muted)", marginTop: 4 }}>
+                {t("trade_select_variety")} · {tn(category)}
               </div>
               <div className="var-tabs">
                 <button className={`var-tab ${variety === "All" ? "active" : ""}`} onClick={() => setVariety("All")}>
-                  {t("all")} — {tn(category)}
+                  {t("all")} · {tn(category)}
                 </button>
                 {subVarieties.map(v => (
                   <button key={v} className={`var-tab ${variety === v ? "active" : ""}`} onClick={() => setVariety(v)}>
@@ -240,14 +240,14 @@ export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }
                 </div>
               </div>
               <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
-                <div className="listing-price">₱{l.pricePerKg}/kg</div>
+                <div className="listing-price">₱{l.pricePerKg}<span className="unit-suffix">{t("per_kg_short")}</span></div>
                 {l.sellerInitials === userInitials && (
                   <div style={{ display: "flex", gap: 8 }}>
-                    <button onClick={() => openEdit(l)} style={{ background: "#e9eff6", border: "2px solid #c6d5e6", borderRadius: 12, padding: "8px 12px", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, fontFamily: "inherit", fontSize: 15, fontWeight: 700, color: "#3a6ea5" }}>
-                      <Pencil size={15} color="#3a6ea5" /> {t("edit")}
+                    <button onClick={() => openEdit(l)} style={{ background: "var(--paper-alt)", border: "2px solid var(--line)", borderRadius: 12, padding: "8px 12px", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, fontFamily: "inherit", fontSize: "var(--fs-label)", fontWeight: 700, color: "var(--tanim)" }}>
+                      <Pencil size={15} color="var(--tanim)" /> {t("edit")}
                     </button>
-                    <button onClick={() => setConfirmDelete(l.id)} style={{ background: "#f9e4dc", border: "2px solid #f0cbb9", borderRadius: 12, padding: "8px 12px", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, fontFamily: "inherit", fontSize: 15, fontWeight: 700, color: "#c74133" }}>
-                      <Trash2 size={15} color="#c74133" /> {t("trade_remove")}
+                    <button onClick={() => setConfirmDelete(l.id)} style={{ background: "var(--error-sk)", border: "2px solid var(--error-line)", borderRadius: 12, padding: "8px 12px", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, fontFamily: "inherit", fontSize: "var(--fs-label)", fontWeight: 700, color: "var(--error)" }}>
+                      <Trash2 size={15} color="var(--error)" /> {t("trade_remove")}
                     </button>
                   </div>
                 )}
@@ -255,8 +255,8 @@ export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }
             </div>
             <div className="listing-desc">{l.desc}</div>
             <div className="listing-meta">
-              <span style={{ display: "flex", alignItems: "center", gap: 4 }}><Package size={12} color="#aa9d8a" /> {l.kg} {t("trade_kg_available")}</span>
-              <span style={{ display: "flex", alignItems: "center", gap: 4 }}><Calendar size={12} color="#aa9d8a" /> {l.date}</span>
+              <span style={{ display: "flex", alignItems: "center", gap: 4 }}><Package size={12} color="var(--text-faint)" /> {l.kg} {t("trade_kg_available")}</span>
+              <span style={{ display: "flex", alignItems: "center", gap: 4 }}><Calendar size={12} color="var(--text-faint)" /> {l.date}</span>
             </div>
             <div className="seller-row" onClick={() => setSellerDetail(SELLER_DETAILS[l.sellerInitials] || null)}
               style={{ cursor: "pointer" }}>
@@ -264,12 +264,12 @@ export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }
               <div style={{ flex: 1 }}>
                 <div className="seller-name">{l.seller}</div>
                 <div className="seller-stars">
-                  <Star size={13} color="#b97d10" fill="#b97d10" /> {l.rating} {t("trade_rating")}
+                  <Star size={13} color="var(--gold-text)" fill="var(--gold-text)" /> {l.rating} {t("trade_rating")}
                 </div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <div className="seller-loc"><MapPin size={13} color="#82735f" />{l.location}</div>
-                <ChevronRight size={14} color="#aa9d8a" />
+                <div className="seller-loc"><MapPin size={13} color="var(--text-muted)" />{l.location}</div>
+                <ChevronRight size={14} color="var(--text-faint)" />
               </div>
             </div>
             {userRole === "buyer" ? (
@@ -280,7 +280,7 @@ export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }
                   <div className="qty-pick-val">{getQty(l.id)}</div>
                   <button className="qty-pick-btn" onClick={() => setQty(l.id, getQty(l.id) + 1, l.kg)}>+</button>
                   <span className="qty-pick-unit">kg</span>
-                  <span style={{ marginLeft: "auto", fontSize: 15, fontWeight: 800, color: "#2e7d4f" }}>
+                  <span style={{ marginLeft: "auto", fontSize: "var(--fs-label)", fontWeight: 800, color: "var(--tanim)" }}>
                     ₱{(getQty(l.id) * l.pricePerKg).toLocaleString()}
                   </span>
                 </div>
@@ -289,7 +289,7 @@ export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }
                   <button
                     className={`add-cart-btn${isInCart(l.id) ? " in-cart" : ""}`}
                     onClick={() => addToCart(l)}>
-                    <ShoppingBag size={17} color={isInCart(l.id) ? "#2e7d4f" : "#fff"} />
+                    <ShoppingBag size={17} color={isInCart(l.id) ? "var(--tanim)" : "#fff"} />
                     {isInCart(l.id) ? t("cart_in_cart") : t("cart_add")}
                   </button>
                   <button className="btn-call" onClick={() => { addToCart(l); setShowCart(true); }}
@@ -300,7 +300,7 @@ export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }
               </div>
             ) : (
               <div className="listing-btns">
-                <button className="btn-call"><Phone size={17} color="#fff" /> {t("trade_call_seller")}</button>
+                <button className="btn-call" aria-label={t("trade_call_seller")}><Phone size={17} color="#fff" /> {t("trade_call_seller")}</button>
                 <button className="btn-details" onClick={() => setSellerDetail(SELLER_DETAILS[l.sellerInitials] || null)}>{t("trade_view_details")}</button>
               </div>
             )}
@@ -312,22 +312,22 @@ export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }
         )}
       </div>
 
-      {/* Delete confirmation — senior-friendly */}
+      {/* Delete confirmation, senior-friendly */}
       {confirmDelete && (
         <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "flex-end", zIndex: 50 }}>
           <div style={{ background: "#fff", borderRadius: "24px 24px 0 0", padding: 28, width: "100%" }}>
             <div style={{ fontSize: 40, textAlign: "center", marginBottom: 10 }}>🗑️</div>
-            <div style={{ fontSize: 20, fontWeight: 900, color: "#26201a", marginBottom: 8, textAlign: "center" }}>{t("trade_remove_title")}</div>
-            <div style={{ fontSize: 16, color: "#82735f", marginBottom: 26, textAlign: "center", lineHeight: 1.6 }}>{t("trade_remove_sub")}</div>
+            <div style={{ fontSize: "var(--fs-lead)", fontWeight: 900, color: "var(--text)", marginBottom: 8, textAlign: "center" }}>{t("trade_remove_title")}</div>
+            <div style={{ fontSize: "var(--fs-body)", color: "var(--text-muted)", marginBottom: 26, textAlign: "center", lineHeight: 1.6 }}>{t("trade_remove_sub")}</div>
             <div style={{ display: "flex", gap: 12 }}>
-              <button onClick={() => setConfirmDelete(null)} style={{ flex: 1, padding: 18, background: "#f1e9dc", border: "2px solid #e9e0d2", borderRadius: 14, fontFamily: "inherit", fontSize: 17, fontWeight: 800, cursor: "pointer", color: "#4d4237" }}>← {t("cancel")}</button>
-              <button onClick={() => deleteListing(confirmDelete)} style={{ flex: 1, padding: 18, background: "#c74133", color: "#fff", border: "none", borderRadius: 14, fontFamily: "inherit", fontSize: 17, fontWeight: 800, cursor: "pointer" }}>{t("trade_yes_remove")}</button>
+              <button onClick={() => setConfirmDelete(null)} style={{ flex: 1, padding: 18, background: "var(--paper-alt)", border: "2px solid var(--line)", borderRadius: 14, fontFamily: "inherit", fontSize: "var(--fs-body)", fontWeight: 800, cursor: "pointer", color: "var(--text-soft)" }}>← {t("cancel")}</button>
+              <button onClick={() => deleteListing(confirmDelete)} style={{ flex: 1, padding: 18, background: "var(--error)", color: "#fff", border: "none", borderRadius: 14, fontFamily: "inherit", fontSize: "var(--fs-body)", fontWeight: 800, cursor: "pointer" }}>{t("trade_yes_remove")}</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Post / Edit listing modal — senior-friendly */}
+      {/* Post / Edit listing modal, senior-friendly */}
       {showModal && (() => {
         // Crop groups for visual picker
         const CROP_GROUPS_PICKER = [
@@ -341,46 +341,46 @@ export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }
           { emoji: "🎃", label: "Squash", varieties: ["Kalabasa"] },
         ];
         const selectedGroup = CROP_GROUPS_PICKER.find(g => g.varieties.includes(form.crop)) || CROP_GROUPS_PICKER[0];
-        const fieldStyle: React.CSSProperties = { width: "100%", border: "2px solid #d6cab6", borderRadius: 12, padding: "16px 14px", fontFamily: "inherit", fontSize: 18, outline: "none", background: "#fff", color: "#26201a", boxSizing: "border-box" };
-        const labelStyle: React.CSSProperties = { fontSize: 16, fontWeight: 800, color: "#4d4237", marginBottom: 8, display: "block" };
-        const hintStyle: React.CSSProperties = { fontSize: 15, color: "#82735f", marginBottom: 10, fontWeight: 500 };
+        const fieldStyle: React.CSSProperties = { width: "100%", border: "2px solid var(--line-strong)", borderRadius: 12, padding: "16px 14px", fontFamily: "inherit", fontSize: "var(--fs-body)", outline: "none", background: "#fff", color: "var(--text)", boxSizing: "border-box" };
+        const labelStyle: React.CSSProperties = { fontSize: "var(--fs-body)", fontWeight: 800, color: "var(--text-soft)", marginBottom: 8, display: "block" };
+        const hintStyle: React.CSSProperties = { fontSize: "var(--fs-label)", color: "var(--text-muted)", marginBottom: 10, fontWeight: 500 };
 
         return (
           <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "flex-end", zIndex: 50 }}>
-            <div style={{ background: "#faf6ef", borderRadius: "24px 24px 0 0", width: "100%", maxHeight: "93%", overflowY: "auto", paddingBottom: 24 }}>
+            <div style={{ background: "var(--paper)", borderRadius: "24px 24px 0 0", width: "100%", maxHeight: "93%", overflowY: "auto", paddingBottom: 24 }}>
 
               {/* Header */}
-              <div style={{ background: "#2e7d4f", borderRadius: "24px 24px 0 0", padding: "20px 20px 18px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ background: "var(--tanim)", borderRadius: "24px 24px 0 0", padding: "20px 20px 18px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <div>
-                  <div style={{ fontSize: 20, fontWeight: 900, color: "#fff" }}>{editId ? `✏️ ${t("trade_edit_listing")}` : t("trade_post_title")}</div>
-                  <div style={{ fontSize: 15, color: "rgba(255,255,255,0.8)", marginTop: 3 }}>{editId ? t("trade_edit_listing_sub") : t("trade_post_sub")}</div>
+                  <div style={{ fontSize: "var(--fs-lead)", fontWeight: 900, color: "#fff" }}>{editId ? `✏️ ${t("trade_edit_listing")}` : t("trade_post_title")}</div>
+                  <div style={{ fontSize: "var(--fs-label)", color: "rgba(255,255,255,0.8)", marginTop: 3 }}>{editId ? t("trade_edit_listing_sub") : t("trade_post_sub")}</div>
                 </div>
-                <button onClick={() => setShowModal(false)} style={{ background: "rgba(255,255,255,0.2)", border: "none", borderRadius: 50, width: 44, height: 44, cursor: "pointer", fontSize: 22, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>✕</button>
+                <button onClick={() => setShowModal(false)} style={{ background: "rgba(255,255,255,0.2)", border: "none", borderRadius: 50, width: 44, height: 44, cursor: "pointer", fontSize: "var(--fs-title)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>✕</button>
               </div>
 
               <div style={{ padding: "20px 20px 0" }}>
 
                 {formError && (
-                  <div style={{ background: "#f9e4dc", color: "#c74133", fontSize: 16, fontWeight: 700, padding: "14px 16px", borderRadius: 12, marginBottom: 18, display: "flex", alignItems: "center", gap: 8 }}>
-                    <AlertTriangle size={18} color="#c74133" /> {formError}
+                  <div style={{ background: "var(--error-sk)", color: "var(--error)", fontSize: "var(--fs-body)", fontWeight: 700, padding: "14px 16px", borderRadius: 12, marginBottom: 18, display: "flex", alignItems: "center", gap: 8 }}>
+                    <AlertTriangle size={18} color="var(--error)" /> {formError}
                   </div>
                 )}
 
                 {/* ── Step 1: Crop Group ── */}
-                <div style={{ background: "#fff", borderRadius: 16, padding: 18, marginBottom: 14, border: "1px solid #e9e0d2" }}>
+                <div style={{ background: "#fff", borderRadius: 16, padding: 18, marginBottom: 14, border: "1px solid var(--line)" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                    <div style={{ background: "#2e7d4f", color: "#fff", borderRadius: 99, width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 15 }}>1</div>
-                    <span style={{ fontSize: 17, fontWeight: 800, color: "#26201a" }}>{t("trade_step_type")}</span>
+                    <div style={{ background: "var(--tanim)", color: "#fff", borderRadius: 99, width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--fs-label)" }}>1</div>
+                    <span style={{ fontSize: "var(--fs-body)", fontWeight: 800, color: "var(--text)" }}>{t("trade_step_type")}</span>
                   </div>
-                  <div style={{ fontSize: 15, color: "#82735f", marginBottom: 14 }}>{t("trade_step_type_sub")}</div>
+                  <div style={{ fontSize: "var(--fs-label)", color: "var(--text-muted)", marginBottom: 14 }}>{t("trade_step_type_sub")}</div>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
                     {CROP_GROUPS_PICKER.map(g => {
                       const isActive = selectedGroup.label === g.label;
                       return (
                         <button key={g.label} onClick={() => setForm(d => ({ ...d, crop: g.varieties[0] }))}
-                          style={{ background: isActive ? "#e6f2e9" : "#faf6ef", border: isActive ? "2px solid #2e7d4f" : "2px solid #e9e0d2", borderRadius: 12, padding: "10px 4px", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 4, transition: "all 0.15s" }}>
-                          <span style={{ fontSize: 26 }}>{g.emoji}</span>
-                          <span style={{ fontSize: 13, fontWeight: 700, color: isActive ? "#2e7d4f" : "#4d4237", textAlign: "center", lineHeight: 1.2 }}>{tn(g.label)}</span>
+                          style={{ background: isActive ? "var(--tanim-sk)" : "var(--paper)", border: isActive ? "2px solid var(--tanim)" : "2px solid var(--line)", borderRadius: 12, padding: "10px 4px", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 4, transition: "all 0.15s" }}>
+                          <span style={{ fontSize: "var(--fs-title)" }}>{g.emoji}</span>
+                          <span style={{ fontSize: "var(--fs-label)", fontWeight: 700, color: isActive ? "var(--tanim)" : "var(--text-soft)", textAlign: "center", lineHeight: 1.2 }}>{tn(g.label)}</span>
                         </button>
                       );
                     })}
@@ -388,18 +388,18 @@ export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }
                 </div>
 
                 {/* ── Step 2: Variety ── */}
-                <div style={{ background: "#fff", borderRadius: 16, padding: 18, marginBottom: 14, border: "1px solid #e9e0d2" }}>
+                <div style={{ background: "#fff", borderRadius: 16, padding: 18, marginBottom: 14, border: "1px solid var(--line)" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                    <div style={{ background: "#2e7d4f", color: "#fff", borderRadius: 99, width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 15 }}>2</div>
-                    <span style={{ fontSize: 17, fontWeight: 800, color: "#26201a" }}>{t("trade_step_variety")}</span>
+                    <div style={{ background: "var(--tanim)", color: "#fff", borderRadius: 99, width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--fs-label)" }}>2</div>
+                    <span style={{ fontSize: "var(--fs-body)", fontWeight: 800, color: "var(--text)" }}>{t("trade_step_variety")}</span>
                   </div>
-                  <div style={{ fontSize: 15, color: "#82735f", marginBottom: 14 }}>{t("trade_step_variety_sub")}</div>
+                  <div style={{ fontSize: "var(--fs-label)", color: "var(--text-muted)", marginBottom: 14 }}>{t("trade_step_variety_sub")}</div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                     {selectedGroup.varieties.map(v => {
                       const isActive = form.crop === v;
                       return (
                         <button key={v} onClick={() => setForm(d => ({ ...d, crop: v }))}
-                          style={{ background: isActive ? "#2e7d4f" : "#f1e9dc", color: isActive ? "#fff" : "#4d4237", border: "none", borderRadius: 99, padding: "10px 16px", fontFamily: "inherit", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
+                          style={{ background: isActive ? "var(--tanim)" : "var(--paper-alt)", color: isActive ? "#fff" : "var(--text-soft)", border: "none", borderRadius: 99, padding: "10px 16px", fontFamily: "inherit", fontSize: "var(--fs-label)", fontWeight: 700, cursor: "pointer" }}>
                           {v}
                         </button>
                       );
@@ -408,14 +408,14 @@ export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }
                 </div>
 
                 {/* ── Step 3: Price ── */}
-                <div style={{ background: "#fff", borderRadius: 16, padding: 18, marginBottom: 14, border: "1px solid #e9e0d2" }}>
+                <div style={{ background: "#fff", borderRadius: 16, padding: 18, marginBottom: 14, border: "1px solid var(--line)" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                    <div style={{ background: "#2e7d4f", color: "#fff", borderRadius: 99, width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 15 }}>3</div>
-                    <span style={{ fontSize: 17, fontWeight: 800, color: "#26201a" }}>{t("trade_step_price")}</span>
+                    <div style={{ background: "var(--tanim)", color: "#fff", borderRadius: 99, width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--fs-label)" }}>3</div>
+                    <span style={{ fontSize: "var(--fs-body)", fontWeight: 800, color: "var(--text)" }}>{t("trade_step_price")}</span>
                   </div>
                   <div style={hintStyle}>{t("trade_step_price_sub")}</div>
                   <div style={{ position: "relative" }}>
-                    <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", fontSize: 20, fontWeight: 900, color: "#2e7d4f" }}>₱</span>
+                    <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", fontSize: "var(--fs-lead)", fontWeight: 900, color: "var(--tanim)" }}>₱</span>
                     <input type="number" inputMode="numeric" placeholder={t("trade_ph_price")}
                       value={form.pricePerKg}
                       onChange={e => setForm(d => ({ ...d, pricePerKg: e.target.value }))}
@@ -424,10 +424,10 @@ export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }
                 </div>
 
                 {/* ── Step 4: Quantity ── */}
-                <div style={{ background: "#fff", borderRadius: 16, padding: 18, marginBottom: 14, border: "1px solid #e9e0d2" }}>
+                <div style={{ background: "#fff", borderRadius: 16, padding: 18, marginBottom: 14, border: "1px solid var(--line)" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                    <div style={{ background: "#2e7d4f", color: "#fff", borderRadius: 99, width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 15 }}>4</div>
-                    <span style={{ fontSize: 17, fontWeight: 800, color: "#26201a" }}>{t("trade_step_qty")}</span>
+                    <div style={{ background: "var(--tanim)", color: "#fff", borderRadius: 99, width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--fs-label)" }}>4</div>
+                    <span style={{ fontSize: "var(--fs-body)", fontWeight: 800, color: "var(--text)" }}>{t("trade_step_qty")}</span>
                   </div>
                   <div style={hintStyle}>{t("trade_step_qty_sub")}</div>
                   <div style={{ position: "relative" }}>
@@ -435,15 +435,15 @@ export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }
                       value={form.kg}
                       onChange={e => setForm(d => ({ ...d, kg: e.target.value }))}
                       style={fieldStyle} />
-                    <span style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", fontSize: 17, fontWeight: 700, color: "#82735f" }}>kg</span>
+                    <span style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", fontSize: "var(--fs-body)", fontWeight: 700, color: "var(--text-muted)" }}>kg</span>
                   </div>
                 </div>
 
                 {/* ── Step 5: Description ── */}
-                <div style={{ background: "#fff", borderRadius: 16, padding: 18, marginBottom: 14, border: "1px solid #e9e0d2" }}>
+                <div style={{ background: "#fff", borderRadius: 16, padding: 18, marginBottom: 14, border: "1px solid var(--line)" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                    <div style={{ background: "#2e7d4f", color: "#fff", borderRadius: 99, width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 15 }}>5</div>
-                    <span style={{ fontSize: 17, fontWeight: 800, color: "#26201a" }}>{t("trade_step_desc")}</span>
+                    <div style={{ background: "var(--tanim)", color: "#fff", borderRadius: 99, width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--fs-label)" }}>5</div>
+                    <span style={{ fontSize: "var(--fs-body)", fontWeight: 800, color: "var(--text)" }}>{t("trade_step_desc")}</span>
                   </div>
                   <div style={hintStyle}>{t("trade_step_desc_sub")}</div>
                   <textarea placeholder={t("trade_ph_desc")}
@@ -454,14 +454,14 @@ export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }
                 </div>
 
                 {/* ── Step 6: Location ── */}
-                <div style={{ background: "#fff", borderRadius: 16, padding: 18, marginBottom: 22, border: "1px solid #e9e0d2" }}>
+                <div style={{ background: "#fff", borderRadius: 16, padding: 18, marginBottom: 22, border: "1px solid var(--line)" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                    <div style={{ background: "#2e7d4f", color: "#fff", borderRadius: 99, width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 15 }}>6</div>
-                    <span style={{ fontSize: 17, fontWeight: 800, color: "#26201a" }}>{t("trade_step_loc")}</span>
+                    <div style={{ background: "var(--tanim)", color: "#fff", borderRadius: 99, width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--fs-label)" }}>6</div>
+                    <span style={{ fontSize: "var(--fs-body)", fontWeight: 800, color: "var(--text)" }}>{t("trade_step_loc")}</span>
                   </div>
                   <div style={hintStyle}>{t("trade_step_loc_sub")}</div>
                   <div style={{ position: "relative" }}>
-                    <MapPin size={20} color="#82735f" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }} />
+                    <MapPin size={20} color="var(--text-muted)" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }} />
                     <input type="text" placeholder={t("trade_ph_loc")}
                       value={form.location}
                       onChange={e => setForm(d => ({ ...d, location: e.target.value }))}
@@ -472,11 +472,11 @@ export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }
                 {/* ── Action Buttons ── */}
                 <div style={{ display: "flex", gap: 12 }}>
                   <button onClick={() => setShowModal(false)}
-                    style={{ flex: 1, padding: 18, background: "#f1e9dc", border: "2px solid #e9e0d2", borderRadius: 14, fontFamily: "inherit", fontSize: 17, fontWeight: 800, cursor: "pointer", color: "#4d4237" }}>
+                    style={{ flex: 1, padding: 18, background: "var(--paper-alt)", border: "2px solid var(--line)", borderRadius: 14, fontFamily: "inherit", fontSize: "var(--fs-body)", fontWeight: 800, cursor: "pointer", color: "var(--text-soft)" }}>
                     ← {t("back")}
                   </button>
                   <button onClick={saveForm}
-                    style={{ flex: 2, padding: 18, background: "#2e7d4f", color: "#fff", border: "none", borderRadius: 14, fontFamily: "inherit", fontSize: 18, fontWeight: 900, cursor: "pointer", boxShadow: "0 4px 12px rgba(22,163,74,0.3)" }}>
+                    style={{ flex: 2, padding: 18, background: "var(--tanim)", color: "#fff", border: "none", borderRadius: 14, fontFamily: "inherit", fontSize: "var(--fs-body)", fontWeight: 900, cursor: "pointer", boxShadow: "0 4px 12px rgba(11,107,65,0.3)" }}>
                     {editId ? `✔ ${t("save_changes")}` : `✔ ${t("trade_post_now")}`}
                   </button>
                 </div>
@@ -492,17 +492,17 @@ export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }
             {/* Header */}
             <div className="cart-sheet-hdr">
               <div>
-                <div style={{ fontSize: 20, fontWeight: 900, color: "#fff" }}>🛒 {t("cart_title")}</div>
-                <div style={{ fontSize: 15, color: "rgba(255,255,255,0.8)", marginTop: 2 }}>{cartCount} {cartCount !== 1 ? t("cart_items_selected") : t("cart_item_selected")}</div>
+                <div style={{ fontSize: "var(--fs-lead)", fontWeight: 900, color: "#fff" }}>🛒 {t("cart_title")}</div>
+                <div style={{ fontSize: "var(--fs-label)", color: "rgba(255,255,255,0.8)", marginTop: 2 }}>{cartCount} {cartCount !== 1 ? t("cart_items_selected") : t("cart_item_selected")}</div>
               </div>
-              <button onClick={() => setShowCart(false)} style={{ background: "rgba(255,255,255,0.2)", border: "none", borderRadius: 50, width: 40, height: 40, cursor: "pointer", color: "#fff", fontSize: 20, display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+              <button onClick={() => setShowCart(false)} style={{ background: "rgba(255,255,255,0.2)", border: "none", borderRadius: 50, width: 40, height: 40, cursor: "pointer", color: "#fff", fontSize: "var(--fs-lead)", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
             </div>
 
             {/* Items */}
             <div style={{ flex: 1, overflowY: "auto" }}>
               {cart.length === 0 ? (
                 <div className="cart-empty">
-                  <div className="cart-empty-ico"><ShoppingCart size={48} color="#d6cab6" /></div>
+                  <div className="cart-empty-ico"><ShoppingCart size={48} color="var(--line-strong)" /></div>
                   <div className="cart-empty-txt">{t("cart_empty_title")}</div>
                   <div className="cart-empty-sub">{t("cart_empty_sub")}</div>
                 </div>
@@ -514,19 +514,19 @@ export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }
                       <div className="cart-item-name">{item.crop}</div>
                       <div className="cart-item-seller">
                         <span style={{ fontWeight: 700 }}>{item.seller}</span>
-                        {" · "}<MapPin size={12} color="#aa9d8a" style={{ display: "inline" }} /> {item.location}
+                        {" · "}<MapPin size={12} color="var(--text-faint)" style={{ display: "inline" }} /> {item.location}
                       </div>
-                      <div className="cart-item-price">₱{item.pricePerKg}/kg</div>
+                      <div className="cart-item-price">₱{item.pricePerKg}<span className="unit-suffix">{t("per_kg_short")}</span></div>
                       <div className="cart-qty-row">
                         <button className="cart-qty-btn" onClick={() => updateCartQty(item.listingId, item.qty - 1)}>−</button>
                         <span className="cart-qty-val">{item.qty}</span>
                         <button className="cart-qty-btn" onClick={() => updateCartQty(item.listingId, item.qty + 1)}>+</button>
                         <span className="cart-qty-unit">kg</span>
-                        <span style={{ marginLeft: 8, fontSize: 15, fontWeight: 800, color: "#26201a" }}>₱{(item.qty * item.pricePerKg).toLocaleString()}</span>
+                        <span style={{ marginLeft: 8, fontSize: "var(--fs-label)", fontWeight: 800, color: "var(--text)" }}>₱{(item.qty * item.pricePerKg).toLocaleString()}</span>
                       </div>
                     </div>
                     <button className="cart-remove-btn" onClick={() => removeFromCart(item.listingId)}>
-                      <Trash2 size={14} color="#c74133" />
+                      <Trash2 size={14} color="var(--error)" />
                     </button>
                   </div>
                 ))
@@ -539,7 +539,7 @@ export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }
                 <div className="cart-total-row">
                   <div>
                     <div className="cart-total-lbl">{t("cart_total")}</div>
-                    <div style={{ fontSize: 13, color: "#aa9d8a" }}>{cartCount} kg {t("cart_across")} {cart.length} {cart.length !== 1 ? t("cart_sellers") : t("cart_seller")}</div>
+                    <div style={{ fontSize: "var(--fs-label)", color: "var(--text-faint)" }}>{cartCount} kg {t("cart_across")} {cart.length} {cart.length !== 1 ? t("cart_sellers") : t("cart_seller")}</div>
                   </div>
                   <div className="cart-total-val">₱{cartTotal.toLocaleString()}</div>
                 </div>
@@ -557,9 +557,9 @@ export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }
         <div className="checkout-success">
           <div className="checkout-card">
             <div style={{ fontSize: 56, marginBottom: 12 }}>🎉</div>
-            <div style={{ fontSize: 20, fontWeight: 900, color: "#26201a", marginBottom: 6 }}>{t("cart_order_placed")}</div>
-            <div style={{ fontSize: 15, color: "#82735f", lineHeight: 1.6 }}>{t("cart_order_sent")}</div>
-            <div style={{ marginTop: 20, padding: "10px 0", background: "#e6f2e9", borderRadius: 10, fontSize: 15, fontWeight: 700, color: "#2e7d4f" }}>✓ {t("cart_txn_recorded")}</div>
+            <div style={{ fontSize: "var(--fs-lead)", fontWeight: 900, color: "var(--text)", marginBottom: 6 }}>{t("cart_order_placed")}</div>
+            <div style={{ fontSize: "var(--fs-label)", color: "var(--text-muted)", lineHeight: 1.6 }}>{t("cart_order_sent")}</div>
+            <div style={{ marginTop: 20, padding: "10px 0", background: "var(--tanim-sk)", borderRadius: 10, fontSize: "var(--fs-label)", fontWeight: 700, color: "var(--tanim)" }}>✓ {t("cart_txn_recorded")}</div>
           </div>
         </div>
       )}
@@ -580,16 +580,16 @@ export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }
                   </div>
                 </div>
                 <button onClick={() => setSellerDetail(null)}
-                  style={{ background: "rgba(255,255,255,0.2)", border: "none", borderRadius: 50, width: 40, height: 40, cursor: "pointer", color: "#fff", fontSize: 20, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>✕</button>
+                  style={{ background: "rgba(255,255,255,0.2)", border: "none", borderRadius: 50, width: 40, height: 40, cursor: "pointer", color: "#fff", fontSize: "var(--fs-lead)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>✕</button>
               </div>
             </div>
 
             {/* Quick stats */}
             <div className="seller-modal-stats">
               {[
-                { val: sellerDetail.rating.toFixed(1), lbl: t("seller_rating"), ico: <Star size={14} color="#b97d10" fill="#b97d10" /> },
-                { val: `${sellerDetail.yearsfarming} yrs`, lbl: t("seller_experience"), ico: <Wheat size={14} color="#2e7d4f" /> },
-                { val: `${sellerDetail.totalSales}+`, lbl: t("seller_sales"), ico: <Package size={14} color="#3a6ea5" /> },
+                { val: sellerDetail.rating.toFixed(1), lbl: t("seller_rating"), ico: <Star size={14} color="var(--gold-text)" fill="var(--gold-text)" /> },
+                { val: `${sellerDetail.yearsfarming} yrs`, lbl: t("seller_experience"), ico: <Wheat size={14} color="var(--tanim)" /> },
+                { val: `${sellerDetail.totalSales}+`, lbl: t("seller_sales"), ico: <Package size={14} color="var(--tanim)" /> },
               ].map(s => (
                 <div className="sms-item" key={s.lbl}>
                   <div className="sms-val">{s.val}</div>
@@ -603,7 +603,7 @@ export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }
 
               {/* Phone */}
               <div className="sdm-row">
-                <div className="sdm-ico"><Phone size={20} color="#2e7d4f" /></div>
+                <div className="sdm-ico"><Phone size={20} color="var(--tanim)" /></div>
                 <div>
                   <div className="sdm-lbl">{t("seller_phone")}</div>
                   <div className="sdm-val">{sellerDetail.phone}</div>
@@ -612,7 +612,7 @@ export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }
 
               {/* Location */}
               <div className="sdm-row">
-                <div className="sdm-ico"><MapPin size={20} color="#2e7d4f" /></div>
+                <div className="sdm-ico"><MapPin size={20} color="var(--tanim)" /></div>
                 <div>
                   <div className="sdm-lbl">{t("seller_location")}</div>
                   <div className="sdm-val">{sellerDetail.location}</div>
@@ -621,7 +621,7 @@ export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }
 
               {/* Years of farming */}
               <div className="sdm-row">
-                <div className="sdm-ico"><Sprout size={20} color="#2e7d4f" /></div>
+                <div className="sdm-ico"><Sprout size={20} color="var(--tanim)" /></div>
                 <div>
                   <div className="sdm-lbl">{t("seller_years")}</div>
                   <div className="sdm-val">{sellerDetail.yearsfarming} {t("seller_years_suffix")}</div>
@@ -630,21 +630,21 @@ export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }
 
               {/* Seller rating */}
               <div className="sdm-row">
-                <div className="sdm-ico"><Star size={20} color="#b97d10" fill="#b97d10" /></div>
+                <div className="sdm-ico"><Star size={20} color="var(--gold-text)" fill="var(--gold-text)" /></div>
                 <div>
                   <div className="sdm-lbl">{t("seller_rating")}</div>
                   <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
                     {[1, 2, 3, 4, 5].map(i => (
-                      <Star key={i} size={16} color="#b97d10" fill={i <= Math.round(sellerDetail.rating) ? "#b97d10" : "none"} />
+                      <Star key={i} size={16} color="var(--gold-text)" fill={i <= Math.round(sellerDetail.rating) ? "var(--gold-text)" : "none"} />
                     ))}
                     <span className="sdm-val">{sellerDetail.rating.toFixed(1)}</span>
-                    <span style={{ fontSize: 13, color: "#82735f" }}>/ 5.0</span>
+                    <span style={{ fontSize: "var(--fs-label)", color: "var(--text-muted)" }}>/ 5.0</span>
                   </div>
                 </div>
               </div>
 
               {/* Crops */}
-              <div style={{ background: "#fff", borderRadius: 14, padding: 14, border: "1px solid #f1e9dc" }}>
+              <div style={{ background: "#fff", borderRadius: 14, padding: 14, border: "1px solid var(--paper-alt)" }}>
                 <div className="sdm-lbl" style={{ marginBottom: 8 }}>{t("seller_crops_sold")}</div>
                 <div className="sdm-crops">
                   {sellerDetail.crops.map(c => (
@@ -661,7 +661,7 @@ export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }
 
             </div>
 
-            {/* Footer — call button */}
+            {/* Footer: call button */}
             <div className="seller-modal-footer">
               <button className="call-seller-btn">
                 <Phone size={20} color="#fff" /> {t("seller_call")} {sellerDetail.name.split(" ")[0]}

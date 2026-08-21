@@ -1,6 +1,6 @@
 import { useLang } from "../../i18n";
 import { Expense } from "../../types";
-import { CAT_COLORS } from "../../constants/colors";
+import { CAT_COLORS, DATA_NEUTRAL } from "../../constants/colors";
 
 export function PieChart({ transactions }: { transactions: Expense[] }) {
   const { t, tn } = useLang();
@@ -19,14 +19,14 @@ export function PieChart({ transactions }: { transactions: Expense[] }) {
   const grand = Object.values(totals).reduce((s, v) => s + v, 0);
 
   if (grand === 0) return (
-    <div style={{ textAlign: "center", padding: "24px 0", color: "#aa9d8a", fontSize: 14 }}>
+    <div style={{ textAlign: "center", padding: "24px 0", color: "var(--text-faint)", fontSize: "var(--fs-label)" }}>
       {t("exp_none_yet")}
     </div>
   );
 
   const sliceData = Object.entries(totals).map(([cat, amt]) => ({
     label: cat, pct: Math.round((amt / grand) * 100),
-    amount: amt, color: CAT_COLORS[cat] || "#82735f",
+    amount: amt, color: CAT_COLORS[cat] || DATA_NEUTRAL,
   }));
 
   let cumPct = 0;
@@ -72,8 +72,8 @@ export function PieChart({ transactions }: { transactions: Expense[] }) {
           <div key={d.label} style={{ display: "flex", alignItems: "center", gap: 7 }}>
             <span style={{ width: 10, height: 10, borderRadius: "50%", background: d.color, flexShrink: 0 }} />
             <div>
-              <div style={{ fontSize: 12, color: "#4d4237", fontWeight: 600 }}>{tn(d.label)}</div>
-              <div style={{ fontSize: 11, color: "#82735f" }}>₱{d.amount.toLocaleString()} · {d.pct}%</div>
+              <div style={{ fontSize: "var(--fs-label)", color: "var(--text-soft)", fontWeight: 600 }}>{tn(d.label)}</div>
+              <div style={{ fontSize: "var(--fs-label)", color: DATA_NEUTRAL }}>₱{d.amount.toLocaleString()} · {d.pct}%</div>
             </div>
           </div>
         ))}

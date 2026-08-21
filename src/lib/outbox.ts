@@ -15,7 +15,7 @@ import { Preferences } from "@capacitor/preferences";
 
 export interface OutboxOp {
   id: string;
-  type: string;                     // e.g. "add_expense" — matched to a handler
+  type: string;                     // e.g. "add_expense", matched to a handler
   payload: Record<string, unknown>;
   queuedAt: string;
 }
@@ -93,7 +93,7 @@ export async function processOutbox(handlers: Record<string, OutboxHandler>): Pr
   for (let i = 0; i < ops.length; i++) {
     const op = ops[i];
     const handler = handlers[op.type];
-    if (!handler) { synced++; continue; } // unknown op type — drop it rather than block forever
+    if (!handler) { synced++; continue; } // unknown op type: drop it rather than block forever
     try {
       const result = await handler(remapIds(op.payload, idMap));
       if (result) idMap[result.localId] = result.realId;

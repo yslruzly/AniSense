@@ -1,11 +1,17 @@
 import { useState } from "react";
-import { Wheat, ShoppingCart, ArrowLeft, Calendar, MapPin, Phone, User, Mail, Lock } from "lucide-react";
+import { haptic } from "../../lib/platform";
+import { Wheat, ShoppingCart, ArrowLeft, Check, AlertCircle } from "lucide-react";
 import { useLang } from "../../i18n";
 import { UserRole, FarmDetails } from "../../types";
 import { MAIN_CROPS } from "../../data/crops";
-import { CropIcon } from "../../components/icons";
+import { CropEmoji } from "../../components/CropEmoji";
 
 // ─── Sign In / Sign Up Form ───────────────────────────────────────────────────
+// Validation and flow are unchanged from the original. What changed is the
+// presentation: labels sit above the field permanently (placeholder-only labels
+// vanish exactly when an older user looks up to check what they were filling
+// in), the password reveal is a word rather than a 16px eye icon, and errors
+// carry an icon so state is never signalled by colour alone.
 export function AuthFormScreen({
   flow, role, onBack, onSuccess,
 }: {
@@ -14,12 +20,13 @@ export function AuthFormScreen({
   onBack: () => void;
   onSuccess: (name: string, role: UserRole, crops: string[], farmDetails?: FarmDetails) => void;
 }) {
-  const [mode, setMode] = useState<"gmail" | "phone">("gmail");
+  const [mode, setMode] = useState<"gmail" | "phone">("phone");
   const [formFlow, setFormFlow] = useState(flow);
   const [name, setName] = useState("");
   const [contact, setContact] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<"form" | "details" | "crops">("form");
@@ -31,10 +38,9 @@ export function AuthFormScreen({
 
   const roleLabel = role === "farmer" ? t("auth_farmer_account") : t("auth_buyer_account");
   const roleIcon = role === "farmer"
-    ? <Wheat size={14} color="#fff" />
-    : <ShoppingCart size={14} color="#fff" />;
+    ? <Wheat size={15} color="#fff" strokeWidth={2.2} />
+    : <ShoppingCart size={15} color="#fff" strokeWidth={2.2} />;
 
-  const placeholderContact = mode === "gmail" ? "you@gmail.com" : "9XX XXX XXXX";
   const labelContact = mode === "gmail" ? t("auth_gmail_address") : t("auth_cp_number");
 
   const validate = () => {
@@ -52,7 +58,6 @@ export function AuthFormScreen({
     setError("");
     if (!validate()) return;
     if (formFlow === "signup" && role === "farmer") {
-      // Pre-fill the phone field if they signed up with a CP number
       if (mode === "phone" && !farmPhone) setFarmPhone(contact);
       setStep("details");
       return;
@@ -95,217 +100,190 @@ export function AuthFormScreen({
     );
   };
 
+  const Alert = () => error ? (
+    <div className="a-alert" role="alert">
+      <AlertCircle size={22} strokeWidth={2.2} />
+      <span>{error}</span>
+    </div>
+  ) : null;
+
+  const Head = ({ onUp, title, sub }: { onUp: () => void; title: string; sub?: string }) => (
+    <div className="a-inkhead">
+      <button className="a-iconbtn" onClick={onUp} aria-label={t("back")}>
+        <ArrowLeft size={24} color="#fff" strokeWidth={2.4} />
+      </button>
+      <h1 className="a-title on-ink" style={{ marginTop: 18 }}>{title}</h1>
+      {sub && <p className="a-sub on-ink">{sub}</p>}
+      <span className="a-badge">{roleIcon} {roleLabel}</span>
+    </div>
+  );
+
+  // ── Step 2 (farmer): farm details ──
   if (step === "details") {
     return (
-      <div className="auth-form-wrap">
-        <div className="auth-form-top">
-          <button className="role-back-btn" onClick={() => { setStep("form"); setError(""); }}>
-            <ArrowLeft size={16} color="#fff" />
-          </button>
-          <div className="auth-form-brand">
-            <Wheat size={14} color="rgba(255,255,255,0.8)" /> AniSense
-          </div>
-          <div className="auth-form-title">{t("farm_details_title")}</div>
-          <div className="auth-form-sub">{t("farm_details_sub")}</div>
-          <div className="auth-role-badge"><Wheat size={14} color="#fff" /> {t("auth_farmer_account")}</div>
-        </div>
-        <div className="auth-body">
-          <div>
-            <div className="auth-field-lbl">{t("farm_years_lbl")}</div>
-            <div className="auth-input-icon-wrap">
-              <Calendar size={15} color="#aa9d8a" style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)" }} />
-              <input className="auth-input" style={{ paddingLeft: 42 }} type="number" inputMode="numeric" min={0} max={80}
-                placeholder={t("farm_years_ph")} value={farmYears}
-                onChange={e => { setFarmYears(e.target.value); setError(""); }} />
-            </div>
+      <div className="a-screen">
+        <Head onUp={() => { setStep("form"); setError(""); }} title={t("farm_details_title")} sub={t("farm_details_sub")} />
+        <div className="a-scroll">
+          <div className="a-field">
+            <label className="a-lbl" htmlFor="f-years">{t("farm_years_lbl")}</label>
+            <input id="f-years" className="a-inp num" type="number" inputMode="numeric" min={0} max={80}
+              placeholder={t("farm_years_ph")} value={farmYears}
+              onChange={e => { setFarmYears(e.target.value); setError(""); }} />
+            <p className="a-help">{t("auth_help_years")}</p>
           </div>
 
-          <div>
-            <div className="auth-field-lbl">{t("farm_loc_lbl")}</div>
-            <div className="auth-input-icon-wrap">
-              <MapPin size={15} color="#aa9d8a" style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)" }} />
-              <input className="auth-input" style={{ paddingLeft: 42 }} type="text"
-                placeholder={t("farm_loc_ph")} value={farmLocation}
-                onChange={e => { setFarmLocation(e.target.value); setError(""); }} />
-            </div>
+          <div className="a-field">
+            <label className="a-lbl" htmlFor="f-loc">{t("farm_loc_lbl")}</label>
+            <input id="f-loc" className="a-inp" type="text"
+              placeholder={t("farm_loc_ph")} value={farmLocation}
+              onChange={e => { setFarmLocation(e.target.value); setError(""); }} />
           </div>
 
-          <div>
-            <div className="auth-field-lbl">{t("farm_phone_lbl")}</div>
-            <div style={{ display: "flex", gap: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#e6f2e9", border: "1.5px solid #2e7d4f", borderRight: "none", borderRadius: "12px 0 0 12px", padding: "0 12px", flexShrink: 0 }}>
-                <Phone size={14} color="#2e7d4f" />
-                <span style={{ fontSize: 15, fontWeight: 700, color: "#2e7d4f", whiteSpace: "nowrap" }}>+63</span>
-              </div>
-              <input
-                className="auth-input"
-                style={{ borderRadius: "0 12px 12px 0", borderLeft: "none", flex: 1 }}
-                type="tel"
-                placeholder="9XX XXX XXXX"
-                maxLength={11}
+          <div className="a-field">
+            <label className="a-lbl" htmlFor="f-phone">{t("farm_phone_lbl")}</label>
+            <div className="a-prefix-row">
+              <span className="a-prefix">+63</span>
+              <input id="f-phone" className="a-inp num" type="tel" placeholder="9XX XXX XXXX" maxLength={11}
                 value={farmPhone}
-                onChange={e => { setFarmPhone(e.target.value.replace(/\D/g, "")); setError(""); }}
-              />
+                onChange={e => { setFarmPhone(e.target.value.replace(/\D/g, "")); setError(""); }} />
             </div>
           </div>
 
-          {error && <div className="auth-error">{error}</div>}
-
-          <button className="auth-submit-btn" onClick={finishDetails}>
-            {t("continue")}
-          </button>
+          <Alert />
+          <div style={{ height: 24 }} />
+        </div>
+        <div className="a-dock">
+          <button className="a-btn a-btn-green" onClick={finishDetails}>{t("continue")}</button>
         </div>
       </div>
     );
   }
 
+  // ── Step 3 (farmer): crop specialisation ──
   if (step === "crops") {
     return (
-      <div className="auth-form-wrap">
-        <div className="auth-form-top">
-          <button className="role-back-btn" onClick={() => { setStep("details"); setError(""); }}>
-            <ArrowLeft size={16} color="#fff" />
-          </button>
-          <div className="auth-form-brand">
-            <Wheat size={14} color="rgba(255,255,255,0.8)" /> AniSense
+      <div className="a-screen">
+        <Head onUp={() => { setStep("details"); setError(""); }} title={t("crops_title")} sub={t("crops_sub")} />
+        <div className="a-scroll">
+          <div className="a-cropgrid">
+            {MAIN_CROPS.map(crop => {
+              const on = selectedCrops.includes(crop);
+              return (
+                <button
+                  key={crop}
+                  className={`a-crop ${on ? "on" : ""}`}
+                  aria-pressed={on}
+                  onClick={() => { haptic.select(); toggleCrop(crop); setError(""); }}
+                >
+                  <CropEmoji crop={crop} size={34} />
+                  <span>
+                    <span className="a-crop-n">{tn(crop)}</span>
+                    <span className="a-crop-e">{crop}</span>
+                  </span>
+                  <span className="a-crop-tick"><Check size={14} color="#fff" strokeWidth={3.6} /></span>
+                </button>
+              );
+            })}
           </div>
-          <div className="auth-form-title">{t("crops_title")}</div>
-          <div className="auth-form-sub">{t("crops_sub")}</div>
-          <div className="auth-role-badge"><Wheat size={14} color="#fff" /> {t("auth_farmer_account")}</div>
+          <Alert />
+          <div style={{ height: 20 }} />
         </div>
-        <div className="auth-body">
-          <div>
-            <div className="auth-field-lbl">{t("crops_select_label")} ({selectedCrops.length} {t("crops_selected")})</div>
-            <div className="crop-picker-grid">
-              {MAIN_CROPS.map(crop => {
-                const on = selectedCrops.includes(crop);
-                return (
-                  <button
-                    key={crop}
-                    className={`crop-picker-btn ${on ? "on" : ""}`}
-                    onClick={() => { toggleCrop(crop); setError(""); }}
-                  >
-                    <span className="crop-picker-ico"><CropIcon crop={crop} size={20} /></span>
-                    <span className="crop-picker-name">{tn(crop)}</span>
-                    {on && <span className="crop-picker-check">✓</span>}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-          {error && <div className="auth-error">{error}</div>}
-          <button className="auth-submit-btn" onClick={finishCrops} disabled={loading}>
-            {loading ? t("crops_setting_up") : `${t("crops_continue_with")} ${selectedCrops.length || 0} ${t("crops_crops")}`}
+        <div className="a-dock">
+          <p className="a-count">
+            {selectedCrops.length === 0
+              ? t("crops_none_yet")
+              : `${selectedCrops.length} ${t("crops_selected")}`}
+          </p>
+          <button className="a-btn a-btn-green" onClick={finishCrops} disabled={loading}>
+            {loading ? t("crops_setting_up") : t("continue")}
           </button>
         </div>
       </div>
     );
   }
 
+  // ── Step 1: account ──
   return (
-    <div className="auth-form-wrap">
-      <div className="auth-form-top">
-        <button className="role-back-btn" onClick={onBack}>
-          <ArrowLeft size={16} color="#fff" />
-        </button>
-        <div className="auth-form-brand">
-          <Wheat size={14} color="rgba(255,255,255,0.8)" /> AniSense
-        </div>
-        <div className="auth-form-title">{formFlow === "signin" ? t("auth_signin_title") : t("auth_create_title")}</div>
-        <div className="auth-form-sub">{formFlow === "signin" ? t("auth_signin_sub") : t("auth_create_sub")}</div>
-        <div className="auth-role-badge">{roleIcon} {roleLabel}</div>
-      </div>
+    <div className="a-screen">
+      <Head
+        onUp={onBack}
+        title={formFlow === "signin" ? t("auth_signin_title") : t("auth_create_title")}
+        sub={formFlow === "signin" ? t("auth_signin_sub") : t("auth_create_sub")}
+      />
 
-      <div className="auth-body">
-        {/* Gmail / CP toggle */}
-        <div>
-          <div className="auth-field-lbl">{t("auth_sign_in_with")}</div>
-          <div className="auth-toggle-row">
-            <button className={`auth-tab ${mode === "gmail" ? "on" : ""}`} onClick={() => { setMode("gmail"); setContact(""); setError(""); }}>
-              <Mail size={14} /> Gmail
-            </button>
-            <button className={`auth-tab ${mode === "phone" ? "on" : ""}`} onClick={() => { setMode("phone"); setContact(""); setError(""); }}>
-              <Phone size={14} /> {t("auth_cp_number")}
-            </button>
-          </div>
-        </div>
-
+      <div className="a-scroll">
         {formFlow === "signup" && (
-          <div>
-            <div className="auth-field-lbl">{t("auth_full_name")}</div>
-            <div className="auth-input-icon-wrap">
-              <User size={15} color="#aa9d8a" className="auth-input-icon" style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)" }} />
-              <input className="auth-input" style={{ paddingLeft: 42 }} placeholder={t("auth_full_name_ph")} value={name} onChange={e => setName(e.target.value)} />
-            </div>
+          <div className="a-field">
+            <label className="a-lbl" htmlFor="f-name">{t("auth_full_name")}</label>
+            <input id="f-name" className="a-inp" placeholder={t("auth_full_name_ph")}
+              value={name} onChange={e => { setName(e.target.value); setError(""); }} />
           </div>
         )}
 
-        <div>
-          <div className="auth-field-lbl">{labelContact}</div>
+        <div className="a-field">
+          <label className="a-lbl" htmlFor="f-contact">{labelContact}</label>
           {mode === "gmail" ? (
-            <div className="auth-input-icon-wrap">
-              <Mail size={15} color="#aa9d8a" style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)" }} />
-              <input className="auth-input" style={{ paddingLeft: 42 }} type="email"
-                placeholder={placeholderContact} value={contact} onChange={e => setContact(e.target.value)} />
-            </div>
+            <input id="f-contact" className="a-inp" type="email" placeholder="juan@gmail.com"
+              value={contact} onChange={e => { setContact(e.target.value); setError(""); }} />
           ) : (
-            <div style={{ display: "flex", gap: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#e6f2e9", border: "1.5px solid #2e7d4f", borderRight: "none", borderRadius: "12px 0 0 12px", padding: "0 12px", flexShrink: 0 }}>
-                <Phone size={14} color="#2e7d4f" />
-                <span style={{ fontSize: 15, fontWeight: 700, color: "#2e7d4f", whiteSpace: "nowrap" }}>+63</span>
-              </div>
-              <input
-                className="auth-input"
-                style={{ borderRadius: "0 12px 12px 0", borderLeft: "none", flex: 1 }}
-                type="tel"
-                placeholder="9XX XXX XXXX"
-                maxLength={11}
+            <div className="a-prefix-row">
+              <span className="a-prefix">+63</span>
+              <input id="f-contact" className="a-inp num" type="tel" placeholder="9XX XXX XXXX" maxLength={11}
                 value={contact}
-                onChange={e => {
-                  const val = e.target.value.replace(/\D/g, "");
-                  setContact(val);
-                }}
-              />
+                onChange={e => { setContact(e.target.value.replace(/\D/g, "")); setError(""); }} />
             </div>
           )}
+          <p className="a-help">{t("auth_help_cp")}</p>
+          <button
+            className="a-link"
+            onClick={() => { setMode(mode === "phone" ? "gmail" : "phone"); setContact(""); setError(""); }}
+          >
+            {t("auth_sign_in_with")} {mode === "phone" ? "Gmail" : t("auth_cp_number")}
+          </button>
         </div>
 
-        <div>
-          <div className="auth-field-lbl">{t("auth_password")}</div>
-          <div className="auth-input-icon-wrap">
-            <Lock size={15} color="#aa9d8a" style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)" }} />
-            <input className="auth-input" style={{ paddingLeft: 42 }} type="password"
-              placeholder={t("auth_password_ph")} value={password} onChange={e => setPassword(e.target.value)} />
+        <div className="a-field">
+          <label className="a-lbl" htmlFor="f-pw">{t("auth_password")}</label>
+          <div className="a-pwrow">
+            <input id="f-pw" className="a-inp" type={showPw ? "text" : "password"}
+              placeholder={t("auth_password_ph")}
+              value={password} onChange={e => { setPassword(e.target.value); setError(""); }} />
+            <button className="a-reveal" onClick={() => setShowPw(s => !s)}>
+              {showPw ? t("auth_hide") : t("auth_show")}
+            </button>
           </div>
+          {formFlow === "signup" && <p className="a-help">{t("auth_help_pw")}</p>}
         </div>
 
         {formFlow === "signup" && (
-          <div>
-            <div className="auth-field-lbl">{t("auth_confirm_password")}</div>
-            <div className="auth-input-icon-wrap">
-              <Lock size={15} color="#aa9d8a" style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)" }} />
-              <input className="auth-input" style={{ paddingLeft: 42 }} type="password"
-                placeholder={t("auth_confirm_password_ph")} value={confirm} onChange={e => setConfirm(e.target.value)} />
-            </div>
+          <div className="a-field">
+            <label className="a-lbl" htmlFor="f-confirm">{t("auth_confirm_password")}</label>
+            <input id="f-confirm" className="a-inp" type={showPw ? "text" : "password"}
+              placeholder={t("auth_confirm_password_ph")}
+              value={confirm} onChange={e => { setConfirm(e.target.value); setError(""); }} />
           </div>
         )}
 
-        {error && <div className="auth-error">{error}</div>}
+        <Alert />
 
-        <button className="auth-submit-btn" onClick={submit} disabled={loading}>
+        {formFlow === "signin" && (
+          <div style={{ marginTop: 6 }}>
+            <button className="a-link">{t("auth_forgot")}</button>
+          </div>
+        )}
+        <div style={{ height: 20 }} />
+      </div>
+
+      <div className="a-dock">
+        <button className="a-btn a-btn-green" onClick={submit} disabled={loading}>
           {loading ? t("please_wait") : formFlow === "signin" ? t("auth_signin_btn") : t("auth_create_btn")}
         </button>
-
-        <div className="auth-divider">
-          <div className="auth-divider-line" /><div className="auth-divider-txt">{t("auth_or")}</div><div className="auth-divider-line" />
-        </div>
-
-        <div className="auth-switch-txt">
+        <p className="a-switch">
           {formFlow === "signin"
-            ? <>{t("auth_no_account")} <span className="auth-switch-link" onClick={() => { setFormFlow("signup"); setError(""); }}>{t("auth_sign_up_link")}</span></>
-            : <>{t("auth_have_account")} <span className="auth-switch-link" onClick={() => { setFormFlow("signin"); setError(""); }}>{t("auth_signin_btn")}</span></>
+            ? <>{t("auth_no_account")} <button className="a-link" onClick={() => { setFormFlow("signup"); setError(""); }}>{t("auth_sign_up_link")}</button></>
+            : <>{t("auth_have_account")} <button className="a-link" onClick={() => { setFormFlow("signin"); setError(""); }}>{t("auth_signin_btn")}</button></>
           }
-        </div>
+        </p>
       </div>
     </div>
   );
