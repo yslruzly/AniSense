@@ -11,7 +11,7 @@ export const authCss = `
 
 
   .auth-outer {
-    min-height: 100dvh; background: #101512;
+    min-height: 100dvh; background: #fff;
     display: flex; align-items: center; justify-content: center; padding: 24px;
   }
   @media (max-width: 430px) {
@@ -78,9 +78,11 @@ export const authCss = `
     box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.3);
     font-family: var(--font-display); font-weight: 600; font-size: var(--fs-label); color: #fff; margin-top: 16px;
   }
+  /* No hairline above the button. The soft lift alone is enough to separate the
+     dock from content scrolling under it. */
   .a-dock {
     padding: 16px 22px 26px; background: var(--paper);
-    box-shadow: 0 -1px 0 var(--line), 0 -18px 24px -18px rgba(22,33,27,.14);
+    box-shadow: 0 -18px 24px -18px rgba(22,33,27,.14);
   }
   .a-brandrow { display: flex; align-items: center; gap: 10px; }
   .a-brandmark {
