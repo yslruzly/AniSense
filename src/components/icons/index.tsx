@@ -8,6 +8,7 @@ export function CropIcon({ crop, size = S }: { crop: string; size?: number }) {
   const riceVarieties = ["Rice (All Varieties)", "Special Rice", "Well Milled", "Regular Milled"];
   if (riceVarieties.includes(crop)) return <Wheat {...props} />;
   switch (crop) {
+    case "All Crops": return <Wheat   {...props} />;
     case "Corn": return <Sprout  {...props} />;
     case "Onions": return <Leaf    {...props} />;
     case "Tomatoes": return <Leaf    {...props} color="var(--error)" />;

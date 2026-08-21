@@ -157,7 +157,7 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
   return (
     <div className="screen">
       <Hdr icon={<Banknote size={20} color="var(--tanim)" />} title={t("exp_title")} sub={isBuyer ? t("exp_buyer_sub") : t("exp_sub")} onProfile={onProfile} onBack={onBack} userInitials={userInitials} />
-      <div className="scroll screen-enter">
+      <div className={`scroll screen-enter ${!isBuyer ? "has-dock" : ""}`}>
 
         {/* ── BUYER: read-only past transactions only ── */}
         {isBuyer && (
@@ -452,14 +452,13 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
               );
             })()}
 
-            <div style={{ height: 80 }} />
           </>
         )}
       </div>
 
       {/* ── Sticky bottom bar (farmer only) ── */}
       {!isBuyer && (
-        <div style={{ padding: "10px 14px 14px", background: "#fff", borderTop: "1px solid var(--paper-alt)", display: "flex", flexDirection: "column", gap: 8, flexShrink: 0 }}>
+        <div className="screen-dock">
           <button className="add-btn" onClick={openAdd}>{t("exp_add")}</button>
           <button onClick={() => { setCalc({ display: "0", prev: null, op: null, fresh: false }); setShowCalc(true); }}
             style={{ width: "100%", padding: "11px", background: "var(--tanim-sk)", border: "2px solid var(--line)", borderRadius: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: "var(--fs-label)", fontWeight: 700, color: "var(--tanim)", fontFamily: "inherit" }}>

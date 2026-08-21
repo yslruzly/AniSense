@@ -9,6 +9,7 @@ export const appCss = `
 
   /* ── Shell ── */
   .shell {
+    --bnav-h: 64px;
     width: 390px; height: 844px;
     background: var(--bg); display: flex; flex-direction: column;
     overflow: hidden; border-radius: 44px;
@@ -49,6 +50,16 @@ export const appCss = `
 
   /* ── Screen ── */
   .screen { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+  /* Scroll edge effect, not a hard divider: content dissolves into the paper in
+     the gap under the floating bar instead of being sliced off mid-line. Sits
+     under the bar (z-index 39 < 40) and never eats a tap. A gradient overlay
+     rather than a mask on .scroll — masking the scroller costs a compositing
+     layer on every frame, which is not a bill to hand a budget handset. */
+  .screen::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0;
+    height: 30px; z-index: 39; pointer-events: none;
+    background: linear-gradient(to top, var(--paper) 30%, transparent);
+  }
 
   /* ── Header ── */
   .hdr {
@@ -72,14 +83,20 @@ export const appCss = `
     background: var(--tanim);
     color:#fff; font-size: var(--fs-label); font-weight:700;
     display:flex; align-items:center; justify-content:center;
-    border: 2px solid var(--tanim-sk); transition: box-shadow 0.15s; cursor: pointer;
+    border: 2px solid var(--tanim-sk); cursor: pointer;
   }
-  .ava:hover { box-shadow: 0 0 0 3px var(--line); }
+  /* Gated: on a touchscreen :hover latches on tap and the state sticks. */
+  @media (hover: hover) and (pointer: fine) {
+    .ava:hover { box-shadow: 0 0 0 3px var(--line); }
+  }
 
   /* ── Scroll ── */
   .scroll {
     flex: 1; overflow-y: auto; padding: 16px;
-    display: flex; flex-direction: column; gap: 14px; padding-bottom: 10px;
+    display: flex; flex-direction: column; gap: 14px;
+    /* The bar floats over this, so the last card needs room to clear it
+       rather than coming to rest underneath. */
+    padding-bottom: calc(var(--bnav-h) + 26px);
   }
   .scroll > * { flex-shrink: 0; }
   .scroll::-webkit-scrollbar { display: none; }
@@ -153,21 +170,61 @@ export const appCss = `
   .leg-item { display:flex; align-items:center; gap:5px; font-size: var(--fs-label); color:var(--text-muted); font-weight:600; }
   .leg-dot  { width:9px; height:9px; border-radius:50%; }
 
-  /* ── Bottom nav ── */
+  /* ── Bottom nav ──────────────────────────────────────────────────────────
+     A floating layer, not a strip. Content scrolls underneath a translucent
+     bar instead of stopping dead at an opaque edge, which is what makes the
+     screen read as one surface with chrome above it. */
   .bnav {
-    height: 76px; background: var(--white); border-top: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-around; flex-shrink: 0;
-    padding: 0 4px;
+    position: absolute; z-index: 40;
+    left: 12px; right: 12px; bottom: 12px;
+    height: var(--bnav-h);
+    display: flex; align-items: center; justify-content: space-around;
+    padding: 0 6px; border-radius: var(--radius-lg);
+    /* Lighter than the paper beneath it, so the material reads as raised. */
+    background: rgba(255,255,255,.72);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    /* Bright top edge is light catching the material; the wide soft shadow is
+       what actually sells the height off the page. A bar is a big surface, so
+       it takes a deeper shadow than a chip would. */
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.85),
+      inset 0 0 0 1px rgba(22,33,27,.07),
+      0 10px 32px -10px rgba(22,33,27,.28),
+      0 2px 8px -3px rgba(22,33,27,.14);
   }
   .ntab {
     flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;
-    background:none; border:none; cursor:pointer; padding:9px 2px; border-radius:14px;
-    margin: 0 2px; transition: background 0.15s;
+    background:none; border:none; cursor:pointer; padding:8px 2px; border-radius:16px;
+    margin: 0 2px;
   }
   .ntab-ico { font-size:21px; display:flex; }
-  .ntab-lbl { font-size: var(--fs-label); font-weight:600; color:var(--text-muted); }
+  /* Vibrancy: over a translucent surface, muted grey text loses its footing.
+     One step darker holds the letterforms without shouting. */
+  .ntab-lbl { font-size: var(--fs-label); font-weight:600; color:var(--text-soft); }
+  /* Solid, never translucent: a light material stacked on a light material is
+     where legibility collapses. */
   .ntab.on { background: var(--green-bg); }
   .ntab.on .ntab-lbl { color:var(--green); font-weight:700; }
+
+  /* Translucency is a preference, not a requirement. Both of these fall back
+     to a solid bar rather than a washed-out one. */
+  @media (prefers-reduced-transparency: reduce) {
+    .bnav {
+      background: var(--card);
+      backdrop-filter: none; -webkit-backdrop-filter: none;
+    }
+  }
+  @media (prefers-contrast: more) {
+    .bnav {
+      background: var(--card);
+      backdrop-filter: none; -webkit-backdrop-filter: none;
+      box-shadow: inset 0 0 0 2px var(--text), 0 8px 24px -10px rgba(22,33,27,.3);
+    }
+  }
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .bnav { background: var(--card); }
+  }
 
   /* ── Expenses ── */
   .exp-hero { background: var(--tanim); border-radius:var(--radius); padding:26px 18px; color:#fff; text-align:center; }
@@ -185,6 +242,17 @@ export const appCss = `
   .exp-desc { font-size: var(--fs-label); font-weight:600; color:var(--text); }
   .exp-meta { font-size: var(--fs-label); color:var(--text-muted); margin-top:2px; }
   .exp-amt  { font-size: var(--fs-label); font-weight:700; color:var(--text); margin-left:auto; }
+  /* A screen's own action bar. The floating nav hovers over the bottom of the
+     shell, so the dock carries that clearance itself; and when a dock is
+     present the scroll above it must NOT also reserve the nav gap, or the two
+     stack into a dead band. */
+  .screen-dock {
+    flex-shrink: 0; display: flex; flex-direction: column; gap: 8px;
+    background: var(--card); border-top: 1px solid var(--paper-alt);
+    padding: 10px 14px calc(var(--bnav-h) + 22px);
+  }
+  .scroll.has-dock { padding-bottom: 10px; }
+
   .add-btn  { width:100%; padding:15px; background:var(--green); color:#fff; border:none; border-radius:var(--radius); font-family:inherit; font-size: var(--fs-label); font-weight:700; cursor:pointer; }
 
   /* ── Analytics ── */
@@ -301,7 +369,9 @@ export const appCss = `
     background:var(--paper); font-size: var(--fs-body); font-weight:800; color:var(--text-soft);
     display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;
   }
-  .cart-qty-btn:hover { background:var(--line); }
+  @media (hover: hover) and (pointer: fine) {
+    .cart-qty-btn:hover { background:var(--line); }
+  }
   .cart-qty-val { font-size: var(--fs-label); font-weight:800; color:var(--text); min-width:34px; text-align:center; }
   .cart-qty-unit { font-size: var(--fs-label); color:var(--text-muted); font-weight:600; }
   .cart-remove-btn { background:var(--error-sk); border:none; border-radius:9px; width:30px; height:30px; cursor:pointer; display:flex; align-items:center; justify-content:center; margin-left:auto; flex-shrink:0; }
@@ -326,7 +396,9 @@ export const appCss = `
   .add-cart-btn.in-cart { background:var(--tanim-sk); color:var(--tanim); border:2px solid var(--line); }
   .qty-picker-row { display:flex; align-items:center; gap:11px; background:var(--paper); border-radius:13px; padding:11px 15px; border:1.5px solid var(--line); }
   .qty-pick-btn { width:36px; height:36px; border-radius:10px; border:2px solid var(--line); background:#fff; font-size: var(--fs-lead); font-weight:800; color:var(--text-soft); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; }
-  .qty-pick-btn:hover { background:var(--line); }
+  @media (hover: hover) and (pointer: fine) {
+    .qty-pick-btn:hover { background:var(--line); }
+  }
   .qty-pick-val { flex:1; text-align:center; font-size: var(--fs-body); font-weight:800; color:var(--text); }
   .qty-pick-unit { font-size: var(--fs-label); color:var(--text-muted); font-weight:600; }
   .checkout-success {
@@ -506,10 +578,12 @@ export const appCss = `
     background: var(--white); border-radius: var(--radius); padding: 20px 15px;
     border: 1.5px solid var(--border); cursor: pointer;
     display: flex; flex-direction: column; align-items: flex-start; gap: 11px;
-    box-shadow: var(--shadow-sm); transition: border-color 0.15s, transform 0.1s;
+    box-shadow: var(--shadow-sm);
+    transition: border-color 150ms ease, background-color 150ms ease, transform 190ms var(--ease-out);
     text-align: left;
   }
   .module-btn:active { border-color: var(--green); background: var(--green-bg); transform: scale(0.98); }
+  .module-btn:active { transition-duration: 100ms; }
   .module-ico-wrap { width:50px; height:50px; border-radius:14px; display:flex; align-items:center; justify-content:center; }
   .module-lbl { font-size: var(--fs-body); font-weight: 800; color: var(--text); }
   .module-desc { font-size: var(--fs-label); color: var(--text-muted); margin-top: -3px; line-height: 1.45; }
@@ -607,7 +681,9 @@ export const appCss = `
       transparent 0%,
       rgba(255,255,255,0.72) 50%,
       transparent 100%);
-    animation: skel-sweep 1.4s var(--ease-io) infinite;
+    /* linear, never an eased curve: this loops forever, and any ease makes the
+       sweep stall at each end and hard-cut on the wrap. */
+    animation: skel-sweep 1.4s linear infinite;
   }
   @keyframes skel-sweep { to { transform: translateX(100%); } }
 
@@ -693,7 +769,6 @@ export const appCss = `
   .bar-fill {
     animation: bar-grow 420ms var(--ease-out) both;
     transform-origin: left center;
-    will-change: transform;
   }
   @keyframes bar-grow { from { transform: scaleX(0); } }
   .bar-track { overflow: hidden; }
@@ -732,7 +807,8 @@ export const appCss = `
     .stagger-list > * { animation: row-in-reduced 200ms ease both; }
     @keyframes row-in-reduced { from { opacity: 0; } }
     .bar-fill { animation: none; }
-    .sheet { transition-duration: 120ms; }
+    .sheet { transform: none; opacity: 0; transition: opacity 140ms ease; }
+    .sheet[data-open="true"] { transform: none; opacity: 1; }
     .offline-banner[data-entering="true"] { transform: none; }
   }
 

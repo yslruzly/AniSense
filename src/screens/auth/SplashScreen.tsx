@@ -39,10 +39,19 @@ export function SplashScreen({ onSignIn, onSignUp }: { onSignIn: () => void; onS
   const { t, tn } = useLang();
   const [slide, setSlide] = useState(0);
 
+  // The board holds while the app is backgrounded. Without this the timer keeps
+  // firing and a farmer coming back finds the crop and the dots somewhere else
+  // than where they left them.
   useEffect(() => {
     if (BOARD.length < 2) return;
-    const id = setInterval(() => setSlide(n => (n + 1) % BOARD.length), HOLD_MS);
-    return () => clearInterval(id);
+    let id: number | undefined;
+    const start = () => { id = window.setInterval(() => setSlide(n => (n + 1) % BOARD.length), HOLD_MS); };
+    const stop = () => { if (id !== undefined) { clearInterval(id); id = undefined; } };
+    const onVisibility = () => (document.hidden ? stop() : start());
+
+    if (!document.hidden) start();
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => { stop(); document.removeEventListener("visibilitychange", onVisibility); };
   }, []);
 
   const { group, crop } = BOARD[slide] ?? BOARD[0];

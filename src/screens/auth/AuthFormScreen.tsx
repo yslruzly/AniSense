@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { haptic } from "../../lib/platform";
-import { Wheat, ShoppingCart, ArrowLeft, Check, AlertCircle } from "lucide-react";
+import { Wheat, ShoppingCart, ArrowLeft, Check, AlertCircle, MapPin } from "lucide-react";
 import { useLang } from "../../i18n";
 import { UserRole, FarmDetails } from "../../types";
 import { MAIN_CROPS } from "../../data/crops";
+import { FARM_PROVINCE, MUNICIPALITIES, BARANGAYS_BY_MUNICIPALITY, formatFarmLocation } from "../../data/locations";
 import { CropEmoji } from "../../components/CropEmoji";
 
 // ─── Sign In / Sign Up Form ───────────────────────────────────────────────────
@@ -32,7 +33,8 @@ export function AuthFormScreen({
   const [step, setStep] = useState<"form" | "details" | "crops">("form");
   const [selectedCrops, setSelectedCrops] = useState<string[]>([]);
   const [farmYears, setFarmYears] = useState("");
-  const [farmLocation, setFarmLocation] = useState("");
+  const [farmMunicipality, setFarmMunicipality] = useState("");
+  const [farmBarangay, setFarmBarangay] = useState("");
   const [farmPhone, setFarmPhone] = useState("");
   const { t, tn } = useLang();
 
@@ -73,7 +75,8 @@ export function AuthFormScreen({
   const finishDetails = () => {
     const yrs = Number(farmYears);
     if (!farmYears.trim() || isNaN(yrs) || yrs < 0 || yrs > 80) { setError(t("err_years_required")); return; }
-    if (!farmLocation.trim()) { setError(t("err_loc_required")); return; }
+    if (!farmMunicipality) { setError(t("err_municipality_required")); return; }
+    if (!farmBarangay) { setError(t("err_barangay_required")); return; }
     if (!farmPhone.trim()) { setError(t("err_phone_required")); return; }
     if (!/^0?9\d{9}$/.test(farmPhone.replace(/\s/g, ""))) { setError(t("err_valid_phone")); return; }
     setError("");
@@ -88,7 +91,7 @@ export function AuthFormScreen({
       setLoading(false);
       onSuccess(name.trim(), role, selectedCrops, {
         years: farmYears.trim(),
-        location: farmLocation.trim(),
+        location: formatFarmLocation(farmBarangay, farmMunicipality),
         phone: farmPhone.trim(),
       });
     }, 1200);
@@ -132,11 +135,39 @@ export function AuthFormScreen({
             <p className="a-help">{t("auth_help_years")}</p>
           </div>
 
+          {/* Location is picked, not typed. Free text produced "Talavera",
+              "talavera n.e.", and "Brgy. San Ricardo Talavera" for the same
+              place, none of which a buyer can filter on. */}
           <div className="a-field">
-            <label className="a-lbl" htmlFor="f-loc">{t("farm_loc_lbl")}</label>
-            <input id="f-loc" className="a-inp" type="text"
-              placeholder={t("farm_loc_ph")} value={farmLocation}
-              onChange={e => { setFarmLocation(e.target.value); setError(""); }} />
+            <label className="a-lbl">{t("farm_loc_lbl")}</label>
+            <div className="a-locked">
+              <MapPin size={20} color="var(--tanim)" />
+              <span>{FARM_PROVINCE}</span>
+              <span className="a-locked-note">{t("farm_province_lbl")}</span>
+            </div>
+          </div>
+
+          <div className="a-field">
+            <label className="a-lbl" htmlFor="f-mun">{t("farm_municipality_lbl")}</label>
+            <select id="f-mun" className="a-inp a-select" value={farmMunicipality}
+              onChange={e => { setFarmMunicipality(e.target.value); setFarmBarangay(""); setError(""); }}>
+              <option value="">{t("farm_pick_municipality")}</option>
+              {MUNICIPALITIES.map(m => <option key={m} value={m}>{m}</option>)}
+            </select>
+          </div>
+
+          <div className="a-field">
+            <label className="a-lbl" htmlFor="f-brgy">{t("farm_barangay_lbl")}</label>
+            <select id="f-brgy" className="a-inp a-select" value={farmBarangay}
+              disabled={!farmMunicipality}
+              onChange={e => { setFarmBarangay(e.target.value); setError(""); }}>
+              <option value="">
+                {farmMunicipality ? t("farm_pick_barangay") : t("farm_pick_municipality_first")}
+              </option>
+              {(BARANGAYS_BY_MUNICIPALITY[farmMunicipality] ?? []).map(bg => (
+                <option key={bg} value={bg}>{bg}</option>
+              ))}
+            </select>
           </div>
 
           <div className="a-field">

@@ -6,6 +6,7 @@ import { LISTINGS, SELLER_DETAILS } from "../data/marketplace";
 import { CROP_FILTER_MAP, CROP_CATEGORIES, ALL_RICE_NAMES, RICE_VARIETY_LIST } from "../data/crops";
 import { Hdr } from "../components/layout/Hdr";
 import { CropIcon } from "../components/icons";
+import { CropEmoji } from "../components/CropEmoji";
 
 // ─── Trade / Marketplace Screen ───────────────────────────────────────────────
 export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }: { onProfile: () => void; onBack: () => void; userInitials?: string; userRole?: UserRole }) {
@@ -172,10 +173,7 @@ export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }
             {CROP_CATEGORIES.map(cat => (
               <button key={cat} className={`cat-tab ${category === cat ? "active" : ""}`} onClick={() => selectCategory(cat)}>
                 <div className="cat-tab-ico">
-                  {cat === "All Crops"
-                    ? <Wheat size={20} color={category === cat ? "var(--tanim)" : "var(--text-muted)"} />
-                    : <CropIcon crop={cat} size={20} />
-                  }
+                  <CropEmoji crop={cat} size={24} />
                 </div>
                 <span>{cat === "All Crops" ? t("all") : tn(cat)}</span>
               </button>

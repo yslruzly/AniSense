@@ -15,6 +15,7 @@ export const CROP_EMOJI: Record<string, string> = {
   Mango: "🥭",       // Unicode 11, Android 9+
   Garlic: "🧄",      // Unicode 12, Android 10+
   Squash: "🎃",      // no plain pumpkin emoji exists; this one is carved
+  "All Crops": "🧺", // the basket stands for everything, and clashes with no crop
   // rice price varieties, so the picker and the market list agree
   "Rice (All Varieties)": "🌾",
   "Special Rice": "🌾",

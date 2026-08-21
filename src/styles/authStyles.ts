@@ -51,10 +51,14 @@ export const authCss = `
     width: 100%; min-height: 60px; border: none; border-radius: var(--r-md);
     font-family: var(--font-display); font-weight: 600; font-size: var(--fs-lead); letter-spacing: -.01em;
     display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer;
-    transition: transform 120ms var(--ease-out), background-color 140ms ease, opacity 140ms ease;
+    transition: transform 180ms var(--ease-out), background-color 140ms ease, opacity 140ms ease;
     touch-action: manipulation; -webkit-tap-highlight-color: transparent;
   }
   .a-btn:active { transform: scale(.975); }
+  /* Press snaps, release relaxes. Symmetric timing makes a button feel rubbery,
+     and the app sheet already does it this way. */
+  .a-btn:active, .a-iconbtn:active, .a-pick:active,
+  .a-role:active, .a-crop:active, .a-reveal:active { transition-duration: 100ms; }
   .a-btn-gold  { background: var(--palay); color: #1B1403; }
   .a-btn-green { background: var(--tanim); color: #fff; }
   .a-btn-ghost-ink { background: transparent; color: #fff; box-shadow: inset 0 0 0 2px rgba(255,255,255,.34); }
@@ -65,7 +69,7 @@ export const authCss = `
     width: 52px; height: 52px; border-radius: var(--r-md); border: none;
     background: rgba(255,255,255,.14); box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.26);
     display: flex; align-items: center; justify-content: center; cursor: pointer;
-    transition: transform 120ms var(--ease-out), background-color 140ms ease;
+    transition: transform 180ms var(--ease-out), background-color 140ms ease;
   }
   .a-iconbtn:active { transform: scale(.94); }
   /* The ink variant disappears on paper, so screens outside the ink head get this. */
@@ -92,7 +96,9 @@ export const authCss = `
   .a-brandname { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-lead); color: #fff; letter-spacing: -.01em; }
 
   /* ── Entry choreography (stagger 40–280ms, ease-out) ───────────────────── */
-  .a-stagger > * { opacity: 0; transform: translateY(10px); animation: a-rise 460ms var(--ease-out) forwards; }
+  /* 320ms per item, 60ms apart: the last row settles at 600ms rather than 740ms.
+     Stagger is decoration and must never make the screen feel slow to arrive. */
+  .a-stagger > * { opacity: 0; transform: translateY(10px); animation: a-rise 320ms var(--ease-out) forwards; }
   .a-stagger > *:nth-child(1) { animation-delay: 40ms; }
   .a-stagger > *:nth-child(2) { animation-delay: 100ms; }
   .a-stagger > *:nth-child(3) { animation-delay: 160ms; }
@@ -104,7 +110,10 @@ export const authCss = `
     @keyframes a-fade { to { opacity: 1; } }
     .a-btn, .a-iconbtn, .a-pick, .a-role, .a-crop, .a-reveal { transition: background-color 140ms ease; }
     .a-btn:active, .a-iconbtn:active, .a-pick:active, .a-role:active, .a-crop:active, .a-reveal:active { transform: none; }
-    .a-board-slide { animation: a-fade 260ms ease; }
+    /* Reduced motion is gentler, not nothing: the price still crossfades so the
+       swap stays legible, it just no longer travels or blurs. */
+    .a-board-slide { animation: a-fade-in 260ms ease; }
+    @keyframes a-fade-in { from { opacity: 0; } to { opacity: 1; } }
     .a-board-dots span { transition: background-color 140ms ease; }
     .a-board-dots span.on { transform: none; }
   }
@@ -118,7 +127,7 @@ export const authCss = `
     width: 100%; text-align: left; background: var(--card); border: none; cursor: pointer;
     box-shadow: inset 0 0 0 2px var(--line); border-radius: var(--r-lg);
     padding: 22px; display: flex; align-items: center; gap: 16px;
-    transition: transform 130ms var(--ease-out), box-shadow 160ms ease, background-color 160ms ease;
+    transition: transform 180ms var(--ease-out), box-shadow 160ms ease, background-color 160ms ease;
     touch-action: manipulation; -webkit-tap-highlight-color: transparent;
   }
   .a-pick:active { transform: scale(.985); }
@@ -210,8 +219,14 @@ export const authCss = `
     border-top: 1px solid rgba(255,255,255,.16); font-size: var(--fs-label); color: rgba(255,255,255,.72);
   }
   /* The board cycles through the crop groups; each slide fades up on arrival. */
-  .a-board-slide { animation: a-swap 420ms var(--ease-out); }
-  @keyframes a-swap { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: none; } }
+  /* Under 300ms, like every other UI beat here. The blur is the trick for a
+     swap in place: it blends the outgoing and incoming figures into one motion
+     instead of two numbers trading places. */
+  .a-board-slide { animation: a-swap 260ms var(--ease-out); }
+  @keyframes a-swap {
+    from { opacity: 0; transform: translateY(7px); filter: blur(3px); }
+    to   { opacity: 1; transform: none;            filter: blur(0); }
+  }
   .a-board-dots { display: flex; justify-content: center; gap: 6px; margin-top: 16px; }
   .a-board-dots span {
     width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.26);
@@ -230,7 +245,7 @@ export const authCss = `
     width: 100%; text-align: left; background: var(--card); border: none; cursor: pointer;
     box-shadow: inset 0 0 0 2px var(--line); border-radius: var(--r-lg); padding: 20px;
     display: flex; align-items: center; gap: 16px;
-    transition: transform 130ms var(--ease-out), box-shadow 160ms ease, background-color 160ms ease;
+    transition: transform 180ms var(--ease-out), box-shadow 160ms ease, background-color 160ms ease;
     touch-action: manipulation; -webkit-tap-highlight-color: transparent;
   }
   .a-role:active { transform: scale(.985); }
@@ -259,6 +274,25 @@ export const authCss = `
   .a-inp:focus { outline: none; box-shadow: inset 0 0 0 3px var(--tanim); }
   .a-inp.num { font-variant-numeric: tabular-nums; letter-spacing: .02em; }
   .a-inp.bad { box-shadow: inset 0 0 0 3px var(--error); }
+  /* A native select, deliberately. The OS picker is a full-screen list with
+     system-sized rows and its own scrolling, which beats anything custom for a
+     849-item barangay list on a 50-70 year-old's phone. */
+  .a-select {
+    appearance: none; -webkit-appearance: none;
+    padding-right: 52px; cursor: pointer;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2316211B' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 18px center;
+  }
+  .a-select:disabled { background-color: var(--paper-alt); color: #8F958E; cursor: default; opacity: 1; }
+  /* Province is fixed, so it is shown rather than asked. */
+  .a-locked {
+    display: flex; align-items: center; gap: 12px;
+    min-height: 62px; padding: 0 18px; border-radius: var(--r-md);
+    background: var(--tanim-sk); box-shadow: inset 0 0 0 2px var(--tanim-sk);
+    font-size: var(--fs-lead); color: var(--ink);
+  }
+  .a-locked-note { margin-left: auto; font-size: var(--fs-label); color: var(--dilim); }
   .a-prefix-row { display: flex; }
   .a-prefix {
     display: flex; align-items: center; gap: 7px; flex-shrink: 0; padding: 0 16px;
@@ -273,7 +307,7 @@ export const authCss = `
     position: absolute; right: 8px; height: 48px; min-width: 88px; padding: 0 14px;
     border: none; border-radius: 10px; background: #F1EEE5; color: var(--tanim);
     font-family: var(--font-display); font-weight: 600; font-size: var(--fs-label); cursor: pointer;
-    transition: transform 120ms var(--ease-out), background-color 140ms ease;
+    transition: transform 180ms var(--ease-out), background-color 140ms ease;
   }
   .a-reveal:active { transform: scale(.95); }
   .a-alert {
@@ -297,7 +331,7 @@ export const authCss = `
     position: relative; background: var(--card); border: none; cursor: pointer; text-align: left;
     box-shadow: inset 0 0 0 2px var(--line); border-radius: var(--r-md);
     padding: 16px 14px; display: flex; flex-direction: column; gap: 9px; min-height: 124px;
-    transition: transform 130ms var(--ease-out), box-shadow 160ms ease, background-color 160ms ease;
+    transition: transform 180ms var(--ease-out), box-shadow 160ms ease, background-color 160ms ease;
     touch-action: manipulation; -webkit-tap-highlight-color: transparent;
   }
   .a-crop:active { transform: scale(.97); }

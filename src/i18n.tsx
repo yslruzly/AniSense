@@ -396,6 +396,17 @@ export const translations: Dict = {
   farm_years_lbl: { en: "Years of Farming", tl: "Taon sa Pagsasaka" },
   farm_years_ph: { en: "e.g. 12", tl: "hal. 12" },
   farm_loc_lbl: { en: "Farm Location", tl: "Lokasyon ng Bukid" },
+  farm_province_lbl: { en: "Province", tl: "Probinsya" },
+  farm_municipality_lbl: { en: "City / Municipality", tl: "Lungsod / Bayan" },
+  farm_barangay_lbl: { en: "Barangay", tl: "Barangay" },
+  farm_pick_municipality: { en: "Choose your city or municipality", tl: "Piliin ang lungsod o bayan" },
+  farm_pick_barangay: { en: "Choose your barangay", tl: "Piliin ang barangay" },
+  farm_pick_municipality_first: { en: "Choose a city or municipality first", tl: "Piliin muna ang lungsod o bayan" },
+  err_municipality_required: {
+    en: "Choose your city or municipality.",
+    tl: "Piliin ang iyong lungsod o bayan.",
+  },
+  err_barangay_required: { en: "Choose your barangay.", tl: "Piliin ang iyong barangay." },
   farm_loc_ph: {
     en: "e.g. Cabanatuan City, Nueva Ecija",
     tl: "hal. Cabanatuan City, Nueva Ecija",
