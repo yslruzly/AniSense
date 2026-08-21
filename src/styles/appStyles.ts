@@ -1,4 +1,5 @@
 import riceFieldWide from "../assets/rice-field-wide.webp";
+import expensesBg from "../assets/expenses-bg.webp";
 
 export const appCss = `
   /* Tokens (colour, type ramp, radii, motion) live in styles/tokens.ts,
@@ -229,9 +230,24 @@ export const appCss = `
   }
 
   /* ── Expenses ── */
-  .exp-hero { background: var(--tanim); border-radius:var(--radius); padding:26px 18px; color:#fff; text-align:center; }
-  .exp-total-lbl { font-size: var(--fs-label); opacity:.85; margin-bottom:6px; font-weight:500; }
-  .exp-total { font-family: var(--font-display); font-size: var(--fs-display); font-weight:700; }
+  /* No colour cast: the photograph carries the card and is simply darkened
+     enough to hold white text. The base is ink rather than green so a failed
+     image load falls back to the same dark, not to a different card. */
+  .exp-hero {
+    position: relative; isolation: isolate; overflow: hidden;
+    background: var(--ink); border-radius: var(--radius);
+    padding: 26px 18px; color: #fff; text-align: center;
+  }
+  .exp-hero::before {
+    content: ""; position: absolute; inset: 0; z-index: -1;
+    background-image:
+      linear-gradient(100deg, rgba(16,21,18,.70) 0%, rgba(16,21,18,.56) 45%, rgba(16,21,18,.40) 100%),
+      url(${expensesBg});
+    background-size: cover, cover;
+    background-position: center, center;
+  }
+  .exp-total-lbl { font-size: var(--fs-label); opacity:.94; margin-bottom:6px; font-weight:500; text-shadow: 0 1px 3px rgba(11,15,12,.6); }
+  .exp-total { font-family: var(--font-display); font-size: var(--fs-display); font-weight:700; text-shadow: 0 1px 4px rgba(11,15,12,.55); }
 
   .frow { display:flex; gap:8px; overflow-x:auto; padding-bottom:2px; flex-shrink:0; }
   .frow::-webkit-scrollbar { display:none; }
@@ -534,6 +550,58 @@ export const appCss = `
   .prof-role  { font-size: var(--fs-label); opacity: .85; margin-bottom: 11px; }
   .prof-crops { display: flex; gap: 7px; flex-wrap: wrap; justify-content: center; }
   .crop-tag   { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); border-radius: 99px; padding: 4px 11px; font-size: var(--fs-label); font-weight: 600; color: #fff; }
+
+  /* Scrollable sheets. A phone scrolls by dragging, so the bar is only clutter
+     over the content, exactly as it is on .scroll and .a-scroll. */
+  .modal-sheet { overflow-y: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .modal-sheet::-webkit-scrollbar { display: none; }
+
+  /* The crop picker in the post-a-listing sheet. minmax(0, 1fr) is the whole
+     fix for the overflow: a plain 1fr will not shrink below its content, so
+     "Kalamansi" pushed the tracks wider than the sheet and produced the
+     horizontal scrollbar and the clipped last column. */
+  .crop-pick-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; }
+  .crop-pick {
+    min-width: 0; border-radius: 12px; padding: 12px 6px; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    background: var(--paper); border: 2px solid var(--line);
+    transition: background-color 160ms ease, border-color 160ms ease;
+  }
+  .crop-pick.on { background: var(--tanim-sk); border-color: var(--tanim); }
+  .crop-pick-emoji { font-size: var(--fs-title); line-height: 1; }
+  .crop-pick-lbl {
+    font-size: var(--fs-label); font-weight: 700; color: var(--text-soft);
+    text-align: center; line-height: 1.2; overflow-wrap: anywhere;
+  }
+  .crop-pick.on .crop-pick-lbl { color: var(--tanim); }
+
+  /* Heading card for the AI block. A green plate so the two model cards under
+     it read as one section rather than two cards that happen to be adjacent.
+     Sits below the gap the scroll already provides, so it needs no margin. */
+  .ai-reco-head {
+    display: flex; align-items: center; gap: 11px;
+    background: var(--tanim); color: #fff;
+    border-radius: var(--radius); padding: 15px 18px;
+    font-family: var(--font-display); font-weight: 700; font-size: var(--fs-lead);
+    letter-spacing: -.01em;
+  }
+
+  /* ── Model badge ─────────────────────────────────────────────────────────
+     The same pill on both forecast cards, so the two read as one family. It
+     never wraps: at this card width the pill was breaking mid-label and the
+     heading beside it was being clipped. The pill holds its size and the
+     heading takes what is left and wraps. */
+  .model-badge-row { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 4px; }
+  .model-badge {
+    display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0;
+    background: var(--tanim-sk); color: var(--tanim);
+    font-size: var(--fs-label); font-weight: 700;
+    padding: 4px 11px; border-radius: 99px; white-space: nowrap;
+  }
+  .model-badge-title {
+    font-size: var(--fs-label); font-weight: 700; color: var(--text);
+    min-width: 0; line-height: 1.35; padding-top: 2px;
+  }
 
   .info-row { display: flex; align-items: center; gap: 13px; padding: 13px 0; border-bottom: 1px solid var(--border); }
   .info-row:last-child { border-bottom: none; }

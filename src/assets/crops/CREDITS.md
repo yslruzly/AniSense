@@ -32,3 +32,4 @@ image rather than implying a distinction the picture cannot show.
 - `rice-regular-milled` uses `rice-special.webp`
 - `mango-horse` uses `mango-carab.webp`
 - `tom-beef` uses `tom-cherry.webp`
+| `src/assets/expenses-bg.webp` | StockSnap | CC0 | Accounting Finance (calculator at a desk) |

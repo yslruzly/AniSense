@@ -1,4 +1,4 @@
-import { LayoutDashboard, Banknote, BarChart2, ShoppingCart, CloudSun, CheckCircle, AlertTriangle, TrendingUp, TrendingDown } from "lucide-react";
+import { LayoutDashboard, Banknote, BarChart2, ShoppingCart, CloudSun, CheckCircle, AlertTriangle, TrendingUp, TrendingDown, Bot } from "lucide-react";
 import { useLang } from "../i18n";
 import { Screen, UserRole } from "../types";
 import { CROPS } from "../data/crops";
@@ -63,12 +63,12 @@ export function HomeScreen({ onNavigate, onProfile, isOffline, lastUpdated, user
 
         {/* Quick Stats */}
         <div className="g2">
-          <div className="card" style={{ borderLeft: "4px solid var(--tanim)" }}>
+          <div className="card">
             <div style={{ fontSize: "var(--fs-label)", color: "var(--text-muted)", fontWeight: 600, marginBottom: 4 }}>{t("home_crops_rising")}</div>
             <div style={{ fontSize: "var(--fs-display)", fontWeight: 800, color: "var(--tanim)" }}>{risingCrops}/{CROPS.length}</div>
             <div style={{ fontSize: "var(--fs-label)", color: "var(--text-muted)", marginTop: 2 }}>{t("home_crops_up")}</div>
           </div>
-          <div className="card" style={{ borderLeft: "4px solid var(--tanim)" }}>
+          <div className="card">
             <div style={{ fontSize: "var(--fs-label)", color: "var(--text-muted)", fontWeight: 600, marginBottom: 4 }}>{t("home_total_expenses")}</div>
             <div style={{ fontSize: "var(--fs-title)", fontWeight: 800, color: "var(--tanim)" }}>₱{totalExpenses.toLocaleString()}</div>
             <div style={{ fontSize: "var(--fs-label)", color: "var(--text-muted)", marginTop: 2 }}>{t("home_this_month")}</div>
@@ -92,6 +92,15 @@ export function HomeScreen({ onNavigate, onProfile, isOffline, lastUpdated, user
             ))}
           </div>
         </div>
+
+        {/* Heading for the two model cards. Farmer-only like the cards it
+            introduces, or a buyer would get a heading over nothing. */}
+        {userRole !== "buyer" && (
+          <div className="ai-reco-head">
+            <Bot size={22} color="#fff" strokeWidth={2.2} />
+            <span>{t("home_ai_recos")}</span>
+          </div>
+        )}
 
         {/* ARIMA + AI Buy/Sell/Hold, farmer only */}
         {userRole !== "buyer" && <AIAdvisorCard farmerCrops={farmerCrops} />}

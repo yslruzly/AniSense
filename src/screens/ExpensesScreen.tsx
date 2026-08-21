@@ -572,7 +572,7 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
       {/* Add/Edit modal, farmer only */}
       {!isBuyer && showModal && (
         <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "flex-end", zIndex: 50 }} onClick={() => setShowModal(false)}>
-          <div style={{ background: "#fff", borderRadius: "22px 22px 0 0", padding: "0 0 28px 0", width: "100%", maxHeight: "93%", overflowY: "auto", boxShadow: "0 -8px 40px rgba(0,0,0,0.18)" }} onClick={e => e.stopPropagation()}>
+          <div className="modal-sheet" style={{ background: "#fff", borderRadius: "22px 22px 0 0", padding: "0 0 28px 0", width: "100%", maxHeight: "93%", boxShadow: "0 -8px 40px rgba(0,0,0,0.18)" }} onClick={e => e.stopPropagation()}>
 
             {/* Drag handle */}
             <div style={{ display: "flex", justifyContent: "center", paddingTop: 12, marginBottom: 4 }}>

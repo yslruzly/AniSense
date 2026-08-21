@@ -59,8 +59,10 @@ export const CROP_GROUPS: CropGroup[] = [
     ],
   },
 ];
-// Flat list for backward compat (analytics, home screen, etc.)
-export const CROPS: CropPrice[] = CROP_GROUPS.flatMap(g => g.varieties);
+// Flat list for analytics, the home screen, and anywhere else that wants every
+// crop at once. Rice leads because it is the crop this app exists for; leaving
+// it out is what had Home counting 17 while Market counted 20.
+export const CROPS: CropPrice[] = [...RICE_VARIETIES, ...CROP_GROUPS.flatMap(g => g.varieties)];
 export const PRICE_HISTORY: PricePoint[] = [
   { day: "Mon", rice: 27, corn: 30, vegetables: 28 },
   { day: "Tue", rice: 26, corn: 31, vegetables: 29 },

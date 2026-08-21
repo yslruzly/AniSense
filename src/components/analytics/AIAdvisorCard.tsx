@@ -2,7 +2,7 @@ import { Bot } from "lucide-react";
 import { useLang } from "../../i18n";
 import { CROP_GROUPS, RICE_VARIETIES } from "../../data/crops";
 import { ARIMA_DATA } from "../../data/forecast";
-import { CropIcon } from "../icons";
+import { CropEmoji } from "../CropEmoji";
 
 export function AIAdvisorCard({ farmerCrops = ["Rice", "Corn"] }: { farmerCrops?: string[] }) {
   const { t, tn } = useLang();
@@ -39,17 +39,17 @@ export function AIAdvisorCard({ farmerCrops = ["Rice", "Corn"] }: { farmerCrops?
 
   return (
     <div className="card">
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-        <span style={{ background: "var(--ink)", color: "var(--palay)", fontSize: "var(--fs-label)", fontWeight: 700, padding: "3px 8px", borderRadius: 99, display: "flex", alignItems: "center", gap: 4 }}>
-          <Bot size={12} color="var(--palay)" /> ARIMA + AI
+      <div className="model-badge-row">
+        <span className="model-badge">
+          <Bot size={13} color="var(--tanim)" /> ARIMA + AI
         </span>
-        <span style={{ fontSize: "var(--fs-label)", fontWeight: 700, color: "var(--text)" }}>{t("ana_suggestion")}</span>
+        <span className="model-badge-title">{t("ana_suggestion")}</span>
       </div>
       <div style={{ fontSize: "var(--fs-label)", color: "var(--text-muted)", marginBottom: 12 }}>{t("ana_suggestion_sub")}</div>
       {recs.map(r => (
         <div key={r.name} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: "1px solid var(--border)" }}>
           <div style={{ width: 36, height: 36, borderRadius: 10, background: "var(--tanim-sk)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <CropIcon crop={r.name} size={16} />
+            <CropEmoji crop={r.name} size={18} />
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>

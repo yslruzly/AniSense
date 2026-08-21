@@ -148,6 +148,9 @@ export const translations: Dict = {
   home_mod_weather: { en: "Weather", tl: "Panahon" },
   home_mod_weather_desc: { en: "Farm conditions", tl: "Lagay ng panahon" },
 
+  /** Heading for the two model cards (ARIMA + AI, ARIMA forecast). */
+  home_ai_recos: { en: "AI Recommendations", tl: "Mga rekomendasyon ng AI" },
+
   // ── Market ────────────────────────────────────────────────────────────────
   market_title: { en: "Market", tl: "Merkado" },
   market_sub: { en: "Crop prices", tl: "Presyo ng pananim" },

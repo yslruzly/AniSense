@@ -2,7 +2,7 @@ import { TrendingUp, TrendingDown } from "lucide-react";
 import { useLang } from "../../i18n";
 import { CROP_GROUPS, RICE_VARIETIES } from "../../data/crops";
 import { ARIMA_DATA } from "../../data/forecast";
-import { CropIcon } from "../icons";
+import { CropEmoji } from "../CropEmoji";
 
 // ─── Predicted Price Card ─────────────────────────────────────────────────────
 export function PredictedPriceCard({ farmerCrops = ["Rice", "Corn"] }: { farmerCrops?: string[] }) {
@@ -26,17 +26,17 @@ export function PredictedPriceCard({ farmerCrops = ["Rice", "Corn"] }: { farmerC
 
   return (
     <div className="card">
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-        <span style={{ background: "var(--tanim-deep)", color: "var(--line)", fontSize: "var(--fs-label)", fontWeight: 700, padding: "3px 8px", borderRadius: 99, display: "flex", alignItems: "center", gap: 4 }}>
-          <TrendingUp size={12} color="var(--line)" /> ARIMA FORECAST
+      <div className="model-badge-row">
+        <span className="model-badge">
+          <TrendingUp size={13} color="var(--tanim)" /> ARIMA FORECAST
         </span>
-        <span style={{ fontSize: "var(--fs-label)", fontWeight: 700, color: "var(--text)" }}>{t("ana_predicted")}</span>
+        <span className="model-badge-title">{t("ana_predicted")}</span>
       </div>
       <div style={{ fontSize: "var(--fs-label)", color: "var(--text-muted)", marginBottom: 12 }}>{t("ana_based_on")}</div>
       {items.map(r => (
         <div key={r.name} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: "1px solid var(--border)" }}>
           <div style={{ width: 36, height: 36, borderRadius: 10, background: "var(--tanim-sk)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <CropIcon crop={r.name} size={16} />
+            <CropEmoji crop={r.name} size={18} />
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: "var(--fs-label)", fontWeight: 700, color: "var(--text)", marginBottom: 2 }}>{tn(r.name)}</div>

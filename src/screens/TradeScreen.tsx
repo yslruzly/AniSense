@@ -345,7 +345,7 @@ export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }
 
         return (
           <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "flex-end", zIndex: 50 }}>
-            <div style={{ background: "var(--paper)", borderRadius: "24px 24px 0 0", width: "100%", maxHeight: "93%", overflowY: "auto", paddingBottom: 24 }}>
+            <div className="modal-sheet" style={{ background: "var(--paper)", borderRadius: "24px 24px 0 0", width: "100%", maxHeight: "93%", paddingBottom: 24 }}>
 
               {/* Header */}
               <div style={{ background: "var(--tanim)", borderRadius: "24px 24px 0 0", padding: "20px 20px 18px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -371,17 +371,14 @@ export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }
                     <span style={{ fontSize: "var(--fs-body)", fontWeight: 800, color: "var(--text)" }}>{t("trade_step_type")}</span>
                   </div>
                   <div style={{ fontSize: "var(--fs-label)", color: "var(--text-muted)", marginBottom: 14 }}>{t("trade_step_type_sub")}</div>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
-                    {CROP_GROUPS_PICKER.map(g => {
-                      const isActive = selectedGroup.label === g.label;
-                      return (
-                        <button key={g.label} onClick={() => setForm(d => ({ ...d, crop: g.varieties[0] }))}
-                          style={{ background: isActive ? "var(--tanim-sk)" : "var(--paper)", border: isActive ? "2px solid var(--tanim)" : "2px solid var(--line)", borderRadius: 12, padding: "10px 4px", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 4, transition: "all 0.15s" }}>
-                          <span style={{ fontSize: "var(--fs-title)" }}>{g.emoji}</span>
-                          <span style={{ fontSize: "var(--fs-label)", fontWeight: 700, color: isActive ? "var(--tanim)" : "var(--text-soft)", textAlign: "center", lineHeight: 1.2 }}>{tn(g.label)}</span>
-                        </button>
-                      );
-                    })}
+                  <div className="crop-pick-grid">
+                    {CROP_GROUPS_PICKER.map(g => (
+                      <button key={g.label} className={`crop-pick ${selectedGroup.label === g.label ? "on" : ""}`}
+                        onClick={() => setForm(d => ({ ...d, crop: g.varieties[0] }))}>
+                        <span className="crop-pick-emoji">{g.emoji}</span>
+                        <span className="crop-pick-lbl">{tn(g.label)}</span>
+                      </button>
+                    ))}
                   </div>
                 </div>
 
@@ -497,7 +494,7 @@ export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }
             </div>
 
             {/* Items */}
-            <div style={{ flex: 1, overflowY: "auto" }}>
+            <div className="modal-sheet" style={{ flex: 1 }}>
               {cart.length === 0 ? (
                 <div className="cart-empty">
                   <div className="cart-empty-ico"><ShoppingCart size={48} color="var(--line-strong)" /></div>

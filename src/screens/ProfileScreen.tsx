@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ArrowLeft, Camera, ShoppingCart, Wheat, Bell, ChevronRight, Globe, Lock, HelpCircle, Settings, LogOut, Phone, Mail, MapPin, Calendar } from "lucide-react";
 import { useLang, LanguageToggle } from "../i18n";
 import { Screen, UserRole, FarmerProfile } from "../types";
-import { CropIcon } from "../components/icons";
+import { CropEmoji } from "../components/CropEmoji";
 
 // ─── Profile Screen ───────────────────────────────────────────────────────────
 export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignOut, userInitials = "JD", userRole }: {
@@ -92,7 +92,7 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
           <div className="prof-crops">
             {(editing ? draft : profile).crops.map(c => (
               <span key={c} className="crop-tag" style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                <CropIcon crop={c} size={12} /> {tn(c)}
+                <CropEmoji crop={c} size={14} /> {tn(c)}
               </span>
             ))}
           </div>
@@ -166,14 +166,14 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
                 {ALL_CROPS.map(c => (
                   <button key={c} onClick={() => toggleCrop(c)}
                     style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 99, border: `1px solid ${draft.crops.includes(c) ? "var(--tanim)" : "var(--line)"}`, background: draft.crops.includes(c) ? "var(--tanim-sk)" : "#fff", color: draft.crops.includes(c) ? "var(--tanim)" : "var(--text-muted)", fontFamily: "inherit", fontSize: "var(--fs-label)", fontWeight: 600, cursor: "pointer" }}>
-                    <CropIcon crop={c} size={14} /> {tn(c)}
+                    <CropEmoji crop={c} size={16} /> {tn(c)}
                   </button>
                 ))}
               </div>
               : <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                 {profile.crops.map(c => (
                   <span key={c} style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 14px", borderRadius: 99, background: "var(--tanim-sk)", border: "1px solid var(--tanim-sk)", color: "var(--tanim)", fontSize: "var(--fs-label)", fontWeight: 600 }}>
-                    <CropIcon crop={c} size={14} /> {tn(c)}
+                    <CropEmoji crop={c} size={16} /> {tn(c)}
                   </span>
                 ))}
               </div>
