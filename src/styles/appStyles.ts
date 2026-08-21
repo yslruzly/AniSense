@@ -75,18 +75,86 @@ export const appCss = `
   .hdr-title { font-family: var(--font-display); font-size: var(--fs-body); font-weight: 700; color: var(--text); line-height: 1.15; }
   .hdr-sub   { font-size: var(--fs-label); color: var(--text-muted); margin-top: 1px; }
   .hdr-right { display: flex; align-items: center; gap: 12px; }
-  .notif { font-size: var(--fs-lead); position: relative; cursor: pointer; }
-  .nbadge {
-    position: absolute; top: -5px; right: -5px;
-    background: var(--red); color: #fff; font-size: var(--fs-label); font-weight: 700;
-    border-radius: 99px; padding: 1px 4px; min-width: 15px; text-align: center;
+  /* A real button, not a div: it is a tap target, so it gets a 40px box, a
+     label for screen readers, and press feedback like everything else. */
+  .notif {
+    position: relative; width: 40px; height: 40px; border-radius: 50%;
+    border: none; background: none; cursor: pointer; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 190ms var(--ease-out), background-color 160ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
+  .notif:active { transition-duration: 100ms; transform: scale(0.94); background: var(--paper-alt); }
+  /* The badge was 16px type in a 15px pill hung off a 19px bell, which is what
+     made it read as a blob. 12px in a 17px disc, tucked onto the bell rather
+     than floating clear of it, and ringed in the header's own white so it
+     reads as a badge instead of a collision. */
+  /* Hung off the glyph, not the button box, so it clips the bell's top-right
+     corner the way a badge should instead of sitting on top of it. */
+  .notif-ico { position: relative; display: flex; }
+  .nbadge {
+    position: absolute; top: -7px; right: -8px;
+    min-width: 16px; height: 16px; padding: 0 4px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--red); color: #fff;
+    font-size: 11px; font-weight: 800; line-height: 1;
+    border-radius: 99px; box-shadow: 0 0 0 2px var(--white);
+    font-variant-numeric: tabular-nums;
+  }
+  .hdr-back {
+    background: var(--tanim-sk); border: 1px solid var(--tanim-sk); border-radius: 8px;
+    width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; margin-right: 8px; flex-shrink: 0;
+  }
+
+  /* ── Alerts sheet ────────────────────────────────────────────────────────
+     What the bell opens. Same bottom-sheet shape as the other sheets so it is
+     dismissed the way the rest of the app already taught. */
+  .alerts-scrim {
+    position: absolute; inset: 0; z-index: 70;
+    background: rgba(0,0,0,.55); display: flex; align-items: flex-end;
+  }
+  .alerts-sheet {
+    width: 100%; max-height: 82%; background: var(--paper);
+    border-radius: 24px 24px 0 0; padding-bottom: 22px;
+  }
+  .alerts-head {
+    background: var(--tanim); border-radius: 24px 24px 0 0; padding: 20px 20px 18px;
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+  }
+  .alerts-head-t { font-family: var(--font-display); font-size: var(--fs-lead); font-weight: 800; color: #fff; }
+  .alerts-head-s { font-size: var(--fs-label); color: rgba(255,255,255,.82); margin-top: 3px; line-height: 1.35; }
+  .alerts-close {
+    background: rgba(255,255,255,.2); border: none; border-radius: 50%;
+    width: 40px; height: 40px; flex-shrink: 0; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 190ms var(--ease-out), background-color 160ms ease;
+  }
+  .alerts-close:active { transition-duration: 100ms; transform: scale(0.94); background: rgba(255,255,255,.32); }
+  .alerts-body { padding: 14px 16px 0; display: flex; flex-direction: column; gap: 10px; }
+  .alert-row {
+    display: flex; align-items: center; gap: 13px; padding: 14px;
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: var(--radius); box-shadow: var(--shadow-sm);
+  }
+  .alert-ico {
+    width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .alert-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .alert-t { font-size: var(--fs-label); font-weight: 700; color: var(--text); }
+  .alert-b { font-size: var(--fs-label); color: var(--text-muted); line-height: 1.4; }
+  .alerts-empty { padding: 26px 6px 10px; text-align: center; }
+  .alerts-empty-t { font-size: var(--fs-body); font-weight: 700; color: var(--text); }
+  .alerts-empty-s { font-size: var(--fs-label); color: var(--text-muted); margin-top: 6px; line-height: 1.5; }
   .ava {
+    font-family: inherit; padding: 0;
     width: 34px; height: 34px; border-radius: 50%;
     background: var(--tanim);
     color:#fff; font-size: var(--fs-label); font-weight:700;
     display:flex; align-items:center; justify-content:center;
     border: 2px solid var(--tanim-sk); cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
   }
   /* Gated: on a touchscreen :hover latches on tap and the state sticks. */
   @media (hover: hover) and (pointer: fine) {
@@ -183,17 +251,22 @@ export const appCss = `
     height: var(--bnav-h);
     display: flex; align-items: center; justify-content: space-around;
     padding: 0 6px; border-radius: var(--radius-lg);
-    /* Lighter than the paper beneath it, so the material reads as raised. */
-    background: rgba(255,255,255,.72);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    /* Bright top edge is light catching the material; the wide soft shadow is
-       what actually sells the height off the page. A bar is a big surface, so
-       it takes a deeper shadow than a chip would. */
+    /* Glass. The tint is thin enough that content reads through it; the blur
+       and the saturate are what turn that into a material rather than a
+       washed-out panel. A sheen across the top-left catches the light. */
+    background:
+      linear-gradient(155deg, rgba(255,255,255,.42), rgba(255,255,255,.12) 52%, rgba(255,255,255,0) 82%),
+      rgba(255,255,255,.50);
+    backdrop-filter: blur(26px) saturate(190%);
+    -webkit-backdrop-filter: blur(26px) saturate(190%);
+    /* Bright top edge is light catching the material, the dark bottom edge is
+       its thickness, and the wide soft shadow is what sells the height off the
+       page. A bar is a big surface, so it takes a deeper shadow than a chip. */
     box-shadow:
-      inset 0 1px 0 rgba(255,255,255,.85),
-      inset 0 0 0 1px rgba(22,33,27,.07),
-      0 10px 32px -10px rgba(22,33,27,.28),
+      inset 0 1px 0 rgba(255,255,255,.9),
+      inset 0 0 0 1px rgba(22,33,27,.08),
+      inset 0 -1px 0 rgba(22,33,27,.06),
+      0 12px 34px -10px rgba(22,33,27,.30),
       0 2px 8px -3px rgba(22,33,27,.14);
   }
   .ntab {
@@ -207,7 +280,9 @@ export const appCss = `
   .ntab-lbl { font-size: var(--fs-label); font-weight:600; color:var(--text-soft); }
   /* Solid, never translucent: a light material stacked on a light material is
      where legibility collapses. */
-  .ntab.on { background: var(--green-bg); }
+  /* Solid, never translucent: a light material stacked on a light material is
+     where legibility collapses. */
+  .ntab.on { background: var(--green-bg); box-shadow: inset 0 0 0 1px rgba(11,107,65,.14); }
   .ntab.on .ntab-lbl { color:var(--green); font-weight:700; }
 
   /* Translucency is a preference, not a requirement. Both of these fall back
@@ -630,9 +705,14 @@ export const appCss = `
      enough that white text holds over the pale flooded terraces. */
   .home-header {
     position: relative; isolation: isolate; overflow: hidden;
-    border-radius: var(--radius-lg); padding: 20px 18px 18px; color: #fff;
-    box-shadow: 0 14px 30px -16px rgba(22,33,27,.45);
+    border-radius: var(--radius-lg); padding: 24px 20px 22px; color: #fff;
+    box-shadow: 0 16px 34px -16px rgba(22,33,27,.45);
+    /* Tall enough for the bukid to be a photograph rather than a strip. The
+       column lets the status pill fall to the bottom edge instead of crowding
+       the date, so the height goes to the field and not to dead space. */
+    min-height: 220px; display: flex; flex-direction: column;
   }
+  .home-header .home-status { margin-top: auto; }
   .home-header::before {
     content: ""; position: absolute; inset: 0; z-index: -1;
     background-image:
@@ -648,7 +728,7 @@ export const appCss = `
     font-family: var(--font-display); font-size: var(--fs-title); font-weight: 700; line-height: 1.25;
     text-shadow: 0 1px 4px rgba(11,15,12,.55);
   }
-  .home-date { font-size: var(--fs-label); opacity: .94; margin-top: 4px; text-shadow: 0 1px 3px rgba(11,15,12,.6); }
+  .home-date { font-size: var(--fs-body); opacity: .94; margin-top: 4px; text-shadow: 0 1px 3px rgba(11,15,12,.6); }
   .home-ava-btn  {
     width: 56px; height: 56px; border-radius: 50%;
     background: var(--lime); border: none;

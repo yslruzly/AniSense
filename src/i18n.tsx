@@ -424,6 +424,21 @@ export const translations: Dict = {
 
   // ── Extra: home ───────────────────────────────────────────────────────────
   home_offline_cached: { en: "Offline: cached data", tl: "Offline: naka-save na datos" },
+  // ── Alerts (header bell) ──────────────────────────────────────────────────
+  alerts_title: { en: "Alerts", tl: "Mga Abiso" },
+  alerts_sub: {
+    en: "Prices and weather worth knowing today",
+    tl: "Presyo at panahon na dapat mong malaman ngayon",
+  },
+  alerts_none: { en: "Nothing to flag right now", tl: "Wala munang abiso ngayon" },
+  alerts_none_sub: {
+    en: "We'll tell you when a price moves sharply or rain is coming.",
+    tl: "Sasabihin namin kapag biglang gumalaw ang presyo o may paparating na ulan.",
+  },
+  alert_price_up: { en: "Price going up", tl: "Tumataas ang presyo" },
+  alert_price_down: { en: "Price going down", tl: "Bumababa ang presyo" },
+  alerts_open: { en: "Open alerts", tl: "Buksan ang mga abiso" },
+
   home_advisory: { en: "Today's Advisory", tl: "Payo Ngayon" },
   home_advisory_sub: { en: "From your local DA office", tl: "Mula sa lokal na opisina ng DA" },
   home_adv_planting: { en: "Good planting conditions", tl: "Mainam ang panahon sa pagtatanim" },
