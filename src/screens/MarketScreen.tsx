@@ -2,7 +2,7 @@ import { useState } from "react";
 import { EmptyState, ErrorState, SkeletonList } from "../components/states";
 import { useResource } from "../hooks/useResource";
 import { fetchPrices } from "../services/prices";
-import { LayoutDashboard, MapPin, Wheat, TrendingUp, TrendingDown, Search, Clock } from "lucide-react";
+import { LayoutDashboard, MapPin, Wheat, TrendingUp, TrendingDown, Search, Clock, ChevronRight } from "lucide-react";
 import { useLang } from "../i18n";
 import { UserRole } from "../types";
 import { RICE_VARIETIES, CROP_GROUPS } from "../data/crops";
@@ -112,16 +112,18 @@ export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userIn
                 ? <img src={cropPhoto(c.id)} alt="" loading="lazy" decoding="async" />
                 : <CropIcon crop={c.group} size={20} />}
             </div>
-            <div>
+            <div className="mkt-row-body">
               <div className="mkt-row-name">{c.name}</div>
               <div className="mkt-row-unit">{tn(c.group)}</div>
             </div>
             <div className="mkt-row-right">
-              <div className="mkt-row-price">₱{c.pricePerKg}<span className="unit-suffix">{t("per_kg_short")}</span></div>
-              <div className="mkt-row-chg" style={{ color: c.change >= 0 ? "var(--tanim)" : "var(--error)" }}>
-                {c.change >= 0 ? <TrendingUp size={15} /> : <TrendingDown size={15} />} {c.change >= 0 ? "+" : ""}{c.change}%
+              <div className="mkt-row-price">₱{c.pricePerKg.toFixed(2)}</div>
+              <div className={`mkt-row-chg ${c.change >= 0 ? "up" : "down"}`}>
+                {c.change >= 0 ? <TrendingUp size={14} strokeWidth={2.6} /> : <TrendingDown size={14} strokeWidth={2.6} />}
+                {c.change >= 0 ? "+" : ""}{c.change}%
               </div>
             </div>
+            <ChevronRight size={18} className="mkt-row-chev" aria-hidden="true" />
           </div>
         ))}
 

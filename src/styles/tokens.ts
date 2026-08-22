@@ -15,15 +15,18 @@ export const tokensCss = `
     /* ── Colour ─────────────────────────────────────────────────────────── */
     --ink:        #16211B;   /* darkest surface, primary text */
     --ink-2:      #22302A;   /* raised panel on ink */
-    --paper:      #FAF8F3;   /* app background */
-    --paper-alt:  #F1EEE5;   /* recessed / secondary background */
+    /* The app sits on a pale green ground rather than warm paper. Each step
+       down stays a step apart so a selected surface never matches the page
+       behind it — that is what makes selection disappear. */
+    --paper:      #EFF6F1;   /* app background (8.0:1 with --text-muted) */
+    --paper-alt:  #E4EDE7;   /* recessed / secondary background */
     --card:       #FFFFFF;
-    --line:       #DCD6C8;   /* hairline */
-    --line-strong:#C7C1B2;
+    --line:       #CFDCD4;   /* hairline, green-grey to match the ground */
+    --line-strong:#B6C8BE;
 
     --tanim:      #0B6B41;   /* primary action, positive movement (5.9:1 on paper) */
     --tanim-deep: #0F3524;
-    --tanim-sk:   #E4F0E8;   /* selected / success surface */
+    --tanim-sk:   #D7EADD;   /* selected / success surface, clear of --paper-alt */
     --palay:      #F2B32C;   /* accent on ink only; fails contrast on paper */
     --gold-text:  #8A5D0C;   /* the readable gold, for text and icons on paper */
     --gold-sk:    #FDF3DD;

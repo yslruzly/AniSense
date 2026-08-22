@@ -93,6 +93,12 @@ export const CROP_CATEGORIES = ["All Crops", ...Object.keys(CROP_FILTER_MAP)];
 // All rice-related crop names (for matching)
 export const ALL_RICE_NAMES = new Set(["Rice", "Rice (All Varieties)", ...RICE_VARIETY_LIST]);
 
+/** Which group a variety belongs to, for rows that show both. */
+export const CROP_GROUP_BY_ID: Record<string, string> = {
+  ...Object.fromEntries(RICE_VARIETIES.map(v => [v.id, "Rice"])),
+  ...Object.fromEntries(CROP_GROUPS.flatMap(g => g.varieties.map(v => [v.id, g.group]))),
+};
+
 export const MAIN_CROPS = [
   "Rice", "Corn", "Onions", "Tomatoes", "Calamansi", "Mango", "Garlic", "Squash",
 ];

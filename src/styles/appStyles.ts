@@ -173,8 +173,69 @@ export const appCss = `
   .scroll::-webkit-scrollbar { display: none; }
 
   /* ── Card ── */
+  /* ── Surfaces ────────────────────────────────────────────────────────────
+     Three levels, not one card repeated. Every box looking identical is what
+     makes a screen read as a wall of panels with no rank to it.
+
+       .panel  recessed, tinted, no shadow  → groups of related rows
+       .card   white, hairline, soft shadow → content that stands on its own
+       hero    photo or ink, one per screen → the anchor you land on           */
   .card { background: var(--white); border-radius: var(--radius); padding: 16px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
   .card-title { font-size: var(--fs-label); font-weight: 700; color: var(--text); margin-bottom: 13px; }
+  .panel {
+    background: var(--paper-alt); border-radius: var(--radius);
+    padding: 14px; border: 1px solid transparent;
+  }
+  .panel-title { font-size: var(--fs-label); font-weight: 700; color: var(--text-soft); margin-bottom: 11px; }
+
+  /* ── Stat tile ───────────────────────────────────────────────────────────
+     A figure with the shape it came from. The mark is decorative; the number
+     beside it is what carries the meaning. */
+  .stat {
+    display: flex; flex-direction: column; gap: 7px;
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 15px 14px; box-shadow: var(--shadow-sm);
+  }
+  .stat-lbl { font-size: var(--fs-label); font-weight: 600; color: var(--text-muted); line-height: 1.3; }
+  .stat-val { font-family: var(--font-display); font-size: var(--fs-title); font-weight: 800; color: var(--tanim); line-height: 1; font-variant-numeric: tabular-nums; }
+  .stat-val.sm { font-size: var(--fs-lead); }
+  .stat-foot { font-size: var(--fs-label); color: var(--text-muted); line-height: 1.3; }
+  .stat-mark { display: flex; align-items: center; min-height: 26px; }
+
+  /* Four figures on one recessed strip, instead of four competing white boxes. */
+  .stat-strip { display: flex; background: var(--paper-alt); border-radius: var(--radius); overflow: hidden; }
+  .stat-strip > * { flex: 1; min-width: 0; padding: 14px 10px; display: flex; flex-direction: column; gap: 4px; align-items: center; text-align: center; }
+  .stat-strip > * + * { border-left: 1px solid var(--line); }
+  .stat-strip .stat-val { font-size: var(--fs-lead); }
+  .stat-strip .stat-lbl { font-size: var(--fs-label); }
+
+  /* ── Micro viz ───────────────────────────────────────────────────────────── */
+  .mv-dots { display: grid; justify-content: start; }
+  .mv-dot { border-radius: 50%; background: var(--line); }
+  .mv-dot.on { background: var(--tanim); }
+  .mv-spark { display: block; overflow: visible; }
+  .mv-bar { display: block; width: 100%; background: var(--line); border-radius: 99px; overflow: hidden; }
+  .mv-bar-fill { display: block; height: 100%; border-radius: 99px; }
+
+  /* ── Affordance ──────────────────────────────────────────────────────────
+     A row that navigates says so: a chevron on the right, and a surface that
+     actually changes under the thumb. Press feedback alone is invisible until
+     you have already committed to the tap. */
+  .row-link {
+    display: flex; align-items: center; gap: 13px; width: 100%;
+    padding: 14px; background: var(--white); border: 1px solid var(--border);
+    border-radius: var(--radius); text-align: left; font-family: inherit;
+    cursor: pointer; min-height: 52px;
+  }
+  .row-link:active { background: var(--paper-alt); }
+  .row-link .row-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .row-link .row-chev { flex-shrink: 0; color: var(--text-faint); display: flex; }
+  .row-link:active .row-chev { color: var(--tanim); }
+
+  /* Selection reads as weight, not only colour: 1px hairline becomes a 2px ring. */
+  .selectable { border: 1px solid var(--border); transition: border-color 160ms ease, background-color 160ms ease; }
+  .selectable.on { border: 2px solid var(--tanim); background: var(--tanim-sk); padding: calc(var(--pad, 14px) - 1px); }
+
 
   /* ── Grid 2 ── */
   .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
@@ -221,19 +282,28 @@ export const appCss = `
   /* ── Market: ticker rows ── */
   .mkt-list-hdr { font-size: var(--fs-label); font-weight:700; color:var(--text-muted); margin-top:2px; }
   .mp-list-hdr-row { display:flex; align-items:center; justify-content:space-between; }
+  /* A card per crop, sitting on the green ground. Photograph, name, and the
+     crop group in green on the left; price and its move stacked right; a
+     chevron because the row opens the crop. */
   .mkt-row {
-    display:flex; align-items:center; gap:12px; padding:13px 14px;
-    border-radius:14px; background:var(--white); border:1px solid var(--paper-alt);
+    display:flex; align-items:center; gap:12px; padding:12px 12px;
+    border-radius:16px; background:var(--white); border:1px solid var(--line);
+    box-shadow: var(--shadow-sm);
   }
+  .mkt-row-body { flex:1; min-width:0; }
+  .mkt-row-chev { color:var(--line-strong); flex-shrink:0; margin-left:2px; }
+  .mkt-row:active .mkt-row-chev { color:var(--tanim); }
   .mkt-row-ico  { width:42px; height:42px; border-radius:12px; background:var(--green-bg); display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden; }
   /* The photo fills the tile. A faint inset edge stops a pale crop (milled
      rice, garlic) from bleeding into the white row behind it. */
   .mkt-row-ico img { width:100%; height:100%; object-fit:cover; display:block; box-shadow: inset 0 0 0 1px rgba(22,33,27,.10); }
   .mkt-row-name { font-size: var(--fs-label); font-weight:700; color:var(--text); }
-  .mkt-row-unit { font-size: var(--fs-label); color:var(--text-muted); margin-top:1px; }
+  .mkt-row-unit { font-size: var(--fs-label); color:var(--tanim); font-weight:600; margin-top:1px; }
   .mkt-row-right { margin-left:auto; text-align:right; flex-shrink:0; }
-  .mkt-row-price { font-size: var(--fs-body); font-weight:800; color:var(--text); }
-  .mkt-row-chg { font-size: var(--fs-label); font-weight:700; display:flex; align-items:center; gap:3px; justify-content:flex-end; margin-top:3px; }
+  .mkt-row-price { font-family: var(--font-display); font-size: var(--fs-body); font-weight:800; color:var(--text); font-variant-numeric: tabular-nums; }
+  .mkt-row-chg { font-size: var(--fs-label); font-weight:700; display:flex; align-items:center; gap:3px; justify-content:flex-end; margin-top:2px; font-variant-numeric: tabular-nums; }
+  .mkt-row-chg.up   { color: var(--tanim); }
+  .mkt-row-chg.down { color: var(--error); }
 
   /* ── Chart ── */
   .chart-svg { width:100%; height:auto; }
@@ -384,7 +454,7 @@ export const appCss = `
     align-items:center; gap:8px; text-align:center; line-height:1.25;
     box-shadow:var(--shadow-sm);
   }
-  .cat-tab.active { background:var(--tanim-sk); border-color:var(--tanim); color:var(--tanim); }
+  .cat-tab.active { background:var(--tanim-sk); border-color:var(--tanim); color:var(--tanim); box-shadow: inset 0 0 0 1px var(--tanim); }
   .cat-tab-ico { width:40px; height:40px; border-radius:12px; background:var(--paper-alt); display:flex; align-items:center; justify-content:center; }
   .cat-tab.active .cat-tab-ico { background:var(--tanim-sk); }
 
@@ -696,7 +766,15 @@ export const appCss = `
   .mini-stat-val { font-size: var(--fs-body); font-weight: 800; color: var(--green); }
   .mini-stat-lbl { font-size: var(--fs-label); color: var(--text-muted); margin-top: 3px; line-height: 1.35; }
 
-  .setting-row { display: flex; align-items: center; gap: 13px; padding: 14px 0; border-bottom: 1px solid var(--border); cursor: pointer; }
+  /* Pressed state is a real surface change, not just a scale. On a row this
+     wide a 1% shrink is invisible; a tinted plate under the thumb is not. */
+  .setting-row {
+    display: flex; align-items: center; gap: 13px;
+    padding: 14px 10px; margin: 0 -10px; border-radius: 12px;
+    border-bottom: 1px solid var(--border); cursor: pointer; min-height: 52px;
+  }
+  .setting-row:active { background: var(--paper-alt); }
+  .setting-row:active svg:last-child { color: var(--tanim); }
   .setting-row:last-child { border-bottom: none; }
   .setting-ico { width: 38px; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
   .setting-lbl { font-size: var(--fs-label); font-weight: 600; color: var(--text); flex: 1; }
@@ -757,22 +835,62 @@ export const appCss = `
     text-align: left;
   }
   .module-btn:active { border-color: var(--green); background: var(--green-bg); transform: scale(0.98); }
+  /* A grid tile is its own affordance — a chevron in this width only squeezes
+     the label into two lines. It gets a surface shift and a tinting icon
+     instead, and the chevrons go on full-width rows where they fit. */
+  .module-text { min-width: 0; }
+  .module-btn:active .module-ico-wrap { background: var(--tanim-sk) !important; }
   .module-btn:active { transition-duration: 100ms; }
   .module-ico-wrap { width:50px; height:50px; border-radius:14px; display:flex; align-items:center; justify-content:center; }
   .module-lbl { font-size: var(--fs-body); font-weight: 800; color: var(--text); }
   .module-desc { font-size: var(--fs-label); color: var(--text-muted); margin-top: -3px; line-height: 1.45; }
 
   /* Quick price strip */
-  .price-strip { display:flex; gap:9px; overflow-x:auto; padding-bottom:2px; flex-shrink:0; }
-  .price-strip::-webkit-scrollbar { display:none; }
-  .price-pill {
-    flex-shrink:0; background:var(--white); border:1.5px solid var(--border);
-    border-radius:14px; padding:11px 15px; display:flex; flex-direction:column; gap:4px;
-    min-width:96px; box-shadow:var(--shadow-sm);
+  /* ── Current prices: a swipeable strip ───────────────────────────────────
+     Snap points so a swipe lands on a card rather than between two, and the
+     scrollbar stays hidden because a phone scrolls by dragging. */
+  .price-strip {
+    display: flex; gap: 10px; overflow-x: auto; padding: 2px 0 4px;
+    flex-shrink: 0; scroll-snap-type: x mandatory;
+    scroll-padding-left: 0; -webkit-overflow-scrolling: touch;
   }
-  .price-pill-name  { font-size: var(--fs-label); font-weight:600; color:var(--text-muted); }
-  .price-pill-val   { font-size: var(--fs-lead); font-weight:800; color:var(--text); }
-  .price-pill-chg   { font-size: var(--fs-label); font-weight:700; }
+  .pcard {
+    scroll-snap-align: start;
+    flex: 0 0 148px; display: flex; flex-direction: column; gap: 2px;
+    padding: 10px 10px 12px; background: var(--white);
+    border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: var(--shadow-sm); cursor: pointer; text-align: left;
+    font-family: inherit;
+  }
+  .pcard-photo {
+    position: relative; display: block; width: 100%; height: 84px;
+    border-radius: 12px; overflow: hidden; margin-bottom: 8px;
+    background: var(--green-bg);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .pcard-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  /* The move sits on the photo, so the card leads with direction. */
+  .pcard-chg {
+    position: absolute; top: 6px; right: 6px;
+    display: inline-flex; align-items: center; gap: 3px;
+    padding: 3px 7px; border-radius: 99px;
+    font-size: var(--fs-label); font-weight: 800; line-height: 1;
+    font-variant-numeric: tabular-nums;
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  }
+  .pcard-chg.up   { background: rgba(228,240,232,.92); color: var(--tanim); }
+  .pcard-chg.down { background: rgba(250,226,223,.92); color: var(--error); }
+  .pcard-name {
+    font-size: var(--fs-label); font-weight: 700; color: var(--text); line-height: 1.25;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    min-height: calc(2 * 1.25em);
+  }
+  .pcard-group { font-size: var(--fs-label); color: var(--text-muted); line-height: 1.2; }
+  .pcard-price {
+    font-family: var(--font-display); font-size: var(--fs-lead); font-weight: 800;
+    color: var(--text); margin-top: 4px; font-variant-numeric: tabular-nums;
+  }
+  .price-strip::-webkit-scrollbar { display:none; }
 
   /* Home section label */
   .home-sec { font-family: var(--font-display); font-size: var(--fs-body); font-weight:700; color:var(--text); margin-bottom:3px; }
@@ -887,7 +1005,7 @@ export const appCss = `
 
      Asymmetric on purpose: the press snaps at 100ms, the release eases back at
      190ms. Symmetric timing is what makes a button feel rubbery. */
-  .card, .mkt-row, .exp-row, .price-row, .price-pill, .module-btn,
+  .card, .mkt-row, .exp-row, .price-row, .pcard, .module-btn,
   .setting-row, .info-row, .fchip, .lstm-tab, .add-btn, .post-btn,
   .ntab, .crop-tag, .signout-btn {
     transition: transform 190ms var(--ease-out), background-color 160ms ease;
@@ -895,14 +1013,14 @@ export const appCss = `
     touch-action: manipulation;
   }
   .card:active, .mkt-row:active, .exp-row:active, .price-row:active,
-  .price-pill:active, .module-btn:active, .setting-row:active, .info-row:active,
+  .pcard:active, .module-btn:active, .setting-row:active, .info-row:active,
   .fchip:active, .lstm-tab:active, .add-btn:active, .post-btn:active,
   .ntab:active, .crop-tag:active, .signout-btn:active {
     transition-duration: 100ms;
   }
   .mkt-row:active, .exp-row:active, .price-row:active,
   .setting-row:active, .info-row:active, .card:active { transform: scale(0.99); }
-  .price-pill:active, .module-btn:active { transform: scale(0.975); }
+  .pcard:active, .module-btn:active { transform: scale(0.975); }
   .fchip:active, .lstm-tab:active, .crop-tag:active,
   .add-btn:active, .post-btn:active, .signout-btn:active { transform: scale(0.97); }
   .ntab:active { transform: scale(0.97); }

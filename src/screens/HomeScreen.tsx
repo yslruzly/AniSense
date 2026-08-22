@@ -1,7 +1,10 @@
-import { LayoutDashboard, Banknote, BarChart2, ShoppingCart, CloudSun, CheckCircle, AlertTriangle, TrendingUp, TrendingDown, Bot } from "lucide-react";
+import { LayoutDashboard, Banknote, BarChart2, ShoppingCart, CloudSun, CheckCircle, AlertTriangle, TrendingUp, TrendingDown, Bot, ChevronRight } from "lucide-react";
 import { useLang } from "../i18n";
 import { Screen, UserRole } from "../types";
-import { CROPS } from "../data/crops";
+import { CROPS, CROP_GROUP_BY_ID } from "../data/crops";
+import { DotRow, Sparkline } from "../components/charts/Micro";
+import { cropPhoto } from "../data/cropPhotos";
+import { CropIcon } from "../components/icons";
 import { EXPENSES } from "../data/expenses";
 import { AIAdvisorCard } from "../components/analytics/AIAdvisorCard";
 import { PredictedPriceCard } from "../components/analytics/PredictedPriceCard";
@@ -17,7 +20,7 @@ export function HomeScreen({ onNavigate, onProfile, isOffline, lastUpdated, user
   userRole?: UserRole;
   farmerCrops?: string[];
 }) {
-  const { t, lang } = useLang();
+  const { t, tn, lang } = useLang();
   const now = new Date();
   const dateStr = now.toLocaleDateString(lang === "tl" ? "fil-PH" : "en-PH", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
   const hour = now.getHours();
@@ -42,6 +45,18 @@ export function HomeScreen({ onNavigate, onProfile, isOffline, lastUpdated, user
   }).reduce((s, e) => s + e.amount, 0);
   const risingCrops = CROPS.filter(c => c.change > 0).length;
 
+  // The five that moved most today, either direction — what a farmer actually
+  // scans a home screen for. The full twenty live in Market.
+  const topMovers = [...CROPS].sort((a, b) => Math.abs(b.change) - Math.abs(a.change)).slice(0, 5);
+
+  // Six months of spend, oldest first, for the sparkline under the total.
+  const expenseTrend = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+    return EXPENSES
+      .filter(e => { const x = new Date(e.date); return x.getMonth() === d.getMonth() && x.getFullYear() === d.getFullYear(); })
+      .reduce((sum, e) => sum + e.amount, 0);
+  });
+
   return (
     <div className="screen">
       <div className="scroll screen-enter">
@@ -61,35 +76,51 @@ export function HomeScreen({ onNavigate, onProfile, isOffline, lastUpdated, user
           </div>
         </div>
 
-        {/* Quick Stats */}
+        {/* Quick stats. The mark shows the shape behind the figure — how many of
+            the twenty rose, and which way the month has been running. */}
         <div className="g2">
-          <div className="card">
-            <div style={{ fontSize: "var(--fs-label)", color: "var(--text-muted)", fontWeight: 600, marginBottom: 4 }}>{t("home_crops_rising")}</div>
-            <div style={{ fontSize: "var(--fs-display)", fontWeight: 800, color: "var(--tanim)" }}>{risingCrops}/{CROPS.length}</div>
-            <div style={{ fontSize: "var(--fs-label)", color: "var(--text-muted)", marginTop: 2 }}>{t("home_crops_up")}</div>
+          <div className="stat">
+            <div className="stat-lbl">{t("home_crops_rising")}</div>
+            <div className="stat-mark"><DotRow total={CROPS.length} filled={risingCrops} /></div>
+            <div className="stat-val">{risingCrops}/{CROPS.length}</div>
+            <div className="stat-foot">{t("home_crops_up")}</div>
           </div>
-          <div className="card">
-            <div style={{ fontSize: "var(--fs-label)", color: "var(--text-muted)", fontWeight: 600, marginBottom: 4 }}>{t("home_total_expenses")}</div>
-            <div style={{ fontSize: "var(--fs-title)", fontWeight: 800, color: "var(--tanim)" }}>₱{totalExpenses.toLocaleString()}</div>
-            <div style={{ fontSize: "var(--fs-label)", color: "var(--text-muted)", marginTop: 2 }}>{t("home_this_month")}</div>
+          <div className="stat">
+            <div className="stat-lbl">{t("home_total_expenses")}</div>
+            <div className="stat-mark"><Sparkline values={expenseTrend} /></div>
+            <div className="stat-val sm">₱{totalExpenses.toLocaleString()}</div>
+            <div className="stat-foot">{t("home_this_month")}</div>
           </div>
         </div>
 
-        {/* Quick price strip */}
+        {/* Current prices. A horizontal strip you swipe through, each crop
+            carrying its own photograph so the row is scannable by sight
+            rather than by reading twenty names. */}
         <div>
           <div className="home-sec">{t("home_current_prices")}</div>
           <div className="home-sec-sub">{t("home_tap_market")}</div>
           <div className="price-strip">
-            {CROPS.map(c => (
-              <div key={c.id} className="price-pill">
-                <div className="price-pill-name">{c.name}</div>
-                <div className="price-pill-val">₱{c.pricePerKg}<span className="unit-suffix">{t("per_kg_short")}</span></div>
-                <div className="price-pill-chg" style={{ color: c.change >= 0 ? "var(--tanim)" : "var(--error)" }}>
-                  {c.change >= 0 ? <TrendingUp size={15} /> : <TrendingDown size={15} />}
-                  {c.change >= 0 ? "+" : ""}{c.change}%
-                </div>
-              </div>
-            ))}
+            {CROPS.map(c => {
+              const up = c.change >= 0;
+              return (
+                <button key={c.id} className="pcard" onClick={() => onNavigate("market")}>
+                  <span className="pcard-photo">
+                    {cropPhoto(c.id)
+                      ? <img src={cropPhoto(c.id)} alt="" loading="lazy" decoding="async" />
+                      : <CropIcon crop={CROP_GROUP_BY_ID[c.id] || c.name} size={24} />}
+                    <span className={`pcard-chg ${up ? "up" : "down"}`}>
+                      {up ? <TrendingUp size={13} strokeWidth={2.8} /> : <TrendingDown size={13} strokeWidth={2.8} />}
+                      {up ? "+" : ""}{c.change}%
+                    </span>
+                  </span>
+                  <span className="pcard-name">{c.name}</span>
+                  <span className="pcard-group">{tn(CROP_GROUP_BY_ID[c.id] || "")}</span>
+                  <span className="pcard-price">
+                    ₱{c.pricePerKg}<span className="unit-suffix">{t("per_kg_short")}</span>
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -116,7 +147,7 @@ export function HomeScreen({ onNavigate, onProfile, isOffline, lastUpdated, user
             {modules.map(m => (
               <button key={m.id} className="module-btn" onClick={() => onNavigate(m.id)}>
                 <div className="module-ico-wrap" style={{ background: m.bg }}>{m.ico}</div>
-                <div>
+                <div className="module-text">
                   <div className="module-lbl">{m.lbl}</div>
                   <div className="module-desc">{m.desc}</div>
                 </div>

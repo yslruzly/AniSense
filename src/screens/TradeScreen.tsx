@@ -7,6 +7,7 @@ import { CROP_FILTER_MAP, CROP_CATEGORIES, ALL_RICE_NAMES, RICE_VARIETY_LIST } f
 import { Hdr } from "../components/layout/Hdr";
 import { CropIcon } from "../components/icons";
 import { CropEmoji } from "../components/CropEmoji";
+import { Ring } from "../components/charts/Micro";
 
 // ─── Trade / Marketplace Screen ───────────────────────────────────────────────
 export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }: { onProfile: () => void; onBack: () => void; userInitials?: string; userRole?: UserRole }) {
@@ -200,18 +201,25 @@ export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }
           )}
         </div>
 
-        <div className="mp-stats">
-          {[
-            { v: String(filtered.length), l: t("trade_active_listings") },
-            { v: `₱${avgPrice}`, l: t("trade_avg_price") },
-            { v: totalKg.toLocaleString(), l: t("trade_total_kg") },
-            { v: "4.7", l: t("trade_avg_rating") },
-          ].map(s => (
-            <div key={s.l} className="mp-stat">
-              <div className="mp-stat-val">{s.v}</div>
-              <div className="mp-stat-lbl">{s.l}</div>
-            </div>
-          ))}
+        {/* One recessed strip rather than four white boxes competing with the
+            listing cards below for the same visual weight. */}
+        <div className="stat-strip">
+          <div>
+            <div className="stat-val">{filtered.length}</div>
+            <div className="stat-lbl">{t("trade_active_listings")}</div>
+          </div>
+          <div>
+            <div className="stat-val">₱{avgPrice}</div>
+            <div className="stat-lbl">{t("trade_avg_price")}</div>
+          </div>
+          <div>
+            <div className="stat-val">{totalKg.toLocaleString()}</div>
+            <div className="stat-lbl">{t("trade_total_kg")}</div>
+          </div>
+          <div>
+            <Ring value={4.7} max={5} size={30} />
+            <div className="stat-lbl">{t("trade_avg_rating")} 4.7</div>
+          </div>
         </div>
 
         <div className="mp-list-hdr-row">
