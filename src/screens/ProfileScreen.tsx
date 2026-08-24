@@ -56,7 +56,6 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
           </button>
           <div>
             <div className="hdr-title">{t("prof_title")}</div>
-            <div className="hdr-sub">{userRole === "buyer" ? t("prof_buyer") : t("prof_farmer")}</div>
           </div>
         </div>
         <div className="hdr-right">

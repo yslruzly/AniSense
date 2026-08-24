@@ -2,7 +2,7 @@ import { useState } from "react";
 import { EmptyState, ErrorState, SkeletonList } from "../components/states";
 import { useResource } from "../hooks/useResource";
 import { fetchPrices } from "../services/prices";
-import { LayoutDashboard, MapPin, Wheat, TrendingUp, TrendingDown, Search, Clock, ChevronRight } from "lucide-react";
+import { MapPin, Wheat, TrendingUp, TrendingDown, Search, Clock, ChevronRight } from "lucide-react";
 import { useLang } from "../i18n";
 import { UserRole } from "../types";
 import { RICE_VARIETIES, CROP_GROUPS } from "../data/crops";
@@ -33,12 +33,12 @@ export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userIn
 
   return (
     <div className="screen">
-      <Hdr icon={<LayoutDashboard size={20} color="var(--tanim)" />} title={t("market_title")} sub={t("market_sub")} onProfile={onProfile} onBack={onBack} userInitials={userInitials} />
+      <Hdr title={t("market_title")} onProfile={onProfile} onBack={onBack} userInitials={userInitials} />
       <div className="scroll screen-enter">
         <div className="hero">
           <div>
             <div className="hero-greet">{t("market_hello")}, {userInitials}! 👋</div>
-            <div className="hero-loc" style={{ display: "flex", alignItems: "center", gap: 4 }}><MapPin size={12} color="rgba(255,255,255,0.85)" /> Nueva Ecija, Philippines</div>
+            <div className="hero-loc" style={{ display: "flex", alignItems: "center", gap: 4 }}><MapPin size={12} color="rgba(255,255,255,0.85)" /> Nueva Ecija, Region III</div>
           </div>
           <Wheat size={44} color="rgba(255,255,255,0.85)" />
         </div>

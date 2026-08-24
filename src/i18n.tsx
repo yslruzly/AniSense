@@ -123,8 +123,8 @@ export const translations: Dict = {
 
   // ── Bottom nav ────────────────────────────────────────────────────────────
   nav_home: { en: "Home", tl: "Home" },
-  nav_market: { en: "Market", tl: "Merkado" },
-  nav_trade: { en: "Trade", tl: "Bentahan" },
+  nav_market: { en: "Prices", tl: "Presyo" },
+  nav_trade: { en: "Market", tl: "Merkado" },
   nav_expenses: { en: "Expenses", tl: "Gastos" },
   nav_profile: { en: "Profile", tl: "Profile" },
 
@@ -152,7 +152,7 @@ export const translations: Dict = {
   home_ai_recos: { en: "AI Recommendations", tl: "Mga rekomendasyon ng AI" },
 
   // ── Market ────────────────────────────────────────────────────────────────
-  market_title: { en: "Market", tl: "Merkado" },
+  market_title: { en: "Prices", tl: "Presyo" },
   market_sub: { en: "Crop prices", tl: "Presyo ng pananim" },
   market_dashboard: { en: "Market Dashboard", tl: "Market Dashboard" },
   market_tracked: {
@@ -173,7 +173,8 @@ export const translations: Dict = {
   },
 
   // ── Trade / Marketplace ───────────────────────────────────────────────────
-  trade_title: { en: "Trade", tl: "Bentahan" },
+  trade_title: { en: "Market", tl: "Merkado" },
+  hi: { en: "Hi", tl: "Hi" },
   trade_marketplace: { en: "Marketplace", tl: "Bentahan" },
   trade_sub: {
     en: "Buy and sell crops directly with local farmers",

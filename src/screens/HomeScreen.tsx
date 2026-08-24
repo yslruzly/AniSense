@@ -1,4 +1,4 @@
-import { LayoutDashboard, Banknote, BarChart2, ShoppingCart, CloudSun, CheckCircle, AlertTriangle, TrendingUp, TrendingDown, Bot, ChevronRight } from "lucide-react";
+import { Store, PhilippinePeso, BarChart2, CloudSun, CheckCircle, AlertTriangle, TrendingUp, TrendingDown, Bot, ChevronRight } from "lucide-react";
 import { useLang } from "../i18n";
 import { Screen, UserRole } from "../types";
 import { CROPS, CROP_GROUP_BY_ID } from "../data/crops";
@@ -28,11 +28,11 @@ export function HomeScreen({ onNavigate, onProfile, isOffline, lastUpdated, user
   const firstName = userName.split(" ")[0];
 
   const allModules = [
-    { id: "market" as Screen, ico: <LayoutDashboard size={24} color="var(--tanim)" />, bg: "var(--tanim-sk)", lbl: t("home_mod_market"), desc: t("home_mod_market_desc"), roles: ["farmer", "buyer"] },
-    { id: "expenses" as Screen, ico: <Banknote size={24} color="var(--tanim)" />, bg: "var(--paper-alt)", lbl: t("home_mod_expenses"), desc: t("home_mod_expenses_desc"), roles: ["farmer", "buyer"] },
-    { id: "analytics" as Screen, ico: <BarChart2 size={24} color="var(--ink-2)" />, bg: "var(--paper-alt)", lbl: t("home_mod_analytics"), desc: t("home_mod_analytics_desc"), roles: ["farmer"] },
-    { id: "trade" as Screen, ico: <ShoppingCart size={24} color="var(--gold-text)" />, bg: "var(--gold-sk)", lbl: t("home_mod_marketplace"), desc: t("home_mod_marketplace_desc"), roles: ["farmer", "buyer"] },
+    { id: "market" as Screen, ico: <TrendingUp size={24} color="var(--tanim)" />, bg: "var(--tanim-sk)", lbl: t("home_mod_market"), desc: t("home_mod_market_desc"), roles: ["farmer", "buyer"] },
     { id: "weather" as Screen, ico: <CloudSun size={24} color="var(--tanim-deep)" />, bg: "var(--paper-alt)", lbl: t("home_mod_weather"), desc: t("home_mod_weather_desc"), roles: ["farmer"] },
+    { id: "expenses" as Screen, ico: <PhilippinePeso size={24} color="var(--tanim)" />, bg: "var(--paper-alt)", lbl: t("home_mod_expenses"), desc: t("home_mod_expenses_desc"), roles: ["farmer", "buyer"] },
+    { id: "analytics" as Screen, ico: <BarChart2 size={24} color="var(--ink-2)" />, bg: "var(--paper-alt)", lbl: t("home_mod_analytics"), desc: t("home_mod_analytics_desc"), roles: ["farmer"] },
+    { id: "trade" as Screen, ico: <Store size={24} color="var(--gold-text)" />, bg: "var(--gold-sk)", lbl: t("home_mod_marketplace"), desc: t("home_mod_marketplace_desc"), roles: ["farmer", "buyer"] },
   ];
 
   const modules = userRole === "buyer"

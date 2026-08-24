@@ -23,6 +23,7 @@ import rice_special from "../assets/crops/rice-special.webp";
 import squash_kalabasa from "../assets/crops/squash-kalabasa.webp";
 import tom_cherry from "../assets/crops/tom-cherry.webp";
 import tom_roma from "../assets/crops/tom-roma.webp";
+import { CROPS, CROP_GROUPS } from "./crops";
 
 export const CROP_PHOTOS: Record<string, string> = {
   "rice-special": rice_special,
@@ -50,4 +51,34 @@ export const CROP_PHOTOS: Record<string, string> = {
 /** Falls back to undefined so the caller can keep showing the line icon. */
 export function cropPhoto(id: string): string | undefined {
   return CROP_PHOTOS[id];
+}
+
+/**
+ * Marketplace listings carry a crop name and a free-text variety rather than a
+ * crop id, so the same photographs have to be reached by name. Falls back to
+ * undefined and lets the caller keep the line icon.
+ */
+export function cropPhotoFor(crop: string, variety?: string): string | undefined {
+  const norm = (s: string) => s.toLowerCase().trim();
+
+  // A listing whose crop or variety is itself a priced crop ("Special Rice",
+  // "Yellow Corn") resolves straight to that row's photo.
+  for (const n of [variety, crop]) {
+    if (!n) continue;
+    const hit = CROPS.find(c => norm(c.name) === norm(n));
+    if (hit && CROP_PHOTOS[hit.id]) return CROP_PHOTOS[hit.id];
+  }
+
+  // Otherwise the crop is a group ("Onions") and the variety is a fragment
+  // ("Red") of one of its rows; an empty variety takes the group's first photo.
+  const group = CROP_GROUPS.find(g => norm(g.group) === norm(crop));
+  if (group) {
+    if (variety) {
+      const v = group.varieties.find(x => norm(x.name).includes(norm(variety)));
+      if (v && CROP_PHOTOS[v.id]) return CROP_PHOTOS[v.id];
+    }
+    const first = group.varieties.find(x => CROP_PHOTOS[x.id]);
+    if (first) return CROP_PHOTOS[first.id];
+  }
+  return undefined;
 }

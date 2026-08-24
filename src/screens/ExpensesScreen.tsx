@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { EmptyState } from "../components/states";
-import { Banknote, MapPin, Pencil, Trash2, X, ChevronRight, Calendar, Calculator, Receipt, Plus, CheckCircle, AlertTriangle, Sprout, Tag, Wheat, FlaskConical, User, Tractor, Waves, Package, ShoppingCart, Filter } from "lucide-react";
+import { PhilippinePeso, MapPin, Pencil, Trash2, X, ChevronRight, Calendar, Calculator, Receipt, Plus, CheckCircle, AlertTriangle, Sprout, Tag, Wheat, FlaskConical, User, Tractor, Waves, Package, ShoppingCart, Filter } from "lucide-react";
 import { useLang } from "../i18n";
 import { Expense, BuyerTransaction } from "../types";
 import { EXPENSES } from "../data/expenses";
@@ -157,7 +157,7 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
 
   return (
     <div className="screen">
-      <Hdr icon={<Banknote size={20} color="var(--tanim)" />} title={t("exp_title")} sub={isBuyer ? t("exp_buyer_sub") : t("exp_sub")} onProfile={onProfile} onBack={onBack} userInitials={userInitials} />
+      <Hdr title={t("exp_title")} onProfile={onProfile} onBack={onBack} userInitials={userInitials} />
       <div className={`scroll screen-enter ${!isBuyer ? "has-dock" : ""}`}>
 
         {/* ── BUYER: read-only past transactions only ── */}
@@ -281,7 +281,7 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
                         /* Never recorded anything; this is onboarding, so it
                            explains what the screen is for and starts them off. */
                         ? <EmptyState
-                            icon={<Banknote size={26} aria-hidden="true" />}
+                            icon={<PhilippinePeso size={26} aria-hidden="true" />}
                             title={t("state_no_expenses_title")}
                             body={t("state_no_expenses_body")}
                             action={t("state_add_first_expense")}
@@ -637,7 +637,7 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 <div>
                   <div style={{ fontSize: "var(--fs-label)", fontWeight: 700, color: "var(--text-soft)", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
-                    <Banknote size={14} color="var(--text-soft)" /> {t("exp_amount")}
+                    <PhilippinePeso size={14} color="var(--text-soft)" /> {t("exp_amount")}
                   </div>
                   <input
                     type="number" placeholder="0.00"

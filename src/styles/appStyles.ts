@@ -436,7 +436,12 @@ export const appCss = `
   .sum-lbl { font-size: var(--fs-label); color:var(--text-muted); margin-top:3px; text-align:center; }
 
   /* ── Marketplace ── */
-  .mp-title-row { display:flex; align-items:flex-start; justify-content:space-between; }
+  .mp-title-row { display:flex; align-items:flex-start; justify-content:space-between; position:relative; }
+  .mp-peek  { position:absolute; right:-16px; bottom:-8px; height:132px; width:auto; pointer-events:none; user-select:none; }
+  /* Plain greeting beside Juan, no bubble. */
+  .mp-peek-bubble { position:absolute; right:76px; top:8px; color:var(--tanim);
+    font-family: var(--font-display); font-size: var(--fs-lead); font-weight:800;
+    white-space:nowrap; pointer-events:none; user-select:none; }
   .mp-title { font-family: var(--font-display); font-size: var(--fs-title); font-weight:700; color:var(--text); }
   .mp-sub   { font-size: var(--fs-label); color:var(--text-muted); margin-top:3px; max-width:170px; line-height:1.45; }
   .post-btn { background:var(--text); color:#fff; border:none; border-radius:11px; padding:11px 15px; font-family:inherit; font-size: var(--fs-label); font-weight:700; cursor:pointer; flex-shrink:0; }
@@ -478,7 +483,8 @@ export const appCss = `
   .listing { background:var(--white); border-radius:var(--radius); padding:19px; border:1px solid var(--border); }
   .listing-top { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:11px; }
   .listing-crop-row { display:flex; align-items:flex-start; gap:13px; }
-  .listing-ico  { width:54px; height:54px; border-radius:15px; background:var(--green-bg); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .listing-ico  { width:54px; height:54px; border-radius:15px; background:var(--green-bg); display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden; }
+  .listing-ico img { width:100%; height:100%; object-fit:cover; display:block; box-shadow: inset 0 0 0 1px rgba(22,33,27,.10); }
   .listing-name { font-family: var(--font-display); font-size: var(--fs-lead); font-weight:700; color:var(--text); line-height:1.25; }
   .listing-var  { font-size: var(--fs-label); color:var(--text-muted); margin-top:3px; font-weight:500; }
   .listing-price{ font-size: var(--fs-lead); font-weight:800; color:var(--text); white-space:nowrap; }
@@ -486,9 +492,17 @@ export const appCss = `
   .listing-meta { display:flex; justify-content:space-between; font-size: var(--fs-label); color:var(--text-muted); font-weight:600; margin-bottom:13px; background:var(--paper); padding:10px 13px; border-radius:11px; }
   .seller-row   { display:flex; align-items:center; gap:11px; margin-bottom:15px; padding:11px 13px; background:var(--paper); border-radius:13px; }
   .seller-ava   { width:44px; height:44px; border-radius:50%; background:var(--tanim); display:flex; align-items:center; justify-content:center; font-size: var(--fs-label); font-weight:800; color:#fff; flex-shrink:0; }
-  .seller-name  { font-size: var(--fs-label); font-weight:700; color:var(--text); }
-  .seller-stars { font-size: var(--fs-label); color:var(--gold-text); font-weight:700; margin-top:3px; display:flex; align-items:center; gap:3px; }
-  .seller-loc   { font-size: var(--fs-label); color:var(--text-muted); display:flex; align-items:center; gap:3px; margin-left:auto; }
+  .seller-name  { font-size: var(--fs-label); font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .seller-stars { font-size: var(--fs-label); color:var(--gold-text); font-weight:700; display:flex; align-items:center; gap:3px; white-space:nowrap; }
+  /* Name over town on the left, rating on the right: the town gets a full line
+     of its own, so a long one ("Science City of Munoz") only clips at the very
+     edge instead of fighting the name for the same line. */
+  .seller-who   { flex:1 1 auto; min-width:0; }
+  .seller-loc   { font-size: var(--fs-label); color:var(--text-muted); display:flex; align-items:center; gap:3px; min-width:0; margin-top:3px; }
+  .seller-loc svg  { flex-shrink:0; }
+  .seller-loc span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .seller-end   { display:flex; align-items:center; justify-content:flex-end; gap:6px; flex:0 0 auto; }
+  .seller-end svg { flex-shrink:0; }
   .listing-btns { display:flex; gap:11px; }
   .btn-call     { flex:1; background:var(--green); color:#fff; border:none; border-radius:13px; padding:17px; font-family:inherit; font-size: var(--fs-body); font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; }
   .btn-details  { flex:1; background:var(--white); color:var(--text); border:2px solid var(--border); border-radius:13px; padding:17px; font-family:inherit; font-size: var(--fs-body); font-weight:800; cursor:pointer; }

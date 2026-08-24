@@ -5,7 +5,7 @@ import { haptic } from "../../lib/platform";
 import { buildAlerts, Alert } from "../../data/alerts";
 
 // ─── Shared Header ────────────────────────────────────────────────────────────
-export function Hdr({ icon, title, sub, onProfile, onBack, userInitials = "JD", extra }: { icon: React.ReactNode; title: string; sub: string; onProfile?: () => void; onBack?: () => void; userInitials?: string; extra?: React.ReactNode }) {
+export function Hdr({ icon, title, sub, onProfile, onBack, userInitials = "JD", extra }: { icon?: React.ReactNode; title: string; sub?: string; onProfile?: () => void; onBack?: () => void; userInitials?: string; extra?: React.ReactNode }) {
   const { t, tn } = useLang();
   const [showAlerts, setShowAlerts] = useState(false);
   const alerts = buildAlerts();
@@ -41,10 +41,10 @@ export function Hdr({ icon, title, sub, onProfile, onBack, userInitials = "JD", 
               <ArrowLeft size={16} color="var(--tanim)" />
             </button>
           )}
-          <span className="hdr-icon">{icon}</span>
+          {icon && <span className="hdr-icon">{icon}</span>}
           <div>
             <div className="hdr-title">{title}</div>
-            <div className="hdr-sub">{sub}</div>
+            {sub && <div className="hdr-sub">{sub}</div>}
           </div>
         </div>
         <div className="hdr-right">

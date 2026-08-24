@@ -6,11 +6,13 @@ import { LISTINGS, SELLER_DETAILS } from "../data/marketplace";
 import { CROP_FILTER_MAP, CROP_CATEGORIES, ALL_RICE_NAMES, RICE_VARIETY_LIST } from "../data/crops";
 import { Hdr } from "../components/layout/Hdr";
 import { CropIcon } from "../components/icons";
+import { cropPhotoFor } from "../data/cropPhotos";
+import juanPeek from "../assets/juan-peek.webp";
 import { CropEmoji } from "../components/CropEmoji";
 import { Ring } from "../components/charts/Micro";
 
 // ─── Trade / Marketplace Screen ───────────────────────────────────────────────
-export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }: { onProfile: () => void; onBack: () => void; userInitials?: string; userRole?: UserRole }) {
+export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", userInitials = "JD", userRole }: { onProfile: () => void; onBack: () => void; userName?: string; userInitials?: string; userRole?: UserRole }) {
   const { t, tn } = useLang();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All Crops");
@@ -134,7 +136,7 @@ export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }
 
   return (
     <div className="screen">
-      <Hdr icon={<ShoppingCart size={20} color="var(--tanim)" />} title={t("trade_title")} sub="Nueva Ecija" onProfile={onProfile} onBack={onBack} userInitials={userInitials}
+      <Hdr title={t("trade_title")} onProfile={onProfile} onBack={onBack} userInitials={userInitials}
         extra={userRole === "buyer" ? (
           <button onClick={() => setShowCart(true)} className="cart-badge-wrap cart-btn-icon">
             <ShoppingCart size={17} color="var(--tanim)" />
@@ -148,12 +150,17 @@ export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }
             <div className="mp-title">{t("trade_marketplace")}</div>
             <div className="mp-sub">{t("trade_sub")}</div>
           </div>
-          {userRole !== "buyer" && (
-            <button onClick={openPost} style={{ background: "var(--tanim)", color: "#fff", border: "none", borderRadius: 14, padding: "14px 18px", fontFamily: "inherit", fontSize: "var(--fs-body)", fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", gap: 8, flexShrink: 0, boxShadow: "0 2px 8px rgba(11,107,65,0.25)" }}>
-              <Plus size={20} color="#fff" /> {t("trade_sell")}
-            </button>
-          )}
+          {/* Juan peeks in from the right edge of the screen, over the gap
+              beside the title. Decorative only, so no alt text. */}
+          <span className="mp-peek-bubble" aria-hidden="true">{t("hi")} {userName.split(" ")[0]}!</span>
+          <img className="mp-peek" src={juanPeek} alt="" aria-hidden="true" />
         </div>
+
+        {userRole !== "buyer" && (
+          <button onClick={openPost} style={{ width: "100%", background: "var(--tanim)", color: "#fff", border: "none", borderRadius: 14, padding: "14px 18px", fontFamily: "inherit", fontSize: "var(--fs-body)", fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 2px 8px rgba(11,107,65,0.25)" }}>
+            <Plus size={20} color="#fff" /> {t("trade_sell")}
+          </button>
+        )}
 
         <div className="search-box" style={{ padding: "13px 16px", borderRadius: 12 }}>
           <Search size={18} color="var(--text-faint)" />
@@ -239,7 +246,11 @@ export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }
           <div className="listing" key={l.id}>
             <div className="listing-top">
               <div className="listing-crop-row">
-                <div className="listing-ico"><CropIcon crop={l.crop} size={26} /></div>
+                <div className="listing-ico">
+                  {cropPhotoFor(l.crop, l.variety)
+                    ? <img src={cropPhotoFor(l.crop, l.variety)} alt="" loading="lazy" decoding="async" />
+                    : <CropIcon crop={l.crop} size={26} />}
+                </div>
                 <div>
                   <div className="listing-name">{l.crop}</div>
                   <div className="listing-var">{l.variety}</div>
@@ -267,14 +278,14 @@ export function TradeScreen({ onProfile, onBack, userInitials = "JD", userRole }
             <div className="seller-row" onClick={() => setSellerDetail(SELLER_DETAILS[l.sellerInitials] || null)}
               style={{ cursor: "pointer" }}>
               <div className="seller-ava">{l.sellerInitials}</div>
-              <div style={{ flex: 1 }}>
-                <div className="seller-name">{l.seller}</div>
-                <div className="seller-stars">
-                  <Star size={13} color="var(--gold-text)" fill="var(--gold-text)" /> {l.rating} {t("trade_rating")}
-                </div>
+              <div className="seller-who">
+                <div className="seller-name" title={l.seller}>{l.seller}</div>
+                <div className="seller-loc" title={l.location}><MapPin size={13} color="var(--text-muted)" /><span>{l.location}</span></div>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <div className="seller-loc"><MapPin size={13} color="var(--text-muted)" />{l.location}</div>
+              <div className="seller-end">
+                <div className="seller-stars">
+                  <Star size={13} color="var(--gold-text)" fill="var(--gold-text)" /> {l.rating}
+                </div>
                 <ChevronRight size={14} color="var(--text-faint)" />
               </div>
             </div>
