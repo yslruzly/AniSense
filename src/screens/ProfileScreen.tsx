@@ -51,7 +51,10 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
       {/* Header */}
       <div className="hdr">
         <div className="hdr-brand">
-          <button onClick={onBack} style={{ background: "var(--tanim-sk)", border: "1px solid var(--tanim-sk)", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", marginRight: 6 }}>
+          {/* The shared class rather than a copy of its styles inline: this is
+              the same control as every other back button, so it should press
+              like one. It did not, because there was no class to hang it on. */}
+          <button className="hdr-back" onClick={onBack} aria-label={t("back")}>
             <ArrowLeft size={16} color="var(--tanim)" />
           </button>
           <div>
@@ -60,8 +63,8 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
         </div>
         <div className="hdr-right">
           {!editing
-            ? <button onClick={() => setEditing(true)} style={{ background: "var(--tanim-sk)", border: "1px solid var(--tanim-sk)", borderRadius: 8, padding: "5px 12px", fontFamily: "inherit", fontSize: "var(--fs-label)", fontWeight: 700, color: "var(--tanim)", cursor: "pointer" }}>{t("edit")}</button>
-            : <button onClick={save} style={{ background: "var(--tanim)", border: "none", borderRadius: 8, padding: "5px 12px", fontFamily: "inherit", fontSize: "var(--fs-label)", fontWeight: 700, color: "#fff", cursor: "pointer" }}>{t("save")}</button>
+            ? <button className="chip-btn" onClick={() => setEditing(true)}>{t("edit")}</button>
+            : <button className="chip-btn on" onClick={save}>{t("save")}</button>
           }
         </div>
       </div>
@@ -163,7 +166,8 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
               ? <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                 {ALL_CROPS.map(c => (
                   <button key={c} onClick={() => toggleCrop(c)}
-                    style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 99, border: `1px solid ${draft.crops.includes(c) ? "var(--tanim)" : "var(--line)"}`, background: draft.crops.includes(c) ? "var(--tanim-sk)" : "#fff", color: draft.crops.includes(c) ? "var(--tanim)" : "var(--text-muted)", fontFamily: "inherit", fontSize: "var(--fs-label)", fontWeight: 600, cursor: "pointer" }}>
+                    aria-pressed={draft.crops.includes(c)}
+                    className={`crop-toggle ${draft.crops.includes(c) ? "on" : ""}`}>
                     <CropEmoji crop={c} size={16} /> {tn(c)}
                   </button>
                 ))}
@@ -227,7 +231,7 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
         )}
 
         {editing && (
-          <button onClick={cancel} style={{ width: "100%", padding: 14, background: "var(--paper-alt)", color: "var(--text-soft)", border: "none", borderRadius: "var(--radius)", fontFamily: "inherit", fontSize: "var(--fs-label)", fontWeight: 700, cursor: "pointer" }}>
+          <button className="btn-secondary sm" onClick={cancel} style={{ width: "100%", border: "none", borderRadius: "var(--radius)" }}>
             {t("cancel")}
           </button>
         )}

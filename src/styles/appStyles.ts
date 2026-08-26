@@ -106,14 +106,42 @@ export const appCss = `
     width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
     cursor: pointer; margin-right: 8px; flex-shrink: 0;
   }
+  .hdr-back svg { transition: color var(--dur-fast) ease; }
+
+  /* The small pill in a header — Edit / Save on the profile. Was two inline
+     styles with no press state; now one control with two skins. */
+  .chip-btn {
+    background: var(--tanim-sk); border: 1px solid var(--tanim-sk); border-radius: 8px;
+    padding: 5px 12px; font-family: inherit; font-size: var(--fs-label);
+    font-weight: 700; color: var(--tanim); cursor: pointer;
+    transition: transform 190ms var(--ease-out), background-color var(--dur-fast) ease,
+                color var(--dur-fast) ease, border-color var(--dur-fast) ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .chip-btn.on { background: var(--tanim); border-color: var(--tanim); color: #fff; }
+  .chip-btn:active { transition-duration: var(--dur-press); transform: scale(0.94); }
+
+  /* Crop toggles in the profile editor. Selection cross-fades; before this
+     the whole pill swapped colour on a single frame, which on a grid of a
+     dozen of them makes it genuinely unclear which one you just hit. */
+  .crop-toggle {
+    display: flex; align-items: center; gap: 5px;
+    padding: 6px 12px; border-radius: 99px;
+    border: 1px solid var(--line); background: var(--card); color: var(--text-muted);
+    font-family: inherit; font-size: var(--fs-label); font-weight: 600; cursor: pointer;
+    transition: transform 190ms var(--ease-out), background-color var(--dur-fast) ease,
+                color var(--dur-fast) ease, border-color var(--dur-fast) ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .crop-toggle.on { background: var(--tanim-sk); border-color: var(--tanim); color: var(--tanim); }
+  .crop-toggle:active { transition-duration: var(--dur-press); transform: scale(0.95); }
 
   /* ── Alerts sheet ────────────────────────────────────────────────────────
      What the bell opens. Same bottom-sheet shape as the other sheets so it is
      dismissed the way the rest of the app already taught. */
-  .alerts-scrim {
-    position: absolute; inset: 0; z-index: 70;
-    background: rgba(0,0,0,.55); display: flex; align-items: flex-end;
-  }
+  /* The scrim, the tap-to-dismiss and the stacking context all come from
+     .shm-scrim now (components/ui/Sheet.tsx). Each sheet only describes what
+     it looks like. */
   .alerts-sheet {
     width: 100%; max-height: 82%; background: var(--paper);
     border-radius: 24px 24px 0 0; padding-bottom: 22px;
@@ -196,9 +224,17 @@ export const appCss = `
     background: var(--white); border: 1px solid var(--border);
     border-radius: var(--radius); padding: 15px 14px; box-shadow: var(--shadow-sm);
   }
-  .stat-lbl { font-size: var(--fs-label); font-weight: 600; color: var(--text-muted); line-height: 1.3; }
-  .stat-val { font-family: var(--font-display); font-size: var(--fs-title); font-weight: 800; color: var(--tanim); line-height: 1; font-variant-numeric: tabular-nums; }
-  .stat-val.sm { font-size: var(--fs-lead); }
+  /* Scoped to .stat on purpose. These four declarations used to be written
+     unscoped, and a second, later ".stat-val / .stat-lbl" block further down
+     the sheet overrode every one of them — so the tile documented above has
+     never actually rendered: the figure was body-coloured at --fs-lead rather
+     than green at --fs-title, and the tabular-nums that keeps a changing
+     figure from wobbling was dropped with it. Scoping is the fix; the other
+     block stays as the base for the plain .card stat, which is what it was
+     always describing. */
+  .stat .stat-lbl { font-size: var(--fs-label); font-weight: 600; color: var(--text-muted); line-height: 1.3; margin-top: 0; }
+  .stat .stat-val { font-family: var(--font-display); font-size: var(--fs-title); font-weight: 800; color: var(--tanim); line-height: 1; font-variant-numeric: tabular-nums; }
+  .stat .stat-val.sm { font-size: var(--fs-lead); }
   .stat-foot { font-size: var(--fs-label); color: var(--text-muted); line-height: 1.3; }
   .stat-mark { display: flex; align-items: center; min-height: 26px; }
 
@@ -240,10 +276,12 @@ export const appCss = `
   /* ── Grid 2 ── */
   .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
 
-  /* ── Stat card ── */
+  /* ── Stat card ──
+     The plain figure inside a .card or a .stat-strip. Tabular figures here
+     too: these numbers change under the user (a filter, a refresh), and
+     proportional digits make the whole row shuffle sideways when they do. */
   .stat-ico { font-size: 21px; margin-bottom: 6px; }
-  .stat-chg { font-size: var(--fs-label); font-weight: 600; color: var(--green); margin-bottom: 3px; }
-  .stat-val { font-size: var(--fs-lead); font-weight: 800; color: var(--text); }
+  .stat-val { font-size: var(--fs-lead); font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
   .stat-lbl { font-size: var(--fs-label); color: var(--text-muted); margin-top: 2px; }
 
   /* ── Hero ── */
@@ -519,10 +557,6 @@ export const appCss = `
     width:36px; height:36px; border-radius:50%; background:var(--tanim-sk); border:2px solid var(--tanim-sk);
     display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;
   }
-  .cart-drawer {
-    position:absolute; inset:0; background:rgba(30,22,12,0.55);
-    display:flex; align-items:flex-end; z-index:60;
-  }
   .cart-sheet {
     background:var(--paper); border-radius:26px 26px 0 0;
     width:100%; max-height:88%; display:flex; flex-direction:column;
@@ -578,19 +612,26 @@ export const appCss = `
   }
   .qty-pick-val { flex:1; text-align:center; font-size: var(--fs-body); font-weight:800; color:var(--text); }
   .qty-pick-unit { font-size: var(--fs-label); color:var(--text-muted); font-weight:600; }
-  .checkout-success {
-    position:absolute; inset:0; background:rgba(30,22,12,0.6);
-    display:flex; align-items:center; justify-content:center; z-index:70;
-  }
   .checkout-card {
-    background:#fff; border-radius:26px; padding:38px 28px; text-align:center; margin:24px; width:100%; max-width:320px;
+    background:#fff; border-radius:26px; padding:38px 28px; text-align:center;
+    width:100%; max-width:320px;
+  }
+  /* The one flourish in the app, and it is spent here: the emoji lands a beat
+     after the card does, with a touch of overshoot. Bounce is wrong almost
+     everywhere in this product — a farmer confirming an order sees this once,
+     at the end of a long form, and it is the only moment that is a reward
+     rather than a step. */
+  .checkout-pop { animation: checkout-pop 460ms var(--ease-out) 90ms both; }
+  @keyframes checkout-pop {
+    from { opacity: 0; transform: scale(.4) rotate(-14deg); }
+    62%  { opacity: 1; transform: scale(1.12) rotate(4deg); }
+    to   { opacity: 1; transform: scale(1) rotate(0deg); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .checkout-pop { animation: none; }
   }
 
   /* ── Seller Details Modal ── */
-  .seller-modal-overlay {
-    position:absolute; inset:0; background:rgba(30,22,12,0.6);
-    display:flex; align-items:flex-end; z-index:70;
-  }
   .seller-modal-sheet {
     background:var(--paper); border-radius:30px 30px 0 0;
     width:100%; max-height:90%; display:flex; flex-direction:column;
@@ -630,6 +671,86 @@ export const appCss = `
     border-radius:16px; font-family:inherit; font-size: var(--fs-body); font-weight:800;
     cursor:pointer; display:flex; align-items:center; justify-content:center; gap:9px;
     box-shadow:var(--shadow-md);
+  }
+
+  /* ── Sheet chrome ────────────────────────────────────────────────────────
+     Four sheets each hand-rolled their own close button and action pair in
+     inline styles, which is why none of them had a press state: there was no
+     class to hang one on. One set of names, shared. */
+  .sheet-x {
+    width: 44px; height: 44px; flex-shrink: 0; border: none; cursor: pointer;
+    border-radius: 50%; background: rgba(255,255,255,.2); color: #fff;
+    font-size: var(--fs-lead); font-family: inherit;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 190ms var(--ease-out), background-color var(--dur-fast) ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .sheet-x:active {
+    transition-duration: var(--dur-press);
+    transform: scale(0.9); background: rgba(255,255,255,.34);
+  }
+
+  .btn-primary, .btn-secondary, .btn-danger {
+    padding: 18px; border-radius: 14px; font-family: inherit;
+    font-size: var(--fs-body); font-weight: 800; cursor: pointer;
+    transition: transform 190ms var(--ease-out), background-color var(--dur-fast) ease,
+                box-shadow var(--dur-fast) ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .btn-primary   { background: var(--tanim); color: #fff; border: none; font-weight: 900; box-shadow: 0 4px 12px rgba(11,107,65,0.3); }
+  .btn-secondary { background: var(--paper-alt); color: var(--text-soft); border: 2px solid var(--line); }
+  .btn-danger    { background: var(--error); color: #fff; border: none; }
+  .btn-primary:active, .btn-secondary:active, .btn-danger:active {
+    transition-duration: var(--dur-press); transform: scale(0.97);
+  }
+  /* The shadow retracts with the press: a button that keeps floating while it
+     is pushed down is the detail that makes elevation read as a sticker. */
+  .btn-primary:active { box-shadow: 0 1px 4px rgba(11,107,65,0.28); }
+  .btn-secondary:active { background: var(--line); }
+
+  .confirm-sheet {
+    width: 100%; background: var(--card);
+    border-radius: 24px 24px 0 0; padding: 28px;
+  }
+  .confirm-sheet.sm { border-radius: 16px 16px 0 0; padding: 24px; }
+  .post-sheet {
+    width: 100%; max-height: 93%; background: var(--paper);
+    border-radius: 24px 24px 0 0; padding-bottom: 24px;
+  }
+  .exp-sheet {
+    width: 100%; max-height: 93%; background: var(--card);
+    border-radius: 22px 22px 0 0; padding-bottom: 28px;
+    box-shadow: 0 -8px 40px rgba(0,0,0,0.18);
+  }
+  .calc-sheet {
+    width: 100%; background: var(--text);
+    border-radius: 22px 22px 0 0; padding-bottom: 28px;
+    box-shadow: 0 -8px 40px rgba(0,0,0,0.4);
+  }
+
+  /* The compact pair used inside the expense sheets. */
+  .btn-primary.sm, .btn-secondary.sm, .btn-danger.sm {
+    padding: 14px; border-radius: 12px; font-size: var(--fs-label); font-weight: 700;
+  }
+  .btn-primary.sm { font-weight: 800; }
+  .row-center { display: flex; align-items: center; justify-content: center; gap: 6px; }
+
+  /* ── Calculator keypad ───────────────────────────────────────────────────
+     Every key here was a bare inline style with no press state at all. A
+     keypad is the worst place to omit one: a key that does not answer reads
+     as a missed tap, and the user presses again — which on a calculator is a
+     wrong number rather than a wasted second. 0.94 and a hard 90ms, because
+     the whole point is that it lands before the finger lifts. */
+  .calc-key {
+    padding: 18px 0; border-radius: 14px; cursor: pointer;
+    font-family: inherit; font-size: var(--fs-body); font-weight: 800;
+    transition: transform 170ms var(--ease-out), filter var(--dur-fast) ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .calc-key:active {
+    transition-duration: 90ms;
+    transform: scale(0.94);
+    filter: brightness(1.35);
   }
 
   /* ── Weather ── */
@@ -877,7 +998,7 @@ export const appCss = `
     font-family: inherit;
   }
   .pcard-photo {
-    position: relative; display: block; width: 100%; height: 84px;
+    position: relative; width: 100%; height: 84px;
     border-radius: 12px; overflow: hidden; margin-bottom: 8px;
     background: var(--green-bg);
     display: flex; align-items: center; justify-content: center;
@@ -1021,23 +1142,135 @@ export const appCss = `
      190ms. Symmetric timing is what makes a button feel rubbery. */
   .card, .mkt-row, .exp-row, .price-row, .pcard, .module-btn,
   .setting-row, .info-row, .fchip, .lstm-tab, .add-btn, .post-btn,
-  .ntab, .crop-tag, .signout-btn {
-    transition: transform 190ms var(--ease-out), background-color 160ms ease;
+  .ntab, .crop-tag, .signout-btn,
+  /* Everything below had no press state at all. On a touchscreen there is no
+     hover to tell you a thing is pressable, so a control that does not move
+     under the thumb reads as decoration until it happens to work. */
+  .row-link, .alert-row, .sdm-row, .listing,
+  .cat-tab, .var-tab, .crop-pick,
+  .hdr-back, .ava, .alerts-close, .cart-btn-icon, .prof-edit-btn,
+  .cart-qty-btn, .qty-pick-btn, .cart-remove-btn,
+  .btn-call, .btn-details, .add-cart-btn, .cart-checkout-btn, .call-seller-btn {
+    transition: transform 190ms var(--ease-out), background-color var(--dur-fast) ease;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
   }
   .card:active, .mkt-row:active, .exp-row:active, .price-row:active,
   .pcard:active, .module-btn:active, .setting-row:active, .info-row:active,
   .fchip:active, .lstm-tab:active, .add-btn:active, .post-btn:active,
-  .ntab:active, .crop-tag:active, .signout-btn:active {
-    transition-duration: 100ms;
+  .ntab:active, .crop-tag:active, .signout-btn:active,
+  .row-link:active, .alert-row:active, .sdm-row:active, .listing:active,
+  .cat-tab:active, .var-tab:active, .crop-pick:active,
+  .hdr-back:active, .ava:active, .alerts-close:active, .cart-btn-icon:active,
+  .prof-edit-btn:active, .cart-qty-btn:active, .qty-pick-btn:active,
+  .cart-remove-btn:active, .btn-call:active, .btn-details:active,
+  .add-cart-btn:active, .cart-checkout-btn:active, .call-seller-btn:active {
+    transition-duration: var(--dur-press);
   }
+  /* Scale is proportional, so the same ratio reads as more movement the wider
+     the element gets. Big surfaces take less; a 40px disc takes the most. */
   .mkt-row:active, .exp-row:active, .price-row:active,
-  .setting-row:active, .info-row:active, .card:active { transform: scale(0.99); }
-  .pcard:active, .module-btn:active { transform: scale(0.975); }
-  .fchip:active, .lstm-tab:active, .crop-tag:active,
-  .add-btn:active, .post-btn:active, .signout-btn:active { transform: scale(0.97); }
+  .setting-row:active, .info-row:active, .card:active,
+  .row-link:active, .alert-row:active, .sdm-row:active,
+  .listing:active { transform: scale(0.99); }
+  .pcard:active, .module-btn:active,
+  .cat-tab:active, .crop-pick:active { transform: scale(0.975); }
+  .fchip:active, .lstm-tab:active, .crop-tag:active, .var-tab:active,
+  .add-btn:active, .post-btn:active, .signout-btn:active,
+  .btn-call:active, .btn-details:active, .add-cart-btn:active,
+  .cart-checkout-btn:active, .call-seller-btn:active { transform: scale(0.97); }
   .ntab:active { transform: scale(0.97); }
+  .hdr-back:active, .ava:active, .alerts-close:active, .cart-btn-icon:active,
+  .prof-edit-btn:active, .cart-qty-btn:active, .qty-pick-btn:active,
+  .cart-remove-btn:active { transform: scale(0.92); }
+
+  /* Surface shift as well as scale on the wide rows, for the same reason the
+     settings rows already have one: a 1% shrink on a full-width row is
+     invisible, but a plate appearing under the thumb is not. */
+  .alert-row:active, .sdm-row:active { background: var(--paper-alt); }
+  .hdr-back:active { background: var(--tanim); }
+  .hdr-back:active svg { color: #fff; }
+  .cart-qty-btn:active, .qty-pick-btn:active { background: var(--line); }
+  .cart-remove-btn:active { background: var(--error-line); }
+
+  /* Selected states cross-fade rather than cut. These are the controls that
+     re-render a list under them, so the colour change is the only signal the
+     tap registered before the content swaps. */
+  .cat-tab, .var-tab, .fchip, .lstm-tab {
+    transition: transform 190ms var(--ease-out),
+                background-color var(--dur-fast) ease,
+                border-color var(--dur-fast) ease,
+                color var(--dur-fast) ease,
+                box-shadow var(--dur-fast) ease;
+  }
+
+  /* The search field earns a visible focus ring: on a phone the keyboard
+     covers half the screen, and the ring is what confirms which field it
+     belongs to. Border-colour only — no layout-shifting border-width change. */
+  .search-box {
+    transition: border-color var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
+  }
+  .search-box:focus-within {
+    border-color: var(--tanim);
+    box-shadow: 0 0 0 3px var(--tanim-sk);
+  }
+
+  /* ── Content arrival ─────────────────────────────────────────────────────
+     A skeleton that is replaced on a single frame reads as a glitch, not as a
+     load completing. Opacity only and short: this fires once per fetch, but
+     it fires on top of whatever the list is already doing. */
+  .content-in { animation: content-in 220ms var(--ease-out) both; }
+  @keyframes content-in { from { opacity: 0; } }
+
+  /* A run of rows inside .scroll, spaced the way .scroll spaces its own
+     children, so wrapping a list in a container does not silently collapse
+     the gaps between its rows. */
+  .list-stack { display: flex; flex-direction: column; gap: 14px; }
+  .list-stack > * { flex-shrink: 0; }
+
+  /* ── Cart badge ──────────────────────────────────────────────────────────
+     State indication, not decoration: adding to cart happens with the cart
+     closed, so the count in the header is the only confirmation the tap did
+     anything. Keyed on the count so it replays per change. */
+  /* Keyed on the count in TradeScreen, so React remounts the node and the
+     animation replays on every change rather than only on first paint. */
+  .cart-badge { transform-origin: center; animation: badge-bump 260ms var(--ease-out); }
+  @keyframes badge-bump {
+    0%   { transform: scale(.6); opacity: 0; }
+    46%  { transform: scale(1.28); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  /* ── Segmented control ───────────────────────────────────────────────────
+     Was three buttons each cross-fading their own background, which is what
+     makes a segmented control read as three separate things that happen to be
+     adjacent. One thumb that slides between them reads as a single control
+     with a position — and the movement itself tells you which way you went.
+     translate3d on a thumb, not background on three buttons: one composited
+     layer moving instead of three repaints. */
+  .seg {
+    position: relative; display: flex; isolation: isolate;
+    background: var(--paper-alt); border-radius: 12px; padding: 4px;
+  }
+  .seg-thumb {
+    position: absolute; z-index: -1; top: 4px; bottom: 4px; left: 4px;
+    border-radius: 9px; background: var(--tanim);
+    box-shadow: 0 1px 3px rgba(22,33,27,.18);
+    transition: transform 260ms var(--ease-io), width 260ms var(--ease-io);
+    will-change: transform;
+  }
+  .seg-btn {
+    flex: 1; min-width: 0; padding: 9px 4px; border: none; background: none;
+    border-radius: 9px; font-family: inherit; font-size: var(--fs-label);
+    font-weight: 700; color: var(--text-muted); cursor: pointer;
+    transition: color 200ms ease, transform 190ms var(--ease-out);
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .seg-btn[aria-selected="true"] { color: #fff; }
+  .seg-btn:active { transition-duration: var(--dur-press); transform: scale(0.96); }
+  @media (prefers-reduced-motion: reduce) {
+    .seg-thumb { transition: none; }
+  }
 
   /* ── Bottom nav ──────────────────────────────────────────────────────────
      Deliberately NOT animated beyond press feedback. Tab switching runs into
@@ -1080,21 +1313,58 @@ export const appCss = `
   .bar-track { overflow: hidden; }
 
   /* ── Sheets ──────────────────────────────────────────────────────────────
-     Transition, not keyframes, because a sheet is gesture-adjacent: if it is
-     dismissed mid-open it must retarget from where it actually is rather than
-     restart. Rises from the bottom edge it belongs to. Scrim fades faster than
-     the sheet travels, so the sheet is what the eye follows. */
-  .sheet-scrim {
+     Driven by components/ui/Sheet.tsx. These rules used to exist under the
+     names .sheet / .sheet-scrim and were wired to nothing at all: every
+     overlay in the app appeared and disappeared on a single frame, which is
+     the one thing a modal must never do, because the user loses track of
+     where the thing came from and what is now underneath it.
+
+     Transitions, not keyframes, because a sheet is gesture-adjacent and gets
+     opened and dismissed in quick succession. A transition caught mid-travel
+     retargets from where the panel actually is; a keyframe restarts from zero
+     and the sheet visibly jumps back to the bottom edge before closing. */
+  .shm-scrim {
+    position: absolute; inset: 0; z-index: 70;
+    display: flex;
+    background: rgba(16,21,18,.55);
     opacity: 0;
-    transition: opacity 180ms var(--ease-out);
+    /* The scrim fades faster than the panel travels, so the panel is what the
+       eye follows in and the room is already lit when it lands. */
+    transition: opacity var(--dur-base) var(--ease-out);
+    -webkit-tap-highlight-color: transparent;
   }
-  .sheet-scrim[data-open="true"] { opacity: 1; }
-  .sheet {
+  .shm-scrim[data-open="true"] { opacity: 1; }
+  .shm-scrim:not([data-open="true"]) { transition-duration: var(--dur-fast); }
+
+  .shm-bottom  { align-items: flex-end; }
+  .shm-center  { align-items: center; justify-content: center; padding: 24px; }
+
+  .shm-panel { outline: none; }
+  .shm-panel:focus-visible { outline: none; }
+
+  /* translateY(100%) rather than a pixel offset: the panel moves by exactly
+     its own height whatever that height turns out to be, so a two-row alerts
+     sheet and a full-height post form both start fully off the bottom edge. */
+  .shm-bottom > .shm-panel {
     transform: translateY(100%);
-    transition: transform 280ms var(--ease-out);
+    transition: transform var(--dur-sheet) var(--ease-drawer);
     will-change: transform;
   }
-  .sheet[data-open="true"] { transform: translateY(0); }
+  .shm-bottom > .shm-panel[data-open="true"] { transform: translateY(0); }
+  .shm-bottom > .shm-panel:not([data-open="true"]) { transition-duration: var(--dur-exit); }
+
+  /* Centred dialogs are not anchored to an edge, so they scale from their own
+     centre. Never from scale(0) — nothing in the world arrives from nothing;
+     0.94 is small enough to read as an arrival and large enough to have been
+     somewhere. */
+  .shm-center > .shm-panel {
+    opacity: 0; transform: scale(.94);
+    transition: opacity var(--dur-fast) var(--ease-out),
+                transform var(--dur-base) var(--ease-out);
+    will-change: transform, opacity;
+  }
+  .shm-center > .shm-panel[data-open="true"] { opacity: 1; transform: scale(1); }
+  .shm-center > .shm-panel:not([data-open="true"]) { transform: scale(.97); }
 
   /* ── Offline banner ──────────────────────────────────────────────────────
      Connectivity flaps in the field, so this is a transition: a banner caught
@@ -1113,9 +1383,20 @@ export const appCss = `
     .stagger-list > * { animation: row-in-reduced 200ms ease both; }
     @keyframes row-in-reduced { from { opacity: 0; } }
     .bar-fill { animation: none; }
-    .sheet { transform: none; opacity: 0; transition: opacity 140ms ease; }
-    .sheet[data-open="true"] { transform: none; opacity: 1; }
+    /* The sheet still announces itself, it just stops travelling: a panel
+       that pops into existence with no transition at all is not calmer, it
+       is harder to follow. Fade only, and no scale on the centred variant. */
+    .shm-bottom > .shm-panel,
+    .shm-center > .shm-panel {
+      transform: none; opacity: 0;
+      transition: opacity 140ms ease;
+    }
+    .shm-bottom > .shm-panel[data-open="true"],
+    .shm-center > .shm-panel[data-open="true"] { transform: none; opacity: 1; }
+    .shm-center > .shm-panel:not([data-open="true"]) { transform: none; }
     .offline-banner[data-entering="true"] { transform: none; }
+    .content-in { animation: none; }
+    .cart-badge { animation: none; }
   }
 
 `;

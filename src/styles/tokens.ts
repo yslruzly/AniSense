@@ -67,9 +67,31 @@ export const tokensCss = `
     --shadow-md: 0 5px 14px rgba(22,33,27,0.09);
     --shadow-lg: 0 12px 28px rgba(22,33,27,0.14);
 
-    /* ── Motion ─────────────────────────────────────────────────────────── */
-    --ease-out: cubic-bezier(.23,1,.32,1);
-    --ease-io:  cubic-bezier(.77,0,.175,1);
+    /* ── Motion ─────────────────────────────────────────────────────────────
+       Three curves, and that is the whole set. The built-in CSS keywords are
+       too weak to read as intentional at these durations; each of these is a
+       stronger variant of the keyword it replaces.
+
+         --ease-out    entering and exiting. Starts fast, so the interface
+                       answers on the frame the finger lands.
+         --ease-io     movement between two on-screen positions.
+         --ease-drawer the iOS sheet curve. Almost all of its travel happens
+                       early and it settles for a long time, which is what
+                       makes a large surface feel weighted rather than flung.
+
+       ease-in appears nowhere on purpose: it withholds movement during the
+       exact moment the user is watching hardest. */
+    --ease-out:    cubic-bezier(.23,1,.32,1);
+    --ease-io:     cubic-bezier(.77,0,.175,1);
+    --ease-drawer: cubic-bezier(.32,.72,0,1);
+
+    /* Durations, so timing is a decision made once rather than per rule.
+       Press is the floor: below ~90ms the scale reads as a flicker. */
+    --dur-press:  100ms;
+    --dur-fast:   160ms;
+    --dur-base:   200ms;
+    --dur-sheet:  340ms;
+    --dur-exit:   240ms;
 
     /* ── Android safe areas ─────────────────────────────────────────────── */
     --safe-top:    env(safe-area-inset-top, 0px);

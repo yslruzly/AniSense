@@ -105,27 +105,36 @@ export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userIn
           />
         )}
 
-        {prices.status === "ready" && filtered.map(c => (
-          <div className="mkt-row" key={c.id}>
-            <div className="mkt-row-ico">
-              {cropPhoto(c.id)
-                ? <img src={cropPhoto(c.id)} alt="" loading="lazy" decoding="async" />
-                : <CropIcon crop={c.group} size={20} />}
-            </div>
-            <div className="mkt-row-body">
-              <div className="mkt-row-name">{c.name}</div>
-              <div className="mkt-row-unit">{tn(c.group)}</div>
-            </div>
-            <div className="mkt-row-right">
-              <div className="mkt-row-price">₱{c.pricePerKg.toFixed(2)}</div>
-              <div className={`mkt-row-chg ${c.change >= 0 ? "up" : "down"}`}>
-                {c.change >= 0 ? <TrendingUp size={14} strokeWidth={2.6} /> : <TrendingDown size={14} strokeWidth={2.6} />}
-                {c.change >= 0 ? "+" : ""}{c.change}%
+        {/* Keyed on the category, not on the search text. Switching category
+            replaces the whole list, and swapping twenty rows on a single frame
+            reads as a glitch rather than as a filter applying — so that gets a
+            fade. Typing narrows the same list a row at a time and must not,
+            or every keystroke would flash the results. */}
+        {prices.status === "ready" && filtered.length > 0 && (
+          <div className="list-stack content-in" key={activeCat}>
+            {filtered.map(c => (
+              <div className="mkt-row" key={c.id}>
+                <div className="mkt-row-ico">
+                  {cropPhoto(c.id)
+                    ? <img src={cropPhoto(c.id)} alt="" loading="lazy" decoding="async" />
+                    : <CropIcon crop={c.group} size={20} />}
+                </div>
+                <div className="mkt-row-body">
+                  <div className="mkt-row-name">{c.name}</div>
+                  <div className="mkt-row-unit">{tn(c.group)}</div>
+                </div>
+                <div className="mkt-row-right">
+                  <div className="mkt-row-price">₱{c.pricePerKg.toFixed(2)}</div>
+                  <div className={`mkt-row-chg ${c.change >= 0 ? "up" : "down"}`}>
+                    {c.change >= 0 ? <TrendingUp size={14} strokeWidth={2.6} /> : <TrendingDown size={14} strokeWidth={2.6} />}
+                    {c.change >= 0 ? "+" : ""}{c.change}%
+                  </div>
+                </div>
+                <ChevronRight size={18} className="mkt-row-chev" aria-hidden="true" />
               </div>
-            </div>
-            <ChevronRight size={18} className="mkt-row-chev" aria-hidden="true" />
+            ))}
           </div>
-        ))}
+        )}
 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: isOffline ? "var(--ink)" : "var(--tanim-sk)", border: `1px solid ${isOffline ? "var(--text-soft)" : "var(--tanim-sk)"}`, borderRadius: 10, padding: "9px 14px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 7 }}>

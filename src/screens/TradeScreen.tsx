@@ -10,6 +10,8 @@ import { cropPhotoFor } from "../data/cropPhotos";
 import juanPeek from "../assets/juan-peek.webp";
 import { CropEmoji } from "../components/CropEmoji";
 import { Ring } from "../components/charts/Micro";
+import { Sheet } from "../components/ui/Sheet";
+import { useRetained } from "../hooks/usePresence";
 
 // ─── Trade / Marketplace Screen ───────────────────────────────────────────────
 export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", userInitials = "JD", userRole }: { onProfile: () => void; onBack: () => void; userName?: string; userInitials?: string; userRole?: UserRole }) {
@@ -33,6 +35,12 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
 
   // ── Seller detail state ──
   const [sellerDetail, setSellerDetail] = useState<SellerDetail | null>(null);
+
+  // Both of these sheets are opened BY their data, so clearing the state to
+  // close them also empties them. Retaining the last value keeps the panel
+  // populated while it slides back out instead of animating a blank card.
+  const shownSeller = useRetained(sellerDetail);
+  const pendingDelete = useRetained(confirmDelete);
 
   // When category changes, reset variety
   const selectCategory = (cat: string) => { setCategory(cat); setVariety("All"); };
@@ -138,9 +146,12 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
     <div className="screen">
       <Hdr title={t("trade_title")} onProfile={onProfile} onBack={onBack} userInitials={userInitials}
         extra={userRole === "buyer" ? (
-          <button onClick={() => setShowCart(true)} className="cart-badge-wrap cart-btn-icon">
+          <button onClick={() => setShowCart(true)} className="cart-badge-wrap cart-btn-icon" aria-label={t("cart_title")}>
             <ShoppingCart size={17} color="var(--tanim)" />
-            {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
+            {/* Keyed on the count so the badge replays its bump each time the
+                number changes. Adding to cart happens with the cart closed, so
+                this is the only confirmation the tap did anything. */}
+            {cartCount > 0 && <span className="cart-badge" key={cartCount}>{cartCount}</span>}
           </button>
         ) : undefined}
       />
@@ -330,22 +341,23 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
       </div>
 
       {/* Delete confirmation, senior-friendly */}
-      {confirmDelete && (
-        <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "flex-end", zIndex: 50 }}>
-          <div style={{ background: "#fff", borderRadius: "24px 24px 0 0", padding: 28, width: "100%" }}>
-            <div style={{ fontSize: 40, textAlign: "center", marginBottom: 10 }}>🗑️</div>
-            <div style={{ fontSize: "var(--fs-lead)", fontWeight: 900, color: "var(--text)", marginBottom: 8, textAlign: "center" }}>{t("trade_remove_title")}</div>
-            <div style={{ fontSize: "var(--fs-body)", color: "var(--text-muted)", marginBottom: 26, textAlign: "center", lineHeight: 1.6 }}>{t("trade_remove_sub")}</div>
-            <div style={{ display: "flex", gap: 12 }}>
-              <button onClick={() => setConfirmDelete(null)} style={{ flex: 1, padding: 18, background: "var(--paper-alt)", border: "2px solid var(--line)", borderRadius: 14, fontFamily: "inherit", fontSize: "var(--fs-body)", fontWeight: 800, cursor: "pointer", color: "var(--text-soft)" }}>← {t("cancel")}</button>
-              <button onClick={() => deleteListing(confirmDelete)} style={{ flex: 1, padding: 18, background: "var(--error)", color: "#fff", border: "none", borderRadius: 14, fontFamily: "inherit", fontSize: "var(--fs-body)", fontWeight: 800, cursor: "pointer" }}>{t("trade_yes_remove")}</button>
-            </div>
-          </div>
+      <Sheet
+        open={!!confirmDelete}
+        onClose={() => setConfirmDelete(null)}
+        className="confirm-sheet"
+        label={t("trade_remove_title")}
+      >
+        <div style={{ fontSize: 40, textAlign: "center", marginBottom: 10 }}>🗑️</div>
+        <div style={{ fontSize: "var(--fs-lead)", fontWeight: 900, color: "var(--text)", marginBottom: 8, textAlign: "center" }}>{t("trade_remove_title")}</div>
+        <div style={{ fontSize: "var(--fs-body)", color: "var(--text-muted)", marginBottom: 26, textAlign: "center", lineHeight: 1.6 }}>{t("trade_remove_sub")}</div>
+        <div style={{ display: "flex", gap: 12 }}>
+          <button className="btn-secondary" onClick={() => setConfirmDelete(null)} style={{ flex: 1 }}>← {t("cancel")}</button>
+          <button className="btn-danger" onClick={() => pendingDelete && deleteListing(pendingDelete)} style={{ flex: 1 }}>{t("trade_yes_remove")}</button>
         </div>
-      )}
+      </Sheet>
 
       {/* Post / Edit listing modal, senior-friendly */}
-      {showModal && (() => {
+      {(() => {
         // Crop groups for visual picker
         const CROP_GROUPS_PICKER = [
           { emoji: "🌾", label: "Rice", varieties: ["Special Rice", "Well Milled", "Regular Milled"] },
@@ -363,16 +375,20 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
         const hintStyle: React.CSSProperties = { fontSize: "var(--fs-label)", color: "var(--text-muted)", marginBottom: 10, fontWeight: 500 };
 
         return (
-          <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "flex-end", zIndex: 50 }}>
-            <div className="modal-sheet" style={{ background: "var(--paper)", borderRadius: "24px 24px 0 0", width: "100%", maxHeight: "93%", paddingBottom: 24 }}>
-
+          <Sheet
+            open={showModal}
+            onClose={() => setShowModal(false)}
+            className="post-sheet modal-sheet"
+            label={editId ? t("trade_edit_listing") : t("trade_post_title")}
+          >
+            <>
               {/* Header */}
               <div style={{ background: "var(--tanim)", borderRadius: "24px 24px 0 0", padding: "20px 20px 18px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <div>
                   <div style={{ fontSize: "var(--fs-lead)", fontWeight: 900, color: "#fff" }}>{editId ? `✏️ ${t("trade_edit_listing")}` : t("trade_post_title")}</div>
                   <div style={{ fontSize: "var(--fs-label)", color: "rgba(255,255,255,0.8)", marginTop: 3 }}>{editId ? t("trade_edit_listing_sub") : t("trade_post_sub")}</div>
                 </div>
-                <button onClick={() => setShowModal(false)} style={{ background: "rgba(255,255,255,0.2)", border: "none", borderRadius: 50, width: 44, height: 44, cursor: "pointer", fontSize: "var(--fs-title)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>✕</button>
+                <button className="sheet-x" onClick={() => setShowModal(false)} aria-label={t("close")}>✕</button>
               </div>
 
               <div style={{ padding: "20px 20px 0" }}>
@@ -485,31 +501,33 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
 
                 {/* ── Action Buttons ── */}
                 <div style={{ display: "flex", gap: 12 }}>
-                  <button onClick={() => setShowModal(false)}
-                    style={{ flex: 1, padding: 18, background: "var(--paper-alt)", border: "2px solid var(--line)", borderRadius: 14, fontFamily: "inherit", fontSize: "var(--fs-body)", fontWeight: 800, cursor: "pointer", color: "var(--text-soft)" }}>
+                  <button className="btn-secondary" onClick={() => setShowModal(false)} style={{ flex: 1 }}>
                     ← {t("back")}
                   </button>
-                  <button onClick={saveForm}
-                    style={{ flex: 2, padding: 18, background: "var(--tanim)", color: "#fff", border: "none", borderRadius: 14, fontFamily: "inherit", fontSize: "var(--fs-body)", fontWeight: 900, cursor: "pointer", boxShadow: "0 4px 12px rgba(11,107,65,0.3)" }}>
+                  <button className="btn-primary" onClick={saveForm} style={{ flex: 2 }}>
                     {editId ? `✔ ${t("save_changes")}` : `✔ ${t("trade_post_now")}`}
                   </button>
                 </div>
               </div>
-            </div>
-          </div>
+            </>
+          </Sheet>
         );
       })()}
       {/* ── Cart Drawer ── */}
-      {showCart && (
-        <div className="cart-drawer" onClick={() => setShowCart(false)}>
-          <div className="cart-sheet" onClick={e => e.stopPropagation()}>
+      <Sheet
+        open={showCart}
+        onClose={() => setShowCart(false)}
+        className="cart-sheet"
+        label={t("cart_title")}
+      >
+        <>
             {/* Header */}
             <div className="cart-sheet-hdr">
               <div>
                 <div style={{ fontSize: "var(--fs-lead)", fontWeight: 900, color: "#fff" }}>🛒 {t("cart_title")}</div>
                 <div style={{ fontSize: "var(--fs-label)", color: "rgba(255,255,255,0.8)", marginTop: 2 }}>{cartCount} {cartCount !== 1 ? t("cart_items_selected") : t("cart_item_selected")}</div>
               </div>
-              <button onClick={() => setShowCart(false)} style={{ background: "rgba(255,255,255,0.2)", border: "none", borderRadius: 50, width: 40, height: 40, cursor: "pointer", color: "#fff", fontSize: "var(--fs-lead)", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+              <button className="sheet-x" onClick={() => setShowCart(false)} aria-label={t("close")}>✕</button>
             </div>
 
             {/* Items */}
@@ -562,48 +580,55 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                 </button>
               </div>
             )}
-          </div>
-        </div>
-      )}
+        </>
+      </Sheet>
 
-      {/* ── Checkout Success ── */}
-      {checkoutDone && (
-        <div className="checkout-success">
-          <div className="checkout-card">
-            <div style={{ fontSize: 56, marginBottom: 12 }}>🎉</div>
-            <div style={{ fontSize: "var(--fs-lead)", fontWeight: 900, color: "var(--text)", marginBottom: 6 }}>{t("cart_order_placed")}</div>
-            <div style={{ fontSize: "var(--fs-label)", color: "var(--text-muted)", lineHeight: 1.6 }}>{t("cart_order_sent")}</div>
-            <div style={{ marginTop: 20, padding: "10px 0", background: "var(--tanim-sk)", borderRadius: 10, fontSize: "var(--fs-label)", fontWeight: 700, color: "var(--tanim)" }}>✓ {t("cart_txn_recorded")}</div>
-          </div>
-        </div>
-      )}
+      {/* ── Checkout Success ──
+          The one place in the app that gets a celebration. It is seen once per
+          order, it is the end of a long flow, and the scale-in is what makes
+          it read as an arrival rather than a screen that was always there. */}
+      <Sheet
+        open={checkoutDone}
+        onClose={() => setCheckoutDone(false)}
+        variant="center"
+        className="checkout-card"
+        label={t("cart_order_placed")}
+      >
+        <div className="checkout-pop" style={{ fontSize: 56, marginBottom: 12 }}>🎉</div>
+        <div style={{ fontSize: "var(--fs-lead)", fontWeight: 900, color: "var(--text)", marginBottom: 6 }}>{t("cart_order_placed")}</div>
+        <div style={{ fontSize: "var(--fs-label)", color: "var(--text-muted)", lineHeight: 1.6 }}>{t("cart_order_sent")}</div>
+        <div style={{ marginTop: 20, padding: "10px 0", background: "var(--tanim-sk)", borderRadius: 10, fontSize: "var(--fs-label)", fontWeight: 700, color: "var(--tanim)" }}>✓ {t("cart_txn_recorded")}</div>
+      </Sheet>
 
       {/* ── Seller Details Modal ── */}
-      {sellerDetail && (
-        <div className="seller-modal-overlay" onClick={() => setSellerDetail(null)}>
-          <div className="seller-modal-sheet" onClick={e => e.stopPropagation()}>
+      <Sheet
+        open={!!sellerDetail}
+        onClose={() => setSellerDetail(null)}
+        className="seller-modal-sheet"
+        label={shownSeller?.name ?? t("seller_about")}
+      >
+        {shownSeller && <>
 
             {/* Hero header */}
             <div className="seller-modal-hero">
               <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
                 <div>
-                  <div className="seller-modal-ava">{sellerDetail.initials}</div>
-                  <div className="seller-modal-name">{sellerDetail.name}</div>
+                  <div className="seller-modal-ava">{shownSeller.initials}</div>
+                  <div className="seller-modal-name">{shownSeller.name}</div>
                   <div className="seller-modal-sub" style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                    <MapPin size={13} color="rgba(255,255,255,0.7)" />{sellerDetail.location}
+                    <MapPin size={13} color="rgba(255,255,255,0.7)" />{shownSeller.location}
                   </div>
                 </div>
-                <button onClick={() => setSellerDetail(null)}
-                  style={{ background: "rgba(255,255,255,0.2)", border: "none", borderRadius: 50, width: 40, height: 40, cursor: "pointer", color: "#fff", fontSize: "var(--fs-lead)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>✕</button>
+                <button className="sheet-x" onClick={() => setSellerDetail(null)} aria-label={t("close")}>✕</button>
               </div>
             </div>
 
             {/* Quick stats */}
             <div className="seller-modal-stats">
               {[
-                { val: sellerDetail.rating.toFixed(1), lbl: t("seller_rating"), ico: <Star size={14} color="var(--gold-text)" fill="var(--gold-text)" /> },
-                { val: `${sellerDetail.yearsfarming} yrs`, lbl: t("seller_experience"), ico: <Wheat size={14} color="var(--tanim)" /> },
-                { val: `${sellerDetail.totalSales}+`, lbl: t("seller_sales"), ico: <Package size={14} color="var(--tanim)" /> },
+                { val: shownSeller.rating.toFixed(1), lbl: t("seller_rating"), ico: <Star size={14} color="var(--gold-text)" fill="var(--gold-text)" /> },
+                { val: `${shownSeller.yearsfarming} yrs`, lbl: t("seller_experience"), ico: <Wheat size={14} color="var(--tanim)" /> },
+                { val: `${shownSeller.totalSales}+`, lbl: t("seller_sales"), ico: <Package size={14} color="var(--tanim)" /> },
               ].map(s => (
                 <div className="sms-item" key={s.lbl}>
                   <div className="sms-val">{s.val}</div>
@@ -620,7 +645,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                 <div className="sdm-ico"><Phone size={20} color="var(--tanim)" /></div>
                 <div>
                   <div className="sdm-lbl">{t("seller_phone")}</div>
-                  <div className="sdm-val">{sellerDetail.phone}</div>
+                  <div className="sdm-val">{shownSeller.phone}</div>
                 </div>
               </div>
 
@@ -629,7 +654,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                 <div className="sdm-ico"><MapPin size={20} color="var(--tanim)" /></div>
                 <div>
                   <div className="sdm-lbl">{t("seller_location")}</div>
-                  <div className="sdm-val">{sellerDetail.location}</div>
+                  <div className="sdm-val">{shownSeller.location}</div>
                 </div>
               </div>
 
@@ -638,7 +663,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                 <div className="sdm-ico"><Sprout size={20} color="var(--tanim)" /></div>
                 <div>
                   <div className="sdm-lbl">{t("seller_years")}</div>
-                  <div className="sdm-val">{sellerDetail.yearsfarming} {t("seller_years_suffix")}</div>
+                  <div className="sdm-val">{shownSeller.yearsfarming} {t("seller_years_suffix")}</div>
                 </div>
               </div>
 
@@ -649,9 +674,9 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                   <div className="sdm-lbl">{t("seller_rating")}</div>
                   <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
                     {[1, 2, 3, 4, 5].map(i => (
-                      <Star key={i} size={16} color="var(--gold-text)" fill={i <= Math.round(sellerDetail.rating) ? "var(--gold-text)" : "none"} />
+                      <Star key={i} size={16} color="var(--gold-text)" fill={i <= Math.round(shownSeller.rating) ? "var(--gold-text)" : "none"} />
                     ))}
-                    <span className="sdm-val">{sellerDetail.rating.toFixed(1)}</span>
+                    <span className="sdm-val">{shownSeller.rating.toFixed(1)}</span>
                     <span style={{ fontSize: "var(--fs-label)", color: "var(--text-muted)" }}>/ 5.0</span>
                   </div>
                 </div>
@@ -661,7 +686,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
               <div style={{ background: "#fff", borderRadius: 14, padding: 14, border: "1px solid var(--paper-alt)" }}>
                 <div className="sdm-lbl" style={{ marginBottom: 8 }}>{t("seller_crops_sold")}</div>
                 <div className="sdm-crops">
-                  {sellerDetail.crops.map(c => (
+                  {shownSeller.crops.map(c => (
                     <span key={c} className="sdm-crop-tag">{c}</span>
                   ))}
                 </div>
@@ -670,7 +695,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
               {/* Bio */}
               <div className="sdm-bio">
                 <div className="sdm-lbl" style={{ marginBottom: 6 }}>{t("seller_about")}</div>
-                {sellerDetail.bio}
+                {shownSeller.bio}
               </div>
 
             </div>
@@ -678,13 +703,12 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
             {/* Footer: call button */}
             <div className="seller-modal-footer">
               <button className="call-seller-btn">
-                <Phone size={20} color="#fff" /> {t("seller_call")} {sellerDetail.name.split(" ")[0]}
+                <Phone size={20} color="#fff" /> {t("seller_call")} {shownSeller.name.split(" ")[0]}
               </button>
             </div>
 
-          </div>
-        </div>
-      )}
+        </>}
+      </Sheet>
 
     </div>
   );

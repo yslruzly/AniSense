@@ -96,7 +96,11 @@ export function SkeletonRow() {
  */
 export function SkeletonList({ rows = 5, label }: { rows?: number; label: string }) {
   return (
-    <div role="status" aria-busy="true">
+    // .list-stack matches the spacing the real rows get from .scroll. Without
+    // it the placeholders sat flush against each other and the list visibly
+    // spread apart the moment the data landed — the exact layout jump a
+    // skeleton exists to prevent.
+    <div className="list-stack" role="status" aria-busy="true">
       <span className="sr-only">{label}</span>
       {Array.from({ length: rows }, (_, i) => <SkeletonRow key={i} />)}
     </div>

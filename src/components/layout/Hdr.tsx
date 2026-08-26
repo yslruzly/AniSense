@@ -3,6 +3,7 @@ import { ArrowLeft, Bell, TrendingUp, TrendingDown, CloudRain, X } from "lucide-
 import { useLang } from "../../i18n";
 import { haptic } from "../../lib/platform";
 import { buildAlerts, Alert } from "../../data/alerts";
+import { Sheet } from "../ui/Sheet";
 
 // ─── Shared Header ────────────────────────────────────────────────────────────
 export function Hdr({ icon, title, sub, onProfile, onBack, userInitials = "JD", extra }: { icon?: React.ReactNode; title: string; sub?: string; onProfile?: () => void; onBack?: () => void; userInitials?: string; extra?: React.ReactNode }) {
@@ -63,41 +64,46 @@ export function Hdr({ icon, title, sub, onProfile, onBack, userInitials = "JD", 
         </div>
       </div>
 
-      {showAlerts && (
-        <div className="alerts-scrim" onClick={() => setShowAlerts(false)}>
-          <div className="alerts-sheet modal-sheet" onClick={e => e.stopPropagation()}>
-            <div className="alerts-head">
-              <div>
-                <div className="alerts-head-t">{t("alerts_title")}</div>
-                <div className="alerts-head-s">{t("alerts_sub")}</div>
-              </div>
-              <button className="alerts-close" onClick={() => setShowAlerts(false)} aria-label={t("close")}>
-                <X size={22} color="#fff" strokeWidth={2.4} />
-              </button>
-            </div>
-
-            <div className="alerts-body">
-              {alerts.length === 0 ? (
-                <div className="alerts-empty">
-                  <div className="alerts-empty-t">{t("alerts_none")}</div>
-                  <div className="alerts-empty-s">{t("alerts_none_sub")}</div>
-                </div>
-              ) : alerts.map(a => {
-                const r = row(a);
-                return (
-                  <div key={a.id} className="alert-row">
-                    <span className="alert-ico" style={{ background: r.bg }}>{r.ico}</span>
-                    <span className="alert-txt">
-                      <span className="alert-t">{r.title}</span>
-                      <span className="alert-b">{r.body}</span>
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
+      <Sheet
+        open={showAlerts}
+        onClose={() => setShowAlerts(false)}
+        className="alerts-sheet modal-sheet"
+        label={t("alerts_title")}
+      >
+        <div className="alerts-head">
+          <div>
+            <div className="alerts-head-t">{t("alerts_title")}</div>
+            <div className="alerts-head-s">{t("alerts_sub")}</div>
           </div>
+          <button className="alerts-close" onClick={() => setShowAlerts(false)} aria-label={t("close")}>
+            <X size={22} color="#fff" strokeWidth={2.4} />
+          </button>
         </div>
-      )}
+
+        {/* Staggered, because the sheet's own travel and the rows arriving at
+            once are two events competing for the same moment. Letting the
+            rows follow the panel in gives the eye an order to read them in.
+            Rare enough to earn it: this opens a handful of times a day. */}
+        <div className="alerts-body stagger-list">
+          {alerts.length === 0 ? (
+            <div className="alerts-empty">
+              <div className="alerts-empty-t">{t("alerts_none")}</div>
+              <div className="alerts-empty-s">{t("alerts_none_sub")}</div>
+            </div>
+          ) : alerts.map(a => {
+            const r = row(a);
+            return (
+              <div key={a.id} className="alert-row">
+                <span className="alert-ico" style={{ background: r.bg }}>{r.ico}</span>
+                <span className="alert-txt">
+                  <span className="alert-t">{r.title}</span>
+                  <span className="alert-b">{r.body}</span>
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </Sheet>
     </>
   );
 }

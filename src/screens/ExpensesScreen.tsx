@@ -10,6 +10,9 @@ import { CropEmoji } from "../components/CropEmoji";
 import { PieChart } from "../components/charts/PieChart";
 import { MonthlyTrendsChart } from "../components/charts/MonthlyTrendsChart";
 import { CropExpenseSummary } from "../components/analytics/CropExpenseSummary";
+import { Segmented } from "../components/ui/Segmented";
+import { Sheet } from "../components/ui/Sheet";
+import { useRetained } from "../hooks/usePresence";
 
 // ─── Expenses Screen ──────────────────────────────────────────────────────────
 export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = "JD", isBuyer = false, buyerTransactions = [] }: { onProfile: () => void; onBack: () => void; farmerCrops: string[]; userInitials?: string; isBuyer?: boolean; buyerTransactions?: BuyerTransaction[] }) {
@@ -26,6 +29,9 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  // Held so the confirmation still knows which entry it is about while it
+  // slides back out — clearing confirmDelete is what closes it.
+  const pendingDelete = useRetained(confirmDelete);
   const [form, setForm] = useState(() => ({ description: "", category: "Seeds", amount: "", date: new Date().toISOString().split("T")[0], crop: farmerCrops[0] || "Rice" }));
   const [formError, setFormError] = useState("");
   const [expandedMonth, setExpandedMonth] = useState<string | null>(null);
@@ -228,18 +234,16 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
             </div>
 
             {/* View mode tabs */}
-            <div style={{ display: "flex", gap: 6, background: "var(--paper-alt)", borderRadius: 12, padding: 4 }}>
-              {[["all", t("exp_overview")], ["by-crop", t("exp_by_crop")], ["by-date", t("exp_by_month")]].map(([mode, label]) => (
-                <button key={mode} onClick={() => setViewMode(mode as typeof viewMode)}
-                  style={{
-                    flex: 1, padding: "9px 4px", borderRadius: 9, border: "none", fontFamily: "inherit", fontSize: "var(--fs-label)", fontWeight: 700, cursor: "pointer",
-                    background: viewMode === mode ? "var(--tanim)" : "transparent", color: viewMode === mode ? "#fff" : "var(--text-muted)",
-                    transition: "all 0.15s"
-                  }}>
-                  {label}
-                </button>
-              ))}
-            </div>
+            <Segmented
+              label={t("exp_overview")}
+              value={viewMode}
+              onChange={setViewMode}
+              options={[
+                { id: "all" as const, label: t("exp_overview") },
+                { id: "by-crop" as const, label: t("exp_by_crop") },
+                { id: "by-date" as const, label: t("exp_by_month") },
+              ]}
+            />
 
             {/* ═══ OVERVIEW TAB ═══ */}
             {viewMode === "all" && (
@@ -469,10 +473,8 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
       )}
 
       {/* Calculator modal */}
-      {showCalc && (
-        <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "flex-end", zIndex: 60 }} onClick={() => setShowCalc(false)}>
-          <div style={{ background: "var(--text)", borderRadius: "22px 22px 0 0", width: "100%", padding: "0 0 28px 0", boxShadow: "0 -8px 40px rgba(0,0,0,0.4)" }} onClick={e => e.stopPropagation()}>
-
+      <Sheet open={showCalc} onClose={() => setShowCalc(false)} className="calc-sheet" label={t("calc_title")}>
+        <>
             {/* Drag handle */}
             <div style={{ display: "flex", justifyContent: "center", paddingTop: 12, marginBottom: 8 }}>
               <div style={{ width: 40, height: 4, borderRadius: 99, background: "var(--text-soft)" }} />
@@ -529,16 +531,15 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
                       {row.map(k => {
                         const active = isOp(k) && activeOp === k;
                         return (
-                          <button key={k} onClick={() => calcPress(k)}
+                          // .calc-key carries the press feedback. A keypad is
+                          // the one control where a key that does not move
+                          // under the thumb is read as a missed tap, and the
+                          // user presses it again — which on a calculator
+                          // means a wrong number, not just a wasted second.
+                          <button key={k} className="calc-key" onClick={() => calcPress(k)}
                             style={{
-                              padding: "18px 0",
-                              borderRadius: 14,
                               border: active ? "2px solid var(--tanim-sk)" : "2px solid transparent",
-                              cursor: "pointer",
-                              fontFamily: "inherit",
-                              fontSize: "var(--fs-body)",
-                              fontWeight: 800,
-                              background: isEq(k) ? "var(--tanim)" : isOp(k) ? (active ? "var(--tanim-deep)" : "var(--tanim-deep)") : isFunc(k) ? "var(--text-soft)" : "var(--ink)",
+                              background: isEq(k) ? "var(--tanim)" : isOp(k) ? "var(--tanim-deep)" : isFunc(k) ? "var(--text-soft)" : "var(--ink)",
                               color: isEq(k) ? "#fff" : isOp(k) ? "var(--tanim-sk)" : isFunc(k) ? "var(--line-strong)" : "var(--paper)",
                               boxShadow: isEq(k) ? "0 4px 12px rgba(11,107,65,0.3)" : "none",
                             }}>
@@ -551,29 +552,32 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
                 </div>
               );
             })()}
-          </div>
-        </div>
-      )}
+        </>
+      </Sheet>
 
       {/* Delete confirmation, farmer only */}
-      {!isBuyer && confirmDelete && (
-        <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "flex-end", zIndex: 50 }}>
-          <div style={{ background: "#fff", borderRadius: "16px 16px 0 0", padding: 24, width: "100%" }}>
-            <div style={{ fontSize: "var(--fs-body)", fontWeight: 700, color: "var(--text)", marginBottom: 8 }}>{t("exp_delete_title")}</div>
-            <div style={{ fontSize: "var(--fs-label)", color: "var(--text-muted)", marginBottom: 20 }}>{t("exp_delete_sub")}</div>
-            <div style={{ display: "flex", gap: 10 }}>
-              <button onClick={() => setConfirmDelete(null)} style={{ flex: 1, padding: 13, background: "var(--paper-alt)", border: "none", borderRadius: 10, fontFamily: "inherit", fontSize: "var(--fs-label)", fontWeight: 700, cursor: "pointer" }}>{t("cancel")}</button>
-              <button onClick={() => deleteEntry(confirmDelete)} style={{ flex: 1, padding: 13, background: "var(--error)", color: "#fff", border: "none", borderRadius: 10, fontFamily: "inherit", fontSize: "var(--fs-label)", fontWeight: 700, cursor: "pointer" }}>{t("delete")}</button>
-            </div>
-          </div>
+      <Sheet
+        open={!isBuyer && !!confirmDelete}
+        onClose={() => setConfirmDelete(null)}
+        className="confirm-sheet sm"
+        label={t("exp_delete_title")}
+      >
+        <div style={{ fontSize: "var(--fs-body)", fontWeight: 700, color: "var(--text)", marginBottom: 8 }}>{t("exp_delete_title")}</div>
+        <div style={{ fontSize: "var(--fs-label)", color: "var(--text-muted)", marginBottom: 20 }}>{t("exp_delete_sub")}</div>
+        <div style={{ display: "flex", gap: 10 }}>
+          <button className="btn-secondary sm" onClick={() => setConfirmDelete(null)} style={{ flex: 1 }}>{t("cancel")}</button>
+          <button className="btn-danger sm" onClick={() => pendingDelete && deleteEntry(pendingDelete)} style={{ flex: 1 }}>{t("delete")}</button>
         </div>
-      )}
+      </Sheet>
 
       {/* Add/Edit modal, farmer only */}
-      {!isBuyer && showModal && (
-        <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "flex-end", zIndex: 50 }} onClick={() => setShowModal(false)}>
-          <div className="modal-sheet" style={{ background: "#fff", borderRadius: "22px 22px 0 0", padding: "0 0 28px 0", width: "100%", maxHeight: "93%", boxShadow: "0 -8px 40px rgba(0,0,0,0.18)" }} onClick={e => e.stopPropagation()}>
-
+      <Sheet
+        open={!isBuyer && showModal}
+        onClose={() => setShowModal(false)}
+        className="exp-sheet modal-sheet"
+        label={editId ? t("exp_edit_title") : t("exp_add_title")}
+      >
+        <>
             {/* Drag handle */}
             <div style={{ display: "flex", justifyContent: "center", paddingTop: 12, marginBottom: 4 }}>
               <div style={{ width: 40, height: 4, borderRadius: 99, background: "var(--line)" }} />
@@ -691,18 +695,17 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
 
               {/* Action buttons */}
               <div style={{ display: "flex", gap: 10, paddingBottom: 4 }}>
-                <button onClick={() => setShowModal(false)} style={{ flex: 1, padding: "14px", background: "var(--paper-alt)", border: "none", borderRadius: 12, fontFamily: "inherit", fontSize: "var(--fs-label)", fontWeight: 700, cursor: "pointer", color: "var(--text-soft)", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                <button className="btn-secondary sm row-center" onClick={() => setShowModal(false)} style={{ flex: 1, border: "none" }}>
                   <X size={15} color="var(--text-soft)" /> {t("cancel")}
                 </button>
-                <button onClick={saveForm} style={{ flex: 2, padding: "14px", background: "var(--tanim)", color: "#fff", border: "none", borderRadius: 12, fontFamily: "inherit", fontSize: "var(--fs-label)", fontWeight: 800, cursor: "pointer", boxShadow: "0 4px 12px rgba(11,107,65,0.3)", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                <button className="btn-primary sm row-center" onClick={saveForm} style={{ flex: 2 }}>
                   {editId ? <><CheckCircle size={16} /> {t("save_changes")}</> : <><Plus size={16} /> {t("exp_add_title")}</>}
                 </button>
               </div>
 
             </div>
-          </div>
-        </div>
-      )}
+        </>
+      </Sheet>
     </div>
   );
 }
