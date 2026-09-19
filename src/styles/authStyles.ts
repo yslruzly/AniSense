@@ -94,12 +94,6 @@ export const authCss = `
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
   .a-brandname { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-lead); color: #fff; letter-spacing: -.01em; }
-  .a-brandname.on-paper { color: var(--ink); }
-  /* Larger lockup for paper screens. The mark keeps a hairline so white-on-paper
-     still reads as a tile rather than a floating leaf. */
-  .a-brandrow.lg { gap: 12px; margin-bottom: 28px; }
-  .a-brandrow.lg .a-brandmark { width: 48px; height: 48px; border-radius: 14px; box-shadow: inset 0 0 0 1.5px var(--line); }
-  .a-brandrow.lg .a-brandname { font-size: var(--fs-title); }
   /* Back + primary in one row. Back matches the button height so the pair
      lines up, and never grows; Continue takes the rest. */
   .a-dockrow { display: flex; gap: 12px; }
@@ -132,10 +126,6 @@ export const authCss = `
   }
 
   /* ── Language gate ─────────────────────────────────────────────────────── */
-  .a-langmark {
-    width: 56px; height: 56px; border-radius: 16px; background: #fff;
-    display: flex; align-items: center; justify-content: center; margin-bottom: 26px;
-  }
   .a-pick {
     width: 100%; text-align: left; background: var(--card); border: none; cursor: pointer;
     box-shadow: inset 0 0 0 2px var(--line); border-radius: var(--r-lg);
@@ -334,6 +324,8 @@ export const authCss = `
     display: flex; flex-direction: column; gap: 12px;
   }
   .a-rolelist .a-role { box-shadow: inset 0 0 0 2px var(--line), 0 6px 18px -12px rgba(22,33,27,.3); }
+  .a-rolelist .a-pick { box-shadow: inset 0 0 0 2px var(--line), 0 6px 18px -12px rgba(22,33,27,.3); }
+  .a-rolelist .a-pick.on { box-shadow: inset 0 0 0 3px var(--tanim), 0 8px 22px -12px rgba(11,107,65,.4); }
   .a-rolelist .a-role.on { box-shadow: inset 0 0 0 3px var(--tanim), 0 8px 22px -12px rgba(11,107,65,.4); }
   .a-role-t { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-title); line-height: 1.15; display: block; }
   .a-role-d { font-size: var(--fs-label); line-height: 1.45; color: var(--dilim); margin-top: 5px; display: block; }

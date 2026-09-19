@@ -2,6 +2,7 @@ import { useState } from "react";
 import { haptic } from "../../lib/platform";
 import { ArrowLeft, Check } from "lucide-react";
 import { AniSenseLogo } from "../../components/AniSenseLogo";
+import juanPeek from "../../assets/juan-peek.webp";
 import { useLang, Lang } from "../../i18n";
 
 // ─── Language Gate ────────────────────────────────────────────────────────────
@@ -24,34 +25,41 @@ export function LanguageScreen({ onDone, onBack }: { onDone: () => void; onBack?
 
   return (
     <div className="a-screen">
-      <div className="a-scroll a-stagger" style={{ paddingTop: 44 }}>
-        {/* Brand lockup where the back arrow used to sit: the first screen of the
-            flow says whose app this is before it asks anything. */}
-        <div className="a-brandrow lg">
-          <span className="a-brandmark"><AniSenseLogo size={32} /></span>
-          <span className="a-brandname on-paper">AniSense</span>
+      {/* Same ink header as the role step, so the two setup screens read as
+          one flow. Juan greets in whichever language is picked: the header
+          answers the tap in the language the app is about to use. */}
+      <div className="a-inkhead a-rolehead">
+        <div className="a-brandrow">
+          <span className="a-brandmark"><AniSenseLogo size={26} /></span>
+          <span className="a-brandname">AniSense</span>
         </div>
-        <div>
-          <h1 className="a-title">{t("lang_title")}</h1>
-          <p className="a-sub">{t("lang_sub")}</p>
+        <div className="a-rolehead-copy">
+          <h1 className="a-title on-ink">{t("lang_title")}</h1>
+          <p className="a-sub on-ink">{t("lang_sub")}</p>
         </div>
-        <div style={{ marginTop: 30, display: "flex", flexDirection: "column", gap: 14 }}>
-          {options.map(o => (
-            <button
-              key={o.id}
-              className={`a-pick ${choice === o.id ? "on" : ""}`}
-              aria-pressed={choice === o.id}
-              onClick={() => { haptic.select(); setChoice(o.id); setLang(o.id); }}
-            >
-              <span>
-                <span className="a-pick-t" style={{ display: "block" }}>{o.title}</span>
-                <span className="a-pick-d" style={{ display: "block" }}>{o.desc}</span>
-              </span>
-              <span className="a-tick"><Check size={17} color="#fff" strokeWidth={3.4} /></span>
-            </button>
-          ))}
+
+        <div className="a-rolestage" data-role="farmer" aria-hidden="true">
+          <span className="a-rolestage-bubble" key={choice}>{choice === "tl" ? "Kumusta!" : "Hello!"}</span>
+          <img className="a-rolestage-img is-farmer" src={juanPeek} alt="" />
         </div>
-        <p className="a-help" style={{ marginTop: 20 }}>{t("lang_change_later")}</p>
+      </div>
+
+      <div className="a-scroll a-stagger a-rolelist">
+        {options.map(o => (
+          <button
+            key={o.id}
+            className={`a-pick ${choice === o.id ? "on" : ""}`}
+            aria-pressed={choice === o.id}
+            onClick={() => { haptic.select(); setChoice(o.id); setLang(o.id); }}
+          >
+            <span>
+              <span className="a-pick-t" style={{ display: "block" }}>{o.title}</span>
+              <span className="a-pick-d" style={{ display: "block" }}>{o.desc}</span>
+            </span>
+            <span className="a-tick"><Check size={17} color="#fff" strokeWidth={3.4} /></span>
+          </button>
+        ))}
+        <p className="a-help" style={{ marginTop: 2 }}>{t("lang_change_later")}</p>
       </div>
       {/* Back lives in the dock, beside Continue: both steps of the decision sit
           in the thumb zone, and Back stays a quiet square so Continue reads as
