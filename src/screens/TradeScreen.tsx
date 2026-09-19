@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { ShoppingCart, Plus, Search, Pencil, Trash2, ChevronRight, Package, Calendar, Star, MapPin, Phone, ShoppingBag, CreditCard, AlertTriangle, Wheat, Sprout } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { ShoppingCart, Plus, Minus, X, Check, Search, Pencil, Trash2, ChevronRight, Package, Calendar, Star, MapPin, Phone, ShoppingBag, CreditCard, AlertTriangle, Wheat, Sprout } from "lucide-react";
 import { useLang } from "../i18n";
 import { UserRole, CartItem, SellerDetail } from "../types";
 import { LISTINGS, SELLER_DETAILS } from "../data/marketplace";
@@ -32,6 +32,37 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
   const [showCart, setShowCart] = useState(false);
   const [qtyMap, setQtyMap] = useState<Record<string, number>>({});
   const [checkoutDone, setCheckoutDone] = useState(false);
+  // Removing is forgiving: the line folds away, then an Undo bar holds the
+  // item for a few seconds. A slipped thumb on a 1 kg line costs one tap to
+  // recover, not a trip back through the marketplace.
+  const [leaving, setLeaving] = useState<string[]>([]);
+  const [removed, setRemoved] = useState<{ item: CartItem; index: number } | null>(null);
+  const undoTimer = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(undoTimer.current), []);
+  const removeFromCart = (id: string) => {
+    const index = cart.findIndex(c => c.listingId === id);
+    if (index < 0 || leaving.includes(id)) return;
+    const item = cart[index];
+    setLeaving(l => [...l, id]);
+    // Matches the fold in CSS, so the row leaves state just as it finishes
+    // collapsing on screen.
+    window.setTimeout(() => {
+      setCart(prev => prev.filter(c => c.listingId !== id));
+      setLeaving(l => l.filter(x => x !== id));
+      setRemoved({ item, index });
+      window.clearTimeout(undoTimer.current);
+      undoTimer.current = window.setTimeout(() => setRemoved(null), 5000);
+    }, 200);
+  };
+  const undoRemove = () => {
+    if (!removed) return;
+    const { item, index } = removed;
+    setCart(prev => prev.some(c => c.listingId === item.listingId) ? prev : [...prev.slice(0, index), item, ...prev.slice(index)]);
+    setRemoved(null);
+    window.clearTimeout(undoTimer.current);
+  };
+  const closeCart = () => { setShowCart(false); setRemoved(null); };
+  const updateCartQty = (id: string, qty: number) => setCart(prev => prev.map(c => c.listingId === id ? { ...c, qty: Math.max(1, Math.min(qty, c.maxKg)) } : c));
 
   // ── Seller detail state ──
   const [sellerDetail, setSellerDetail] = useState<SellerDetail | null>(null);
@@ -46,29 +77,38 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
   const selectCategory = (cat: string) => { setCategory(cat); setVariety("All"); };
 
   // ── Cart helpers ──
-  const getQty = (id: string) => qtyMap[id] ?? 1;
-  const setQty = (id: string, v: number, max: number) => setQtyMap(m => ({ ...m, [id]: Math.max(1, Math.min(v, max)) }));
-  const cartCount = cart.reduce((s, c) => s + c.qty, 0);
+  // Once a listing is in the cart, the cart owns its quantity: the picker on
+  // the card reads and writes the cart line, so there's one number, not two
+  // that drift apart.
+  const inCart = (id: string) => cart.find(c => c.listingId === id);
+  const isInCart = (id: string) => !!inCart(id);
+  const getQty = (id: string) => inCart(id)?.qty ?? qtyMap[id] ?? 1;
+  const setQty = (id: string, v: number, max: number) => {
+    const q = Math.max(1, Math.min(v, max));
+    if (isInCart(id)) updateCartQty(id, q);
+    else setQtyMap(m => ({ ...m, [id]: q }));
+  };
+  // The badge counts listings, not kilograms: "3" should mean three things in
+  // the cart, not 3 kg of one. Kilograms are shown where they're labelled.
+  const cartCount = cart.length;
+  const cartKg = cart.reduce((s, c) => s + c.qty, 0);
   const cartTotal = cart.reduce((s, c) => s + c.qty * c.pricePerKg, 0);
-  const isInCart = (id: string) => cart.some(c => c.listingId === id);
+  // Distinct sellers, not lines: two listings from one farmer is one call.
+  const sellerCount = new Set(cart.map(c => c.seller)).size;
 
+  // Adding is idempotent. A listing already in the cart is left as it is, so
+  // a second tap (or Buy Now after Add) can never quietly stack the quantity.
   const addToCart = (l: typeof LISTINGS[0]) => {
     const qty = getQty(l.id);
-    setCart(prev => {
-      const existing = prev.find(c => c.listingId === l.id);
-      if (existing) {
-        return prev.map(c => c.listingId === l.id ? { ...c, qty: Math.min(c.qty + qty, l.kg) } : c);
-      }
-      return [...prev, { listingId: l.id, crop: l.crop, variety: l.variety, pricePerKg: l.pricePerKg, qty, seller: l.seller, sellerInitials: l.sellerInitials, location: l.location, maxKg: l.kg }];
-    });
+    setCart(prev => prev.some(c => c.listingId === l.id)
+      ? prev
+      : [...prev, { listingId: l.id, crop: l.crop, variety: l.variety, pricePerKg: l.pricePerKg, qty, seller: l.seller, sellerInitials: l.sellerInitials, location: l.location, maxKg: l.kg }]);
   };
 
-  const removeFromCart = (id: string) => setCart(prev => prev.filter(c => c.listingId !== id));
-  const updateCartQty = (id: string, qty: number) => setCart(prev => prev.map(c => c.listingId === id ? { ...c, qty: Math.max(1, Math.min(qty, c.maxKg)) } : c));
 
   const handleCheckout = () => {
     setCart([]);
-    setShowCart(false);
+    closeCart();
     setCheckoutDone(true);
     setTimeout(() => setCheckoutDone(false), 3000);
   };
@@ -146,12 +186,17 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
     <div className="screen">
       <Hdr title={t("trade_title")} onProfile={onProfile} onBack={onBack} userInitials={userInitials}
         extra={userRole === "buyer" ? (
-          <button onClick={() => setShowCart(true)} className="cart-badge-wrap cart-btn-icon" aria-label={t("cart_title")}>
-            <ShoppingCart size={17} color="var(--tanim)" />
-            {/* Keyed on the count so the badge replays its bump each time the
-                number changes. Adding to cart happens with the cart closed, so
-                this is the only confirmation the tap did anything. */}
-            {cartCount > 0 && <span className="cart-badge" key={cartCount}>{cartCount}</span>}
+          // Dressed exactly like the alerts bell beside it: same bare button,
+          // same glyph size and ink, same badge. Two header icons styled two
+          // ways read as two kinds of thing when they're the same kind.
+          <button onClick={() => setShowCart(true)} className="notif" aria-label={t("cart_title")}>
+            <span className="notif-ico">
+              <ShoppingCart size={21} color="var(--text-soft)" />
+              {/* Keyed on the count so the badge replays its bump each time the
+                  number changes. Adding to cart happens with the cart closed, so
+                  this is the only confirmation the tap did anything. */}
+              {cartCount > 0 && <span className="nbadge bump" key={cartCount}>{cartCount}</span>}
+            </span>
           </button>
         ) : undefined}
       />
@@ -313,16 +358,26 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                   </span>
                 </div>
                 {/* Buttons row */}
+                {/* One primary, one secondary, the order Shopee and Lazada
+                    taught every buyer: Add to Cart is tinted, Buy Now is solid.
+                    Two identical buttons made the choice look arbitrary. */}
                 <div className="listing-btns">
+                  {/* Once added, the button becomes the way to the cart, and
+                      says so: a tick for the state, a chevron for "tap to open". */}
                   <button
                     className={`add-cart-btn${isInCart(l.id) ? " in-cart" : ""}`}
-                    onClick={() => addToCart(l)}>
-                    <ShoppingBag size={17} color={isInCart(l.id) ? "var(--tanim)" : "#fff"} />
-                    {isInCart(l.id) ? t("cart_in_cart") : t("cart_add")}
+                    aria-label={isInCart(l.id) ? `${t("cart_in_cart")}. ${t("cart_title")}` : undefined}
+                    onClick={() => isInCart(l.id) ? setShowCart(true) : addToCart(l)}>
+                    {/* Keyed on the state so the label swaps with a short
+                        blur-in instead of cutting. */}
+                    <span className="act-lbl" key={isInCart(l.id) ? "in" : "add"}>
+                      {isInCart(l.id)
+                        ? <><Check size={18} strokeWidth={2.6} /> {t("cart_in_cart")} <ChevronRight size={16} strokeWidth={2.4} className="act-chev" /></>
+                        : <><ShoppingBag size={18} strokeWidth={2.2} /> {t("cart_add")}</>}
+                    </span>
                   </button>
-                  <button className="btn-call" onClick={() => { addToCart(l); setShowCart(true); }}
-                    style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-                    <CreditCard size={17} color="#fff" /> {t("cart_buy_now")}
+                  <button className="buy-now-btn" onClick={() => { addToCart(l); setShowCart(true); }}>
+                    <CreditCard size={18} strokeWidth={2.2} /> {t("cart_buy_now")}
                   </button>
                 </div>
               </div>
@@ -516,52 +571,92 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
       {/* ── Cart Drawer ── */}
       <Sheet
         open={showCart}
-        onClose={() => setShowCart(false)}
+        onClose={closeCart}
         className="cart-sheet"
         label={t("cart_title")}
       >
         <>
-            {/* Header */}
+            {/* Same header as the alerts sheet: title, count, round close. */}
             <div className="cart-sheet-hdr">
               <div>
-                <div style={{ fontSize: "var(--fs-lead)", fontWeight: 900, color: "#fff" }}>🛒 {t("cart_title")}</div>
-                <div style={{ fontSize: "var(--fs-label)", color: "rgba(255,255,255,0.8)", marginTop: 2 }}>{cartCount} {cartCount !== 1 ? t("cart_items_selected") : t("cart_item_selected")}</div>
+                <div className="cart-hdr-t">{t("cart_title")}</div>
+                <div className="cart-hdr-s">{cartCount} {cartCount !== 1 ? t("cart_items_selected") : t("cart_item_selected")}</div>
               </div>
-              <button className="sheet-x" onClick={() => setShowCart(false)} aria-label={t("close")}>✕</button>
+              <button className="alerts-close" onClick={closeCart} aria-label={t("close")}>
+                <X size={22} color="#fff" strokeWidth={2.4} />
+              </button>
             </div>
 
             {/* Items */}
-            <div className="modal-sheet" style={{ flex: 1 }}>
-              {cart.length === 0 ? (
+            <div className="modal-sheet cart-body">
+              {cart.length === 0 && !removed ? (
                 <div className="cart-empty">
-                  <div className="cart-empty-ico"><ShoppingCart size={48} color="var(--line-strong)" /></div>
+                  <div className="cart-empty-ico"><ShoppingCart size={44} color="var(--line-strong)" /></div>
                   <div className="cart-empty-txt">{t("cart_empty_title")}</div>
                   <div className="cart-empty-sub">{t("cart_empty_sub")}</div>
+                  {/* An empty state with a way out, not a dead end. */}
+                  <button className="cart-empty-btn" onClick={closeCart}>{t("cart_browse")}</button>
                 </div>
               ) : (
-                cart.map(item => (
-                  <div className="cart-item-row" key={item.listingId}>
-                    <div className="cart-item-ico"><CropIcon crop={item.crop} size={22} /></div>
-                    <div style={{ flex: 1 }}>
-                      <div className="cart-item-name">{item.crop}</div>
-                      <div className="cart-item-seller">
-                        <span style={{ fontWeight: 700 }}>{item.seller}</span>
-                        {" · "}<MapPin size={12} color="var(--text-faint)" style={{ display: "inline" }} /> {item.location}
-                      </div>
-                      <div className="cart-item-price">₱{item.pricePerKg}<span className="unit-suffix">{t("per_kg_short")}</span></div>
-                      <div className="cart-qty-row">
-                        <button className="cart-qty-btn" onClick={() => updateCartQty(item.listingId, item.qty - 1)}>−</button>
-                        <span className="cart-qty-val">{item.qty}</span>
-                        <button className="cart-qty-btn" onClick={() => updateCartQty(item.listingId, item.qty + 1)}>+</button>
-                        <span className="cart-qty-unit">kg</span>
-                        <span style={{ marginLeft: 8, fontSize: "var(--fs-label)", fontWeight: 800, color: "var(--text)" }}>₱{(item.qty * item.pricePerKg).toLocaleString()}</span>
+                cart.map(item => {
+                  const photo = cropPhotoFor(item.crop, item.variety);
+                  const atMax = item.qty >= item.maxKg;
+                  const last = item.qty <= 1;
+                  return (
+                    // The outer grid folds the row's height to zero on removal,
+                    // so the rows below slide up instead of jumping.
+                    <div className={`cart-line ${leaving.includes(item.listingId) ? "leaving" : ""}`} key={item.listingId}>
+                      <div className="cart-line-in">
+                        <div className="cart-item">
+                          <div className="cart-thumb">
+                            {photo
+                              ? <img src={photo} alt="" loading="lazy" decoding="async" />
+                              : <CropIcon crop={item.crop} size={26} />}
+                          </div>
+                          <div className="cart-item-body">
+                            <div className="cart-item-top">
+                              <div className="cart-item-name">{item.crop}</div>
+                              <div className="cart-item-sum">₱{(item.qty * item.pricePerKg).toLocaleString()}</div>
+                            </div>
+                            <div className="cart-item-meta">
+                              {item.seller} · <MapPin size={13} strokeWidth={2.2} /> {item.location}
+                            </div>
+                            <div className="cart-item-rate">₱{item.pricePerKg}<span>{t("per_kg_short")}</span></div>
+
+                            <div className="cart-step-row">
+                              {/* At 1 kg the minus becomes a bin: one control
+                                  for "less" all the way down to "none", and no
+                                  red button parked beside every line. */}
+                              <div className="qty-step">
+                                <button
+                                  className={last ? "is-bin" : ""}
+                                  aria-label={last ? t("cart_remove") : t("cart_less")}
+                                  onClick={() => last ? removeFromCart(item.listingId) : updateCartQty(item.listingId, item.qty - 1)}
+                                >
+                                  <span className="qty-step-ico" key={last ? "bin" : "minus"}>
+                                    {last ? <Trash2 size={17} strokeWidth={2.2} /> : <Minus size={18} strokeWidth={2.6} />}
+                                  </span>
+                                </button>
+                                <span className="qty-step-val">{item.qty}<small>kg</small></span>
+                                <button aria-label={t("cart_more")} disabled={atMax} onClick={() => updateCartQty(item.listingId, item.qty + 1)}>
+                                  <Plus size={18} strokeWidth={2.6} />
+                                </button>
+                              </div>
+                              {atMax && <span className="cart-step-note">{t("cart_all_avail")}</span>}
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <button className="cart-remove-btn" onClick={() => removeFromCart(item.listingId)}>
-                      <Trash2 size={14} color="var(--error)" />
-                    </button>
-                  </div>
-                ))
+                  );
+                })
+              )}
+
+              {removed && (
+                <div className="cart-undo" role="status" key={removed.item.listingId}>
+                  <span>{t("cart_removed")} <strong>{removed.item.crop}</strong></span>
+                  <button onClick={undoRemove}>{t("cart_undo")}</button>
+                </div>
               )}
             </div>
 
@@ -571,12 +666,16 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                 <div className="cart-total-row">
                   <div>
                     <div className="cart-total-lbl">{t("cart_total")}</div>
-                    <div style={{ fontSize: "var(--fs-label)", color: "var(--text-faint)" }}>{cartCount} kg {t("cart_across")} {cart.length} {cart.length !== 1 ? t("cart_sellers") : t("cart_seller")}</div>
+                    <div className="cart-total-sub">
+                      {cartKg} kg · {sellerCount} {sellerCount !== 1 ? t("cart_sellers") : t("cart_seller")}
+                    </div>
                   </div>
                   <div className="cart-total-val">₱{cartTotal.toLocaleString()}</div>
                 </div>
+                {/* Says what happens next, so "Confirm" doesn't read as "pay". */}
+                <p className="cart-pay-note">{t("cart_pay_note")}</p>
                 <button className="cart-checkout-btn" onClick={handleCheckout}>
-                  ✔ {t("cart_confirm")} · ₱{cartTotal.toLocaleString()}
+                  {t("cart_confirm")}
                 </button>
               </div>
             )}

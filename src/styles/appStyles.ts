@@ -92,6 +92,11 @@ export const appCss = `
   /* Hung off the glyph, not the button box, so it clips the bell's top-right
      corner the way a badge should instead of sitting on top of it. */
   .notif-ico { position: relative; display: flex; }
+  /* Two icon buttons side by side: each is a 40px hit area round a 21px glyph,
+     so the header gap plus both paddings left ~31px of air between the cart
+     and the bell, against ~21px between the bell and the avatar. Overlapping
+     the hit areas evens the rhythm without shrinking either target. */
+  .hdr-right .notif + .notif { margin-left: -8px; }
   .nbadge {
     position: absolute; top: -7px; right: -8px;
     min-width: 16px; height: 16px; padding: 0 4px;
@@ -572,64 +577,172 @@ export const appCss = `
   .empty-msg    { text-align:center; color:var(--text-faint); padding:44px 16px; font-size: var(--fs-body); font-weight:600; line-height:1.6; }
 
   /* ── Cart ── */
-  .cart-badge-wrap { position:relative; }
   .cart-badge {
     position:absolute; top:-6px; right:-6px;
     background:var(--error); color:#fff; font-size: var(--fs-label); font-weight:800;
     border-radius:99px; padding:1px 5px; min-width:17px; text-align:center; line-height:1.6;
   }
-  .cart-btn-icon {
-    width:36px; height:36px; border-radius:50%; background:var(--tanim-sk); border:2px solid var(--tanim-sk);
-    display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;
-  }
+  /* ── Cart sheet ──────────────────────────────────────────────────────────── */
   .cart-sheet {
-    background:var(--paper); border-radius:26px 26px 0 0;
-    width:100%; max-height:88%; display:flex; flex-direction:column;
+    background: var(--paper); border-radius: 24px 24px 0 0;
+    width: 100%; max-height: 88%; display: flex; flex-direction: column;
   }
+  /* Matches the alerts sheet header, so the app's two sheets feel like one family. */
   .cart-sheet-hdr {
-    background: var(--tanim);
-    border-radius:26px 26px 0 0;
-    padding:20px 22px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0;
+    background: var(--tanim); border-radius: 24px 24px 0 0; padding: 20px 20px 18px;
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-shrink: 0;
   }
-  .cart-item-row {
-    display:flex; gap:13px; align-items:flex-start;
-    padding:15px 17px; border-bottom:1px solid var(--paper-alt); background:#fff;
+  .cart-hdr-t { font-family: var(--font-display); font-size: var(--fs-lead); font-weight: 800; color: #fff; letter-spacing: -.01em; }
+  .cart-hdr-s { font-size: var(--fs-label); color: rgba(255,255,255,.82); margin-top: 3px; font-variant-numeric: tabular-nums; }
+  .cart-body { flex: 1; padding: 12px 14px 4px; }
+
+  /* A line is a card, not a table row: photo, what and from whom, the line
+     total where the eye lands last on the right, and the stepper beneath. */
+  .cart-line {
+    display: grid; grid-template-rows: 1fr;
+    transition: grid-template-rows 200ms var(--ease-out), opacity 150ms ease, transform 200ms var(--ease-out);
   }
-  .cart-item-ico { width:46px; height:46px; border-radius:13px; background:var(--tanim-sk); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-  .cart-item-name { font-size: var(--fs-label); font-weight:700; color:var(--text); }
-  .cart-item-seller { font-size: var(--fs-label); color:var(--text-muted); margin-top:2px; }
-  .cart-item-price { font-size: var(--fs-label); font-weight:800; color:var(--tanim); margin-top:4px; }
-  .cart-qty-row { display:flex; align-items:center; gap:9px; margin-top:7px; }
-  .cart-qty-btn {
-    width:30px; height:30px; border-radius:9px; border:2px solid var(--line);
-    background:var(--paper); font-size: var(--fs-body); font-weight:800; color:var(--text-soft);
-    display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;
+  .cart-line-in { min-height: 0; overflow: hidden; }
+  .cart-line.leaving { grid-template-rows: 0fr; opacity: 0; transform: scale(.98); }
+  .cart-item {
+    display: flex; gap: 14px; padding: 14px; margin-bottom: 10px;
+    background: var(--card); border-radius: 18px;
+    box-shadow: inset 0 0 0 1px var(--line), 0 4px 14px -10px rgba(22,33,27,.25);
   }
-  @media (hover: hover) and (pointer: fine) {
-    .cart-qty-btn:hover { background:var(--line); }
+  .cart-thumb {
+    width: 64px; height: 64px; flex: 0 0 64px; border-radius: 14px; overflow: hidden;
+    background: var(--tanim-sk); display: flex; align-items: center; justify-content: center;
   }
-  .cart-qty-val { font-size: var(--fs-label); font-weight:800; color:var(--text); min-width:34px; text-align:center; }
-  .cart-qty-unit { font-size: var(--fs-label); color:var(--text-muted); font-weight:600; }
-  .cart-remove-btn { background:var(--error-sk); border:none; border-radius:9px; width:30px; height:30px; cursor:pointer; display:flex; align-items:center; justify-content:center; margin-left:auto; flex-shrink:0; }
-  .cart-footer { padding:18px; border-top:1px solid var(--line); background:#fff; flex-shrink:0; }
-  .cart-total-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; }
-  .cart-total-lbl { font-size: var(--fs-label); font-weight:600; color:var(--text-muted); }
-  .cart-total-val { font-size: var(--fs-title); font-weight:900; color:var(--text); }
+  .cart-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .cart-item-body { flex: 1; min-width: 0; }
+  .cart-item-top { display: flex; align-items: baseline; gap: 10px; }
+  .cart-item-name {
+    flex: 1; min-width: 0; font-family: var(--font-display); font-size: var(--fs-body); font-weight: 700;
+    color: var(--text); line-height: 1.25; letter-spacing: -.01em;
+  }
+  /* Tabular figures, so stepping 9 to 10 kg doesn't nudge the column. */
+  .cart-item-sum {
+    font-family: var(--font-display); font-size: var(--fs-body); font-weight: 800; color: var(--text);
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .cart-item-meta {
+    display: flex; align-items: center; gap: 4px; flex-wrap: wrap; margin-top: 3px;
+    font-size: 14px; color: var(--text-faint); line-height: 1.35;
+  }
+  .cart-item-meta svg { flex-shrink: 0; }
+  .cart-item-rate { margin-top: 2px; font-size: 14px; font-weight: 700; color: var(--tanim); font-variant-numeric: tabular-nums; }
+  .cart-item-rate span { font-weight: 600; color: var(--text-faint); }
+
+  .cart-step-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+  /* One pill with 40px ends, up from two 30px squares. */
+  .qty-step {
+    display: inline-flex; align-items: center; padding: 3px; border-radius: 999px;
+    background: var(--paper); box-shadow: inset 0 0 0 1px var(--line);
+  }
+  .qty-step button {
+    width: 40px; height: 40px; border-radius: 50%; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--card); color: var(--text-soft);
+    box-shadow: 0 1px 2px rgba(22,33,27,.12), 0 0 0 1px rgba(22,33,27,.05);
+    transition: transform 160ms var(--ease-out), background-color 160ms ease, color 160ms ease, opacity 160ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .qty-step button:active { transform: scale(.9); transition-duration: 90ms; }
+  .qty-step button:disabled { opacity: .4; cursor: default; box-shadow: none; }
+  .qty-step button:disabled:active { transform: none; }
+  .qty-step button.is-bin { color: var(--error); background: var(--error-sk); box-shadow: none; }
+  /* The minus and bin swap with a small blur-scale, so it reads as one control
+     changing its job rather than two icons cutting over. */
+  .qty-step-ico { display: flex; animation: qty-ico-in 180ms var(--ease-out); }
+  @keyframes qty-ico-in { from { opacity: 0; transform: scale(.6); filter: blur(2px); } to { opacity: 1; transform: none; filter: none; } }
+  .qty-step-val {
+    min-width: 58px; text-align: center; font-family: var(--font-display); font-size: var(--fs-body); font-weight: 700;
+    color: var(--text); font-variant-numeric: tabular-nums;
+  }
+  .qty-step-val small { font-size: 13px; font-weight: 600; color: var(--text-faint); margin-left: 3px; }
+  .cart-step-note { font-size: 13px; color: var(--text-faint); line-height: 1.3; }
+
+  /* Undo sits in the list where the line was, dark so it reads as a system
+     message rather than another item. */
+  .cart-undo {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    margin: 2px 0 10px; padding: 8px 8px 8px 16px; border-radius: 14px;
+    background: var(--ink); color: rgba(255,255,255,.86); font-size: 15px;
+    animation: cart-undo-in 200ms var(--ease-out);
+  }
+  .cart-undo strong { color: #fff; font-weight: 700; }
+  .cart-undo button {
+    min-height: 40px; padding: 0 14px; border: none; border-radius: 10px; cursor: pointer;
+    background: rgba(255,255,255,.12); color: var(--palay);
+    font-family: var(--font-display); font-weight: 700; font-size: 15px;
+    transition: transform 160ms var(--ease-out), background-color 160ms ease;
+  }
+  .cart-undo button:active { transform: scale(.95); transition-duration: 90ms; }
+  @keyframes cart-undo-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  .cart-footer {
+    padding: 16px 18px 18px; background: var(--card); flex-shrink: 0;
+    box-shadow: 0 -10px 24px -18px rgba(22,33,27,.35);
+  }
+  .cart-total-row { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
+  .cart-total-lbl { font-size: 15px; font-weight: 600; color: var(--text-muted); }
+  .cart-total-sub { font-size: 14px; color: var(--text-faint); margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .cart-total-val {
+    font-family: var(--font-display); font-size: var(--fs-title); font-weight: 800; color: var(--text);
+    letter-spacing: -.02em; line-height: 1; font-variant-numeric: tabular-nums;
+  }
+  .cart-pay-note { margin: 10px 0 14px; font-size: 13.5px; line-height: 1.4; color: var(--text-faint); }
   .cart-checkout-btn {
-    width:100%; padding:18px; background:var(--tanim); color:#fff; border:none;
-    border-radius:16px; font-family:inherit; font-size: var(--fs-body); font-weight:800;
-    cursor:pointer; box-shadow:var(--shadow-md);
+    width: 100%; min-height: 56px; padding: 0 18px; background: var(--tanim); color: #fff; border: none;
+    border-radius: 16px; font-family: var(--font-display); font-size: var(--fs-body); font-weight: 700;
+    cursor: pointer; box-shadow: 0 8px 20px -10px rgba(11,107,65,.6);
   }
-  .cart-empty { text-align:center; padding:44px 20px; }
-  .cart-empty-ico { display:flex; align-items:center; justify-content:center; margin-bottom:13px; }
-  .cart-empty-txt { font-size: var(--fs-body); font-weight:700; color:var(--text-soft); }
-  .cart-empty-sub { font-size: var(--fs-label); color:var(--text-faint); margin-top:5px; }
+
+  .cart-empty { text-align: center; padding: 40px 20px 28px; }
+  .cart-empty-ico { display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+  .cart-empty-txt { font-family: var(--font-display); font-size: var(--fs-body); font-weight: 700; color: var(--text-soft); }
+  .cart-empty-sub { font-size: 15px; color: var(--text-faint); margin-top: 5px; line-height: 1.4; }
+  .cart-empty-btn {
+    margin-top: 18px; min-height: 48px; padding: 0 20px; border: none; border-radius: 999px; cursor: pointer;
+    background: var(--tanim-sk); color: var(--tanim); font-family: var(--font-display); font-weight: 700; font-size: 15px;
+    transition: transform 160ms var(--ease-out);
+  }
+  .cart-empty-btn:active { transform: scale(.96); transition-duration: 90ms; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cart-line { transition: opacity 150ms ease; }
+    .cart-line.leaving { transform: none; }
+    .qty-step-ico, .cart-undo { animation: none; }
+    .qty-step button:active, .cart-undo button:active, .cart-empty-btn:active { transform: none; }
+  }
+  /* ── Buyer actions ── */
+  /* Same size, same shape, different weight. Size stays equal so neither
+     looks like an afterthought; weight (fill, shadow) says which one moves
+     the purchase forward. */
+  .add-cart-btn, .buy-now-btn {
+    flex: 1; min-width: 0; min-height: 54px; padding: 0 14px; border: none; border-radius: 14px;
+    font-family: var(--font-display); font-size: var(--fs-label); font-weight: 700; letter-spacing: -.005em;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap;
+  }
+  /* Secondary: tinted, no shadow. Still clearly a button, just a quieter one. */
   .add-cart-btn {
-    flex:1; background:var(--tanim); color:#fff; border:none; border-radius:13px; padding:17px;
-    font-family:inherit; font-size: var(--fs-label); font-weight:800; cursor:pointer;
-    display:flex; align-items:center; justify-content:center; gap:8px;
+    background: var(--tanim-sk); color: var(--tanim);
+    box-shadow: inset 0 0 0 1.5px rgba(11,107,65,.16);
   }
-  .add-cart-btn.in-cart { background:var(--tanim-sk); color:var(--tanim); border:2px solid var(--line); }
+  /* Added: steps back again, to a white chip with a hairline, because the
+     job is done and it's now only a shortcut to the cart. */
+  .add-cart-btn.in-cart { background: var(--card); color: var(--tanim); box-shadow: inset 0 0 0 1.5px var(--line); }
+  .act-lbl { display: inline-flex; align-items: center; gap: 8px; min-width: 0; animation: act-lbl-in 200ms var(--ease-out); }
+  .act-chev { margin-left: -2px; opacity: .7; }
+  @keyframes act-lbl-in { from { opacity: 0; transform: scale(.94); filter: blur(2px); } to { opacity: 1; transform: none; filter: none; } }
+  /* Primary: solid, with a soft green lift so it reads as the one to press. */
+  .buy-now-btn {
+    background: var(--tanim); color: #fff;
+    box-shadow: 0 8px 18px -10px rgba(11,107,65,.75), inset 0 1px 0 rgba(255,255,255,.14);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .act-lbl { animation: none; }
+  }
   .qty-picker-row { display:flex; align-items:center; gap:11px; background:var(--paper); border-radius:13px; padding:11px 15px; border:1.5px solid var(--line); }
   .qty-pick-btn { width:36px; height:36px; border-radius:10px; border:2px solid var(--line); background:#fff; font-size: var(--fs-lead); font-weight:800; color:var(--text-soft); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; }
   @media (hover: hover) and (pointer: fine) {
@@ -1173,9 +1286,9 @@ export const appCss = `
      under the thumb reads as decoration until it happens to work. */
   .row-link, .alert-row, .sdm-row, .listing,
   .cat-tab, .var-tab, .crop-pick,
-  .hdr-back, .ava, .alerts-close, .cart-btn-icon, .prof-edit-btn,
-  .cart-qty-btn, .qty-pick-btn, .cart-remove-btn,
-  .btn-call, .btn-details, .add-cart-btn, .cart-checkout-btn, .call-seller-btn {
+  .hdr-back, .ava, .alerts-close, .prof-edit-btn,
+  .qty-pick-btn,
+  .btn-call, .btn-details, .add-cart-btn, .buy-now-btn, .cart-checkout-btn, .call-seller-btn {
     transition: transform 190ms var(--ease-out), background-color var(--dur-fast) ease;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
@@ -1186,10 +1299,10 @@ export const appCss = `
   .ntab:active, .crop-tag:active, .signout-btn:active,
   .row-link:active, .alert-row:active, .sdm-row:active, .listing:active,
   .cat-tab:active, .var-tab:active, .crop-pick:active,
-  .hdr-back:active, .ava:active, .alerts-close:active, .cart-btn-icon:active,
-  .prof-edit-btn:active, .cart-qty-btn:active, .qty-pick-btn:active,
-  .cart-remove-btn:active, .btn-call:active, .btn-details:active,
-  .add-cart-btn:active, .cart-checkout-btn:active, .call-seller-btn:active {
+  .hdr-back:active, .ava:active, .alerts-close:active,
+  .prof-edit-btn:active, .qty-pick-btn:active,
+  .btn-call:active, .btn-details:active,
+  .add-cart-btn:active, .buy-now-btn:active, .cart-checkout-btn:active, .call-seller-btn:active {
     transition-duration: var(--dur-press);
   }
   /* Scale is proportional, so the same ratio reads as more movement the wider
@@ -1202,12 +1315,10 @@ export const appCss = `
   .cat-tab:active, .crop-pick:active { transform: scale(0.975); }
   .fchip:active, .lstm-tab:active, .crop-tag:active, .var-tab:active,
   .add-btn:active, .post-btn:active, .signout-btn:active,
-  .btn-call:active, .btn-details:active, .add-cart-btn:active,
+  .btn-call:active, .btn-details:active, .add-cart-btn:active, .buy-now-btn:active,
   .cart-checkout-btn:active, .call-seller-btn:active { transform: scale(0.97); }
-  .ntab:active { transform: scale(0.97); }
-  .hdr-back:active, .ava:active, .alerts-close:active, .cart-btn-icon:active,
-  .prof-edit-btn:active, .cart-qty-btn:active, .qty-pick-btn:active,
-  .cart-remove-btn:active { transform: scale(0.92); }
+  .hdr-back:active, .ava:active, .alerts-close:active,
+  .prof-edit-btn:active, .qty-pick-btn:active { transform: scale(0.92); }
 
   /* Surface shift as well as scale on the wide rows, for the same reason the
      settings rows already have one: a 1% shrink on a full-width row is
@@ -1215,8 +1326,7 @@ export const appCss = `
   .alert-row:active, .sdm-row:active { background: var(--paper-alt); }
   .hdr-back:active { background: var(--tanim); }
   .hdr-back:active svg { color: #fff; }
-  .cart-qty-btn:active, .qty-pick-btn:active { background: var(--line); }
-  .cart-remove-btn:active { background: var(--error-line); }
+  .qty-pick-btn:active { background: var(--line); }
 
   /* Selected states cross-fade rather than cut. These are the controls that
      re-render a list under them, so the colour change is the only signal the
@@ -1259,7 +1369,7 @@ export const appCss = `
      anything. Keyed on the count so it replays per change. */
   /* Keyed on the count in TradeScreen, so React remounts the node and the
      animation replays on every change rather than only on first paint. */
-  .cart-badge { transform-origin: center; animation: badge-bump 260ms var(--ease-out); }
+  .cart-badge, .nbadge.bump { transform-origin: center; animation: badge-bump 260ms var(--ease-out); }
   @keyframes badge-bump {
     0%   { transform: scale(.6); opacity: 0; }
     46%  { transform: scale(1.28); opacity: 1; }
@@ -1421,7 +1531,7 @@ export const appCss = `
     .shm-center > .shm-panel:not([data-open="true"]) { transform: none; }
     .offline-banner[data-entering="true"] { transform: none; }
     .content-in { animation: none; }
-    .cart-badge { animation: none; }
+    .cart-badge, .nbadge.bump { animation: none; }
   }
 
 `;

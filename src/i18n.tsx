@@ -217,6 +217,17 @@ export const translations: Dict = {
   cart_seller: { en: "seller", tl: "nagbebenta" },
   cart_sellers: { en: "sellers", tl: "nagbebenta" },
   cart_confirm: { en: "Confirm Order", tl: "Kumpirmahin ang Order" },
+  cart_less: { en: "Remove 1 kg", tl: "Bawasan ng 1 kg" },
+  cart_more: { en: "Add 1 kg", tl: "Dagdagan ng 1 kg" },
+  cart_remove: { en: "Remove from cart", tl: "Alisin sa cart" },
+  cart_removed: { en: "Removed", tl: "Inalis ang" },
+  cart_undo: { en: "Undo", tl: "Ibalik" },
+  cart_all_avail: { en: "That's all the seller has", tl: "Iyan na lahat ng meron ang nagbebenta" },
+  cart_pay_note: {
+    en: "No payment yet. Each seller will call you to arrange delivery and payment.",
+    tl: "Wala pang bayad. Tatawagan ka ng bawat nagbebenta para sa delivery at bayad.",
+  },
+  cart_browse: { en: "Browse the marketplace", tl: "Tumingin sa bentahan" },
   cart_empty_title: { en: "Your cart is empty", tl: "Walang laman ang cart mo" },
   cart_empty_sub: {
     en: "Add crops from the marketplace to get started",
