@@ -512,6 +512,44 @@ export const appCss = `
   }
   .ph-date { margin-top: 3px; font-size: 13.5px; color: var(--text-faint); white-space: nowrap; }
 
+  /* ── Tappable history rows (farmer expenses) ─────────────────────────────
+     Same anatomy as the purchase history, plus a chevron that says "opens".
+     The row extends 10px past the text on each side so the press plate has
+     room to breathe, and the plate is the feedback: a list row is too wide
+     for a visible scale, but a surface appearing under the thumb is not. */
+  .ph-row.is-tap {
+    width: calc(100% + 20px); margin: 0 -10px; padding: 12px 10px; border: none; border-radius: 14px;
+    background: transparent; font: inherit; color: inherit; text-align: left; cursor: pointer;
+    grid-template-columns: 44px minmax(0, 1fr) auto 18px; align-items: center;
+    transition: background-color 180ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .ph-row.is-tap:active { background: var(--paper); transition-duration: 0ms; }
+  .ph-row.is-tap + .ph-row.is-tap::before { left: 66px; right: 10px; }
+  /* The divider on either side of a pressed row steps back, so the plate
+     reads as one clean shape instead of a box with lines through it. */
+  .ph-row.is-tap:active::before, .ph-row.is-tap:active + .ph-row.is-tap::before { opacity: 0; }
+  .ph-row.is-tap .ph-body, .ph-row.is-tap .ph-end { display: block; }
+  .ph-row.is-tap .ph-title, .ph-row.is-tap .ph-sub, .ph-row.is-tap .ph-amt, .ph-row.is-tap .ph-date { display: block; }
+  .ph-row.is-tap .ph-title { display: -webkit-box; }
+  .ph-chev { color: var(--line-strong); justify-self: end; }
+  /* Neutral tile: the category is told by the glyph, not by another green. */
+  .exp-tile {
+    width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
+    background: var(--paper); box-shadow: inset 0 0 0 1px var(--line);
+  }
+  .exp-del-link {
+    align-self: center; display: inline-flex; align-items: center; gap: 8px;
+    min-height: 44px; padding: 0 14px; margin-bottom: 6px; border: none; border-radius: 12px; cursor: pointer;
+    background: transparent; color: var(--error); font-family: var(--font-display); font-weight: 600; font-size: 15px;
+    transition: background-color 160ms ease, transform 160ms var(--ease-out);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .exp-del-link:active { background: var(--error-sk); transform: scale(.97); transition-duration: 90ms; }
+  @media (prefers-reduced-motion: reduce) {
+    .exp-del-link:active { transform: none; }
+  }
+
   /* Purchase history thumbnail: same rounded-square photo as the cart line,
      a touch smaller to suit a denser list. */
   .ptx-thumb {

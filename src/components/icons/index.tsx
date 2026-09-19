@@ -20,8 +20,8 @@ export function CropIcon({ crop, size = S }: { crop: string; size?: number }) {
   }
 }
 
-export function ExpenseIcon({ cat, size = S }: { cat: string; size?: number }) {
-  const props = { size, color: "var(--tanim)" };
+export function ExpenseIcon({ cat, size = S, color = "var(--tanim)" }: { cat: string; size?: number; color?: string }) {
+  const props = { size, color };
   switch (cat) {
     case "Seeds": return <Wheat        {...props} />;
     case "Fertilizer": return <FlaskConical {...props} />;

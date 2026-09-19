@@ -515,6 +515,7 @@ export const translations: Dict = {
   exp_add_title: { en: "Add New Expense", tl: "Magdagdag ng Bagong Gastos" },
   exp_add_sub: { en: "Fill in your expense details", tl: "Punan ang detalye ng gastos" },
   exp_edit_title: { en: "Edit Expense", tl: "I-edit ang Gastos" },
+  exp_delete_this: { en: "Delete this expense", tl: "Burahin ang gastos na ito" },
   exp_edit_sub: { en: "Update the details below", tl: "I-update ang mga detalye" },
   exp_crop: { en: "Crop", tl: "Pananim" },
   exp_desc_lbl: { en: "Description", tl: "Paglalarawan" },

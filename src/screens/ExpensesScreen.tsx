@@ -297,12 +297,7 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
 
                 {/* Crop specialization summary */}
                 <div className="card">
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                    <div style={{ fontSize: "var(--fs-label)", fontWeight: 800, color: "var(--text)" }}>{t("exp_by_specialization")}</div>
-                    <span style={{ fontSize: "var(--fs-label)", color: "var(--text-muted)", background: "var(--tanim-sk)", padding: "2px 7px", borderRadius: 99, border: "1px solid var(--tanim-sk)", fontWeight: 600 }}>
-                      {farmerCrops.join(" · ")}
-                    </span>
-                  </div>
+                  <div style={{ fontSize: "var(--fs-label)", fontWeight: 800, color: "var(--text)", marginBottom: 12 }}>{t("exp_by_specialization")}</div>
                   <CropExpenseSummary transactions={transactions} farmerCrops={farmerCrops} />
                 </div>
 
@@ -319,7 +314,7 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
                 <div className="card">
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
                     <div style={{ fontSize: "var(--fs-label)", fontWeight: 800, color: "var(--text)" }}>{t("exp_recent")}</div>
-                    <span style={{ fontSize: "var(--fs-label)", color: "var(--text-muted)" }}>{filtered.length} {t("exp_items")}</span>
+                    <span className="ph-count">{filtered.length} {t("exp_items")}</span>
                   </div>
                   {filtered.length === 0
                     ? (transactions.length === 0
@@ -343,23 +338,50 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
                             onAction={() => { setFilter("All"); setCropFilter("All Crops"); }}
                           />
                       )
-                    : filtered.map(e => (
-                      <div className="exp-row" key={e.id}>
-                        <div className="exp-ico"><ExpenseIcon cat={e.category} size={17} /></div>
-                        <div style={{ flex: 1 }}>
-                          <div className="exp-desc">{e.description}</div>
-                          <div className="exp-meta">{tn(e.category)} · {formatDate(e.date)}</div>
-                          <div style={{ fontSize: "var(--fs-label)", color: "var(--tanim)", fontWeight: 600, display: "flex", alignItems: "center", gap: 3, marginTop: 2 }}>
-                            <CropIcon crop={e.crop} size={12} /> {tn(e.crop)}
-                          </div>
+                    : (() => {
+                      // Newest first, grouped by month: the date is said once
+                      // per group, and each row only needs the day.
+                      const locale = lang === "tl" ? "fil-PH" : "en-PH";
+                      const sorted = [...filtered].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                      const groups: { label: string; items: Expense[] }[] = [];
+                      for (const e of sorted) {
+                        const label = new Date(e.date).toLocaleDateString(locale, { month: "long", year: "numeric" });
+                        const g = groups[groups.length - 1];
+                        if (g && g.label === label) g.items.push(e); else groups.push({ label, items: [e] });
+                      }
+                      return (
+                        <div className="stagger-list">
+                          {groups.map(g => (
+                            <section key={g.label} className="ph-group">
+                              <h3 className="ph-month">{g.label}</h3>
+                              {/* The whole row opens the entry. Edit and delete
+                                  used to sit on every line as two 28px squares,
+                                  crowding the text and leaving delete one slip
+                                  away; both now live inside the entry. */}
+                              {g.items.map(e => (
+                                <button
+                                  key={e.id}
+                                  className="ph-row is-tap"
+                                  onClick={() => openEdit(e)}
+                                  aria-label={`${t("exp_edit_title")}: ${e.description}, ₱${e.amount.toLocaleString()}`}
+                                >
+                                  <span className="exp-tile"><ExpenseIcon cat={e.category} size={20} color="var(--text-soft)" /></span>
+                                  <span className="ph-body">
+                                    <span className="ph-title">{e.description}</span>
+                                    <span className="ph-sub">{tn(e.category)} · {tn(e.crop)}</span>
+                                  </span>
+                                  <span className="ph-end">
+                                    <span className="ph-amt">₱{e.amount.toLocaleString()}</span>
+                                    <span className="ph-date">{new Date(e.date).toLocaleDateString(locale, { month: "short", day: "numeric" })}</span>
+                                  </span>
+                                  <ChevronRight size={18} className="ph-chev" aria-hidden="true" />
+                                </button>
+                              ))}
+                            </section>
+                          ))}
                         </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                          <div className="exp-amt">₱{e.amount.toLocaleString()}</div>
-                          <button onClick={() => openEdit(e)} style={{ background: "var(--paper-alt)", border: "none", borderRadius: 6, width: 28, height: 28, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><Pencil size={14} color="var(--tanim)" /></button>
-                          <button onClick={() => setConfirmDelete(e.id)} style={{ background: "var(--error-sk)", border: "none", borderRadius: 6, width: 28, height: 28, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><Trash2 size={14} color="var(--error)" /></button>
-                        </div>
-                      </div>
-                    ))
+                      );
+                    })()
                   }
                 </div>
               </>
@@ -743,6 +765,15 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
                   {editId ? <><CheckCircle size={16} /> {t("save_changes")}</> : <><Plus size={16} /> {t("exp_add_title")}</>}
                 </button>
               </div>
+
+              {/* Delete lives here now, one step in from the list and set apart
+                  from Save, so it's findable but never the thing a thumb lands
+                  on by accident. It still asks before erasing anything. */}
+              {editId && (
+                <button className="exp-del-link" onClick={() => { const id = editId; setShowModal(false); setConfirmDelete(id); }}>
+                  <Trash2 size={17} strokeWidth={2.2} /> {t("exp_delete_this")}
+                </button>
+              )}
 
             </div>
         </>
