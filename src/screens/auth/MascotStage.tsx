@@ -20,6 +20,10 @@ export function MascotStage({ figures, active, say }: { figures: Figure[]; activ
     return () => clearTimeout(id);
   }, []);
 
+  const cut = say.title.lastIndexOf(" ") + 1;
+  const head = say.title.slice(0, cut);
+  const last = say.title.slice(cut);
+
   return (
     <div className="a-rolestage" aria-hidden="true">
       <div className="a-cast" data-fig={active}>
@@ -27,8 +31,13 @@ export function MascotStage({ figures, active, say }: { figures: Figure[]; activ
             swapping inside a bubble that never moved. */}
         <span className={`a-say ${arrived ? "" : "is-first"}`} key={say.key}>
           <span className="a-say-t">
-            {say.title}
-            {say.emoji && <span className={`a-say-emoji ${say.emoji === "👋" ? "wave" : ""}`}>{say.emoji}</span>}
+            {/* The emoji is glued to the last word, so it can't wrap onto a
+                line of its own. */}
+            {head}
+            <span className="a-say-nb">
+              {last}
+              {say.emoji && <span className={`a-say-emoji ${say.emoji === "👋" ? "wave" : ""}`}>{say.emoji}</span>}
+            </span>
           </span>
           {say.sub && <span className="a-say-s">{say.sub}</span>}
         </span>

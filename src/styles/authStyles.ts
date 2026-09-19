@@ -293,22 +293,23 @@ export const authCss = `
      and flush to the screen's right edge. The bubble is placed against the
      cast, so it always lands right beside his head. */
   .a-cast { position: absolute; right: -22px; bottom: 0; height: min(100%, 250px); }
-  .a-cast[data-fig="buyer"] { height: min(100%, 232px); }
+  .a-cast[data-fig="buyer"] { height: min(100%, 216px); }
   .a-fig {
     display: block; height: 100%; width: auto;
     pointer-events: none; user-select: none;
     transition: opacity 200ms var(--ease-out), transform 240ms var(--ease-out), filter 200ms ease;
   }
   /* Juan is drawn peeking round a wall: his straight right side sits on the
-     screen edge. The buyer is a whole figure, so he steps back in from it. */
-  .a-fig.fig-buyer { margin-right: 26px; }
+     screen edge. The buyer leans a little past it too, elbow off-screen, which
+     frees the room on his left for his bubble. */
+  .a-fig.fig-buyer { margin-right: -14px; }
   /* Only the figure on stage takes up room. The other waits behind it, faded,
      sunk and a touch blurred, so the swap reads as one figure changing. */
   .a-fig:not(.on) {
     position: absolute; right: 0; bottom: 0; margin-right: 0;
     opacity: 0; transform: translateY(14px) scale(.97); filter: blur(2px);
   }
-  .a-fig.fig-buyer:not(.on) { right: 26px; }
+  .a-fig.fig-buyer:not(.on) { right: -14px; }
 
   /* ── Speech bubble ─────────────────────────────────────────────────────── */
   /* Top-aligned with the figure's head and hung just off his left side, so it
@@ -321,9 +322,9 @@ export const authCss = `
     box-shadow: 0 10px 24px -10px rgba(0,0,0,.55), 0 1px 0 rgba(255,255,255,.9) inset;
     transform-origin: 100% 80%; animation: a-bubble-in 240ms var(--ease-out) both;
   }
-  /* The buyer is wider, so there's less room beside him. His top-left corner
-     is empty space, so his bubble can tuck into it instead of shrinking. */
-  .a-cast[data-fig="buyer"] .a-say { right: calc(100% - 26px); max-width: 172px; }
+  /* The buyer is wider, so his bubble keeps a smaller gap and a narrower
+     measure, but never overlaps him. */
+  .a-cast[data-fig="buyer"] .a-say { right: calc(100% + 6px); max-width: 176px; }
   /* The tail points down-right, at his face. */
   .a-say::after {
     content: ""; position: absolute; right: -6px; bottom: 18px; width: 14px; height: 14px;
@@ -335,6 +336,7 @@ export const authCss = `
   }
   /* pretty wrapping keeps a lone word like "mo." from ending up on its own line. */
   .a-say-s { font-size: 14.5px; line-height: 1.4; color: #4F5A53; font-weight: 500; text-wrap: pretty; }
+  .a-say-nb { white-space: nowrap; }
   .a-say-emoji { display: inline-block; margin-left: 6px; }
   /* The wave plays once, after the bubble lands: a greeting, not a loop. */
   .a-say-emoji.wave { transform-origin: 70% 80%; animation: a-wave 900ms ease-in-out 1; animation-delay: 260ms; }
