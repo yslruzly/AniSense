@@ -14,6 +14,7 @@ import { CropExpenseSummary } from "../components/analytics/CropExpenseSummary";
 import { Segmented } from "../components/ui/Segmented";
 import { Sheet } from "../components/ui/Sheet";
 import { useRetained } from "../hooks/usePresence";
+import { DateField, localISO } from "../components/ui/DateField";
 
 // ─── Expenses Screen ──────────────────────────────────────────────────────────
 export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = "JD", isBuyer = false, buyerTransactions = [] }: { onProfile: () => void; onBack: () => void; farmerCrops: string[]; userInitials?: string; isBuyer?: boolean; buyerTransactions?: BuyerTransaction[] }) {
@@ -33,7 +34,7 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
   // Held so the confirmation still knows which entry it is about while it
   // slides back out — clearing confirmDelete is what closes it.
   const pendingDelete = useRetained(confirmDelete);
-  const [form, setForm] = useState(() => ({ description: "", category: "Seeds", amount: "", date: new Date().toISOString().split("T")[0], crop: farmerCrops[0] || "Rice" }));
+  const [form, setForm] = useState(() => ({ description: "", category: "Seeds", amount: "", date: localISO(), crop: farmerCrops[0] || "Rice" }));
   const [formError, setFormError] = useState("");
   const [expandedMonth, setExpandedMonth] = useState<string | null>(null);
   // Its own state: expanding a crop used to set the Overview crop filter, so
@@ -96,7 +97,7 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
     if (calcResult <= 0) return;
     setShowCalc(false);
     setEditId(null);
-    setForm({ description: "", category: "Seeds", amount: String(calcResult), date: new Date().toISOString().split("T")[0], crop: farmerCrops[0] || "Rice" });
+    setForm({ description: "", category: "Seeds", amount: String(calcResult), date: localISO(), crop: farmerCrops[0] || "Rice" });
     setFormError("");
     setShowModal(true);
   };
@@ -153,7 +154,7 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
 
   const openAdd = () => {
     setEditId(null);
-    setForm({ description: "", category: "Seeds", amount: "", date: new Date().toISOString().split("T")[0], crop: farmerCrops[0] || "Rice" });
+    setForm({ description: "", category: "Seeds", amount: "", date: localISO(), crop: farmerCrops[0] || "Rice" });
     setFormError("");
     setShowModal(true);
   };
@@ -741,34 +742,28 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
                 />
               </div>
 
-              {/* Amount + Date side by side */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                <div>
-                  <div style={{ fontSize: "var(--fs-label)", fontWeight: 700, color: "var(--text-soft)", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
-                    <PhilippinePeso size={14} color="var(--text-soft)" /> {t("exp_amount")}
-                  </div>
-                  <input
-                    type="number" placeholder="0.00"
-                    value={form.amount}
-                    onChange={e => setForm(d => ({ ...d, amount: e.target.value }))}
-                    style={{ width: "100%", border: "2px solid var(--line)", borderRadius: 12, padding: "13px 14px", fontFamily: "inherit", fontSize: "var(--fs-label)", fontWeight: 700, outline: "none", background: "var(--paper)", boxSizing: "border-box" }}
-                    onFocus={e => e.target.style.borderColor = "var(--tanim)"}
-                    onBlur={e => e.target.style.borderColor = "var(--line)"}
-                  />
+              {/* Amount */}
+              <div>
+                <div style={{ fontSize: "var(--fs-label)", fontWeight: 700, color: "var(--text-soft)", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
+                  <PhilippinePeso size={14} color="var(--text-soft)" /> {t("exp_amount")}
                 </div>
-                <div>
-                  <div style={{ fontSize: "var(--fs-label)", fontWeight: 700, color: "var(--text-soft)", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
-                    <Calendar size={14} color="var(--text-soft)" /> {t("exp_date")}
-                  </div>
-                  <input
-                    type="date"
-                    value={form.date}
-                    onChange={e => setForm(d => ({ ...d, date: e.target.value }))}
-                    style={{ width: "100%", border: "2px solid var(--line)", borderRadius: 12, padding: "13px 14px", fontFamily: "inherit", fontSize: "var(--fs-label)", outline: "none", background: "var(--paper)", boxSizing: "border-box" }}
-                    onFocus={e => e.target.style.borderColor = "var(--tanim)"}
-                    onBlur={e => e.target.style.borderColor = "var(--line)"}
-                  />
+                <input
+                  type="number" inputMode="decimal" placeholder="0.00"
+                  value={form.amount}
+                  onChange={e => setForm(d => ({ ...d, amount: e.target.value }))}
+                  style={{ width: "100%", border: "2px solid var(--line)", borderRadius: 12, padding: "13px 14px", fontFamily: "inherit", fontSize: "var(--fs-label)", fontWeight: 700, outline: "none", background: "var(--paper)", boxSizing: "border-box" }}
+                  onFocus={e => e.target.style.borderColor = "var(--tanim)"}
+                  onBlur={e => e.target.style.borderColor = "var(--line)"}
+                />
+              </div>
+
+              {/* Date: its own full-width row now, since the quick picks and
+                  the calendar need the room a half-width column couldn't give. */}
+              <div>
+                <div style={{ fontSize: "var(--fs-label)", fontWeight: 700, color: "var(--text-soft)", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
+                  <Calendar size={14} color="var(--text-soft)" /> {t("exp_date")}
                 </div>
+                <DateField value={form.date} onChange={date => setForm(d => ({ ...d, date }))} />
               </div>
 
               {/* Category */}

@@ -616,6 +616,73 @@ export const appCss = `
     .mo-fill { animation: none; }
   }
 
+  /* ── Date field ──────────────────────────────────────────────────────────── */
+  /* Three quick picks, equal width, 48px tall: the common answers are one tap
+     and big enough to hit without looking twice. */
+  .df-chips { display: grid; grid-template-columns: 1fr 1fr 1.25fr; gap: 8px; }
+  .df-chip {
+    min-height: 48px; padding: 0 10px; border-radius: 12px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap;
+    border: 2px solid var(--line); background: var(--paper); color: var(--text-muted);
+    font-family: var(--font-display); font-size: 15px; font-weight: 600;
+    transition: transform 160ms var(--ease-out), background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .df-chip:active { transform: scale(.96); transition-duration: 90ms; }
+  .df-chip.on { border-color: var(--tanim); background: var(--tanim-sk); color: var(--tanim); }
+  .df-full { margin-top: 8px; font-size: 14.5px; color: var(--text-muted); }
+
+  /* The calendar folds open under the picks, animating its grid row so the
+     fields below glide down instead of jumping. */
+  .df-acc { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 260ms var(--ease-out); }
+  .df-acc.open { grid-template-rows: 1fr; }
+  .df-acc-in { min-height: 0; overflow: hidden; opacity: 0; transition: opacity 160ms ease; }
+  .df-acc.open .df-acc-in { opacity: 1; transition: opacity 220ms ease 60ms; }
+  .df-cal {
+    margin-top: 10px; padding: 10px 8px 12px; border-radius: 16px;
+    background: var(--card); box-shadow: inset 0 0 0 1.5px var(--line);
+  }
+  /* Left and right arrows, as a calendar page turns, not up and down. */
+  .df-head { display: flex; align-items: center; justify-content: space-between; padding: 0 2px 6px; }
+  .df-title { font-family: var(--font-display); font-size: 17px; font-weight: 700; color: var(--text); text-transform: capitalize; }
+  .df-nav {
+    width: 44px; height: 44px; border-radius: 50%; border: none; cursor: pointer;
+    background: var(--paper); color: var(--text-soft); display: flex; align-items: center; justify-content: center;
+    transition: transform 160ms var(--ease-out), background-color 160ms ease, opacity 160ms ease;
+  }
+  .df-nav:active { transform: scale(.9); background: var(--paper-alt); transition-duration: 90ms; }
+  .df-nav:disabled { opacity: .35; cursor: default; }
+  .df-nav:disabled:active { transform: none; background: var(--paper); }
+  .df-week, .df-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+  .df-week span {
+    text-align: center; font-size: 12.5px; font-weight: 600; color: var(--text-faint);
+    padding: 4px 0 6px; text-transform: capitalize;
+  }
+  .df-day {
+    height: 44px; border: none; border-radius: 12px; cursor: pointer; background: none;
+    font-family: var(--font-display); font-size: 16px; font-weight: 500; color: var(--text);
+    font-variant-numeric: tabular-nums;
+    transition: transform 140ms var(--ease-out), background-color 140ms ease, color 140ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .df-day:active { transform: scale(.9); background: var(--paper-alt); transition-duration: 80ms; }
+  /* Today is ringed, the chosen day is filled: two different questions,
+     answered by two different marks. */
+  .df-day.today { box-shadow: inset 0 0 0 1.5px var(--tanim); color: var(--tanim); font-weight: 700; }
+  .df-day.on { background: var(--tanim); color: #fff; font-weight: 700; box-shadow: none; }
+  .df-day:disabled { color: var(--line-strong); cursor: default; }
+  .df-day:disabled:active { transform: none; background: none; }
+  /* The new month slides in a few px from the side of the arrow tapped. */
+  .df-grid.from-next { animation: df-in-next 200ms var(--ease-out); }
+  .df-grid.from-prev { animation: df-in-prev 200ms var(--ease-out); }
+  @keyframes df-in-next { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
+  @keyframes df-in-prev { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    .df-acc { transition: none; }
+    .df-grid.from-next, .df-grid.from-prev { animation: none; }
+    .df-chip:active, .df-nav:active, .df-day:active { transform: none; }
+  }
+
   /* Purchase history thumbnail: same rounded-square photo as the cart line,
      a touch smaller to suit a denser list. */
   .ptx-thumb {

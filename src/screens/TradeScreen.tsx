@@ -13,6 +13,7 @@ import { Ring } from "../components/charts/Micro";
 import { Sheet } from "../components/ui/Sheet";
 import { useRetained } from "../hooks/usePresence";
 import { AutoHeight } from "../components/ui/AutoHeight";
+import { localISO } from "../components/ui/DateField";
 
 // ─── Trade / Marketplace Screen ───────────────────────────────────────────────
 export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", userInitials = "JD", userRole }: { onProfile: () => void; onBack: () => void; userName?: string; userInitials?: string; userRole?: UserRole }) {
@@ -190,7 +191,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
       const newListing: typeof LISTINGS[0] = {
         id: Date.now().toString(), crop: form.crop, variety: form.variety, desc: form.desc,
         pricePerKg: Number(form.pricePerKg), kg: Number(form.kg),
-        date: new Date().toISOString().split("T")[0],
+        date: localISO(),
         seller: "Juan Dela Cruz", sellerInitials: userInitials, rating: 5.0, location: form.location,
       };
       setListings(ls => [newListing, ...ls]);
