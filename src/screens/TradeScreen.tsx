@@ -12,6 +12,7 @@ import { CropEmoji } from "../components/CropEmoji";
 import { Ring } from "../components/charts/Micro";
 import { Sheet } from "../components/ui/Sheet";
 import { useRetained } from "../hooks/usePresence";
+import { AutoHeight } from "../components/ui/AutoHeight";
 
 // ─── Trade / Marketplace Screen ───────────────────────────────────────────────
 export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", userInitials = "JD", userRole }: { onProfile: () => void; onBack: () => void; userName?: string; userInitials?: string; userRole?: UserRole }) {
@@ -32,36 +33,51 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
   const [showCart, setShowCart] = useState(false);
   const [qtyMap, setQtyMap] = useState<Record<string, number>>({});
   const [checkoutDone, setCheckoutDone] = useState(false);
-  // Removing is forgiving: the line folds away, then an Undo bar holds the
-  // item for a few seconds. A slipped thumb on a 1 kg line costs one tap to
-  // recover, not a trip back through the marketplace.
-  const [leaving, setLeaving] = useState<string[]>([]);
-  const [removed, setRemoved] = useState<{ item: CartItem; index: number } | null>(null);
-  const undoTimer = useRef<number | undefined>(undefined);
-  useEffect(() => () => window.clearTimeout(undoTimer.current), []);
-  const removeFromCart = (id: string) => {
-    const index = cart.findIndex(c => c.listingId === id);
-    if (index < 0 || leaving.includes(id)) return;
-    const item = cart[index];
-    setLeaving(l => [...l, id]);
-    // Matches the fold in CSS, so the row leaves state just as it finishes
-    // collapsing on screen.
+  // Removing is forgiving, and it happens in place. The line turns into a
+  // slim "Removed · Undo" strip in the same slot for a few seconds; Undo grows
+  // the card back right there, and otherwise the strip folds shut. Nothing
+  // jumps to the bottom of the list, and the list never shifts twice.
+  const UNDO_MS = 5000;
+  const FOLD_MS = 240;
+  const [tomb, setTomb] = useState<string[]>([]);      // removed, still undoable
+  const [folding, setFolding] = useState<string[]>([]); // strip closing, then gone
+  const tombTimers = useRef(new Map<string, number>());
+  useEffect(() => () => tombTimers.current.forEach(id => window.clearTimeout(id)), []);
+
+  const forget = (id: string) => {
+    window.clearTimeout(tombTimers.current.get(id));
+    tombTimers.current.delete(id);
+  };
+  const commitRemoval = (id: string) => {
+    forget(id);
+    setFolding(f => [...f, id]);
     window.setTimeout(() => {
       setCart(prev => prev.filter(c => c.listingId !== id));
-      setLeaving(l => l.filter(x => x !== id));
-      setRemoved({ item, index });
-      window.clearTimeout(undoTimer.current);
-      undoTimer.current = window.setTimeout(() => setRemoved(null), 5000);
-    }, 200);
+      setTomb(tb => tb.filter(x => x !== id));
+      setFolding(f => f.filter(x => x !== id));
+    }, FOLD_MS);
   };
-  const undoRemove = () => {
-    if (!removed) return;
-    const { item, index } = removed;
-    setCart(prev => prev.some(c => c.listingId === item.listingId) ? prev : [...prev.slice(0, index), item, ...prev.slice(index)]);
-    setRemoved(null);
-    window.clearTimeout(undoTimer.current);
+  const removeFromCart = (id: string) => {
+    if (tomb.includes(id)) return;
+    setTomb(tb => [...tb, id]);
+    tombTimers.current.set(id, window.setTimeout(() => commitRemoval(id), UNDO_MS));
   };
-  const closeCart = () => { setShowCart(false); setRemoved(null); };
+  const undoRemove = (id: string) => {
+    forget(id);
+    setTomb(tb => tb.filter(x => x !== id));
+  };
+  // Closing the cart settles every pending removal at once; there's no strip
+  // to come back to.
+  const closeCart = () => {
+    setShowCart(false);
+    if (tomb.length) {
+      tombTimers.current.forEach(t => window.clearTimeout(t));
+      tombTimers.current.clear();
+      setCart(prev => prev.filter(c => !tomb.includes(c.listingId)));
+      setTomb([]);
+      setFolding([]);
+    }
+  };
   const updateCartQty = (id: string, qty: number) => setCart(prev => prev.map(c => c.listingId === id ? { ...c, qty: Math.max(1, Math.min(qty, c.maxKg)) } : c));
 
   // ── Seller detail state ──
@@ -80,7 +96,10 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
   // Once a listing is in the cart, the cart owns its quantity: the picker on
   // the card reads and writes the cart line, so there's one number, not two
   // that drift apart.
-  const inCart = (id: string) => cart.find(c => c.listingId === id);
+  // Lines waiting on Undo are already gone as far as totals, the badge and
+  // the marketplace buttons are concerned.
+  const activeCart = cart.filter(c => !tomb.includes(c.listingId));
+  const inCart = (id: string) => activeCart.find(c => c.listingId === id);
   const isInCart = (id: string) => !!inCart(id);
   const getQty = (id: string) => inCart(id)?.qty ?? qtyMap[id] ?? 1;
   const setQty = (id: string, v: number, max: number) => {
@@ -90,16 +109,17 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
   };
   // The badge counts listings, not kilograms: "3" should mean three things in
   // the cart, not 3 kg of one. Kilograms are shown where they're labelled.
-  const cartCount = cart.length;
-  const cartKg = cart.reduce((s, c) => s + c.qty, 0);
-  const cartTotal = cart.reduce((s, c) => s + c.qty * c.pricePerKg, 0);
+  const cartCount = activeCart.length;
+  const cartKg = activeCart.reduce((s, c) => s + c.qty, 0);
+  const cartTotal = activeCart.reduce((s, c) => s + c.qty * c.pricePerKg, 0);
   // Distinct sellers, not lines: two listings from one farmer is one call.
-  const sellerCount = new Set(cart.map(c => c.seller)).size;
+  const sellerCount = new Set(activeCart.map(c => c.seller)).size;
 
   // Adding is idempotent. A listing already in the cart is left as it is, so
   // a second tap (or Buy Now after Add) can never quietly stack the quantity.
   const addToCart = (l: typeof LISTINGS[0]) => {
     const qty = getQty(l.id);
+    if (tomb.includes(l.id)) { undoRemove(l.id); return; }
     setCart(prev => prev.some(c => c.listingId === l.id)
       ? prev
       : [...prev, { listingId: l.id, crop: l.crop, variety: l.variety, pricePerKg: l.pricePerKg, qty, seller: l.seller, sellerInitials: l.sellerInitials, location: l.location, maxKg: l.kg }]);
@@ -107,8 +127,12 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
 
 
   const handleCheckout = () => {
+    tombTimers.current.forEach(t => window.clearTimeout(t));
+    tombTimers.current.clear();
+    setTomb([]);
+    setFolding([]);
     setCart([]);
-    closeCart();
+    setShowCart(false);
     setCheckoutDone(true);
     setTimeout(() => setCheckoutDone(false), 3000);
   };
@@ -589,8 +613,8 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
 
             {/* Items */}
             <div className="modal-sheet cart-body">
-              {cart.length === 0 && !removed ? (
-                <div className="cart-empty">
+              {cart.length === 0 ? (
+                <div className="cart-empty cart-face">
                   <div className="cart-empty-ico"><ShoppingCart size={44} color="var(--line-strong)" /></div>
                   <div className="cart-empty-txt">{t("cart_empty_title")}</div>
                   <div className="cart-empty-sub">{t("cart_empty_sub")}</div>
@@ -602,12 +626,19 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                   const photo = cropPhotoFor(item.crop, item.variety);
                   const atMax = item.qty >= item.maxKg;
                   const last = item.qty <= 1;
+                  const gone = folding.includes(item.listingId);
+                  const undoable = tomb.includes(item.listingId);
                   return (
-                    // The outer grid folds the row's height to zero on removal,
-                    // so the rows below slide up instead of jumping.
-                    <div className={`cart-line ${leaving.includes(item.listingId) ? "leaving" : ""}`} key={item.listingId}>
-                      <div className="cart-line-in">
-                        <div className="cart-item">
+                    <AutoHeight key={item.listingId} className={`cart-slot ${gone ? "is-empty" : ""}`}>
+                      {gone ? null : undoable ? (
+                        <div className="cart-tomb cart-face" role="status" key="tomb">
+                          <span className="cart-tomb-ico"><Trash2 size={18} strokeWidth={2.2} /></span>
+                          <span className="cart-tomb-txt">{t("cart_removed")} <strong>{item.crop}</strong></span>
+                          <button onClick={() => undoRemove(item.listingId)}>{t("cart_undo")}</button>
+                          <span className="cart-tomb-timer" aria-hidden="true" />
+                        </div>
+                      ) : (
+                        <div className="cart-item cart-face" key="item">
                           <div className="cart-thumb">
                             {photo
                               ? <img src={photo} alt="" loading="lazy" decoding="async" />
@@ -646,21 +677,16 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                             </div>
                           </div>
                         </div>
-                      </div>
-                    </div>
+                      )}
+                    </AutoHeight>
                   );
                 })
-              )}
-
-              {removed && (
-                <div className="cart-undo" role="status" key={removed.item.listingId}>
-                  <span>{t("cart_removed")} <strong>{removed.item.crop}</strong></span>
-                  <button onClick={undoRemove}>{t("cart_undo")}</button>
-                </div>
               )}
             </div>
 
             {/* Footer */}
+            {/* Stays while any line is listed, even one waiting on Undo, so the
+                sheet doesn't collapse under the thumb mid-decision. */}
             {cart.length > 0 && (
               <div className="cart-footer">
                 <div className="cart-total-row">
@@ -674,7 +700,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                 </div>
                 {/* Says what happens next, so "Confirm" doesn't read as "pay". */}
                 <p className="cart-pay-note">{t("cart_pay_note")}</p>
-                <button className="cart-checkout-btn" onClick={handleCheckout}>
+                <button className="cart-checkout-btn" onClick={handleCheckout} disabled={activeCart.length === 0}>
                   {t("cart_confirm")}
                 </button>
               </div>

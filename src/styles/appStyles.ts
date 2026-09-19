@@ -470,6 +470,56 @@ export const appCss = `
   .exp-row { display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--border); }
   .exp-row:last-child { border-bottom:none; }
   .exp-ico { width:40px; height:40px; border-radius:12px; background:var(--green-bg); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+  /* ── Purchase history ──────────────────────────────────────────────────── */
+  .ph-card { padding-bottom: 6px; }
+  .ph-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 4px; }
+  .ph-count { font-size: 14px; color: var(--text-faint); font-variant-numeric: tabular-nums; }
+  /* Month labels: small caps-ish, tracked out, so they read as signposts and
+     never compete with the rows. */
+  .ph-month {
+    margin: 16px 0 2px; font-family: var(--font-display); font-size: 12.5px; font-weight: 700;
+    letter-spacing: .06em; text-transform: uppercase; color: var(--text-faint);
+  }
+  .ph-group:first-child .ph-month { margin-top: 10px; }
+  .ph-row {
+    position: relative; display: grid; grid-template-columns: 54px minmax(0, 1fr) auto;
+    align-items: start; column-gap: 12px; padding: 12px 0;
+  }
+  /* Inset divider, starting where the text does, as iOS lists draw it: the
+     photos stay one clean column and the lines separate text from text. */
+  .ph-row + .ph-row::before {
+    content: ""; position: absolute; top: 0; left: 66px; right: 0; height: 1px; background: var(--line);
+  }
+  .ph-body { min-width: 0; padding-top: 1px; }
+  .ph-title {
+    font-family: var(--font-display); font-size: 16px; font-weight: 700; line-height: 1.25; color: var(--text);
+    letter-spacing: -.01em;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .ph-sub { margin-top: 3px; font-size: 14px; line-height: 1.35; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+  /* One line, always: a long name or town is cut with an ellipsis rather
+     than breaking the row into a ragged third and fourth line. */
+  .ph-seller {
+    display: flex; align-items: center; gap: 6px; margin-top: 4px;
+    font-size: 14px; line-height: 1.35; color: var(--text-faint); min-width: 0;
+  }
+  .ph-seller svg { flex-shrink: 0; }
+  .ph-seller span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ph-end { text-align: right; padding-top: 1px; }
+  .ph-amt {
+    font-family: var(--font-display); font-size: 16px; font-weight: 800; color: var(--text);
+    font-variant-numeric: tabular-nums; white-space: nowrap; line-height: 1.25;
+  }
+  .ph-date { margin-top: 3px; font-size: 13.5px; color: var(--text-faint); white-space: nowrap; }
+
+  /* Purchase history thumbnail: same rounded-square photo as the cart line,
+     a touch smaller to suit a denser list. */
+  .ptx-thumb {
+    width: 54px; height: 54px; flex: 0 0 54px; border-radius: 14px; overflow: hidden;
+    background: var(--tanim-sk); display: flex; align-items: center; justify-content: center;
+    box-shadow: inset 0 0 0 1px rgba(22,33,27,.06);
+  }
+  .ptx-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .exp-desc { font-size: var(--fs-label); font-weight:600; color:var(--text); }
   .exp-meta { font-size: var(--fs-label); color:var(--text-muted); margin-top:2px; }
   .exp-amt  { font-size: var(--fs-label); font-weight:700; color:var(--text); margin-left:auto; }
@@ -598,14 +648,22 @@ export const appCss = `
 
   /* A line is a card, not a table row: photo, what and from whom, the line
      total where the eye lands last on the right, and the stepper beneath. */
-  .cart-line {
-    display: grid; grid-template-rows: 1fr;
-    transition: grid-template-rows 200ms var(--ease-out), opacity 150ms ease, transform 200ms var(--ease-out);
-  }
-  .cart-line-in { min-height: 0; overflow: hidden; }
-  .cart-line.leaving { grid-template-rows: 0fr; opacity: 0; transform: scale(.98); }
+  /* The slot animates its height between card, undo strip and nothing, so the
+     rows below glide instead of jumping. Spacing is padding, not margin, so
+     it's inside what gets measured. */
+  .autoh { overflow: hidden; transition: height 240ms var(--ease-out); }
+  .autoh-in { display: flow-root; }
+  /* A few px of side room inside the clip, so the card's soft shadow isn't
+     shaved off at the edges. */
+  .cart-slot { margin: 0 -6px; }
+  .cart-slot .autoh-in { padding: 0 6px 10px; }
+  .cart-slot.is-empty .autoh-in { padding-bottom: 0; }
+  /* Whichever face is showing fades and un-blurs in, so the swap reads as the
+     same slot changing rather than one box cut out and another dropped in. */
+  .cart-face { animation: cart-face-in 200ms var(--ease-out); }
+  @keyframes cart-face-in { from { opacity: 0; transform: scale(.98); filter: blur(2px); } to { opacity: 1; transform: none; filter: none; } }
   .cart-item {
-    display: flex; gap: 14px; padding: 14px; margin-bottom: 10px;
+    display: flex; gap: 14px; padding: 14px;
     background: var(--card); border-radius: 18px;
     box-shadow: inset 0 0 0 1px var(--line), 0 4px 14px -10px rgba(22,33,27,.25);
   }
@@ -662,23 +720,36 @@ export const appCss = `
   .qty-step-val small { font-size: 13px; font-weight: 600; color: var(--text-faint); margin-left: 3px; }
   .cart-step-note { font-size: 13px; color: var(--text-faint); line-height: 1.3; }
 
-  /* Undo sits in the list where the line was, dark so it reads as a system
-     message rather than another item. */
-  .cart-undo {
-    display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    margin: 2px 0 10px; padding: 8px 8px 8px 16px; border-radius: 14px;
-    background: var(--ink); color: rgba(255,255,255,.86); font-size: 15px;
-    animation: cart-undo-in 200ms var(--ease-out);
+  /* The undo strip: sits exactly where the line was, quiet (dashed, no fill)
+     so it reads as the ghost of the card, with Undo as the one live control.
+     The hairline along the bottom drains over the undo window, so the user
+     can see how long they have instead of being surprised when it goes. */
+  .cart-tomb {
+    position: relative; overflow: hidden;
+    display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 8px 8px 8px 16px;
+    border-radius: 18px; box-shadow: inset 0 0 0 1.5px var(--line-strong);
+    background: rgba(255,255,255,.45);
   }
-  .cart-undo strong { color: #fff; font-weight: 700; }
-  .cart-undo button {
-    min-height: 40px; padding: 0 14px; border: none; border-radius: 10px; cursor: pointer;
-    background: rgba(255,255,255,.12); color: var(--palay);
+  .cart-tomb-ico { color: var(--text-faint); display: flex; flex-shrink: 0; }
+  .cart-tomb-txt { flex: 1; min-width: 0; font-size: 15px; color: var(--text-faint); line-height: 1.3; }
+  .cart-tomb-txt strong { color: var(--text-soft); font-weight: 700; }
+  .cart-tomb button {
+    min-height: 44px; padding: 0 18px; border: none; border-radius: 12px; cursor: pointer; flex-shrink: 0;
+    background: var(--tanim-sk); color: var(--tanim);
     font-family: var(--font-display); font-weight: 700; font-size: 15px;
     transition: transform 160ms var(--ease-out), background-color 160ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
-  .cart-undo button:active { transform: scale(.95); transition-duration: 90ms; }
-  @keyframes cart-undo-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .cart-tomb button:active { transform: scale(.95); transition-duration: 90ms; }
+  .cart-tomb-timer {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 3px;
+    background: var(--tanim); opacity: .35; transform-origin: left center;
+    animation: cart-tomb-drain 5000ms linear forwards;
+  }
+  @keyframes cart-tomb-drain { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
+  .cart-checkout-btn:disabled { background: #E3DED2; color: #8B9089; box-shadow: none; cursor: default; }
+  .cart-checkout-btn:disabled:active { transform: none; }
 
   .cart-footer {
     padding: 16px 18px 18px; background: var(--card); flex-shrink: 0;
@@ -710,10 +781,11 @@ export const appCss = `
   .cart-empty-btn:active { transform: scale(.96); transition-duration: 90ms; }
 
   @media (prefers-reduced-motion: reduce) {
-    .cart-line { transition: opacity 150ms ease; }
-    .cart-line.leaving { transform: none; }
-    .qty-step-ico, .cart-undo { animation: none; }
-    .qty-step button:active, .cart-undo button:active, .cart-empty-btn:active { transform: none; }
+    .autoh { transition: none; }
+    .cart-face, .qty-step-ico { animation: none; }
+    /* The drain still shows time left; it just steps down instead of sliding. */
+    .cart-tomb-timer { animation-timing-function: steps(5, end); }
+    .qty-step button:active, .cart-tomb button:active, .cart-empty-btn:active { transform: none; }
   }
   /* ── Buyer actions ── */
   /* Same size, same shape, different weight. Size stays equal so neither

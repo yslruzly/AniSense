@@ -540,6 +540,8 @@ export const translations: Dict = {
   calc_title: { en: "Farm Calculator", tl: "Calculator ng Bukid" },
   calc_use: { en: "Use as Expense Amount", tl: "Gamitin bilang Halaga ng Gastos" },
   exp_total_spent: { en: "Total Spent", tl: "Kabuuang Nagastos" },
+  exp_purchases_n: { en: "purchases", tl: "binili" },
+  exp_purchase_one: { en: "purchase", tl: "binili" },
   exp_purchase_history: { en: "Purchase History", tl: "Kasaysayan ng Binili" },
   exp_past_txn: { en: "past transactions", tl: "nakaraang transaksyon" },
   exp_past_txn_one: { en: "past transaction", tl: "nakaraang transaksyon" },

@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { EmptyState } from "../components/states";
-import { PhilippinePeso, MapPin, Pencil, Trash2, X, ChevronRight, Calendar, Calculator, Receipt, Plus, CheckCircle, AlertTriangle, Sprout, Tag, Wheat, FlaskConical, User, Tractor, Waves, Package, ShoppingCart, Filter } from "lucide-react";
+import { PhilippinePeso, MapPin, Pencil, Trash2, X, ChevronRight, Calendar, Calculator, Receipt, Plus, CheckCircle, AlertTriangle, Sprout, Tag, Wheat, FlaskConical, User, Tractor, Waves, Package, ShoppingCart, Filter, Store } from "lucide-react";
 import { useLang } from "../i18n";
 import { Expense, BuyerTransaction } from "../types";
 import { EXPENSES } from "../data/expenses";
 import { Hdr } from "../components/layout/Hdr";
 import { CropIcon, ExpenseIcon } from "../components/icons";
+import { cropPhotoFor } from "../data/cropPhotos";
 import { CropEmoji } from "../components/CropEmoji";
 import { PieChart } from "../components/charts/PieChart";
 import { MonthlyTrendsChart } from "../components/charts/MonthlyTrendsChart";
@@ -16,7 +17,7 @@ import { useRetained } from "../hooks/usePresence";
 
 // ─── Expenses Screen ──────────────────────────────────────────────────────────
 export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = "JD", isBuyer = false, buyerTransactions = [] }: { onProfile: () => void; onBack: () => void; farmerCrops: string[]; userInitials?: string; isBuyer?: boolean; buyerTransactions?: BuyerTransaction[] }) {
-  const { t, tn } = useLang();
+  const { t, tn, lang } = useLang();
   const ICONS: Record<string, string> = { Seeds: "Seeds", Fertilizer: "Fertilizer", Labor: "Labor", Equipment: "Equipment", Irrigation: "Irrigation", Other: "Other" };
   const cats = ["All", "Seeds", "Fertilizer", "Labor", "Equipment", "Irrigation", "Other"];
 
@@ -174,10 +175,17 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
               <div className="exp-total">₱{buyerTransactions.reduce((s, tx) => s + tx.amount, 0).toLocaleString()}</div>
               <div style={{ fontSize: "var(--fs-label)", opacity: .7, marginTop: 4 }}>{buyerTransactions.length} {buyerTransactions.length !== 1 ? t("exp_past_txn") : t("exp_past_txn_one")}</div>
             </div>
-            <div className="card">
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+            {/* Purchase history. One idea per line, read left to right:
+                what you bought, how much of it, who from; the price and the
+                day sit together on the right where a receipt puts them.
+                Grouped by month, so the date is said once per group instead
+                of being repeated on every row. */}
+            <div className="card ph-card">
+              <div className="ph-head">
                 <div className="card-title" style={{ margin: 0 }}>{t("exp_purchase_history")}</div>
-                <span style={{ fontSize: "var(--fs-label)", color: "var(--text-muted)" }}>{buyerTransactions.length} {t("exp_items")}</span>
+                <span className="ph-count">
+                  {buyerTransactions.length} {buyerTransactions.length !== 1 ? t("exp_purchases_n") : t("exp_purchase_one")}
+                </span>
               </div>
               {buyerTransactions.length === 0
                 ? <EmptyState
@@ -185,25 +193,58 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
                     title={t("state_no_purchases_title")}
                     body={t("state_no_purchases_body")}
                   />
-                : [...buyerTransactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map(tx => (
-                  <div className="exp-row" key={tx.id}>
-                    <div className="exp-ico" style={{ background: "var(--tanim-sk)" }}>
-                      <CropIcon crop={tx.crop} size={17} />
+                : (() => {
+                  const locale = lang === "tl" ? "fil-PH" : "en-PH";
+                  const sorted = [...buyerTransactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                  const groups: { label: string; items: BuyerTransaction[] }[] = [];
+                  for (const tx of sorted) {
+                    const label = new Date(tx.date).toLocaleDateString(locale, { month: "long", year: "numeric" });
+                    const g = groups[groups.length - 1];
+                    if (g && g.label === label) g.items.push(tx); else groups.push({ label, items: [tx] });
+                  }
+                  return (
+                    <div className="stagger-list">
+                      {groups.map(g => (
+                        <section key={g.label} className="ph-group">
+                          <h3 className="ph-month">{g.label}</h3>
+                          {g.items.map(tx => {
+                            const photo = cropPhotoFor(tx.crop, tx.variety);
+                            // The variety is the name people use ("Special
+                            // Rice"); the crop only adds something when the
+                            // variety doesn't already say it ("Well Milled").
+                            const title = tx.variety || tn(tx.crop);
+                            const saysCrop = tx.variety.toLowerCase().includes(tx.crop.toLowerCase().replace(/(es|s)$/, ""));
+                            return (
+                              <div className="ph-row" key={tx.id}>
+                                <div className="ptx-thumb">
+                                  {photo
+                                    ? <img src={photo} alt="" loading="lazy" decoding="async" />
+                                    : <CropIcon crop={tx.crop} size={22} />}
+                                </div>
+                                <div className="ph-body">
+                                  <div className="ph-title">{title}</div>
+                                  <div className="ph-sub">
+                                    {!saysCrop && <>{tn(tx.crop)} · </>}{tx.kg} kg · ₱{Math.round(tx.amount / tx.kg)}{t("per_kg_short")}
+                                  </div>
+                                  <div className="ph-seller">
+                                    <Store size={14} strokeWidth={2.2} aria-hidden="true" />
+                                    <span>{tx.seller} · {tx.location}</span>
+                                  </div>
+                                </div>
+                                <div className="ph-end">
+                                  <div className="ph-amt">₱{tx.amount.toLocaleString()}</div>
+                                  <div className="ph-date">
+                                    {new Date(tx.date).toLocaleDateString(locale, { month: "short", day: "numeric" })}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </section>
+                      ))}
                     </div>
-                    <div style={{ flex: 1 }}>
-                      <div className="exp-desc">{tn(tx.crop)} · {tx.variety}</div>
-                      <div className="exp-meta">{tx.kg} kg · {formatDate(tx.date)}</div>
-                      <div style={{ fontSize: "var(--fs-label)", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 4, marginTop: 3 }}>
-                        <div style={{ width: 18, height: 18, borderRadius: "50%", background: "var(--tanim)", color: "#fff", fontSize: "var(--fs-label)", fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{tx.sellerInitials}</div>
-                        <span style={{ fontWeight: 600 }}>{tx.seller}</span>
-                        <span style={{ color: "var(--text-faint)" }}>·</span>
-                        <MapPin size={11} color="var(--text-faint)" />
-                        <span style={{ color: "var(--text-faint)" }}>{tx.location}</span>
-                      </div>
-                    </div>
-                    <div className="exp-amt">₱{tx.amount.toLocaleString()}</div>
-                  </div>
-                ))
+                  );
+                })()
               }
             </div>
           </>
