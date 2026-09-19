@@ -96,13 +96,17 @@ export const ARIMA_DATA: Record<string, { d1: number; d2: number; d3: number }> 
  * The ARIMA runs above were fitted when prices were different (calamansi was
  * ~₱61, it's ₱160 now), so subtracting today's price from d3 produced
  * nonsense like "drops ₱98/kg in 3 days". Read each run as a rate instead:
- * the model supplies the direction and speed, today's market the level.
- * d1 to d3 is two days of movement, so three days from today is 1.5x it.
+ * the model supplies the shape and speed, today's market the level.
+ *
+ * The run's own "today" is back-filled one step before d1 (d1 minus a day's
+ * average move), and every forecast day is scaled from that to today's price.
+ * `days` is the full path, so a chart and a headline number always agree.
  */
 export function arimaProjection(crop: string, current: number) {
   const a = ARIMA_DATA[crop];
   if (!a || current <= 0) return null;
-  const pct3 = ((a.d3 - a.d1) / a.d1) * 1.5;
-  const d3 = current * (1 + pct3);
-  return { d3, change: d3 - current, pct: pct3 * 100 };
+  const d0 = a.d1 - (a.d3 - a.d1) / 2;
+  const days = [a.d1, a.d2, a.d3].map(v => current * (v / d0));
+  const d3 = days[2];
+  return { days, d3, change: d3 - current, pct: (d3 / current - 1) * 100 };
 }

@@ -309,10 +309,10 @@ export const translations: Dict = {
     tl: "Hindi garantisado ang mga taya. Laging suriin ang aktwal na presyo sa merkado.",
   },
   ana_performance: { en: "Price Performance: All Crops", tl: "Galaw ng Presyo: Lahat ng Pananim" },
-  ana_predicted: { en: "3-Day Predicted Price", tl: "3-Araw na Tayang Presyo" },
+  ana_predicted: { en: "Prices in the next 3 days", tl: "Presyo sa susunod na 3 araw" },
   ana_based_on: {
-    en: "Based on your crop specialization",
-    tl: "Batay sa mga tinatanim mo",
+    en: "How the price of each crop you grow is expected to move.",
+    tl: "Kung paano inaasahang gagalaw ang presyo ng bawat tanim mo.",
   },
   ana_current: { en: "Current", tl: "Kasalukuyan" },
   ana_sell: { en: "SELL", tl: "IBENTA" },
@@ -587,8 +587,8 @@ export const translations: Dict = {
     tl: "Ang mga taya ay galing sa LSTM neural network na sinanay sa 3 taong datos ng merkado ng Nueva Ecija. 95% ang confidence interval. Hindi ito payong pinansyal. Laging suriin ang aktwal na presyo sa merkado.",
   },
   ana_forecast_note: {
-    en: "Forecast is indicative only. Verify with local market conditions.",
-    tl: "Pahiwatig lamang ang taya. Suriin ang aktwal na presyo sa merkado.",
+    en: "Forecast by ARIMA. A guide, not a promise: check your local market too.",
+    tl: "Taya ng ARIMA. Gabay lamang, hindi pangako: tingnan din ang lokal na merkado.",
   },
 
   // ── Language gate (first run) ─────────────────────────────────────────────

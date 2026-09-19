@@ -730,6 +730,38 @@ export const appCss = `
     font-size: 13px; line-height: 1.45; color: var(--text-faint);
   }
 
+  /* ── Prices in the next 3 days ───────────────────────────────────────────── */
+  .pp-row { padding: 14px 0 10px; }
+  .pp-row + .pp-row { border-top: 1px solid var(--line); }
+  .pp-top { display: flex; align-items: center; gap: 12px; }
+  .pp-id { flex: 1; min-width: 0; }
+  .pp-now { margin-top: 2px; font-size: 14px; color: var(--text-faint); font-variant-numeric: tabular-nums; }
+  .pp-end { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+  /* The day-3 price is the headline; ink, not coloured, so it reads as a
+     number first. The chip under it carries the direction. */
+  .pp-target {
+    font-family: var(--font-display); font-size: 19px; font-weight: 800; color: var(--text);
+    font-variant-numeric: tabular-nums; line-height: 1.1;
+  }
+  .pp-end .adv-delta { display: inline-flex; align-items: center; gap: 3px; margin: 0; white-space: nowrap; }
+  .pp-chart { margin: 10px 0 0 56px; }
+  .pp-svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .pp-base { stroke: var(--line-strong); stroke-width: 1.5; stroke-dasharray: 4 5; }
+  .pp-line { fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+  .pp-area { stroke: none; opacity: .12; }
+  .pp-dot { stroke: var(--card); stroke-width: 2; }
+  .pp-svg.up   .pp-line { stroke: var(--tanim); }   .pp-svg.up   .pp-area, .pp-svg.up   .pp-dot { fill: var(--tanim); }
+  .pp-svg.down .pp-line { stroke: var(--error); }   .pp-svg.down .pp-area, .pp-svg.down .pp-dot { fill: var(--error); }
+  .pp-svg.flat .pp-line { stroke: var(--text-faint); } .pp-svg.flat .pp-area, .pp-svg.flat .pp-dot { fill: var(--text-faint); }
+  /* Labels sit under their points: edges pinned, the middle two centred on
+     the 1/3 and 2/3 marks (the chart pads 10 of 300 units each side). */
+  .pp-days { position: relative; height: 18px; margin-top: 2px; font-size: 12.5px; color: var(--text-faint); text-transform: capitalize; }
+  .pp-days span { position: absolute; top: 0; white-space: nowrap; }
+  .pp-days span:nth-child(1) { left: 0; }
+  .pp-days span:nth-child(2) { left: 34.4%; transform: translateX(-50%); }
+  .pp-days span:nth-child(3) { left: 65.6%; transform: translateX(-50%); }
+  .pp-days span:nth-child(4) { right: 0; font-weight: 700; color: var(--text-muted); }
+
   /* Purchase history thumbnail: same rounded-square photo as the cart line,
      a touch smaller to suit a denser list. */
   .ptx-thumb {
