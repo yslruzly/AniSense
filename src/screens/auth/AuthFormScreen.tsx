@@ -46,7 +46,8 @@ export function AuthFormScreen({
   flow: "signin" | "signup";
   role: UserRole;
   onBack: () => void;
-  onSuccess: (name: string, role: UserRole, crops: string[], farmDetails?: FarmDetails) => void;
+  /** isNew: the account was just created (not signed in), so the app shows the welcome ID. */
+  onSuccess: (name: string, role: UserRole, crops: string[], farmDetails?: FarmDetails, isNew?: boolean) => void;
 }) {
   const [mode, setMode] = useState<"gmail" | "phone">("phone");
   const [formFlow, setFormFlow] = useState(flow);
@@ -110,7 +111,7 @@ export function AuthFormScreen({
     setTimeout(() => {
       setLoading(false);
       const displayName = signup ? name.trim() : (role === "farmer" ? "Juan Dela Cruz" : "Maria Santos");
-      onSuccess(displayName, role, selectedCrops.length > 0 ? selectedCrops : ["Rice", "Corn"]);
+      onSuccess(displayName, role, selectedCrops.length > 0 ? selectedCrops : ["Rice", "Corn"], undefined, signup);
     }, 1200);
   };
 
@@ -135,7 +136,7 @@ export function AuthFormScreen({
         years: farmYears.trim(),
         location: formatFarmLocation(farmBarangay, farmMunicipality),
         phone: farmPhone.trim(),
-      });
+      }, true);
     }, 1200);
   };
 

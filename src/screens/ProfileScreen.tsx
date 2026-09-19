@@ -7,7 +7,7 @@ import { AniSenseLogo } from "../components/AniSenseLogo";
 import leafMask from "../assets/anisense-leaf-mask.png";
 
 // ─── Profile Screen ───────────────────────────────────────────────────────────
-export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignOut, userInitials = "JD", userRole }: {
+export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignOut, userInitials = "JD", userRole, userPhoto = null }: {
   onNavigate: (s: Screen) => void;
   onBack: () => void;
   profile: FarmerProfile;
@@ -15,6 +15,7 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
   onSignOut: () => void;
   userInitials?: string;
   userRole?: UserRole;
+  userPhoto?: string | null;
 }) {
   const { t, tn } = useLang();
   const [editing, setEditing] = useState(false);
@@ -85,7 +86,7 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
           <img className="prof-watermark" src={leafMask} alt="" aria-hidden="true" />
 
           <div className="prof-ava-wrap">
-            <div className="prof-ava">{userInitials}</div>
+            <div className="prof-ava">{userPhoto ? <img src={userPhoto} alt="" className="prof-ava-img" /> : userInitials}</div>
             {editing && (
               <button className="prof-edit-btn">
                 <Camera size={14} color="var(--text-soft)" />

@@ -762,6 +762,129 @@ export const appCss = `
   .pp-days span:nth-child(3) { left: 65.6%; transform: translateX(-50%); }
   .pp-days span:nth-child(4) { right: 0; font-weight: 700; color: var(--text-muted); }
 
+  /* ── Welcome ID ────────────────────────────────────────────────────────────
+     A portrait member card, like a real ID on a lanyard: issuer band on top
+     with the punch slot, photo in the middle, name at the foot, ID number
+     and barcode along the bottom edge. */
+  .shm-scrim:has(> .wid-panel) { background: rgba(8,12,10,.84); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+  .wid-panel { width: 100%; max-width: 330px; background: transparent; }
+  .wid { display: flex; flex-direction: column; align-items: center; text-align: center; color: #fff; }
+  .wid-title {
+    font-family: var(--font-display); font-size: 23px; font-weight: 700; line-height: 1.2; letter-spacing: -.015em;
+    text-wrap: balance; animation: wid-rise 360ms var(--ease-out) both;
+  }
+  .wid-sub { margin: 6px 0 20px; font-size: 15px; color: rgba(255,255,255,.75); animation: wid-rise 360ms var(--ease-out) 60ms both; }
+
+  .wid-card {
+    position: relative; width: 268px; border-radius: 18px; overflow: hidden; text-align: center;
+    /* Fine security rings behind the photo, the way printed IDs guard
+       against copying. Kept to a whisper so the name stays the loudest
+       thing on the card. */
+    background:
+      repeating-radial-gradient(circle at 50% 42%, rgba(11,107,65,.07) 0 1px, transparent 1.5px 8px),
+      linear-gradient(180deg, #FFFFFF 0%, #F4F6F3 100%);
+    box-shadow: 0 34px 60px -22px rgba(0,0,0,.8), 0 0 0 1px rgba(255,255,255,.08);
+    transform-origin: 50% -40px;
+    /* It drops in on its lanyard and settles with a small swing. The only
+       overshoot in the app: here the motion has a physical cause. */
+    animation: wid-drop 900ms cubic-bezier(.22,1,.36,1) 140ms both;
+  }
+  @keyframes wid-drop {
+    0%   { opacity: 0; transform: translateY(-70px) rotate(-7deg); }
+    45%  { opacity: 1; transform: translateY(4px) rotate(2.4deg); }
+    70%  { transform: translateY(-1px) rotate(-1deg); }
+    100% { transform: none; }
+  }
+  /* The punch slot for the lanyard clip. */
+  .wid-slot {
+    position: absolute; top: 9px; left: 50%; z-index: 2; width: 46px; height: 9px; margin-left: -23px;
+    border-radius: 99px; background: rgba(8,12,10,.8); box-shadow: inset 0 1px 2px rgba(0,0,0,.6), 0 1px 0 rgba(255,255,255,.12);
+  }
+  .wid-band {
+    display: flex; align-items: center; gap: 8px; padding: 28px 14px 12px;
+    background: radial-gradient(120% 140% at 100% 0%, rgba(126,196,120,.28), transparent 60%), linear-gradient(135deg, #1D2E25, var(--ink));
+    color: #fff;
+  }
+  .wid-mark { width: 30px; height: 30px; border-radius: 8px; background: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .wid-brand { font-family: var(--font-display); font-size: 16px; font-weight: 700; letter-spacing: -.01em; }
+  .wid-kind { margin-left: auto; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--palay); }
+
+  .wid-body { display: flex; flex-direction: column; align-items: center; padding: 20px 18px 14px; }
+  /* Portrait, like a real ID photo, with a white mat and a hairline frame. */
+  .wid-photo {
+    position: relative; width: 112px; height: 134px; padding: 0; border: none; border-radius: 14px; cursor: pointer;
+    background: var(--tanim-sk); display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 0 4px #fff, 0 0 0 5px var(--line), 0 12px 22px -12px rgba(0,0,0,.45);
+    transition: transform 160ms var(--ease-out);
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .wid-photo:active { transform: scale(.97); transition-duration: 90ms; }
+  .wid-photo-img {
+    width: 100%; height: 100%; object-fit: cover; border-radius: 14px; display: block;
+    animation: wid-photo-in 320ms var(--ease-out);
+  }
+  @keyframes wid-photo-in { from { opacity: 0; filter: blur(6px); transform: scale(1.04); } to { opacity: 1; filter: none; transform: none; } }
+  .wid-initials { font-family: var(--font-display); font-size: 40px; font-weight: 800; color: var(--tanim); letter-spacing: -.02em; }
+  .wid-cam {
+    position: absolute; right: -8px; bottom: -8px; width: 32px; height: 32px; border-radius: 50%;
+    background: var(--tanim); color: #fff; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 0 3px #fff, 0 4px 10px -4px rgba(0,0,0,.4);
+  }
+  .wid-name {
+    margin-top: 18px; font-family: var(--font-display); font-size: 21px; font-weight: 800; line-height: 1.15;
+    color: var(--ink); letter-spacing: -.015em; text-wrap: balance; overflow-wrap: anywhere;
+  }
+  .wid-role { margin-top: 5px; font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--tanim); }
+  .wid-loc { display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 6px; font-size: 13.5px; color: var(--text-faint); }
+
+  .wid-foot {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; margin: 0 16px; padding: 12px 0 14px;
+    border-top: 1.5px dashed var(--line-strong); text-align: left;
+  }
+  .wid-field { display: flex; flex-direction: column; gap: 1px; }
+  .wid-field.end { text-align: right; }
+  .wid-lbl { font-size: 10.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--text-faint); }
+  .wid-val { font-family: var(--font-display); font-size: 14px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .wid-barcode {
+    grid-column: 1 / -1; height: 26px; border-radius: 2px; opacity: .85;
+    background: repeating-linear-gradient(90deg,
+      var(--ink) 0 2px, transparent 2px 4px, var(--ink) 4px 5px, transparent 5px 8px,
+      var(--ink) 8px 11px, transparent 11px 12px, var(--ink) 12px 13px, transparent 13px 17px);
+  }
+  /* One pass of light across the laminate once the card has landed. */
+  .wid-shine {
+    position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(105deg, transparent 38%, rgba(255,255,255,.6) 50%, transparent 62%);
+    transform: translateX(-130%);
+    animation: wid-shine 1000ms ease-in-out 1000ms 1 forwards;
+  }
+  @keyframes wid-shine { to { transform: translateX(130%); } }
+
+  .wid-actions { width: 268px; margin-top: 22px; display: flex; flex-direction: column; gap: 10px; animation: wid-rise 360ms var(--ease-out) 700ms both; }
+  .wid-btn {
+    min-height: 52px; border: none; border-radius: 14px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    font-family: var(--font-display); font-size: 16px; font-weight: 700;
+    transition: transform 160ms var(--ease-out), background-color 160ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .wid-btn:active { transform: scale(.97); transition-duration: 90ms; }
+  .wid-btn.primary { background: var(--tanim); color: #fff; box-shadow: 0 10px 22px -10px rgba(11,107,65,.9); }
+  .wid-btn.ghost { background: rgba(255,255,255,.1); color: #fff; box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.28); }
+  @keyframes wid-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  /* Profile avatar, when the member has added a photo. */
+  .prof-ava { overflow: hidden; }
+  .prof-ava-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .wid-card { animation: a-fade-in 260ms ease both; }
+    .wid-title, .wid-sub, .wid-actions { animation: a-fade-in 260ms ease both; }
+    .wid-shine { display: none; }
+    .wid-photo:active, .wid-btn:active { transform: none; }
+  }
+  @keyframes a-fade-in { from { opacity: 0; } to { opacity: 1; } }
+
   /* Purchase history thumbnail: same rounded-square photo as the cart line,
      a touch smaller to suit a denser list. */
   .ptx-thumb {

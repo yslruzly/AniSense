@@ -20,6 +20,7 @@ import { AnalyticsScreen } from "./screens/AnalyticsScreen";
 import { TradeScreen } from "./screens/TradeScreen";
 import { WeatherScreen } from "./screens/WeatherScreen";
 import { ProfileScreen } from "./screens/ProfileScreen";
+import { WelcomeID, WelcomeInfo, makeMemberId } from "./components/WelcomeID";
 
 // ─── App Root ─────────────────────────────────────────────────────────────────
 export default function App() {
@@ -32,6 +33,10 @@ export default function App() {
   const [isAuthed, setIsAuthed] = useState(false);
   const [userName, setUserName] = useState("Juan Dela Cruz");
   const [userRole, setUserRole] = useState<UserRole>(null);
+  // The welcome ID: set once, when an account is created, and shown over Home.
+  const [welcome, setWelcome] = useState<WelcomeInfo | null>(null);
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [userPhoto, setUserPhoto] = useState<string | null>(null);
 
   // ── App state ──
   const [active, setActive] = useState<Screen>("home");
@@ -80,7 +85,7 @@ export default function App() {
     setAuthScreen("signin");
   };
 
-  const handleAuthSuccess = (name: string, role: UserRole, crops: string[] = ["Rice", "Corn"], farmDetails?: FarmDetails) => {
+  const handleAuthSuccess = (name: string, role: UserRole, crops: string[] = ["Rice", "Corn"], farmDetails?: FarmDetails, isNew = false) => {
     setUserName(name);
     setUserRole(role);
     setFarmerProfile(p => ({
@@ -93,6 +98,13 @@ export default function App() {
         phone: `+63 ${farmDetails.phone.replace(/^0/, "")}`,
       } : {}),
     }));
+    // New accounts land on Home with their member ID over it; closing the
+    // card leaves them exactly there.
+    if (isNew) {
+      setActive("home");
+      setWelcome({ id: makeMemberId(), since: new Date(), location: farmDetails?.location });
+      setShowWelcome(true);
+    }
     setIsAuthed(true);
   };
 
@@ -102,6 +114,9 @@ export default function App() {
     setSelectedRole(null);
     setUserRole(null);
     setActive("home");
+    setShowWelcome(false);
+    setWelcome(null);
+    setUserPhoto(null);
   };
 
   // ── Auth flow ──
@@ -160,7 +175,7 @@ export default function App() {
       case "analytics": return <AnalyticsScreen onProfile={openProfile} onBack={goHome} userInitials={initials} farmerCrops={farmerProfile.crops} />;
       case "trade": return <TradeScreen onProfile={openProfile} onBack={goHome} userName={userName} userInitials={initials} userRole={userRole} />;
       case "weather": return <WeatherScreen onProfile={openProfile} onBack={goHome} userInitials={initials} />;
-      case "profile": return <ProfileScreen onNavigate={setActive} onBack={goBack} profile={farmerProfile} setProfile={setFarmerProfile} onSignOut={handleSignOut} userInitials={initials} userRole={userRole} />;
+      case "profile": return <ProfileScreen onNavigate={setActive} onBack={goBack} profile={farmerProfile} setProfile={setFarmerProfile} onSignOut={handleSignOut} userInitials={initials} userRole={userRole} userPhoto={userPhoto} />;
     }
   };
 
@@ -172,6 +187,16 @@ export default function App() {
         <div className="shell">
           {renderScreen()}
           <BottomNav active={active} onNavigate={setActive} />
+          <WelcomeID
+            open={showWelcome}
+            onClose={() => setShowWelcome(false)}
+            name={userName}
+            initials={initials}
+            role={userRole}
+            info={welcome}
+            photo={userPhoto}
+            onPhoto={setUserPhoto}
+          />
         </div>
       </div>
     </>
