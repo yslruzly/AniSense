@@ -120,7 +120,9 @@ export const authCss = `
     @keyframes a-fade { to { opacity: 1; } }
     .a-btn, .a-iconbtn, .a-pick, .a-role, .a-crop, .a-reveal { transition: background-color 140ms ease; }
     .a-btn:active, .a-iconbtn:active, .a-pick:active, .a-role:active, .a-crop:active, .a-reveal:active { transform: none; }
-    .a-role.on .a-role-ico > * { transform: none; }
+    .a-screen .a-role.on .a-role-ico > * { transform: none; }
+    .a-rolehead .a-rolestage, .a-rolehead .a-rolestage-bubble { animation: a-fade-in 260ms ease both; }
+    .a-screen .a-rolehead .a-rolestage .a-rolestage-img.a-rolestage-img { transform: none; filter: none; }
     /* Reduced motion is gentler, not nothing: the price still crossfades so the
        swap stays legible, it just no longer travels or blurs. */
     .a-board-slide { animation: a-fade-in 260ms ease; }
@@ -270,7 +272,69 @@ export const authCss = `
      tick all agree the choice landed. Transform only, under 200ms. */
   .a-role-ico > * { transition: transform 180ms var(--ease-out); }
   .a-role.on .a-role-ico > * { transform: scale(1.08); }
-  .a-rolehead { display: flex; flex-direction: column; justify-content: space-between; gap: 24px; padding-top: 18px; }
+  /* ── Role header: brand, question, mascot stage ───────────────────────── */
+  /* Grows into whatever height the cards leave; the stage absorbs it. No
+     bottom padding: the mascot stands on the header's edge, cut at the waist
+     like someone behind a market stall. */
+  .a-rolehead {
+    flex: 1 1 auto; min-height: 0; position: relative; overflow: hidden;
+    display: flex; flex-direction: column; padding: 18px 22px 0;
+  }
+  .a-rolehead-copy { margin-top: 22px; }
+  .a-rolehead-copy .a-sub { margin-top: 6px; }
+
+  .a-rolestage {
+    flex: 1 1 auto; min-height: 170px; position: relative; margin-top: 8px;
+    animation: a-stage-in 520ms var(--ease-out) 140ms both;
+  }
+  /* A soft pool of light behind the figure grounds him on the ink, so he reads
+     as placed rather than pasted. */
+  .a-rolestage::before {
+    content: ""; position: absolute; right: -30px; bottom: -90px; width: 300px; height: 300px;
+    border-radius: 50%; background: radial-gradient(closest-side, rgba(126,196,120,.22), rgba(126,196,120,0));
+  }
+  .a-rolestage-img {
+    position: absolute; right: 4px; bottom: 0; height: 100%; width: auto; max-height: 250px;
+    pointer-events: none; user-select: none;
+    transition: opacity 200ms var(--ease-out), transform 240ms var(--ease-out), filter 200ms ease;
+  }
+  .a-rolestage-img.is-buyer { max-height: 232px; }
+  /* Juan is drawn peeking round a wall, so his right side is a straight cut.
+     Pushing him past the header padding puts that cut on the screen edge,
+     where it reads as "leaning in from off-screen" instead of a cropped image. */
+  .a-rolestage-img.is-farmer { right: -22px; }
+  /* Outgoing sinks and blurs slightly, incoming rises from the same spot: one
+     figure changing, not two images overlapping. */
+  .a-rolestage[data-role="buyer"]  .a-rolestage-img.is-farmer,
+  .a-rolestage[data-role="farmer"] .a-rolestage-img.is-buyer { opacity: 0; transform: translateY(14px) scale(.97); filter: blur(2px); }
+
+  /* The bubble sits left of the figure at head height, tail pointing at him,
+     so it's clear who is speaking and it never crowds the brand row. */
+  .a-rolestage-bubble {
+    position: absolute; left: 0; top: 22%; z-index: 1; max-width: 138px;
+    background: #fff; color: var(--ink); border-radius: 16px; padding: 10px 14px;
+    font-family: var(--font-display); font-weight: 700; font-size: var(--fs-label); line-height: 1.3;
+    box-shadow: 0 8px 20px -10px rgba(0,0,0,.5);
+    transform-origin: right center; animation: a-bubble-in 220ms var(--ease-out) both;
+  }
+  .a-rolestage-bubble::after {
+    content: ""; position: absolute; right: -5px; top: 50%; width: 12px; height: 12px; margin-top: -6px;
+    background: #fff; border-radius: 2px; transform: rotate(45deg);
+  }
+  /* First line waits for the figure to arrive; later lines answer the tap at once. */
+  .a-rolestage:not([data-picked]) .a-rolestage-bubble { animation-delay: 560ms; }
+
+  /* Rare, first-run screen: a little delight is allowed here. */
+  @keyframes a-stage-in { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+  @keyframes a-bubble-in { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: none; } }
+
+  /* Cards sit right under the header, in the thumb zone above Continue. */
+  .a-rolelist {
+    flex: 0 1 auto; padding-top: 18px; padding-bottom: 18px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .a-rolelist .a-role { box-shadow: inset 0 0 0 2px var(--line), 0 6px 18px -12px rgba(22,33,27,.3); }
+  .a-rolelist .a-role.on { box-shadow: inset 0 0 0 3px var(--tanim), 0 8px 22px -12px rgba(11,107,65,.4); }
   .a-role-t { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-title); line-height: 1.15; display: block; }
   .a-role-d { font-size: var(--fs-label); line-height: 1.45; color: var(--dilim); margin-top: 5px; display: block; }
 

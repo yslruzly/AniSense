@@ -603,6 +603,8 @@ export const translations: Dict = {
     tl: "Pumili lamang ng isa.",
   },
   role_continue_as: { en: "Continue as", tl: "Magpatuloy bilang" },
+  role_say_farmer: { en: "Ready to sell your harvest?", tl: "Handa ka nang magbenta ng ani?" },
+  role_say_buyer: { en: "Looking for fresh veggies?", tl: "Naghahanap ng sariwang gulay?" },
 
   // ── Form helpers ──────────────────────────────────────────────────────────
   auth_show: { en: "Show", tl: "Ipakita" },

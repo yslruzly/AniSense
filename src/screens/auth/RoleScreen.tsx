@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { haptic } from "../../lib/platform";
 import { Wheat, ShoppingCart, ArrowLeft, Check } from "lucide-react";
 import { AniSenseLogo } from "../../components/AniSenseLogo";
+import juanPeek from "../../assets/juan-peek.webp";
+import buyerMascot from "../../assets/buyer-mascot.webp";
 import { useLang } from "../../i18n";
 import { UserRole } from "../../types";
 
@@ -20,21 +22,34 @@ export function RoleScreen({ onBack, onSelect, flow }: { onBack: () => void; onS
 
   return (
     <div className="a-screen">
-      {/* Brand at the top, question at the bottom: the title sits right above
-          the cards it asks about, not stranded under a block of empty ink. */}
-      <div className="a-inkhead a-rolehead" style={{ minHeight: 300 }}>
+      {/* Three layers, read top to bottom: whose app, what we're asking, who's
+          asking. The header takes the height the cards leave, so the stage
+          grows on tall phones instead of leaving a dead gap above the cards. */}
+      <div className="a-inkhead a-rolehead">
         <div className="a-brandrow">
           <span className="a-brandmark"><AniSenseLogo size={26} /></span>
           <span className="a-brandname">AniSense</span>
         </div>
-        <div>
+        <div className="a-rolehead-copy">
           <h1 className="a-title on-ink">{t("role_title")}</h1>
           <p className="a-sub on-ink">{t("role_pick_one")}</p>
         </div>
+
+        {/* Decorative stage. Juan by default and for farmers; picking Buyer
+            swaps in the buyer mascot, so the header answers the tap. Both stay
+            mounted and crossfade, so switching never reloads an image. */}
+        <div className="a-rolestage" data-role={role === "buyer" ? "buyer" : "farmer"} data-picked={role ? "" : undefined} aria-hidden="true">
+          {/* Keyed so each new line pops in once, rather than the text
+              silently swapping inside the bubble. */}
+          <span className="a-rolestage-bubble" key={role ?? "none"}>
+            {role === "buyer" ? t("role_say_buyer") : role === "farmer" ? t("role_say_farmer") : `${t("hi")}!`}
+          </span>
+          <img className="a-rolestage-img is-farmer" src={juanPeek} alt="" />
+          <img className="a-rolestage-img is-buyer" src={buyerMascot} alt="" />
+        </div>
       </div>
 
-      <div className="a-scroll a-stagger" style={{ paddingTop: 22, paddingBottom: 22, display: "flex", flexDirection: "column", gap: 14 }}>
-        <div style={{ flex: 1 }} />
+      <div className="a-scroll a-stagger a-rolelist">
         {roles.map(r => (
           <button
             key={r.id}
@@ -50,7 +65,6 @@ export function RoleScreen({ onBack, onSelect, flow }: { onBack: () => void; onS
             <span className="a-tick"><Check size={17} color="#fff" strokeWidth={3.4} /></span>
           </button>
         ))}
-        <div style={{ flex: 1 }} />
       </div>
 
       {/* Back sits beside Continue, as on the language step, so the whole flow
