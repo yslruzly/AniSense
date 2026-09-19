@@ -1,5 +1,7 @@
 import riceFieldWide from "../assets/rice-field-wide.webp";
 import expensesBg from "../assets/expenses-terraces.webp";
+import wxDay from "../assets/wx-day.webp";
+import wxNight from "../assets/wx-night.webp";
 
 export const appCss = `
   /* Tokens (colour, type ramp, radii, motion) live in styles/tokens.ts,
@@ -552,6 +554,66 @@ export const appCss = `
     .exp-del-link:active { transform: none; }
   }
 
+  /* Rows without a tile (the month view): text starts at the row's edge, so
+     long names get the full width and the divider starts there too. */
+  .ph-row.is-tap.no-tile { grid-template-columns: minmax(0, 1fr) auto 18px; }
+  .ph-row.is-tap.no-tile + .ph-row.is-tap.no-tile::before { left: 10px; }
+
+  /* ── Expenses by month ───────────────────────────────────────────────────── */
+  .mo-list { display: flex; flex-direction: column; gap: 10px; }
+  .mo-item {
+    background: var(--card); border-radius: var(--radius);
+    box-shadow: inset 0 0 0 1px var(--line); overflow: hidden;
+  }
+  .mo-head {
+    width: 100%; display: block; padding: 14px 16px 14px; border: none; background: none;
+    font: inherit; color: inherit; text-align: left; cursor: pointer;
+    transition: background-color 180ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .mo-head:active { background: var(--paper); transition-duration: 0ms; }
+  .mo-top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .mo-name { font-family: var(--font-display); font-size: 17px; font-weight: 700; color: var(--text); letter-spacing: -.01em; }
+  .mo-total {
+    font-family: var(--font-display); font-size: 17px; font-weight: 800; color: var(--text);
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .mo-sub {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 2px;
+    font-size: 14px; color: var(--text-faint);
+  }
+  /* Turns to point down when open, on the same curve as the panel, so the
+     arrow and the list read as one movement. */
+  .mo-chev { color: var(--line-strong); transition: transform 240ms var(--ease-out); }
+  .mo-item.open .mo-chev { transform: rotate(90deg); color: var(--text-faint); }
+  .mo-bar { display: block; height: 6px; margin-top: 10px; border-radius: 99px; background: var(--paper-alt); overflow: hidden; }
+  /* Drawn with scaleX rather than width, so it animates on the compositor. */
+  .mo-fill {
+    display: block; height: 100%; width: 100%; border-radius: 99px; background: var(--tanim);
+    transform-origin: left center; animation: mo-grow 600ms var(--ease-out) both;
+  }
+  @keyframes mo-grow { from { transform: scaleX(0); } }
+
+  /* The panel opens by animating its grid row from 0fr to 1fr: a real height
+     animation with no measuring, and interruptible mid-way. */
+  .mo-acc {
+    display: grid; grid-template-rows: 0fr;
+    transition: grid-template-rows 260ms var(--ease-out);
+  }
+  .mo-item.open .mo-acc { grid-template-rows: 1fr; }
+  .mo-acc-in {
+    min-height: 0; overflow: hidden; padding: 0 16px;
+    opacity: 0; transition: opacity 180ms ease;
+  }
+  .mo-item.open .mo-acc-in { opacity: 1; transition: opacity 220ms ease 60ms; }
+  .mo-acc-in::before { content: ""; display: block; height: 1px; background: var(--line); }
+  .mo-acc-in > :last-child { margin-bottom: 6px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mo-acc { transition: none; }
+    .mo-fill { animation: none; }
+  }
+
   /* Purchase history thumbnail: same rounded-square photo as the cart line,
      a touch smaller to suit a denser list. */
   .ptx-thumb {
@@ -1068,7 +1130,30 @@ export const appCss = `
   }
 
   /* ── Weather ── */
-  .wx-hero { background: var(--tanim-deep); border-radius:var(--radius); padding:28px 18px; color:#fff; text-align:center; }
+  /* Photo hero that follows the clock: a sunny field by day, the same field
+     under the moon from 5 PM. Ink underneath, so a slow image load shows
+     dark rather than a flash of colour. */
+  .wx-hero {
+    position: relative; isolation: isolate; overflow: hidden;
+    background: var(--ink); border-radius: var(--radius); padding: 28px 18px; color: #fff; text-align: center;
+  }
+  .wx-bg {
+    position: absolute; inset: 0; z-index: -1; background-size: cover; background-position: center 60%;
+    transition: opacity 700ms ease;
+  }
+  /* A light wash top to bottom: enough to hold white type over a bright sky,
+     not so much that the day stops looking like day. */
+  .wx-bg-day {
+    background-image: linear-gradient(180deg, rgba(12,18,14,.18) 0%, rgba(12,18,14,.30) 45%, rgba(12,18,14,.58) 100%), url(${wxDay});
+  }
+  .wx-bg-night {
+    background-image: linear-gradient(180deg, rgba(6,9,20,.05) 0%, rgba(6,9,20,.25) 55%, rgba(6,9,20,.55) 100%), url(${wxNight});
+    opacity: 0;
+  }
+  .wx-hero[data-time="night"] .wx-bg-night { opacity: 1; }
+  .wx-hero[data-time="night"] .wx-bg-day { opacity: 0; }
+  .wx-hero .wx-ico, .wx-hero .wx-temp, .wx-hero .wx-cond, .wx-hero .wx-loc { text-shadow: 0 1px 4px rgba(0,0,0,.45); }
+  .wx-hero .wx-ico svg { filter: drop-shadow(0 1px 3px rgba(0,0,0,.35)); }
   .wx-ico  { font-size:50px; margin-bottom:7px; }
   .wx-temp { font-family: var(--font-display); font-size: var(--fs-num); font-weight:700; }
   .wx-cond { font-size: var(--fs-body); opacity:.92; margin-top:4px; font-weight:500; }

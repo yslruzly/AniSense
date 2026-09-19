@@ -1,12 +1,29 @@
-import { CloudSun, MapPin, Sprout, Droplets, Wind, AlertTriangle, CheckCircle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { CloudSun, CloudMoon, MapPin, Sprout, Droplets, Wind, AlertTriangle, CheckCircle } from "lucide-react";
 import { useLang } from "../i18n";
 import { WEATHER_FORECAST } from "../data/weather";
 import { Hdr } from "../components/layout/Hdr";
 import { WeatherIcon } from "../components/icons";
 
+// Day runs 6:00 AM to 4:59 PM; from 5:00 PM the hero switches to the night
+// scene. Re-checked every minute, so a screen left open at 4:59 still turns
+// over on time instead of waiting for the next visit.
+const DAY_START = 6;
+const NIGHT_START = 17;
+function useIsNight() {
+  const check = () => { const h = new Date().getHours(); return h >= NIGHT_START || h < DAY_START; };
+  const [night, setNight] = useState(check);
+  useEffect(() => {
+    const id = window.setInterval(() => setNight(check()), 60_000);
+    return () => window.clearInterval(id);
+  }, []);
+  return night;
+}
+
 // ─── Weather Screen ───────────────────────────────────────────────────────────
 export function WeatherScreen({ onProfile, onBack, userInitials = "JD" }: { onProfile: () => void; onBack: () => void; userInitials?: string }) {
   const { t } = useLang();
+  const isNight = useIsNight();
   const RAIN_ICONS = ["Rainy", "Stormy", "LightRain"];
 
   // Find the longest run of consecutive good-weather days for a planting-window insight
@@ -29,8 +46,16 @@ export function WeatherScreen({ onProfile, onBack, userInitials = "JD" }: { onPr
     <div className="screen">
       <Hdr icon={<CloudSun size={20} color="var(--tanim)" />} title={t("wx_title")} sub={t("wx_sub")} onProfile={onProfile} onBack={onBack} userInitials={userInitials} />
       <div className="scroll screen-enter">
-        <div className="wx-hero">
-          <div className="wx-ico"><CloudSun size={52} color="rgba(255,255,255,0.95)" /></div>
+        {/* The same farm by day and by night. Both pictures stay mounted and
+            crossfade, so the 5 PM switch dissolves rather than cuts. */}
+        <div className="wx-hero" data-time={isNight ? "night" : "day"}>
+          <span className="wx-bg wx-bg-day" aria-hidden="true" />
+          <span className="wx-bg wx-bg-night" aria-hidden="true" />
+          <div className="wx-ico">
+            {isNight
+              ? <CloudMoon size={52} color="rgba(255,255,255,0.95)" />
+              : <CloudSun size={52} color="rgba(255,255,255,0.95)" />}
+          </div>
           <div className="wx-temp">28°C</div>
           <div className="wx-cond">{t("wx_partly_cloudy")}</div>
           <div className="wx-loc" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}><MapPin size={12} color="rgba(255,255,255,0.7)" /> Nueva Ecija, PH</div>

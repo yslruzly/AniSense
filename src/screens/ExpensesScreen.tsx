@@ -461,14 +461,18 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
 
             {/* ═══ BY MONTH TAB ═══ */}
             {viewMode === "by-date" && (() => {
-              const monthMap: Record<string, { total: number; expenses: Expense[] }> = {};
+              // Keyed by YYYY-MM so sorting never depends on parsing a
+              // translated month name; the label is formatted separately.
+              const locale = lang === "tl" ? "fil-PH" : "en-PH";
+              const monthMap: Record<string, { label: string; total: number; expenses: Expense[] }> = {};
               transactions.forEach(e => {
-                const key = new Date(e.date).toLocaleDateString("en-PH", { year: "numeric", month: "long" });
-                if (!monthMap[key]) monthMap[key] = { total: 0, expenses: [] };
+                const d = new Date(e.date);
+                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+                if (!monthMap[key]) monthMap[key] = { label: d.toLocaleDateString(locale, { year: "numeric", month: "long" }), total: 0, expenses: [] };
                 monthMap[key].total += e.amount;
                 monthMap[key].expenses.push(e);
               });
-              const months = Object.entries(monthMap).sort((a, b) => new Date(b[0]).getTime() - new Date(a[0]).getTime());
+              const months = Object.entries(monthMap).sort((a, b) => b[0].localeCompare(a[0]));
               const maxAmt = Math.max(...months.map(([, v]) => v.total), 1);
 
               return months.length === 0 ? (
@@ -477,52 +481,62 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
                   <span style={{ fontSize: "var(--fs-label)", color: "var(--text-faint)" }}>{t("exp_none")}</span>
                 </div>
               ) : (
-                <div style={{ background: "#fff", borderRadius: 14, border: "1px solid var(--line)", overflow: "hidden" }}>
-                  {months.map(([month, { total, expenses: mExps }], i) => {
-                    const pct = Math.round((total / maxAmt) * 100);
-                    const isOpen = expandedMonth === month;
+                <div className="mo-list stagger-list">
+                  {months.map(([key, { label, total, expenses: mExps }]) => {
+                    const share = total / maxAmt;
+                    const isOpen = expandedMonth === key;
                     const sorted = [...mExps].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
                     return (
-                      <div key={month} style={{ borderBottom: i < months.length - 1 ? "1px solid var(--paper-alt)" : "none" }}>
-
-                        {/* ── Summary row (tap to expand) ── */}
-                        <button onClick={() => setExpandedMonth(isOpen ? null : month)}
-                          style={{ width: "100%", background: "none", border: "none", cursor: "pointer", padding: "14px 16px", fontFamily: "inherit", textAlign: "left" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                            <Calendar size={15} color="var(--tanim)" style={{ flexShrink: 0 }} />
-                            <div style={{ flex: 1 }}>
-                              <span style={{ fontSize: "var(--fs-label)", fontWeight: 700, color: "var(--text)" }}>{month}</span>
-                              <span style={{ fontSize: "var(--fs-label)", color: "var(--text-faint)", marginLeft: 8 }}>{mExps.length} {mExps.length !== 1 ? t("exp_expenses_many") : t("exp_expense_one")}</span>
-                            </div>
-                            <span style={{ fontSize: "var(--fs-body)", fontWeight: 800, color: "var(--text)" }}>₱{total.toLocaleString()}</span>
-                            <ChevronRight size={15} color="var(--text-faint)" style={{ transform: isOpen ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.2s", flexShrink: 0 }} />
-                          </div>
-                          <div style={{ height: 3, background: "var(--paper-alt)", borderRadius: 99 }}>
-                            <div style={{ width: `${pct}%`, height: "100%", background: "var(--tanim)", borderRadius: 99 }} />
-                          </div>
+                      <section key={key} className={`mo-item ${isOpen ? "open" : ""}`}>
+                        {/* Month header: name and total on one line, count
+                            and chevron on the next, the bar underneath. No
+                            icons, so nothing competes with the numbers. */}
+                        <button
+                          className="mo-head"
+                          onClick={() => setExpandedMonth(isOpen ? null : key)}
+                          aria-expanded={isOpen}
+                          aria-controls={`mo-${key}`}
+                        >
+                          <span className="mo-top">
+                            <span className="mo-name">{label}</span>
+                            <span className="mo-total">₱{total.toLocaleString()}</span>
+                          </span>
+                          <span className="mo-sub">
+                            <span>{mExps.length} {mExps.length !== 1 ? t("exp_expenses_many") : t("exp_expense_one")}</span>
+                            <ChevronRight size={18} className="mo-chev" aria-hidden="true" />
+                          </span>
+                          {/* Bar length is this month against the biggest
+                              month, so the heavy months stand out at a glance. */}
+                          <span className="mo-bar" aria-hidden="true">
+                            <span className="mo-fill" style={{ transform: `scaleX(${share})` }} />
+                          </span>
                         </button>
 
-                        {/* ── Expanded expense list ── */}
-                        {isOpen && (
-                          <div style={{ borderTop: "1px solid var(--paper-alt)", background: "var(--paper-alt)" }}>
-                            {sorted.map((e, idx) => (
-                              <div key={e.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", borderBottom: idx < sorted.length - 1 ? "1px solid var(--paper-alt)" : "none" }}>
-                                <div style={{ width: 32, height: 32, borderRadius: 9, background: "#fff", border: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                                  <ExpenseIcon cat={e.category} size={14} />
-                                </div>
-                                <div style={{ flex: 1, minWidth: 0 }}>
-                                  <div style={{ fontSize: "var(--fs-label)", fontWeight: 700, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.description}</div>
-                                  <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 2 }}>
-                                    <CropIcon crop={e.crop} size={11} />
-                                    <span style={{ fontSize: "var(--fs-label)", color: "var(--text-faint)" }}>{tn(e.crop)} · {tn(e.category)} · {formatDate(e.date)}</span>
-                                  </div>
-                                </div>
-                                <span style={{ fontSize: "var(--fs-label)", fontWeight: 800, color: "var(--text)", flexShrink: 0 }}>₱{e.amount.toLocaleString()}</span>
-                              </div>
+                        {/* Always mounted, height animated open and shut, so
+                            the months below glide instead of jumping. */}
+                        <div className="mo-acc" id={`mo-${key}`} role="region" aria-label={label} {...(isOpen ? {} : { inert: "" })}>
+                          <div className="mo-acc-in">
+                            {sorted.map(e => (
+                              <button
+                                key={e.id}
+                                className="ph-row is-tap no-tile"
+                                onClick={() => openEdit(e)}
+                                aria-label={`${t("exp_edit_title")}: ${e.description}, ₱${e.amount.toLocaleString()}`}
+                              >
+                                <span className="ph-body">
+                                  <span className="ph-title">{e.description}</span>
+                                  <span className="ph-sub">{tn(e.crop)} · {tn(e.category)}</span>
+                                </span>
+                                <span className="ph-end">
+                                  <span className="ph-amt">₱{e.amount.toLocaleString()}</span>
+                                  <span className="ph-date">{new Date(e.date).toLocaleDateString(locale, { month: "short", day: "numeric" })}</span>
+                                </span>
+                                <ChevronRight size={18} className="ph-chev" aria-hidden="true" />
+                              </button>
                             ))}
                           </div>
-                        )}
-                      </div>
+                        </div>
+                      </section>
                     );
                   })}
                 </div>
