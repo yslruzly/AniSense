@@ -1,7 +1,8 @@
-import { useRef } from "react";
-import { Camera, MapPin } from "lucide-react";
+import { useRef, useState } from "react";
+import { Camera, MapPin, Download, Check, AlertCircle } from "lucide-react";
 import { useLang } from "../i18n";
-import { haptic } from "../lib/platform";
+import { haptic, saveImage } from "../lib/platform";
+import { renderMemberId } from "../lib/memberIdImage";
 import { UserRole } from "../types";
 import { Sheet } from "./ui/Sheet";
 import { AniSenseLogo } from "./AniSenseLogo";
@@ -43,6 +44,9 @@ export function WelcomeID({ open, onClose, mode = "welcome", name, initials, rol
   const { t } = useLang();
   const fileRef = useRef<HTMLInputElement>(null);
   const first = name.split(" ")[0];
+  // idle → busy → done (or failed), then back to idle after a moment. The
+  // button says each step in place, so nothing else on screen has to.
+  const [dl, setDl] = useState<"idle" | "busy" | "done" | "failed">("idle");
 
   const pickPhoto = (file: File | undefined) => {
     if (!file) return;
@@ -52,6 +56,26 @@ export function WelcomeID({ open, onClose, mode = "welcome", name, initials, rol
   };
 
   if (!info) return null;
+
+  const download = async () => {
+    if (dl === "busy") return;
+    setDl("busy");
+    try {
+      const blob = await renderMemberId({
+        name, initials, role: role === "buyer" ? "Buyer" : "Farmer",
+        location, id: info.id, since: info.since, photo,
+      });
+      const result = await saveImage(blob, `AniSense-ID-${info.id}.png`, "AniSense Member ID");
+      if (result === "failed") { haptic.warn(); setDl("failed"); }
+      else if (result === "downloaded") { haptic.success(); setDl("done"); }
+      // On the phone the share sheet was the confirmation; nothing to add.
+      else { setDl("idle"); return; }
+    } catch {
+      haptic.warn();
+      setDl("failed");
+    }
+    window.setTimeout(() => setDl("idle"), 2400);
+  };
   // The card itself is a document, so it's always in English, whatever
   // language the app is set to: the same ID reads the same to anyone it's
   // shown to. The heading and buttons around it still follow the app.
@@ -108,6 +132,20 @@ export function WelcomeID({ open, onClose, mode = "welcome", name, initials, rol
         </div>
 
         <div className="wid-actions">
+          {/* Viewing your ID is when you'd want a copy of it. */}
+          {mode === "view" && (
+            <button type="button" className={`wid-btn ghost ${dl === "done" ? "is-done" : ""} ${dl === "failed" ? "is-failed" : ""}`}
+              onClick={download} aria-busy={dl === "busy"}>
+              {/* Keyed on the state so each label arrives with a short
+                  blur-in rather than cutting. */}
+              <span className="wid-btn-lbl" key={dl}>
+                {dl === "busy" && <><span className="wid-spin" aria-hidden="true" /> {t("id_preparing")}</>}
+                {dl === "done" && <><Check size={18} strokeWidth={2.6} /> {t("id_saved")}</>}
+                {dl === "failed" && <><AlertCircle size={18} strokeWidth={2.4} /> {t("id_save_failed")}</>}
+                {dl === "idle" && <><Download size={18} strokeWidth={2.2} /> {t("id_download")}</>}
+              </span>
+            </button>
+          )}
           {!photo && (
             <button type="button" className="wid-btn ghost" onClick={() => fileRef.current?.click()}>
               <Camera size={18} strokeWidth={2.2} /> {t("welcome_add_photo")}

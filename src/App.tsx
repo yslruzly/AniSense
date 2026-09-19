@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Screen, AuthScreen, UserRole, FarmDetails } from "./types";
 import { useOffline } from "./hooks/useOffline";
 import { useHardwareBack } from "./hooks/useHardwareBack";
@@ -22,6 +22,9 @@ import { WeatherScreen } from "./screens/WeatherScreen";
 import { ProfileScreen } from "./screens/ProfileScreen";
 import { WelcomeID, WelcomeInfo, makeMemberId } from "./components/WelcomeID";
 
+// The bottom-nav destinations. Anything else is a page opened from one of them.
+const TABS: Screen[] = ["home", "market", "trade", "expenses", "profile"];
+
 // ─── App Root ─────────────────────────────────────────────────────────────────
 export default function App() {
   // ── Auth state ──
@@ -41,6 +44,22 @@ export default function App() {
 
   // ── App state ──
   const [active, setActive] = useState<Screen>("home");
+  // How the last navigation moved, so the screen can enter the right way:
+  // tab switches cross-fade, pages opened from Home (Weather, Analytics)
+  // slide in from the right and slide back out the way they came.
+  const [nav, setNav] = useState<"tab" | "push" | "pop">("tab");
+  // Screens already seen this session. On a revisit the entrance cascades
+  // and growing bars are skipped: they earn their place once, not on the
+  // twentieth tab switch of the day.
+  const visited = useRef(new Set<Screen>(["home"]));
+  const [revisit, setRevisit] = useState(false);
+  const navigate = (next: Screen) => {
+    if (next === active) return;
+    setNav(!TABS.includes(next) ? "push" : !TABS.includes(active) ? "pop" : "tab");
+    setRevisit(visited.current.has(next));
+    visited.current.add(next);
+    setActive(next);
+  };
   const { isOffline, lastUpdated } = useOffline();
 
   useEffect(() => { initKeyboard(); }, []);
@@ -66,7 +85,7 @@ export default function App() {
   // In the app, back goes up to home; on home it falls through and exits.
   useHardwareBack(() => {
     if (!isAuthed) return false;
-    if (active !== "home") { setActive("home"); return true; }
+    if (active !== "home") { navigate("home"); return true; }
     return false;
   }, isAuthed);
 
@@ -121,6 +140,9 @@ export default function App() {
     setShowWelcome(false);
     setWelcome(null);
     setUserPhoto(null);
+    visited.current = new Set(["home"]);
+    setRevisit(false);
+    setNav("tab");
   };
 
   // ── Auth flow ──
@@ -167,19 +189,19 @@ export default function App() {
   // ── Main app ──
   const initials = userName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
 
-  const goHome = () => setActive("home");
-  const openProfile = () => setActive("profile");
-  const goBack = () => setActive("home");
+  const goHome = () => navigate("home");
+  const openProfile = () => navigate("profile");
+  const goBack = () => navigate("home");
 
   const renderScreen = () => {
     switch (active) {
-      case "home": return <HomeScreen onNavigate={setActive} onProfile={openProfile} isOffline={isOffline} lastUpdated={lastUpdated} userName={userName} userInitials={initials} userRole={userRole} farmerCrops={farmerProfile.crops} />;
+      case "home": return <HomeScreen onNavigate={navigate} onProfile={openProfile} isOffline={isOffline} lastUpdated={lastUpdated} userName={userName} userInitials={initials} userRole={userRole} farmerCrops={farmerProfile.crops} />;
       case "market": return <MarketScreen onProfile={openProfile} isOffline={isOffline} lastUpdated={lastUpdated} onBack={goHome} userInitials={initials} userRole={userRole} />;
       case "expenses": return <ExpensesScreen onProfile={openProfile} onBack={goHome} farmerCrops={farmerProfile.crops} userInitials={initials} isBuyer={userRole === "buyer"} buyerTransactions={BUYER_TRANSACTIONS} />;
       case "analytics": return <AnalyticsScreen onProfile={openProfile} onBack={goHome} userInitials={initials} farmerCrops={farmerProfile.crops} />;
       case "trade": return <TradeScreen onProfile={openProfile} onBack={goHome} userName={userName} userInitials={initials} userRole={userRole} />;
       case "weather": return <WeatherScreen onProfile={openProfile} onBack={goHome} userInitials={initials} />;
-      case "profile": return <ProfileScreen onNavigate={setActive} onBack={goBack} profile={farmerProfile} setProfile={setFarmerProfile} onSignOut={handleSignOut} userInitials={initials} userRole={userRole} userPhoto={userPhoto} onShowId={() => { setIdMode("view"); setShowWelcome(true); }} />;
+      case "profile": return <ProfileScreen onNavigate={navigate} onBack={goBack} profile={farmerProfile} setProfile={setFarmerProfile} onSignOut={handleSignOut} userInitials={initials} userRole={userRole} userPhoto={userPhoto} onShowId={() => { setIdMode("view"); setShowWelcome(true); }} />;
     }
   };
 
@@ -188,9 +210,9 @@ export default function App() {
       <style>{tokensCss}</style>
       <style>{appCss}</style>
       <div className="outer">
-        <div className="shell">
+        <div className="shell" data-nav={nav} data-revisit={revisit || undefined}>
           {renderScreen()}
-          <BottomNav active={active} onNavigate={setActive} />
+          <BottomNav active={active} onNavigate={navigate} />
           <WelcomeID
             open={showWelcome}
             onClose={() => setShowWelcome(false)}

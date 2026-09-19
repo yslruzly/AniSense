@@ -2,6 +2,8 @@ import { Capacitor } from "@capacitor/core";
 import { StatusBar, Style } from "@capacitor/status-bar";
 import { Haptics, ImpactStyle, NotificationType } from "@capacitor/haptics";
 import { Keyboard, KeyboardResize } from "@capacitor/keyboard";
+import { Filesystem, Directory } from "@capacitor/filesystem";
+import { Share } from "@capacitor/share";
 
 // ─── Platform layer ───────────────────────────────────────────────────────────
 // Every call here is guarded and swallowed. Capacitor plugins reject on web, and
@@ -49,4 +51,45 @@ export function initKeyboard() {
   if (!isNative) return;
   quiet(Keyboard.setResizeMode({ mode: KeyboardResize.Native }));
   quiet(Keyboard.setScroll({ isDisabled: false }));
+}
+
+/**
+ * Save an image the user asked for.
+ *
+ * In a browser it's an ordinary download. In the Android app a download link
+ * goes nowhere (the WebView has no downloads folder to hand it to), so the
+ * image is written to the app's cache and handed to the system share sheet,
+ * where "Save to device", Photos, Messenger and the rest already live.
+ *
+ * "cancelled" is not a failure: closing the share sheet is a choice.
+ */
+export async function saveImage(blob: Blob, filename: string, title: string): Promise<"downloaded" | "shared" | "cancelled" | "failed"> {
+  try {
+    if (!isNative) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      return "downloaded";
+    }
+    const data = await new Promise<string>((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => res(String(r.result).split(",")[1] ?? "");
+      r.onerror = rej;
+      r.readAsDataURL(blob);
+    });
+    const { uri } = await Filesystem.writeFile({ path: filename, data, directory: Directory.Cache });
+    try {
+      await Share.share({ title, files: [uri] });
+      return "shared";
+    } catch {
+      return "cancelled";
+    }
+  } catch {
+    return "failed";
+  }
 }

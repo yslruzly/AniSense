@@ -5,6 +5,11 @@ import { haptic } from "../../lib/platform";
 import { buildAlerts, Alert } from "../../data/alerts";
 import { Sheet } from "../ui/Sheet";
 
+// The bell rings once per session, on the first screen that shows it with
+// unread alerts: enough to say "something's waiting", and never again, so it
+// doesn't become a jingle on every screen change.
+let bellRung = false;
+
 // ─── Shared Header ────────────────────────────────────────────────────────────
 export function Hdr({ icon, title, sub, onProfile, onBack, userInitials = "JD", extra }: { icon?: React.ReactNode; title: string; sub?: string; onProfile?: () => void; onBack?: () => void; userInitials?: string; extra?: React.ReactNode }) {
   const { t, tn } = useLang();
@@ -14,6 +19,11 @@ export function Hdr({ icon, title, sub, onProfile, onBack, userInitials = "JD", 
   // The badge counts what the sheet can actually show. A hardcoded "3" over an
   // empty sheet is the kind of small lie that costs trust.
   const count = alerts.length;
+  const [ring] = useState(() => {
+    if (bellRung || count === 0) return false;
+    bellRung = true;
+    return true;
+  });
 
   const row = (a: Alert) => {
     if (a.kind === "weather") {
@@ -55,7 +65,7 @@ export function Hdr({ icon, title, sub, onProfile, onBack, userInitials = "JD", 
             aria-label={t("alerts_open")}
             onClick={() => { haptic.select(); setShowAlerts(true); }}
           >
-            <span className="notif-ico">
+            <span className={`notif-ico ${ring ? "ring" : ""}`}>
               <Bell size={21} color="var(--text-soft)" />
               {count > 0 && <span className="nbadge">{count}</span>}
             </span>

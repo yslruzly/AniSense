@@ -71,6 +71,10 @@ export const translations: Dict = {
   id_show: { en: "Show Member ID", tl: "Ipakita ang Member ID" },
   id_view_title: { en: "Your member ID", tl: "Ang iyong member ID" },
   id_view_sub: { en: "Tap the photo to change it.", tl: "I-tap ang litrato para palitan ito." },
+  id_download: { en: "Download ID", tl: "I-download ang ID" },
+  id_preparing: { en: "Preparing…", tl: "Inihahanda…" },
+  id_saved: { en: "Saved to Downloads", tl: "Na-save sa Downloads" },
+  id_save_failed: { en: "Couldn't save. Try again", tl: "Hindi na-save. Subukan ulit" },
   role_farmer_desc: {
     en: "Post listings, track expenses, and monitor crop market prices.",
     tl: "Mag-post ng paninda, subaybayan ang gastos, at bantayan ang presyo ng pananim.",

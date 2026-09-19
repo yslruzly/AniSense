@@ -120,6 +120,8 @@ export const authCss = `
     .a-screen .a-role.on .a-role-ico > * { transform: none; }
     .a-seg .a-seg-thumb { transition: none; }
     .a-screen .a-err, .a-screen .a-hint-in { animation: a-fade-in 160ms ease; }
+    .a-screen .a-alert { animation: a-fade-in 160ms ease; }
+    .a-screen .a-inp.bad, .a-screen .a-prefix-row { animation: none; }
     .a-rolehead .a-rolestage, .a-rolehead .a-say { animation: a-fade-in 260ms ease both; }
     .a-screen .a-rolehead .a-cast .a-fig.a-fig { transform: none; filter: none; }
     .a-screen .a-say .a-say-emoji { animation: none; }
@@ -486,6 +488,21 @@ export const authCss = `
     padding: 15px 16px; margin-top: 20px; font-size: var(--fs-label); line-height: 1.45; color: var(--error);
   }
   .a-alert svg { flex: 0 0 22px; margin-top: 1px; }
+  /* Errors arrive rather than appear: a short drop from above, so the eye
+     catches the change without being startled by it. */
+  .a-alert { animation: a-alert-in 200ms var(--ease-out); }
+  @keyframes a-alert-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+  /* The field that's wrong shakes once when it turns red, the way iOS
+     shakes a wrong password: "no" in a gesture, not only in colour. Small
+     and quick, with the swing dying out, so it reads as a shake and not a
+     wobble. */
+  .a-inp.bad, .a-prefix-row:has(.a-inp.bad) { animation: a-shake 360ms var(--ease-out); }
+  .a-prefix-row .a-inp.bad { animation: none; }
+  @keyframes a-shake {
+    0%, 100% { transform: translateX(0); }
+    18% { transform: translateX(-7px); } 36% { transform: translateX(6px); }
+    54% { transform: translateX(-4px); } 72% { transform: translateX(2px); }
+  }
   .a-link {
     display: inline-flex; align-items: center; min-height: 52px; color: var(--tanim);
     font-family: var(--font-display); font-weight: 600; font-size: var(--fs-body);

@@ -879,6 +879,20 @@ export const appCss = `
   .wid.is-view .wid-card { animation: none; }
   .wid.is-view .wid-shine { animation-delay: 250ms; animation-duration: 800ms; }
 
+  /* Download button states. */
+  .wid-btn-lbl { display: inline-flex; align-items: center; gap: 8px; animation: wid-lbl-in 200ms var(--ease-out); }
+  @keyframes wid-lbl-in { from { opacity: 0; transform: scale(.95); filter: blur(2px); } to { opacity: 1; transform: none; filter: none; } }
+  .wid-btn.is-done { box-shadow: inset 0 0 0 1.5px rgba(126,196,120,.7); color: #BFE6C4; }
+  .wid-btn.is-failed { box-shadow: inset 0 0 0 1.5px rgba(233,120,110,.7); color: #F6C3BD; }
+  /* Fast on purpose: a quicker spinner makes the same wait feel shorter. */
+  .wid-spin {
+    width: 16px; height: 16px; border-radius: 50%;
+    border: 2.5px solid rgba(255,255,255,.3); border-top-color: #fff;
+    animation: wid-spin 650ms linear infinite;
+  }
+  @keyframes wid-spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .wid-btn-lbl { animation: none; } }
+
   /* "Show Member ID" on the profile card: glass on the dark, full width at
      the card's foot, 48px so it's an easy reach. */
   .prof-id-btn {
@@ -1865,13 +1879,13 @@ export const appCss = `
 
      Asymmetric on purpose: the press snaps at 100ms, the release eases back at
      190ms. Symmetric timing is what makes a button feel rubbery. */
-  .card, .mkt-row, .exp-row, .price-row, .pcard, .module-btn,
-  .setting-row, .info-row, .fchip, .lstm-tab, .add-btn, .post-btn,
-  .ntab, .crop-tag, .signout-btn,
-  /* Everything below had no press state at all. On a touchscreen there is no
-     hover to tell you a thing is pressable, so a control that does not move
-     under the thumb reads as decoration until it happens to work. */
-  .row-link, .alert-row, .sdm-row, .listing,
+  /* Only things that can actually be pressed. Cards, info rows, listing
+     containers and alert rows used to scale on touch too, which promised a
+     tap that did nothing, and, because :active applies to every ancestor,
+     pressing Add to Cart shrank the whole listing around it as well. */
+  .pcard, .module-btn,
+  .fchip, .lstm-tab, .add-btn, .post-btn,
+  .ntab, .signout-btn,
   .cat-tab, .var-tab, .crop-pick,
   .hdr-back, .ava, .alerts-close, .prof-edit-btn,
   .qty-pick-btn,
@@ -1880,11 +1894,9 @@ export const appCss = `
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
   }
-  .card:active, .mkt-row:active, .exp-row:active, .price-row:active,
-  .pcard:active, .module-btn:active, .setting-row:active, .info-row:active,
+  .pcard:active, .module-btn:active,
   .fchip:active, .lstm-tab:active, .add-btn:active, .post-btn:active,
-  .ntab:active, .crop-tag:active, .signout-btn:active,
-  .row-link:active, .alert-row:active, .sdm-row:active, .listing:active,
+  .ntab:active, .signout-btn:active,
   .cat-tab:active, .var-tab:active, .crop-pick:active,
   .hdr-back:active, .ava:active, .alerts-close:active,
   .prof-edit-btn:active, .qty-pick-btn:active,
@@ -1894,23 +1906,15 @@ export const appCss = `
   }
   /* Scale is proportional, so the same ratio reads as more movement the wider
      the element gets. Big surfaces take less; a 40px disc takes the most. */
-  .mkt-row:active, .exp-row:active, .price-row:active,
-  .setting-row:active, .info-row:active, .card:active,
-  .row-link:active, .alert-row:active, .sdm-row:active,
-  .listing:active { transform: scale(0.99); }
   .pcard:active, .module-btn:active,
   .cat-tab:active, .crop-pick:active { transform: scale(0.975); }
-  .fchip:active, .lstm-tab:active, .crop-tag:active, .var-tab:active,
+  .fchip:active, .lstm-tab:active, .var-tab:active,
   .add-btn:active, .post-btn:active, .signout-btn:active,
   .btn-call:active, .btn-details:active, .add-cart-btn:active, .buy-now-btn:active,
   .cart-checkout-btn:active, .call-seller-btn:active { transform: scale(0.97); }
   .hdr-back:active, .ava:active, .alerts-close:active,
   .prof-edit-btn:active, .qty-pick-btn:active { transform: scale(0.92); }
 
-  /* Surface shift as well as scale on the wide rows, for the same reason the
-     settings rows already have one: a 1% shrink on a full-width row is
-     invisible, but a plate appearing under the thumb is not. */
-  .alert-row:active, .sdm-row:active { background: var(--paper-alt); }
   .hdr-back:active { background: var(--tanim); }
   .hdr-back:active svg { color: #fff; }
   .qty-pick-btn:active { background: var(--line); }
@@ -2007,6 +2011,39 @@ export const appCss = `
   .screen-enter { animation: scr-in 160ms var(--ease-out) both; }
   @keyframes scr-in { from { opacity: 0; } }
 
+  /* ── Page push / pop ─────────────────────────────────────────────────────
+     Weather and Analytics are pages opened from Home, not tabs: they slide
+     in from the right, header and all, and going back slides Home in from
+     the left: out the way they came. 28px and 260ms: enough to say "deeper"
+     and "back", short enough not to hold up the tap. The content's own fade
+     is switched off for these so the two don't stack. */
+  .shell[data-nav="push"] > .screen { animation: scr-push 260ms var(--ease-out) both; }
+  .shell[data-nav="pop"]  > .screen { animation: scr-pop 260ms var(--ease-out) both; }
+  .shell[data-nav="push"] .screen-enter, .shell[data-nav="pop"] .screen-enter { animation: none; }
+  @keyframes scr-push { from { opacity: 0; transform: translateX(28px); } }
+  @keyframes scr-pop  { from { opacity: 0; transform: translateX(-28px); } }
+
+  /* ── Revisits ────────────────────────────────────────────────────────────
+     Cascades and growing bars play the first time a screen is seen in a
+     session. Coming back to it, the content is simply there: the screen's
+     short fade is the only motion. */
+  .shell[data-revisit] .scroll .stagger-list > *,
+  .shell[data-revisit] .scroll .bar-fill,
+  .shell[data-revisit] .scroll .mo-fill { animation: none; }
+
+  /* ── Alerts bell ─────────────────────────────────────────────────────────
+     One ring, once per session, a beat after the screen lands, pivoting from
+     the top of the bell the way a real one swings. The badge pops in with it. */
+  .notif-ico.ring > svg { transform-origin: 50% 2px; animation: bell-ring 900ms var(--ease-out) 450ms both; }
+  .notif-ico.ring .nbadge { animation: badge-pop 320ms var(--ease-out) 450ms both; }
+  @keyframes bell-ring {
+    0%, 100% { transform: rotate(0); }
+    12% { transform: rotate(16deg); } 26% { transform: rotate(-13deg); }
+    40% { transform: rotate(9deg); } 54% { transform: rotate(-6deg); }
+    68% { transform: rotate(3deg); } 82% { transform: rotate(-1deg); }
+  }
+  @keyframes badge-pop { from { opacity: 0; transform: scale(.5); } 60% { opacity: 1; transform: scale(1.15); } to { transform: scale(1); } }
+
   /* ── First-paint stagger ─────────────────────────────────────────────────
      Once per app open, so it earns its keep. 35ms between items, inside the
      30–80ms band. Never blocks interaction; a tile is tappable while it's
@@ -2102,6 +2139,8 @@ export const appCss = `
      stops a screen swap reading as a hard cut. Press feedback stays too, because it
      is feedback, and removing it makes the app feel broken, not calmer. */
   @media (prefers-reduced-motion: reduce) {
+    .shell[data-nav="push"] > .screen, .shell[data-nav="pop"] > .screen { animation: scr-in 160ms ease both; }
+    .notif-ico.ring > svg, .notif-ico.ring .nbadge { animation: none; }
     .stagger-list > * { animation: row-in-reduced 200ms ease both; }
     @keyframes row-in-reduced { from { opacity: 0; } }
     .bar-fill { animation: none; }
