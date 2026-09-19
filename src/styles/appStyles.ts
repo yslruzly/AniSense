@@ -662,8 +662,22 @@ export const appCss = `
   .seller-end   { display:flex; align-items:center; justify-content:flex-end; gap:6px; flex:0 0 auto; }
   .seller-end svg { flex-shrink:0; }
   .listing-btns { display:flex; gap:11px; }
-  .btn-call     { flex:1; background:var(--green); color:#fff; border:none; border-radius:13px; padding:17px; font-family:inherit; font-size: var(--fs-body); font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; }
-  .btn-details  { flex:1; background:var(--white); color:var(--text); border:2px solid var(--border); border-radius:13px; padding:17px; font-family:inherit; font-size: var(--fs-body); font-weight:800; cursor:pointer; }
+  /* Listing actions, farmer side. Same size, shape and type as the buyer's
+     Add to Cart / Buy Now, so the card's bottom edge looks the same for
+     everyone; only the fill says which button leads. */
+  .btn-call, .btn-details {
+    flex: 1; min-width: 0; min-height: 50px; padding: 0 14px; border: none; border-radius: 14px;
+    font-family: var(--font-display); font-size: var(--fs-label); font-weight: 700; letter-spacing: -.005em;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap;
+  }
+  .btn-call {
+    background: var(--tanim); color: #fff;
+    box-shadow: 0 8px 18px -10px rgba(11,107,65,.75), inset 0 1px 0 rgba(255,255,255,.14);
+  }
+  /* Secondary: a hairline, not a 2px frame, so it sits beside the primary
+     instead of competing with it. */
+  .btn-details { background: var(--card); color: var(--text); box-shadow: inset 0 0 0 1.5px var(--line-strong); }
+  .btn-details:active { background: var(--paper); }
   .empty-msg    { text-align:center; color:var(--text-faint); padding:44px 16px; font-size: var(--fs-body); font-weight:600; line-height:1.6; }
 
   /* ── Cart ── */
@@ -832,7 +846,7 @@ export const appCss = `
      looks like an afterthought; weight (fill, shadow) says which one moves
      the purchase forward. */
   .add-cart-btn, .buy-now-btn {
-    flex: 1; min-width: 0; min-height: 54px; padding: 0 14px; border: none; border-radius: 14px;
+    flex: 1; min-width: 0; min-height: 50px; padding: 0 14px; border: none; border-radius: 14px;
     font-family: var(--font-display); font-size: var(--fs-label); font-weight: 700; letter-spacing: -.005em;
     cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap;
   }

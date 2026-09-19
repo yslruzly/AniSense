@@ -407,7 +407,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
               </div>
             ) : (
               <div className="listing-btns">
-                <button className="btn-call" aria-label={t("trade_call_seller")}><Phone size={17} color="#fff" /> {t("trade_call_seller")}</button>
+                <button className="btn-call" aria-label={t("trade_call_seller")}><Phone size={18} strokeWidth={2.2} /> {t("trade_call_seller")}</button>
                 <button className="btn-details" onClick={() => setSellerDetail(SELLER_DETAILS[l.sellerInitials] || null)}>{t("trade_view_details")}</button>
               </div>
             )}
