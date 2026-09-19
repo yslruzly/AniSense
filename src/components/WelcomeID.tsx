@@ -3,6 +3,7 @@ import { Camera, MapPin, Download, Check, AlertCircle } from "lucide-react";
 import { useLang } from "../i18n";
 import { haptic, saveImage } from "../lib/platform";
 import { renderMemberId } from "../lib/memberIdImage";
+import { downscaleImage } from "../lib/image";
 import { UserRole } from "../types";
 import { Sheet } from "./ui/Sheet";
 import { AniSenseLogo } from "./AniSenseLogo";
@@ -48,11 +49,9 @@ export function WelcomeID({ open, onClose, mode = "welcome", name, initials, rol
   // button says each step in place, so nothing else on screen has to.
   const [dl, setDl] = useState<"idle" | "busy" | "done" | "failed">("idle");
 
-  const pickPhoto = (file: File | undefined) => {
+  const pickPhoto = async (file: File | undefined) => {
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => { if (typeof reader.result === "string") { haptic.select(); onPhoto(reader.result); } };
-    reader.readAsDataURL(file);
+    try { onPhoto(await downscaleImage(file, 800)); haptic.select(); } catch { haptic.warn(); }
   };
 
   if (!info) return null;

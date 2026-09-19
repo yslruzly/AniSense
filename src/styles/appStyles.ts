@@ -1088,6 +1088,182 @@ export const appCss = `
     .pr-mover:active, .pr-sheet-x:active { transform: none; }
   }
 
+  /* ── Marketplace ─────────────────────────────────────────────────────────── */
+  .mp-sell-btn {
+    width: 100%; min-height: 54px; border: none; border-radius: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: var(--tanim); color: #fff; font-family: var(--font-display); font-size: 16px; font-weight: 700;
+    box-shadow: 0 10px 20px -12px rgba(11,107,65,.8);
+    transition: transform 180ms var(--ease-out);
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .mp-sell-btn:active { transform: scale(.97); transition-duration: 90ms; }
+
+  /* Crops as an even 3 × 3 grid: nine equal tiles, icon over name, so the
+     choices line up in rows and columns and scan like a keypad instead of a
+     ragged cloud of pills. Everything is visible; nothing to swipe. */
+  .mp-filters { display: flex; flex-direction: column; gap: 10px; }
+  .mp-cats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .mp-cat {
+    min-width: 0; min-height: 70px; padding: 8px 4px; border-radius: 16px; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+    border: none; background: var(--card); color: var(--text-soft); box-shadow: inset 0 0 0 1.5px var(--line);
+    font-family: var(--font-display); font-size: 14px; font-weight: 600; line-height: 1.15; text-align: center;
+    transition: transform 160ms var(--ease-out), background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .mp-cat-ico { height: 24px; display: flex; align-items: center; justify-content: center; }
+  .mp-cat-lbl { max-width: 100%; overflow-wrap: anywhere; }
+  .mp-cat:active { transform: scale(.96); transition-duration: 90ms; }
+  /* Chosen: ink tile, white label. The one dark tile in the grid is found
+     at a glance. */
+  .mp-cat.on { background: var(--ink); color: #fff; box-shadow: none; }
+  .mp-cat.on .mp-cat-ico { color: #fff; }
+  /* Varieties arrive under the crops in two even columns: long names like
+     "Shallots (Sibuyas Tagalog)" get room to wrap instead of being cut. */
+  .mp-vars { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; animation: mp-vars-in 220ms var(--ease-out); }
+  @keyframes mp-vars-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+  .mp-var {
+    min-width: 0; min-height: 44px; padding: 6px 10px; border-radius: 12px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; text-align: center; line-height: 1.2;
+    border: none; background: var(--paper-alt); color: var(--text-muted);
+    font-family: var(--font-display); font-size: 14px; font-weight: 600; overflow-wrap: anywhere;
+    transition: transform 160ms var(--ease-out), background-color 160ms ease, color 160ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .mp-var:active { transform: scale(.96); transition-duration: 90ms; }
+  .mp-var.on { background: var(--tanim-sk); color: var(--tanim); box-shadow: inset 0 0 0 1.5px rgba(11,107,65,.25); }
+
+  .mp-list-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .mp-count { font-size: 14.5px; color: var(--text-faint); font-variant-numeric: tabular-nums; }
+  .mp-count strong { color: var(--text); font-weight: 700; }
+  /* A native select behind a small pill: the phone's own picker opens, which
+     beats anything custom for four options. */
+  .mp-sort {
+    position: relative; display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 0 12px;
+    border-radius: 99px; background: var(--card); box-shadow: inset 0 0 0 1.5px var(--line); color: var(--text-soft);
+  }
+  .mp-sort select {
+    appearance: none; -webkit-appearance: none; border: none; background: none; cursor: pointer;
+    font-family: var(--font-display); font-size: 14px; font-weight: 600; color: var(--text); padding-right: 2px;
+  }
+  .mp-sort select:focus { outline: none; }
+
+  /* Goods in a two-column grid, photo first: six listings on a screen
+     where there used to be one and a half. */
+  .mp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .mp-card {
+    position: relative; min-width: 0; border-radius: 18px; overflow: hidden; background: var(--card);
+    box-shadow: inset 0 0 0 1px var(--line), 0 6px 16px -12px rgba(22,33,27,.3);
+  }
+  .mp-card-main {
+    display: flex; flex-direction: column; width: 100%; height: 100%; padding: 0; border: none; cursor: pointer;
+    background: none; font: inherit; color: inherit; text-align: left;
+    transition: transform 180ms var(--ease-out);
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .mp-card:has(.mp-card-main:active) { transform: scale(.98); transition: transform 90ms var(--ease-out); }
+  .mp-card { transition: transform 180ms var(--ease-out); }
+  .mp-card-photo {
+    position: relative; display: flex; align-items: center; justify-content: center;
+    aspect-ratio: 4 / 3; background: var(--tanim-sk); overflow: hidden;
+  }
+  .mp-card-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .mp-mine {
+    position: absolute; left: 8px; bottom: 8px; padding: 3px 8px; border-radius: 99px;
+    background: rgba(10,14,12,.62); color: #fff; font-size: 11.5px; font-weight: 700;
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  }
+  .mp-card-body { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px 12px; min-width: 0; }
+  .mp-card-name {
+    font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--text); line-height: 1.2;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .mp-card-price { margin-top: 2px; font-family: var(--font-display); font-size: 18px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
+  .mp-card-price small { font-size: .68em; font-weight: 600; color: var(--text-faint); margin-left: 1px; }
+  .mp-card-meta, .mp-card-seller {
+    font-size: 13px; color: var(--text-faint); line-height: 1.35;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .mp-card-seller { display: flex; align-items: center; gap: 3px; color: var(--text-muted); }
+  .mp-card-seller svg, .mp-star { color: var(--gold-text); flex-shrink: 0; }
+  .mp-dot { color: var(--line-strong); margin: 0 2px; }
+  .mp-ellipsis { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* Quick add, floating on the photo's corner: a white disc that turns
+     green with a tick once the listing is in the cart. */
+  .mp-quick {
+    position: absolute; top: 8px; right: 8px; width: 40px; height: 40px; border: none; border-radius: 50%; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,.94); color: var(--tanim);
+    box-shadow: 0 4px 12px -4px rgba(0,0,0,.35);
+    transition: transform 160ms var(--ease-out), background-color 200ms ease, color 200ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .mp-quick:active { transform: scale(.88); transition-duration: 80ms; }
+  .mp-quick.on { background: var(--tanim); color: #fff; }
+  .mp-quick-ico { display: flex; animation: qty-ico-in 200ms var(--ease-out); }
+
+  .mp-mine { display: inline-flex; align-items: center; gap: 4px; }
+
+  /* Listing photo step: one big target to add; a preview with Change and
+     Remove once there's a photo. */
+  .mp-photo-drop {
+    width: 100%; min-height: 150px; border-radius: 14px; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+    border: 2px dashed var(--line-strong); background: var(--paper); color: var(--tanim);
+    font-family: var(--font-display); font-size: 16px; font-weight: 700;
+    transition: transform 160ms var(--ease-out), background-color 160ms ease, border-color 160ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .mp-photo-drop:active { transform: scale(.98); background: var(--tanim-sk); border-color: var(--tanim); transition-duration: 90ms; }
+  .mp-photo-drop:disabled { color: var(--text-muted); cursor: default; }
+  .mp-photo-ico { width: 56px; height: 56px; border-radius: 50%; background: var(--tanim-sk); display: flex; align-items: center; justify-content: center; }
+  .mp-spin { border-color: rgba(11,107,65,.25); border-top-color: var(--tanim); }
+  .mp-photo-preview {
+    width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 14px; display: block;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.06); animation: wid-photo-in 320ms var(--ease-out);
+  }
+  .mp-photo-row { display: flex; gap: 10px; margin-top: 10px; }
+  .mp-photo-row .btn-details { min-height: 46px; }
+  .mp-photo-err { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 14.5px; font-weight: 600; color: var(--error); }
+  .mp-photo-tag {
+    position: absolute; left: 18px; top: 14px; display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px; border-radius: 99px; background: rgba(10,14,12,.55); color: #fff; font-size: 12.5px; font-weight: 700;
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  }
+  @media (prefers-reduced-motion: reduce) { .mp-photo-drop:active { transform: none; } .mp-photo-preview { animation: none; } }
+
+  /* ── Listing sheet (shares the crop sheet's hero, price and close) ── */
+  .pr-sheet-sub { display: flex; align-items: center; gap: 5px; }
+  .mp-avail {
+    display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 99px;
+    background: var(--paper); color: var(--text-muted); font-size: 14px; font-weight: 600;
+  }
+  .mp-desc { margin-top: 14px; font-size: 15.5px; line-height: 1.5; color: var(--text-soft); }
+  .mp-seller {
+    width: 100%; margin-top: 14px; display: flex; align-items: center; gap: 12px; padding: 12px;
+    border: none; border-radius: 16px; cursor: pointer; background: var(--paper); font: inherit; color: inherit; text-align: left;
+    transition: background-color 160ms ease, transform 160ms var(--ease-out);
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .mp-seller:active { background: var(--paper-alt); transform: scale(.99); transition-duration: 90ms; }
+  .mp-seller-who { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .mp-seller-name { font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--text); }
+  .mp-seller-meta { display: flex; align-items: center; gap: 4px; font-size: 14px; color: var(--text-muted); min-width: 0; }
+  .mp-qty { display: flex; align-items: center; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+  .mp-qty-lbl { flex-basis: 100%; font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--text); }
+  .mp-qty-total { margin-left: auto; font-family: var(--font-display); font-size: 20px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
+  .mp-actions { margin-top: 16px; }
+  .mp-danger { color: var(--error); box-shadow: inset 0 0 0 1.5px var(--error-line); }
+  .mp-danger:active { background: var(--error-sk); }
+  .btn-details { gap: 8px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mp-vars, .mp-quick-ico { animation: none; }
+    .mp-card:has(.mp-card-main:active), .mp-quick:active, .mp-cat:active, .mp-var:active, .mp-sell-btn:active, .mp-seller:active { transform: none; }
+  }
+
   /* Purchase history thumbnail: same rounded-square photo as the cart line,
      a touch smaller to suit a denser list. */
   .ptx-thumb {

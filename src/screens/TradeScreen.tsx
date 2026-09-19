@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { ShoppingCart, Plus, Minus, X, Check, Search, Pencil, Trash2, ChevronRight, Package, Calendar, Star, MapPin, Phone, ShoppingBag, CreditCard, AlertTriangle, Wheat, Sprout } from "lucide-react";
+import { ShoppingCart, Plus, Minus, X, Check, Search, Pencil, Trash2, ChevronRight, Package, Calendar, Star, MapPin, Phone, ShoppingBag, CreditCard, AlertTriangle, Wheat, Sprout, ArrowUpDown, Camera, ImageOff, LayoutGrid } from "lucide-react";
 import { useLang } from "../i18n";
 import { UserRole, CartItem, SellerDetail } from "../types";
 import { LISTINGS, SELLER_DETAILS } from "../data/marketplace";
@@ -9,16 +9,21 @@ import { CropIcon } from "../components/icons";
 import { cropPhotoFor } from "../data/cropPhotos";
 import juanPeek from "../assets/juan-peek.webp";
 import { CropEmoji } from "../components/CropEmoji";
-import { Ring } from "../components/charts/Micro";
 import { Sheet } from "../components/ui/Sheet";
 import { useRetained } from "../hooks/usePresence";
 import { AutoHeight } from "../components/ui/AutoHeight";
 import { localISO } from "../components/ui/DateField";
+import { EmptyState } from "../components/states";
+import { downscaleImage } from "../lib/image";
 
 // ─── Trade / Marketplace Screen ───────────────────────────────────────────────
 export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", userInitials = "JD", userRole }: { onProfile: () => void; onBack: () => void; userName?: string; userInitials?: string; userRole?: UserRole }) {
-  const { t, tn } = useLang();
+  const { t, tn, lang } = useLang();
+  const locale = lang === "tl" ? "fil-PH" : "en-PH";
   const [search, setSearch] = useState("");
+  // The listing open in the detail sheet. Held by id, so an edit or a cart
+  // change shows in the sheet straight away.
+  const [openId, setOpenId] = useState<string | null>(null);
   const [category, setCategory] = useState("All Crops");
   const [variety, setVariety] = useState("All");
   const [sortBy, setSortBy] = useState<"default" | "price-asc" | "price-desc" | "rating">("default");
@@ -27,7 +32,21 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
   const [editId, setEditId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [formError, setFormError] = useState("");
-  const [form, setForm] = useState({ crop: "Special Rice", variety: "", desc: "", pricePerKg: "", kg: "", location: "" });
+  const [form, setForm] = useState<{ crop: string; variety: string; desc: string; pricePerKg: string; kg: string; location: string; photo: string | null }>(
+    { crop: "Special Rice", variety: "", desc: "", pricePerKg: "", kg: "", location: "", photo: null });
+  const [photoState, setPhotoState] = useState<"idle" | "working" | "failed">("idle");
+  const photoInput = useRef<HTMLInputElement>(null);
+  const pickListingPhoto = async (file: File | undefined) => {
+    if (!file) return;
+    setPhotoState("working");
+    try {
+      const photo = await downscaleImage(file);
+      setForm(d => ({ ...d, photo }));
+      setPhotoState("idle");
+    } catch {
+      setPhotoState("failed");
+    }
+  };
 
   // ── Cart state ──
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -123,7 +142,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
     if (tomb.includes(l.id)) { undoRemove(l.id); return; }
     setCart(prev => prev.some(c => c.listingId === l.id)
       ? prev
-      : [...prev, { listingId: l.id, crop: l.crop, variety: l.variety, pricePerKg: l.pricePerKg, qty, seller: l.seller, sellerInitials: l.sellerInitials, location: l.location, maxKg: l.kg }]);
+      : [...prev, { listingId: l.id, crop: l.crop, variety: l.variety, pricePerKg: l.pricePerKg, qty, seller: l.seller, sellerInitials: l.sellerInitials, location: l.location, maxKg: l.kg, photo: l.photo }]);
   };
 
 
@@ -155,8 +174,6 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
     return variety === "All" || l.crop === variety || l.variety === variety;
   });
 
-  const avgPrice = listings.length ? Math.round(listings.reduce((s, l) => s + l.pricePerKg, 0) / listings.length) : 0;
-  const totalKg = listings.reduce((s, l) => s + l.kg, 0);
 
   const sorted = [...filtered].sort((a, b) => {
     if (sortBy === "price-asc") return a.pricePerKg - b.pricePerKg;
@@ -167,14 +184,16 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
 
   const openPost = () => {
     setEditId(null);
-    setForm({ crop: "Special Rice", variety: "", desc: "", pricePerKg: "", kg: "", location: "" });
+    setForm({ crop: "Special Rice", variety: "", desc: "", pricePerKg: "", kg: "", location: "", photo: null });
+    setPhotoState("idle");
     setFormError("");
     setShowModal(true);
   };
 
   const openEdit = (l: typeof LISTINGS[0]) => {
     setEditId(l.id);
-    setForm({ crop: l.crop, variety: l.variety, desc: l.desc, pricePerKg: String(l.pricePerKg), kg: String(l.kg), location: l.location });
+    setForm({ crop: l.crop, variety: l.variety, desc: l.desc, pricePerKg: String(l.pricePerKg), kg: String(l.kg), location: l.location, photo: l.photo ?? null });
+    setPhotoState("idle");
     setFormError("");
     setShowModal(true);
   };
@@ -186,13 +205,14 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
     if (!form.location.trim()) { setFormError(t("err_loc_required")); return; }
 
     if (editId) {
-      setListings(ls => ls.map(l => l.id === editId ? { ...l, crop: form.crop, variety: form.variety, desc: form.desc, pricePerKg: Number(form.pricePerKg), kg: Number(form.kg), location: form.location } : l));
+      setListings(ls => ls.map(l => l.id === editId ? { ...l, crop: form.crop, variety: form.variety, desc: form.desc, pricePerKg: Number(form.pricePerKg), kg: Number(form.kg), location: form.location, photo: form.photo ?? undefined } : l));
     } else {
       const newListing: typeof LISTINGS[0] = {
         id: Date.now().toString(), crop: form.crop, variety: form.variety, desc: form.desc,
         pricePerKg: Number(form.pricePerKg), kg: Number(form.kg),
         date: localISO(),
         seller: "Juan Dela Cruz", sellerInitials: userInitials, rating: 5.0, location: form.location,
+        photo: form.photo ?? undefined,
       };
       setListings(ls => [newListing, ...ls]);
     }
@@ -205,7 +225,39 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
   };
 
   // Varieties for sub-row
-  const subVarieties = category !== "All Crops" ? CROP_FILTER_MAP[category] || [] : [];
+  // The crop's own name ("Onions" under Onions) is what "All" already means,
+  // so it isn't offered twice.
+  const subVarieties = category !== "All Crops" ? (CROP_FILTER_MAP[category] || []).filter(v => v !== category) : [];
+  // "Shallots(Sibuyas Tagalog)" → "Shallots (Sibuyas Tagalog)" on screen.
+  const varietyLabel = (v: string) => v.replace(/\s*\(/, " (");
+
+  const openListing = listings.find(l => l.id === openId) ?? null;
+  // Keeps the sheet filled while it slides away after openId is cleared.
+  const shownListing = useRetained(openListing);
+  const avgShown = sorted.length ? Math.round(sorted.reduce((s, l) => s + l.pricePerKg, 0) / sorted.length) : 0;
+
+  // The seller's own photo when they added one; otherwise the stock photo of
+  // that crop, so no listing is ever a blank tile.
+  const photoOf = (l: { photo?: string; crop: string; variety: string }) => l.photo ?? cropPhotoFor(l.crop, l.variety);
+
+  // "Red" under "Onions" reads as "Red Onions"; "Yellow Corn" under "Corn"
+  // already says it; a variety that repeats the crop is said once.
+  const titleOf = (l: typeof LISTINGS[0]) => {
+    if (!l.variety || l.variety === l.crop) return l.crop;
+    const stem = l.crop.toLowerCase().replace(/(es|s)$/, "");
+    return l.variety.toLowerCase().includes(stem) ? l.variety : `${l.variety} ${l.crop}`;
+  };
+
+  // "Today", "Yesterday", "3 days ago", then a plain date.
+  const posted = (iso: string) => {
+    const d = new Date(`${iso}T00:00:00`);
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const days = Math.round((today.getTime() - d.getTime()) / 86_400_000);
+    if (days <= 0) return t("mp_today");
+    if (days === 1) return t("mp_yesterday");
+    if (days < 7) return t("mp_days_ago").replace("{n}", String(days));
+    return d.toLocaleDateString(locale, { month: "short", day: "numeric", ...(d.getFullYear() === today.getFullYear() ? {} : { year: "numeric" }) });
+  };
 
   return (
     <div className="screen">
@@ -238,187 +290,219 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
         </div>
 
         {userRole !== "buyer" && (
-          <button onClick={openPost} style={{ width: "100%", background: "var(--tanim)", color: "#fff", border: "none", borderRadius: 14, padding: "14px 18px", fontFamily: "inherit", fontSize: "var(--fs-body)", fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 2px 8px rgba(11,107,65,0.25)" }}>
-            <Plus size={20} color="#fff" /> {t("trade_sell")}
+          <button className="mp-sell-btn" onClick={openPost}>
+            <Plus size={20} strokeWidth={2.6} /> {t("trade_sell")}
           </button>
         )}
 
-        <div className="search-box" style={{ padding: "13px 16px", borderRadius: 12 }}>
+        <div className="search-box">
           <Search size={18} color="var(--text-faint)" />
-          <input placeholder={t("trade_search_ph")} value={search} onChange={e => setSearch(e.target.value)}
-            style={{ fontSize: "var(--fs-label)" }} />
-        </div>
-
-        {/* ── Filter Row ── */}
-        <div className="mp-filter-row">
-
-          {/* Section label */}
-          <div style={{ fontSize: "var(--fs-label)", fontWeight: 700, color: "var(--text-muted)", marginBottom: 2 }}>
-            {t("trade_select_category")}
-          </div>
-
-          {/* Row 1: Crop category grid */}
-          <div className="cat-tabs">
-            {CROP_CATEGORIES.map(cat => (
-              <button key={cat} className={`cat-tab ${category === cat ? "active" : ""}`} onClick={() => selectCategory(cat)}>
-                <div className="cat-tab-ico">
-                  <CropEmoji crop={cat} size={24} />
-                </div>
-                <span>{cat === "All Crops" ? t("all") : tn(cat)}</span>
-              </button>
-            ))}
-          </div>
-
-          {/* Row 2: Variety grid, only when category selected */}
-          {subVarieties.length > 0 && (
-            <>
-              <div style={{ fontSize: "var(--fs-label)", fontWeight: 700, color: "var(--text-muted)", marginTop: 4 }}>
-                {t("trade_select_variety")} · {tn(category)}
-              </div>
-              <div className="var-tabs">
-                <button className={`var-tab ${variety === "All" ? "active" : ""}`} onClick={() => setVariety("All")}>
-                  {t("all")} · {tn(category)}
-                </button>
-                {subVarieties.map(v => (
-                  <button key={v} className={`var-tab ${variety === v ? "active" : ""}`} onClick={() => setVariety(v)}>
-                    {v}
-                  </button>
-                ))}
-              </div>
-            </>
+          <input placeholder={t("trade_search_ph")} value={search} onChange={e => setSearch(e.target.value)} enterKeyHint="search" />
+          {search && (
+            <button className="pr-clear" onClick={() => setSearch("")} aria-label={t("state_clear_search")}>
+              <X size={16} strokeWidth={2.6} />
+            </button>
           )}
         </div>
 
-        {/* One recessed strip rather than four white boxes competing with the
-            listing cards below for the same visual weight. */}
-        <div className="stat-strip">
-          <div>
-            <div className="stat-val">{filtered.length}</div>
-            <div className="stat-lbl">{t("trade_active_listings")}</div>
+        {/* Filters: the nine crop choices as an even 3 × 3 grid of tiles, all
+            visible, all the same size, nothing to swipe. Varieties appear
+            under it, in two columns, only once a crop is chosen. */}
+        <div className="mp-filters">
+          <div className="mp-cats" role="radiogroup" aria-label={t("trade_select_category")}>
+            {CROP_CATEGORIES.map(cat => (
+              <button key={cat} role="radio" aria-checked={category === cat}
+                className={`mp-cat ${category === cat ? "on" : ""}`} onClick={() => selectCategory(cat)}>
+                {/* Every tile has an icon, All included, so the nine read
+                    as one set. */}
+                <span className="mp-cat-ico" aria-hidden="true">
+                  {cat === "All Crops" ? <LayoutGrid size={20} strokeWidth={2.2} /> : <CropEmoji crop={cat} size={22} />}
+                </span>
+                <span className="mp-cat-lbl">{cat === "All Crops" ? t("all") : tn(cat)}</span>
+              </button>
+            ))}
           </div>
-          <div>
-            <div className="stat-val">₱{avgPrice}</div>
-            <div className="stat-lbl">{t("trade_avg_price")}</div>
-          </div>
-          <div>
-            <div className="stat-val">{totalKg.toLocaleString()}</div>
-            <div className="stat-lbl">{t("trade_total_kg")}</div>
-          </div>
-          <div>
-            <Ring value={4.7} max={5} size={30} />
-            <div className="stat-lbl">{t("trade_avg_rating")} 4.7</div>
-          </div>
+          {subVarieties.length > 0 && (
+            <div className="mp-vars" role="radiogroup" aria-label={t("trade_select_variety")} key={category}>
+              <button role="radio" aria-checked={variety === "All"} className={`mp-var ${variety === "All" ? "on" : ""}`} onClick={() => setVariety("All")}>
+                {t("all")}
+              </button>
+              {subVarieties.map(v => (
+                <button key={v} role="radio" aria-checked={variety === v} className={`mp-var ${variety === v ? "on" : ""}`} onClick={() => setVariety(v)}>
+                  {varietyLabel(v)}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
-        <div className="mp-list-hdr-row">
-          <span className="mkt-list-hdr">{sorted.length} {sorted.length === 1 ? t("trade_listing_one") : t("trade_listings")}</span>
-          <div className="drop-wrap">
-            <select className="drop-sel" value={sortBy} onChange={e => setSortBy(e.target.value as typeof sortBy)}>
+        {/* The count, the going rate for what's shown, and how it's sorted,
+            on one line: what the old four-box stat strip was trying to say. */}
+        <div className="mp-list-head">
+          <span className="mp-count">
+            <strong>{sorted.length}</strong> {sorted.length === 1 ? t("trade_listing_one") : t("trade_listings")}
+            {sorted.length > 0 && <> · {t("mp_avg")} ₱{avgShown}{t("per_kg_short")}</>}
+          </span>
+          <label className="mp-sort">
+            <ArrowUpDown size={15} strokeWidth={2.4} aria-hidden="true" />
+            <select value={sortBy} onChange={e => setSortBy(e.target.value as typeof sortBy)} aria-label={t("mp_sort")}>
               <option value="default">{t("trade_sort_newest")}</option>
               <option value="price-asc">{t("trade_sort_price_asc")}</option>
               <option value="price-desc">{t("trade_sort_price_desc")}</option>
               <option value="rating">{t("trade_sort_rating")}</option>
             </select>
-            <ChevronRight size={13} className="drop-arr" style={{ transform: "rotate(90deg)" }} />
-          </div>
+          </label>
         </div>
 
-        {sorted.map(l => (
-          <div className="listing" key={l.id}>
-            <div className="listing-top">
-              <div className="listing-crop-row">
-                <div className="listing-ico">
-                  {cropPhotoFor(l.crop, l.variety)
-                    ? <img src={cropPhotoFor(l.crop, l.variety)} alt="" loading="lazy" decoding="async" />
-                    : <CropIcon crop={l.crop} size={26} />}
+        {sorted.length > 0 ? (
+          <div className="mp-grid stagger-list" key={`${category}-${variety}-${sortBy}`}>
+            {sorted.map(l => {
+              const photo = photoOf(l);
+              const mine = l.sellerInitials === userInitials;
+              const inC = isInCart(l.id);
+              return (
+                <article key={l.id} className="mp-card">
+                  <button className="mp-card-main" onClick={() => setOpenId(l.id)}
+                    aria-label={`${titleOf(l)}, ₱${l.pricePerKg} ${t("per_kg_short")}, ${l.kg} kg, ${l.seller}`}>
+                    <span className="mp-card-photo">
+                      {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropIcon crop={l.crop} size={30} />}
+                      {mine
+                        ? <span className="mp-mine">{t("mp_your_listing")}</span>
+                        : l.photo && <span className="mp-mine"><Camera size={12} strokeWidth={2.4} /> {t("mp_seller_photo")}</span>}
+                    </span>
+                    <span className="mp-card-body">
+                      <span className="mp-card-name">{titleOf(l)}</span>
+                      <span className="mp-card-price">₱{l.pricePerKg}<small>{t("per_kg_short")}</small></span>
+                      <span className="mp-card-meta">{l.kg} kg · {l.location}</span>
+                      <span className="mp-card-seller">
+                        <Star size={13} fill="currentColor" strokeWidth={0} aria-hidden="true" /> {l.rating}
+                        <span className="mp-dot">·</span> <span className="mp-ellipsis">{l.seller}</span>
+                      </span>
+                    </span>
+                  </button>
+                  {/* Quick add: one tap from the grid. The tick that replaces
+                      the plus is the confirmation, alongside the header badge. */}
+                  {userRole === "buyer" && !mine && (
+                    <button className={`mp-quick ${inC ? "on" : ""}`}
+                      onClick={() => (inC ? setShowCart(true) : addToCart(l))}
+                      aria-label={inC ? `${t("cart_in_cart")}. ${t("cart_title")}` : `${t("cart_add")}: ${titleOf(l)}`}>
+                      <span className="mp-quick-ico" key={inC ? "in" : "add"}>
+                        {inC ? <Check size={20} strokeWidth={2.8} /> : <Plus size={20} strokeWidth={2.8} />}
+                      </span>
+                    </button>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+        ) : (
+          <EmptyState
+            icon={<Search size={26} aria-hidden="true" />}
+            title={t("trade_no_listings")}
+            body={t("state_no_match_body")}
+            action={t("state_show_all")}
+            onAction={() => { setSearch(""); selectCategory("All Crops"); }}
+          />
+        )}
+      </div>
+
+      {/* ── Listing detail ── */}
+      <Sheet open={!!openListing} onClose={() => setOpenId(null)} className="pr-sheet modal-sheet" label={shownListing ? titleOf(shownListing) : t("trade_marketplace")}>
+        {shownListing && (() => {
+          const l = shownListing;
+          const photo = photoOf(l);
+          const mine = l.sellerInitials === userInitials;
+          const inC = isInCart(l.id);
+          const qty = getQty(l.id);
+          return (
+            <>
+              <div className="pr-sheet-hero">
+                <span className="pr-sheet-photo">{photo ? <img src={photo} alt="" /> : <CropIcon crop={l.crop} size={40} />}</span>
+                <div className="pr-sheet-shade" />
+                <div className="pr-sheet-id">
+                  {mine && <div className="pr-sheet-group">{t("mp_your_listing")}</div>}
+                  <div className="pr-sheet-name">{titleOf(l)}</div>
                 </div>
-                <div>
-                  <div className="listing-name">{l.crop}</div>
-                  <div className="listing-var">{l.variety}</div>
-                </div>
+                {/* Says the picture is the real harvest, not a stock photo. */}
+                {l.photo && <span className="mp-photo-tag"><Camera size={13} strokeWidth={2.4} /> {t("mp_seller_photo")}</span>}
+                <button className="pr-sheet-x" onClick={() => setOpenId(null)} aria-label={t("close")}>
+                  <X size={22} strokeWidth={2.4} />
+                </button>
               </div>
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
-                <div className="listing-price">₱{l.pricePerKg}<span className="unit-suffix">{t("per_kg_short")}</span></div>
-                {l.sellerInitials === userInitials && (
-                  <div style={{ display: "flex", gap: 8 }}>
-                    <button onClick={() => openEdit(l)} style={{ background: "var(--paper-alt)", border: "2px solid var(--line)", borderRadius: 12, padding: "8px 12px", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, fontFamily: "inherit", fontSize: "var(--fs-label)", fontWeight: 700, color: "var(--tanim)" }}>
-                      <Pencil size={15} color="var(--tanim)" /> {t("edit")}
+
+              <div className="pr-sheet-body">
+                <div className="pr-sheet-price">
+                  <span className="pr-big">₱{l.pricePerKg}<small>{t("per_kg_short")}</small></span>
+                  <span className="mp-avail"><Package size={15} strokeWidth={2.2} /> {l.kg} {t("trade_kg_available")}</span>
+                </div>
+                <div className="pr-sheet-sub"><Calendar size={13} strokeWidth={2.2} /> {t("mp_posted")} {posted(l.date)}</div>
+
+                {l.desc && <p className="mp-desc">{l.desc}</p>}
+
+                {/* The seller, as one tappable row: the way to their details. */}
+                <button className="mp-seller" onClick={() => setSellerDetail(SELLER_DETAILS[l.sellerInitials] || null)}>
+                  <span className="seller-ava">{l.sellerInitials}</span>
+                  <span className="mp-seller-who">
+                    <span className="mp-seller-name">{l.seller}</span>
+                    <span className="mp-seller-meta">
+                      <Star size={13} fill="currentColor" strokeWidth={0} className="mp-star" /> {l.rating}
+                      <span className="mp-dot">·</span> <MapPin size={13} strokeWidth={2.2} /> <span className="mp-ellipsis">{l.location}</span>
+                    </span>
+                  </span>
+                  <ChevronRight size={18} className="pr-row-chev" aria-hidden="true" />
+                </button>
+
+                {mine ? (
+                  <div className="listing-btns mp-actions">
+                    <button className="btn-details" onClick={() => { setOpenId(null); openEdit(l); }}>
+                      <Pencil size={17} strokeWidth={2.2} /> {t("edit")}
                     </button>
-                    <button onClick={() => setConfirmDelete(l.id)} style={{ background: "var(--error-sk)", border: "2px solid var(--error-line)", borderRadius: 12, padding: "8px 12px", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, fontFamily: "inherit", fontSize: "var(--fs-label)", fontWeight: 700, color: "var(--error)" }}>
-                      <Trash2 size={15} color="var(--error)" /> {t("trade_remove")}
+                    <button className="btn-details mp-danger" onClick={() => { setOpenId(null); setConfirmDelete(l.id); }}>
+                      <Trash2 size={17} strokeWidth={2.2} /> {t("trade_remove")}
                     </button>
+                  </div>
+                ) : userRole === "buyer" ? (
+                  <>
+                    {/* How much, and what it comes to, before the buttons that
+                        commit to it. Same stepper as the cart. */}
+                    <div className="mp-qty">
+                      <span className="mp-qty-lbl">{t("mp_how_many")}</span>
+                      <div className="qty-step">
+                        <button onClick={() => setQty(l.id, qty - 1, l.kg)} disabled={qty <= 1} aria-label={t("cart_less")}>
+                          <Minus size={18} strokeWidth={2.6} />
+                        </button>
+                        <span className="qty-step-val">{qty}<small>kg</small></span>
+                        <button onClick={() => setQty(l.id, qty + 1, l.kg)} disabled={qty >= l.kg} aria-label={t("cart_more")}>
+                          <Plus size={18} strokeWidth={2.6} />
+                        </button>
+                      </div>
+                      <span className="mp-qty-total">₱{(qty * l.pricePerKg).toLocaleString()}</span>
+                    </div>
+                    <div className="listing-btns mp-actions">
+                      <button className={`add-cart-btn${inC ? " in-cart" : ""}`}
+                        onClick={() => (inC ? (setOpenId(null), setShowCart(true)) : addToCart(l))}>
+                        <span className="act-lbl" key={inC ? "in" : "add"}>
+                          {inC
+                            ? <><Check size={18} strokeWidth={2.6} /> {t("cart_in_cart")} <ChevronRight size={16} strokeWidth={2.4} className="act-chev" /></>
+                            : <><ShoppingBag size={18} strokeWidth={2.2} /> {t("cart_add")}</>}
+                        </span>
+                      </button>
+                      <button className="buy-now-btn" onClick={() => { addToCart(l); setOpenId(null); setShowCart(true); }}>
+                        <CreditCard size={18} strokeWidth={2.2} /> {t("cart_buy_now")}
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="listing-btns mp-actions">
+                    <button className="btn-call"><Phone size={18} strokeWidth={2.2} /> {t("trade_call_seller")}</button>
+                    <button className="btn-details" onClick={() => setSellerDetail(SELLER_DETAILS[l.sellerInitials] || null)}>{t("trade_view_details")}</button>
                   </div>
                 )}
               </div>
-            </div>
-            <div className="listing-desc">{l.desc}</div>
-            <div className="listing-meta">
-              <span style={{ display: "flex", alignItems: "center", gap: 4 }}><Package size={12} color="var(--text-faint)" /> {l.kg} {t("trade_kg_available")}</span>
-              <span style={{ display: "flex", alignItems: "center", gap: 4 }}><Calendar size={12} color="var(--text-faint)" /> {l.date}</span>
-            </div>
-            <div className="seller-row" onClick={() => setSellerDetail(SELLER_DETAILS[l.sellerInitials] || null)}
-              style={{ cursor: "pointer" }}>
-              <div className="seller-ava">{l.sellerInitials}</div>
-              <div className="seller-who">
-                <div className="seller-name" title={l.seller}>{l.seller}</div>
-                <div className="seller-loc" title={l.location}><MapPin size={13} color="var(--text-muted)" /><span>{l.location}</span></div>
-              </div>
-              <div className="seller-end">
-                <div className="seller-stars">
-                  <Star size={13} color="var(--gold-text)" fill="var(--gold-text)" /> {l.rating}
-                </div>
-                <ChevronRight size={14} color="var(--text-faint)" />
-              </div>
-            </div>
-            {userRole === "buyer" ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {/* Quantity picker */}
-                <div className="qty-picker-row">
-                  <button className="qty-pick-btn" onClick={() => setQty(l.id, getQty(l.id) - 1, l.kg)}>−</button>
-                  <div className="qty-pick-val">{getQty(l.id)}</div>
-                  <button className="qty-pick-btn" onClick={() => setQty(l.id, getQty(l.id) + 1, l.kg)}>+</button>
-                  <span className="qty-pick-unit">kg</span>
-                  <span style={{ marginLeft: "auto", fontSize: "var(--fs-label)", fontWeight: 800, color: "var(--tanim)" }}>
-                    ₱{(getQty(l.id) * l.pricePerKg).toLocaleString()}
-                  </span>
-                </div>
-                {/* Buttons row */}
-                {/* One primary, one secondary, the order Shopee and Lazada
-                    taught every buyer: Add to Cart is tinted, Buy Now is solid.
-                    Two identical buttons made the choice look arbitrary. */}
-                <div className="listing-btns">
-                  {/* Once added, the button becomes the way to the cart, and
-                      says so: a tick for the state, a chevron for "tap to open". */}
-                  <button
-                    className={`add-cart-btn${isInCart(l.id) ? " in-cart" : ""}`}
-                    aria-label={isInCart(l.id) ? `${t("cart_in_cart")}. ${t("cart_title")}` : undefined}
-                    onClick={() => isInCart(l.id) ? setShowCart(true) : addToCart(l)}>
-                    {/* Keyed on the state so the label swaps with a short
-                        blur-in instead of cutting. */}
-                    <span className="act-lbl" key={isInCart(l.id) ? "in" : "add"}>
-                      {isInCart(l.id)
-                        ? <><Check size={18} strokeWidth={2.6} /> {t("cart_in_cart")} <ChevronRight size={16} strokeWidth={2.4} className="act-chev" /></>
-                        : <><ShoppingBag size={18} strokeWidth={2.2} /> {t("cart_add")}</>}
-                    </span>
-                  </button>
-                  <button className="buy-now-btn" onClick={() => { addToCart(l); setShowCart(true); }}>
-                    <CreditCard size={18} strokeWidth={2.2} /> {t("cart_buy_now")}
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="listing-btns">
-                <button className="btn-call" aria-label={t("trade_call_seller")}><Phone size={18} strokeWidth={2.2} /> {t("trade_call_seller")}</button>
-                <button className="btn-details" onClick={() => setSellerDetail(SELLER_DETAILS[l.sellerInitials] || null)}>{t("trade_view_details")}</button>
-              </div>
-            )}
-          </div>
-        ))}
-
-        {filtered.length === 0 && (
-          <div className="empty-msg">{t("trade_no_listings")}</div>
-        )}
-      </div>
+            </>
+          );
+        })()}
+      </Sheet>
 
       {/* Delete confirmation, senior-friendly */}
       <Sheet
@@ -517,10 +601,46 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                   </div>
                 </div>
 
-                {/* ── Step 3: Price ── */}
+                {/* ── Step 3: Photo ──
+                    Optional, and placed early: it's what buyers look at first.
+                    One big target to add; once there, a preview with Change
+                    and Remove underneath. */}
                 <div style={{ background: "#fff", borderRadius: 16, padding: 18, marginBottom: 14, border: "1px solid var(--line)" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
                     <div style={{ background: "var(--tanim)", color: "#fff", borderRadius: 99, width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--fs-label)" }}>3</div>
+                    <span style={{ fontSize: "var(--fs-body)", fontWeight: 800, color: "var(--text)" }}>{t("mp_step_photo")}</span>
+                  </div>
+                  <div style={hintStyle}>{t("mp_step_photo_sub")}</div>
+                  <input ref={photoInput} type="file" accept="image/*" hidden
+                    onChange={e => { pickListingPhoto(e.target.files?.[0]); e.target.value = ""; }} />
+                  {form.photo ? (
+                    <div className="mp-photo-pick has">
+                      <img src={form.photo} alt="" className="mp-photo-preview" key={form.photo} />
+                      <div className="mp-photo-row">
+                        <button type="button" className="btn-details" onClick={() => photoInput.current?.click()}>
+                          <Camera size={17} strokeWidth={2.2} /> {t("mp_change_photo")}
+                        </button>
+                        <button type="button" className="btn-details mp-danger" onClick={() => setForm(d => ({ ...d, photo: null }))}>
+                          <ImageOff size={17} strokeWidth={2.2} /> {t("mp_remove_photo")}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button type="button" className="mp-photo-drop" onClick={() => photoInput.current?.click()} disabled={photoState === "working"}>
+                      {photoState === "working"
+                        ? <><span className="wid-spin mp-spin" aria-hidden="true" /> {t("mp_photo_working")}</>
+                        : <><span className="mp-photo-ico"><Camera size={26} strokeWidth={2} /></span>{t("mp_add_photo")}</>}
+                    </button>
+                  )}
+                  {photoState === "failed" && (
+                    <p className="mp-photo-err" role="alert"><AlertTriangle size={16} /> {t("mp_photo_failed")}</p>
+                  )}
+                </div>
+
+                {/* ── Step 4: Price ── */}
+                <div style={{ background: "#fff", borderRadius: 16, padding: 18, marginBottom: 14, border: "1px solid var(--line)" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                    <div style={{ background: "var(--tanim)", color: "#fff", borderRadius: 99, width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--fs-label)" }}>4</div>
                     <span style={{ fontSize: "var(--fs-body)", fontWeight: 800, color: "var(--text)" }}>{t("trade_step_price")}</span>
                   </div>
                   <div style={hintStyle}>{t("trade_step_price_sub")}</div>
@@ -533,10 +653,10 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                   </div>
                 </div>
 
-                {/* ── Step 4: Quantity ── */}
+                {/* ── Step 5: Quantity ── */}
                 <div style={{ background: "#fff", borderRadius: 16, padding: 18, marginBottom: 14, border: "1px solid var(--line)" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                    <div style={{ background: "var(--tanim)", color: "#fff", borderRadius: 99, width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--fs-label)" }}>4</div>
+                    <div style={{ background: "var(--tanim)", color: "#fff", borderRadius: 99, width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--fs-label)" }}>5</div>
                     <span style={{ fontSize: "var(--fs-body)", fontWeight: 800, color: "var(--text)" }}>{t("trade_step_qty")}</span>
                   </div>
                   <div style={hintStyle}>{t("trade_step_qty_sub")}</div>
@@ -549,10 +669,10 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                   </div>
                 </div>
 
-                {/* ── Step 5: Description ── */}
+                {/* ── Step 6: Description ── */}
                 <div style={{ background: "#fff", borderRadius: 16, padding: 18, marginBottom: 14, border: "1px solid var(--line)" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                    <div style={{ background: "var(--tanim)", color: "#fff", borderRadius: 99, width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--fs-label)" }}>5</div>
+                    <div style={{ background: "var(--tanim)", color: "#fff", borderRadius: 99, width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--fs-label)" }}>6</div>
                     <span style={{ fontSize: "var(--fs-body)", fontWeight: 800, color: "var(--text)" }}>{t("trade_step_desc")}</span>
                   </div>
                   <div style={hintStyle}>{t("trade_step_desc_sub")}</div>
@@ -563,10 +683,10 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                     style={{ ...fieldStyle, resize: "none", lineHeight: 1.6 }} />
                 </div>
 
-                {/* ── Step 6: Location ── */}
+                {/* ── Step 7: Location ── */}
                 <div style={{ background: "#fff", borderRadius: 16, padding: 18, marginBottom: 22, border: "1px solid var(--line)" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                    <div style={{ background: "var(--tanim)", color: "#fff", borderRadius: 99, width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--fs-label)" }}>6</div>
+                    <div style={{ background: "var(--tanim)", color: "#fff", borderRadius: 99, width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--fs-label)" }}>7</div>
                     <span style={{ fontSize: "var(--fs-body)", fontWeight: 800, color: "var(--text)" }}>{t("trade_step_loc")}</span>
                   </div>
                   <div style={hintStyle}>{t("trade_step_loc_sub")}</div>
@@ -624,7 +744,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                 </div>
               ) : (
                 cart.map(item => {
-                  const photo = cropPhotoFor(item.crop, item.variety);
+                  const photo = photoOf(item);
                   const atMax = item.qty >= item.maxKg;
                   const last = item.qty <= 1;
                   const gone = folding.includes(item.listingId);

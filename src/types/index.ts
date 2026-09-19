@@ -14,10 +14,13 @@ export interface Listing {
   id: string; crop: string; variety: string; desc: string;
   pricePerKg: number; kg: number; date: string;
   seller: string; sellerInitials: string; rating: number; location: string;
+  /** The seller's own photo of this harvest (a data URL until uploads exist). */
+  photo?: string;
 }
 export interface CartItem {
   listingId: string; crop: string; variety: string; pricePerKg: number;
   qty: number; seller: string; sellerInitials: string; location: string; maxKg: number;
+  photo?: string;
 }
 export interface SellerDetail {
   name: string; initials: string; phone: string; location: string;
