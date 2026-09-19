@@ -36,6 +36,9 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
   const [form, setForm] = useState(() => ({ description: "", category: "Seeds", amount: "", date: new Date().toISOString().split("T")[0], crop: farmerCrops[0] || "Rice" }));
   const [formError, setFormError] = useState("");
   const [expandedMonth, setExpandedMonth] = useState<string | null>(null);
+  // Its own state: expanding a crop used to set the Overview crop filter, so
+  // Recent Transactions quietly showed one crop after a visit to this tab.
+  const [expandedCrop, setExpandedCrop] = useState<string | null>(null);
 
   // ── Calculator state (single atomic object to avoid stale closure bugs) ──
   const [showCalc, setShowCalc] = useState(false);
@@ -398,64 +401,89 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
 
             {/* ═══ BY CROP TAB ═══ */}
             {viewMode === "by-crop" && (() => {
-              const [activeCrop, setActiveCrop] = [cropFilter, setCropFilter];
+              const locale = lang === "tl" ? "fil-PH" : "en-PH";
+              const thisYear = new Date().getFullYear();
               const cropsWithData = farmerCrops.filter(c => transactions.some(e => e.crop === c));
-              const allCrops = cropsWithData.length > 0 ? cropsWithData : farmerCrops;
+              const allCrops = (cropsWithData.length > 0 ? cropsWithData : farmerCrops)
+                .map(crop => {
+                  const txns = transactions.filter(e => e.crop === crop);
+                  return { crop, txns, amt: txns.reduce((s, e) => s + e.amount, 0) };
+                })
+                // Biggest spend first: the crop that costs most is the one a
+                // farmer opens this tab to look at.
+                .sort((a, b) => b.amt - a.amt);
 
               return (
-                <>
-                  <div style={{ background: "#fff", borderRadius: 14, border: "1px solid var(--line)", overflow: "hidden" }}>
-                    {allCrops.map((crop, ci) => {
-                      const cropTxns = transactions.filter(e => e.crop === crop);
-                      const cropAmt = cropTxns.reduce((s, e) => s + e.amount, 0);
-                      const pct = total > 0 ? Math.round((cropAmt / total) * 100) : 0;
-                      const isActive = activeCrop === crop;
-                      const sorted = [...cropTxns].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                <div className="mo-list stagger-list">
+                  {allCrops.map(({ crop, txns, amt }) => {
+                    const share = total > 0 ? amt / total : 0;
+                    const pct = Math.round(share * 100);
+                    const isOpen = expandedCrop === crop;
+                    const sorted = [...txns].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                    const key = crop.replace(/\s+/g, "-").toLowerCase();
+                    return (
+                      <section key={crop} className={`mo-item ${isOpen ? "open" : ""}`}>
+                        {/* Same header as By Month: crop and total, then the
+                            count with its share of all spending, then the bar
+                            drawn to that share. */}
+                        <button
+                          className="mo-head"
+                          onClick={() => setExpandedCrop(isOpen ? null : crop)}
+                          aria-expanded={isOpen}
+                          aria-controls={`crop-${key}`}
+                          disabled={txns.length === 0}
+                        >
+                          <span className="mo-top">
+                            <span className="mo-name">{tn(crop)}</span>
+                            <span className="mo-total">₱{amt.toLocaleString()}</span>
+                          </span>
+                          <span className="mo-sub">
+                            <span>
+                              {txns.length} {txns.length !== 1 ? t("exp_expenses_many") : t("exp_expense_one")}
+                              {total > 0 && <> · {pct}%</>}
+                            </span>
+                            {txns.length > 0 && <ChevronRight size={18} className="mo-chev" aria-hidden="true" />}
+                          </span>
+                          <span className="mo-bar" aria-hidden="true">
+                            <span className="mo-fill" style={{ transform: `scaleX(${share})` }} />
+                          </span>
+                        </button>
 
-                      return (
-                        <div key={crop} style={{ borderBottom: ci < allCrops.length - 1 ? "1px solid var(--paper-alt)" : "none" }}>
-
-                          {/* ── Summary row (tap to expand) ── */}
-                          <button onClick={() => setActiveCrop(isActive ? "All Crops" : crop)}
-                            style={{ width: "100%", background: "none", border: "none", cursor: "pointer", padding: "14px 16px", fontFamily: "inherit", textAlign: "left" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                              <CropIcon crop={crop} size={15} />
-                              <div style={{ flex: 1 }}>
-                                <span style={{ fontSize: "var(--fs-label)", fontWeight: 700, color: "var(--text)" }}>{tn(crop)}</span>
-                                <span style={{ fontSize: "var(--fs-label)", color: "var(--text-faint)", marginLeft: 8 }}>{cropTxns.length} {cropTxns.length !== 1 ? t("exp_expenses_many") : t("exp_expense_one")}</span>
-                              </div>
-                              <span style={{ fontSize: "var(--fs-body)", fontWeight: 800, color: "var(--text)" }}>₱{cropAmt.toLocaleString()}</span>
-                              <ChevronRight size={15} color="var(--text-faint)" style={{ transform: isActive ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.2s", flexShrink: 0 }} />
-                            </div>
-                            <div style={{ height: 3, background: "var(--paper-alt)", borderRadius: 99 }}>
-                              <div style={{ width: `${pct}%`, height: "100%", background: "var(--tanim)", borderRadius: 99 }} />
-                            </div>
-                          </button>
-
-                          {/* ── Expanded expense list ── */}
-                          {isActive && sorted.length > 0 && (
-                            <div style={{ borderTop: "1px solid var(--paper-alt)", background: "var(--paper-alt)" }}>
-                              {sorted.map((e, idx) => (
-                                <div key={e.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", borderBottom: idx < sorted.length - 1 ? "1px solid var(--paper-alt)" : "none" }}>
-                                  <div style={{ width: 32, height: 32, borderRadius: 9, background: "#fff", border: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                                    <ExpenseIcon cat={e.category} size={14} />
-                                  </div>
-                                  <div style={{ flex: 1, minWidth: 0 }}>
-                                    <div style={{ fontSize: "var(--fs-label)", fontWeight: 700, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.description}</div>
-                                    <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 2 }}>
-                                      <span style={{ fontSize: "var(--fs-label)", color: "var(--text-faint)" }}>{tn(e.category)} · {formatDate(e.date)}</span>
-                                    </div>
-                                  </div>
-                                  <span style={{ fontSize: "var(--fs-label)", fontWeight: 800, color: "var(--text)", flexShrink: 0 }}>₱{e.amount.toLocaleString()}</span>
-                                </div>
-                              ))}
-                            </div>
-                          )}
+                        <div className="mo-acc" id={`crop-${key}`} role="region" aria-label={tn(crop)} {...(isOpen ? {} : { inert: "" })}>
+                          <div className="mo-acc-in">
+                            {sorted.map(e => {
+                              const d = new Date(e.date);
+                              return (
+                                <button
+                                  key={e.id}
+                                  className="ph-row is-tap no-tile"
+                                  onClick={() => openEdit(e)}
+                                  aria-label={`${t("exp_edit_title")}: ${e.description}, ₱${e.amount.toLocaleString()}`}
+                                >
+                                  <span className="ph-body">
+                                    <span className="ph-title">{e.description}</span>
+                                    <span className="ph-sub">{tn(e.category)}</span>
+                                  </span>
+                                  <span className="ph-end">
+                                    <span className="ph-amt">₱{e.amount.toLocaleString()}</span>
+                                    {/* The year only when it isn't this one:
+                                        short enough to never wrap. */}
+                                    <span className="ph-date">
+                                      {d.toLocaleDateString(locale, d.getFullYear() === thisYear
+                                        ? { month: "short", day: "numeric" }
+                                        : { month: "short", day: "numeric", year: "numeric" })}
+                                    </span>
+                                  </span>
+                                  <ChevronRight size={18} className="ph-chev" aria-hidden="true" />
+                                </button>
+                              );
+                            })}
+                          </div>
                         </div>
-                      );
-                    })}
-                  </div>
-                </>
+                      </section>
+                    );
+                  })}
+                </div>
               );
             })()}
 

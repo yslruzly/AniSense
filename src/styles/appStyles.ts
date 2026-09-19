@@ -572,6 +572,8 @@ export const appCss = `
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
   .mo-head:active { background: var(--paper); transition-duration: 0ms; }
+  .mo-head:disabled { cursor: default; }
+  .mo-head:disabled:active { background: none; }
   .mo-top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
   .mo-name { font-family: var(--font-display); font-size: 17px; font-weight: 700; color: var(--text); letter-spacing: -.01em; }
   .mo-total {
