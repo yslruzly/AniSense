@@ -3,6 +3,8 @@ import { ArrowLeft, Camera, Bell, ChevronRight, Globe, Lock, HelpCircle, Setting
 import { useLang, LanguageToggle } from "../i18n";
 import { Screen, UserRole, FarmerProfile } from "../types";
 import { CropEmoji } from "../components/CropEmoji";
+import { AniSenseLogo } from "../components/AniSenseLogo";
+import leafMask from "../assets/anisense-leaf-mask.png";
 
 // ─── Profile Screen ───────────────────────────────────────────────────────────
 export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignOut, userInitials = "JD", userRole }: {
@@ -71,7 +73,17 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
 
       <div className="scroll screen-enter">
         {/* Avatar + name hero */}
+        {/* A member card: brand on the top edge, the person in the middle,
+            their crops at the foot. The ground is terrace contour lines and a
+            faint leaf watermark, so it reads as AniSense's without a word. */}
         <div className="prof-hero">
+          <div className="prof-brand">
+            <span className="prof-brand-mark"><AniSenseLogo size={18} /></span>
+            <span className="prof-brand-name">AniSense</span>
+          </div>
+          <span className="prof-role-pill">{userRole === "buyer" ? t("role_buyer") : t("role_farmer")}</span>
+          <img className="prof-watermark" src={leafMask} alt="" aria-hidden="true" />
+
           <div className="prof-ava-wrap">
             <div className="prof-ava">{userInitials}</div>
             {editing && (
@@ -85,10 +97,10 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
               style={{ background: "rgba(255,255,255,0.2)", border: "1px solid rgba(255,255,255,0.5)", borderRadius: 8, padding: "6px 12px", color: "#fff", fontFamily: "inherit", fontSize: "var(--fs-body)", fontWeight: 700, textAlign: "center", width: "100%", marginBottom: 4, outline: "none" }} />
             : <div className="prof-name">{profile.name}</div>
           }
-          {/* Role and location on their own lines. Run together behind an icon,
-              a barangay-level address wrapped around the glyph and left it
-              stranded beside two lines of text. */}
-          <div className="prof-role">{userRole === "buyer" ? t("role_buyer") : t("role_farmer")}</div>
+          {/* Location on its own line. Run together behind an icon, a
+              barangay-level address wrapped around the glyph and left it
+              stranded beside two lines of text. The role moved to the pill in
+              the card's corner. */}
           <div className="prof-loc">{profile.location}</div>
           <div className="prof-crops">
             {(editing ? draft : profile).crops.map(c => (

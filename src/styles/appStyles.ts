@@ -1326,18 +1326,55 @@ export const appCss = `
   /* ── Profile ── */
   /* A card in the scroll, so it takes the same corner as everything around it
      rather than running square to the screen edge. */
+  /* ── Profile member card ─────────────────────────────────────────────────
+     Three layers under the content, back to front: a deep ink-to-forest
+     gradient, rings of fine contour lines rising from the bottom-left corner
+     like rice terraces seen from above, and a soft green light top-right.
+     Every line is 5% white, so it's texture, never pattern-noise behind the
+     name. */
   .prof-hero {
-    background: var(--ink); border-radius: var(--radius-lg);
-    padding: 32px 20px 26px; display: flex; flex-direction: column; align-items: center;
+    position: relative; isolation: isolate; overflow: hidden;
+    border-radius: var(--radius-lg);
+    padding: 64px 20px 24px; display: flex; flex-direction: column; align-items: center;
     color: #fff; flex-shrink: 0; text-align: center;
-    box-shadow: 0 14px 30px -18px rgba(22,33,27,.5);
+    background:
+      radial-gradient(120% 90% at 100% 0%, rgba(126,196,120,.22), transparent 55%),
+      repeating-radial-gradient(circle at 0% 118%, rgba(255,255,255,.055) 0 1px, transparent 1.5px 17px),
+      linear-gradient(155deg, #1D2E25 0%, var(--ink) 55%, #0D1511 100%);
+    box-shadow: 0 16px 34px -18px rgba(22,33,27,.6), inset 0 1px 0 rgba(255,255,255,.08);
+  }
+  /* Brand on the card's top edge, like the issuer's mark on a member card. */
+  .prof-brand {
+    position: absolute; top: 16px; left: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .prof-brand-mark {
+    width: 28px; height: 28px; border-radius: 8px; background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .prof-brand-name { font-family: var(--font-display); font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+  .prof-role-pill {
+    position: absolute; top: 16px; right: 16px;
+    padding: 5px 12px; border-radius: 99px;
+    background: rgba(242,179,44,.16); color: var(--palay); box-shadow: inset 0 0 0 1px rgba(242,179,44,.35);
+    font-family: var(--font-display); font-size: 13px; font-weight: 700; letter-spacing: .02em;
+  }
+  /* The leaf, huge and faint, bleeding off the bottom-right corner. A white
+     cut-out of the mark (the logo file itself has a white square behind it),
+     so it tints the dark instead of adding colour. */
+  .prof-watermark {
+    position: absolute; right: -40px; bottom: -46px; z-index: -1; width: 190px; height: auto;
+    opacity: .08; transform: rotate(-14deg); pointer-events: none; user-select: none;
   }
   .prof-ava-wrap { position: relative; margin-bottom: 13px; }
+  /* A thin light ring and a soft drop lift the avatar off the texture. */
   .prof-ava {
-    width: 82px; height: 82px; border-radius: 50%;
+    width: 84px; height: 84px; border-radius: 50%;
     background: var(--lime); border: none;
     display: flex; align-items: center; justify-content: center;
     font-size: var(--fs-display); font-weight: 800; color: var(--ink);
+    box-shadow: 0 0 0 4px rgba(255,255,255,.10), 0 8px 18px -8px rgba(0,0,0,.6);
   }
   .prof-edit-btn {
     position: absolute; bottom: 0; right: 0; width: 27px; height: 27px;
@@ -1345,7 +1382,6 @@ export const appCss = `
     display: flex; align-items: center; justify-content: center; font-size: var(--fs-label);
   }
   .prof-name  { font-family: var(--font-display); font-size: var(--fs-lead); font-weight: 700; margin-bottom: 3px; }
-  .prof-role { font-size: var(--fs-label); font-weight: 700; opacity: .95; margin-bottom: 3px; }
   .prof-loc {
     font-size: var(--fs-label); opacity: .72; line-height: 1.4;
     margin-bottom: 13px; max-width: 270px;
