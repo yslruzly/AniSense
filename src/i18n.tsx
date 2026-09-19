@@ -605,6 +605,9 @@ export const translations: Dict = {
   role_continue_as: { en: "Continue as", tl: "Magpatuloy bilang" },
   role_say_farmer: { en: "Ready to sell your harvest?", tl: "Handa ka nang magbenta ng ani?" },
   role_say_buyer: { en: "Looking for fresh veggies?", tl: "Naghahanap ng sariwang gulay?" },
+  role_say_hi_sub: { en: "I'm Juan. Which one are you?", tl: "Ako si Juan. Alin ka rito?" },
+  role_say_farmer_sub: { en: "Let's get you the best price.", tl: "Hanapan natin ng magandang presyo." },
+  role_say_buyer_sub: { en: "Straight from local farms.", tl: "Diretso mula sa mga lokal na bukid." },
 
   // ── Form helpers ──────────────────────────────────────────────────────────
   auth_show: { en: "Show", tl: "Ipakita" },

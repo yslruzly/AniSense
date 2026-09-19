@@ -3,6 +3,7 @@ import { haptic } from "../../lib/platform";
 import { ArrowLeft, Check } from "lucide-react";
 import { AniSenseLogo } from "../../components/AniSenseLogo";
 import juanPeek from "../../assets/juan-peek.webp";
+import { MascotStage } from "./MascotStage";
 import { useLang, Lang } from "../../i18n";
 
 // ─── Language Gate ────────────────────────────────────────────────────────────
@@ -38,10 +39,15 @@ export function LanguageScreen({ onDone, onBack }: { onDone: () => void; onBack?
           <p className="a-sub on-ink">{t("lang_sub")}</p>
         </div>
 
-        <div className="a-rolestage" data-role="farmer" aria-hidden="true">
-          <span className="a-rolestage-bubble" key={choice}>{choice === "tl" ? "Kumusta!" : "Hello!"}</span>
-          <img className="a-rolestage-img is-farmer" src={juanPeek} alt="" />
-        </div>
+        {/* Written in the language it greets in, not through t(): the line is
+            a preview of the choice, so it has to be in that language. */}
+        <MascotStage
+          figures={[{ id: "farmer", src: juanPeek }]}
+          active="farmer"
+          say={choice === "tl"
+            ? { key: "tl", title: "Kumusta!", emoji: "👋", sub: "Ako si Juan, ang gabay mo." }
+            : { key: "en", title: "Hello!", emoji: "👋", sub: "I'm Juan, your guide." }}
+        />
       </div>
 
       <div className="a-scroll a-stagger a-rolelist">

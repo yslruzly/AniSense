@@ -120,8 +120,9 @@ export const authCss = `
     .a-screen .a-role.on .a-role-ico > * { transform: none; }
     .a-seg .a-seg-thumb { transition: none; }
     .a-screen .a-err, .a-screen .a-hint-in { animation: a-fade-in 160ms ease; }
-    .a-rolehead .a-rolestage, .a-rolehead .a-rolestage-bubble { animation: a-fade-in 260ms ease both; }
-    .a-screen .a-rolehead .a-rolestage .a-rolestage-img.a-rolestage-img { transform: none; filter: none; }
+    .a-rolehead .a-rolestage, .a-rolehead .a-say { animation: a-fade-in 260ms ease both; }
+    .a-screen .a-rolehead .a-cast .a-fig.a-fig { transform: none; filter: none; }
+    .a-screen .a-say .a-say-emoji { animation: none; }
     /* Reduced motion is gentler, not nothing: the price still crossfades so the
        swap stays legible, it just no longer travels or blurs. */
     .a-board-slide { animation: a-fade-in 260ms ease; }
@@ -288,36 +289,61 @@ export const authCss = `
     content: ""; position: absolute; right: -30px; bottom: -90px; width: 300px; height: 300px;
     border-radius: 50%; background: radial-gradient(closest-side, rgba(126,196,120,.22), rgba(126,196,120,0));
   }
-  .a-rolestage-img {
-    position: absolute; right: 4px; bottom: 0; height: 100%; width: auto; max-height: 250px;
+  /* The cast hugs the figure: it's as wide as whichever figure is on stage,
+     and flush to the screen's right edge. The bubble is placed against the
+     cast, so it always lands right beside his head. */
+  .a-cast { position: absolute; right: -22px; bottom: 0; height: min(100%, 250px); }
+  .a-cast[data-fig="buyer"] { height: min(100%, 232px); }
+  .a-fig {
+    display: block; height: 100%; width: auto;
     pointer-events: none; user-select: none;
     transition: opacity 200ms var(--ease-out), transform 240ms var(--ease-out), filter 200ms ease;
   }
-  .a-rolestage-img.is-buyer { max-height: 232px; }
-  /* Juan is drawn peeking round a wall, so his right side is a straight cut.
-     Pushing him past the header padding puts that cut on the screen edge,
-     where it reads as "leaning in from off-screen" instead of a cropped image. */
-  .a-rolestage-img.is-farmer { right: -22px; }
-  /* Outgoing sinks and blurs slightly, incoming rises from the same spot: one
-     figure changing, not two images overlapping. */
-  .a-rolestage[data-role="buyer"]  .a-rolestage-img.is-farmer,
-  .a-rolestage[data-role="farmer"] .a-rolestage-img.is-buyer { opacity: 0; transform: translateY(14px) scale(.97); filter: blur(2px); }
-
-  /* The bubble sits left of the figure at head height, tail pointing at him,
-     so it's clear who is speaking and it never crowds the brand row. */
-  .a-rolestage-bubble {
-    position: absolute; left: 0; top: 22%; z-index: 1; max-width: 138px;
-    background: #fff; color: var(--ink); border-radius: 16px; padding: 10px 14px;
-    font-family: var(--font-display); font-weight: 700; font-size: var(--fs-label); line-height: 1.3;
-    box-shadow: 0 8px 20px -10px rgba(0,0,0,.5);
-    transform-origin: right center; animation: a-bubble-in 220ms var(--ease-out) both;
+  /* Juan is drawn peeking round a wall: his straight right side sits on the
+     screen edge. The buyer is a whole figure, so he steps back in from it. */
+  .a-fig.fig-buyer { margin-right: 26px; }
+  /* Only the figure on stage takes up room. The other waits behind it, faded,
+     sunk and a touch blurred, so the swap reads as one figure changing. */
+  .a-fig:not(.on) {
+    position: absolute; right: 0; bottom: 0; margin-right: 0;
+    opacity: 0; transform: translateY(14px) scale(.97); filter: blur(2px);
   }
-  .a-rolestage-bubble::after {
-    content: ""; position: absolute; right: -5px; top: 50%; width: 12px; height: 12px; margin-top: -6px;
+  .a-fig.fig-buyer:not(.on) { right: 26px; }
+
+  /* ── Speech bubble ─────────────────────────────────────────────────────── */
+  /* Top-aligned with the figure's head and hung just off his left side, so it
+     grows downward toward his face rather than up into the title. */
+  .a-say {
+    position: absolute; right: calc(100% + 12px); top: 10px; z-index: 1;
+    width: max-content; max-width: 196px;
+    display: flex; flex-direction: column; gap: 4px;
+    background: #fff; color: var(--ink); border-radius: 20px; padding: 14px 16px 15px;
+    box-shadow: 0 10px 24px -10px rgba(0,0,0,.55), 0 1px 0 rgba(255,255,255,.9) inset;
+    transform-origin: 100% 80%; animation: a-bubble-in 240ms var(--ease-out) both;
+  }
+  /* The buyer is wider, so there's less room beside him. His top-left corner
+     is empty space, so his bubble can tuck into it instead of shrinking. */
+  .a-cast[data-fig="buyer"] .a-say { right: calc(100% - 26px); max-width: 172px; }
+  /* The tail points down-right, at his face. */
+  .a-say::after {
+    content: ""; position: absolute; right: -6px; bottom: 18px; width: 14px; height: 14px;
     background: #fff; border-radius: 2px; transform: rotate(45deg);
   }
-  /* First line waits for the figure to arrive; later lines answer the tap at once. */
-  .a-rolestage:not([data-picked]) .a-rolestage-bubble { animation-delay: 560ms; }
+  .a-say.is-first { animation-delay: 560ms; }
+  .a-say-t {
+    font-family: var(--font-display); font-weight: 700; font-size: 19px; line-height: 1.2; letter-spacing: -.015em;
+  }
+  /* pretty wrapping keeps a lone word like "mo." from ending up on its own line. */
+  .a-say-s { font-size: 14.5px; line-height: 1.4; color: #4F5A53; font-weight: 500; text-wrap: pretty; }
+  .a-say-emoji { display: inline-block; margin-left: 6px; }
+  /* The wave plays once, after the bubble lands: a greeting, not a loop. */
+  .a-say-emoji.wave { transform-origin: 70% 80%; animation: a-wave 900ms ease-in-out 1; animation-delay: 260ms; }
+  .a-say.is-first .a-say-emoji.wave { animation-delay: 820ms; }
+  @keyframes a-wave {
+    0%, 100% { transform: rotate(0); }
+    20% { transform: rotate(16deg); } 40% { transform: rotate(-8deg); }
+    60% { transform: rotate(14deg); } 80% { transform: rotate(-4deg); }
+  }
 
   /* Rare, first-run screen: a little delight is allowed here. */
   @keyframes a-stage-in { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }

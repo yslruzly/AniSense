@@ -4,6 +4,7 @@ import { Wheat, ShoppingCart, ArrowLeft, Check } from "lucide-react";
 import { AniSenseLogo } from "../../components/AniSenseLogo";
 import juanPeek from "../../assets/juan-peek.webp";
 import buyerMascot from "../../assets/buyer-mascot.webp";
+import { MascotStage } from "./MascotStage";
 import { useLang } from "../../i18n";
 import { UserRole } from "../../types";
 
@@ -38,15 +39,15 @@ export function RoleScreen({ onBack, onSelect, flow }: { onBack: () => void; onS
         {/* Decorative stage. Juan by default and for farmers; picking Buyer
             swaps in the buyer mascot, so the header answers the tap. Both stay
             mounted and crossfade, so switching never reloads an image. */}
-        <div className="a-rolestage" data-role={role === "buyer" ? "buyer" : "farmer"} data-picked={role ? "" : undefined} aria-hidden="true">
-          {/* Keyed so each new line pops in once, rather than the text
-              silently swapping inside the bubble. */}
-          <span className="a-rolestage-bubble" key={role ?? "none"}>
-            {role === "buyer" ? t("role_say_buyer") : role === "farmer" ? t("role_say_farmer") : `${t("hi")}!`}
-          </span>
-          <img className="a-rolestage-img is-farmer" src={juanPeek} alt="" />
-          <img className="a-rolestage-img is-buyer" src={buyerMascot} alt="" />
-        </div>
+        <MascotStage
+          figures={[{ id: "farmer", src: juanPeek }, { id: "buyer", src: buyerMascot }]}
+          active={role === "buyer" ? "buyer" : "farmer"}
+          say={role === "buyer"
+            ? { key: "buyer", title: t("role_say_buyer"), emoji: "🥬", sub: t("role_say_buyer_sub") }
+            : role === "farmer"
+              ? { key: "farmer", title: t("role_say_farmer"), emoji: "🌾", sub: t("role_say_farmer_sub") }
+              : { key: "hi", title: `${t("hi")}!`, emoji: "👋", sub: t("role_say_hi_sub") }}
+        />
       </div>
 
       <div className="a-scroll a-stagger a-rolelist">
