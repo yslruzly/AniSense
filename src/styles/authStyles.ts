@@ -64,6 +64,9 @@ export const authCss = `
   .a-btn-ghost-ink { background: transparent; color: #fff; box-shadow: inset 0 0 0 2px rgba(255,255,255,.34); }
   .a-btn:disabled { background: #E3DED2; color: #8B9089; cursor: default; }
   .a-btn:disabled:active { transform: none; }
+  /* Busy is not unavailable: the button keeps its colour while it works, so
+     the tap reads as accepted rather than refused. */
+  .a-btn.a-btn-green[aria-busy="true"]:disabled { background: var(--tanim); color: #fff; opacity: .88; }
 
   .a-iconbtn {
     width: 52px; height: 52px; border-radius: var(--r-md); border: none;
@@ -96,8 +99,8 @@ export const authCss = `
   .a-brandname { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-lead); color: #fff; letter-spacing: -.01em; }
   /* Back + primary in one row. Back matches the button height so the pair
      lines up, and never grows; Continue takes the rest. */
-  .a-dockrow { display: flex; gap: 12px; }
-  .a-dockrow .a-iconbtn { width: 60px; height: 60px; flex: 0 0 60px; }
+  .a-dockrow, .a-dockpair { display: flex; gap: 12px; }
+  .a-dockrow .a-iconbtn, .a-dockpair .a-iconbtn { width: 60px; height: 60px; flex: 0 0 60px; }
 
   /* ── Entry choreography (stagger 40–280ms, ease-out) ───────────────────── */
   /* 320ms per item, 60ms apart: the last row settles at 600ms rather than 740ms.
@@ -115,6 +118,8 @@ export const authCss = `
     .a-btn, .a-iconbtn, .a-pick, .a-role, .a-crop, .a-reveal { transition: background-color 140ms ease; }
     .a-btn:active, .a-iconbtn:active, .a-pick:active, .a-role:active, .a-crop:active, .a-reveal:active { transform: none; }
     .a-screen .a-role.on .a-role-ico > * { transform: none; }
+    .a-seg .a-seg-thumb { transition: none; }
+    .a-screen .a-err, .a-screen .a-hint-in { animation: a-fade-in 160ms ease; }
     .a-rolehead .a-rolestage, .a-rolehead .a-rolestage-bubble { animation: a-fade-in 260ms ease both; }
     .a-screen .a-rolehead .a-rolestage .a-rolestage-img.a-rolestage-img { transform: none; filter: none; }
     /* Reduced motion is gentler, not nothing: the price still crossfades so the
@@ -330,6 +335,71 @@ export const authCss = `
   .a-role-t { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-title); line-height: 1.15; display: block; }
   .a-role-d { font-size: var(--fs-label); line-height: 1.45; color: var(--dilim); margin-top: 5px; display: block; }
 
+  /* ── Form header ───────────────────────────────────────────────────────── */
+  /* Same lockup as the setup steps, plus the account type as a pill on the
+     brand row. The glow echoes the mascot stage so the flow feels like one
+     place, at a fraction of the height a form can afford to give up. */
+  .a-formhead { position: relative; overflow: hidden; padding: 18px 22px 26px; }
+  .a-formhead::before {
+    content: ""; position: absolute; right: -80px; top: -90px; width: 260px; height: 260px; border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(126,196,120,.2), rgba(126,196,120,0)); pointer-events: none;
+  }
+  .a-formhead > * { position: relative; }
+  .a-formhead .a-title { margin-top: 22px; }
+  .a-formhead .a-sub { margin-top: 6px; }
+  .a-brandrow .a-badge { margin: 0 0 0 auto; padding: 6px 12px; gap: 6px; }
+
+  /* ── Contact method switch ─────────────────────────────────────────────── */
+  /* Segmented, not a link: both options are visible, the current one is
+     obvious, and each half is a 48px target. The thumb slides rather than
+     jumping so the eye follows the change to the field below. */
+  .a-seg {
+    position: relative; display: grid; grid-template-columns: 1fr 1fr; padding: 4px; margin-bottom: 16px;
+    border-radius: var(--r-md); background: #E6E9E3;
+  }
+  .a-seg-thumb {
+    position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px);
+    border-radius: 12px; background: var(--card); box-shadow: 0 1px 2px rgba(22,33,27,.12), 0 2px 8px -2px rgba(22,33,27,.12);
+    transition: transform 220ms var(--ease-out);
+  }
+  .a-seg[data-mode="gmail"] .a-seg-thumb { transform: translateX(100%); }
+  .a-seg button {
+    position: relative; min-height: 48px; border: none; background: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    font-family: var(--font-display); font-weight: 600; font-size: var(--fs-label); color: var(--dilim);
+    transition: color 160ms ease; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .a-seg button.on { color: var(--tanim); }
+
+  /* ── Inline feedback ───────────────────────────────────────────────────── */
+  /* Errors sit under their field and slide in a few pixels from it, so they
+     read as belonging to that field rather than arriving from nowhere. */
+  .a-err {
+    display: flex; gap: 8px; align-items: flex-start; margin-top: 8px;
+    font-size: var(--fs-label); line-height: 1.4; color: var(--error); font-weight: 600;
+    animation: a-err-in 180ms var(--ease-out);
+  }
+  .a-err svg { flex: 0 0 18px; margin-top: 1px; }
+  @keyframes a-err-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+  /* A rule that turns into a tick the moment it's met. */
+  .a-hint { display: flex; align-items: center; gap: 8px; transition: color 160ms ease; }
+  .a-hint-ico {
+    width: 18px; height: 18px; flex: 0 0 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    box-shadow: inset 0 0 0 1.5px #C7C1B2; color: transparent;
+    transition: background-color 160ms ease, box-shadow 160ms ease, color 160ms ease;
+  }
+  .a-hint.ok { color: var(--tanim); font-weight: 600; }
+  .a-hint.ok .a-hint-ico { background: var(--tanim); box-shadow: inset 0 0 0 1.5px var(--tanim); color: #fff; }
+  .a-hint-in { animation: a-err-in 180ms var(--ease-out); }
+
+  /* Spins fast on purpose: a quicker spinner makes the same wait feel shorter. */
+  .a-spin {
+    width: 18px; height: 18px; border-radius: 50%; flex: 0 0 18px;
+    border: 2.5px solid rgba(255,255,255,.35); border-top-color: #fff;
+    animation: a-spin 700ms linear infinite;
+  }
+  @keyframes a-spin { to { transform: rotate(360deg); } }
+
   /* ── Fields ────────────────────────────────────────────────────────────── */
   .a-field { margin-top: 22px; }
   .a-lbl {
@@ -396,6 +466,11 @@ export const authCss = `
   }
   .a-switch { text-align: center; font-size: var(--fs-body); color: var(--dilim); margin-top: 6px; }
   .a-switch .a-link { min-height: auto; }
+  /* In the ink header: left-aligned under the subtitle, link in the palay
+     accent so it reads as tappable on dark. The link keeps a 44px hit area
+     without adding visible height. */
+  .a-switch.on-ink { text-align: left; color: rgba(255,255,255,.78); margin-top: 14px; font-size: var(--fs-label); }
+  .a-switch.on-ink .a-link { color: var(--palay); font-size: var(--fs-label); min-height: 44px; margin: -12px 0; padding: 0 4px; }
 
   /* ── Crop picker ───────────────────────────────────────────────────────── */
   .a-cropgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; }

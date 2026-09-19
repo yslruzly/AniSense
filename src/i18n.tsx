@@ -622,6 +622,8 @@ export const translations: Dict = {
     tl: "Humigit-kumulang na taon mo nang pagsasaka.",
   },
   auth_forgot: { en: "Forgot your password?", tl: "Nakalimutan ang password?" },
+  auth_contact_method: { en: "How we'll reach you", tl: "Paano ka namin makokontak" },
+  auth_pw_match: { en: "Passwords match", tl: "Magkatugma ang password" },
   crops_none_yet: { en: "None selected yet", tl: "Wala pang napili" },
 
   // ── Empty / error / loading states ────────────────────────────────────────
