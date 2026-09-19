@@ -918,6 +918,176 @@ export const appCss = `
   }
   @keyframes a-fade-in { from { opacity: 0; } to { opacity: 1; } }
 
+  /* ── Prices screen ───────────────────────────────────────────────────────── */
+  .pr-sec {
+    margin: 0 0 10px; font-family: var(--font-display); font-size: 18px; font-weight: 700;
+    color: var(--text); letter-spacing: -.01em;
+  }
+  .pr-all { display: flex; flex-direction: column; gap: 12px; }
+  .pr-all .pr-sec { margin-bottom: 0; }
+
+  /* 1 · Today's market: the page's answer in one line, then the proof in a bar. */
+  .pr-pulse {
+    position: relative; overflow: hidden; isolation: isolate;
+    padding: 18px 18px 16px; border-radius: var(--radius-lg); color: #fff;
+    background:
+      radial-gradient(120% 100% at 100% 0%, rgba(126,196,120,.25), transparent 58%),
+      linear-gradient(150deg, #1D2E25 0%, var(--ink) 60%, #0D1511 100%);
+    box-shadow: 0 16px 30px -20px rgba(22,33,27,.7);
+  }
+  .pr-pulse-lbl { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.66); }
+  .pr-pulse-head {
+    margin-top: 6px; font-family: var(--font-display); font-size: 23px; font-weight: 700; line-height: 1.2;
+    letter-spacing: -.015em; text-wrap: balance;
+  }
+  .pr-pulse-head.muted { color: rgba(255,255,255,.7); font-size: 18px; }
+  .pr-breadth { display: flex; gap: 3px; height: 10px; margin-top: 14px; }
+  .pr-breadth .seg {
+    flex-basis: 0; border-radius: 99px; transform-origin: left center;
+    animation: bar-grow 600ms var(--ease-out) both;
+  }
+  .pr-breadth .seg.up { background: #7EC478; }
+  .pr-breadth .seg.flat { background: rgba(255,255,255,.35); animation-delay: 60ms; }
+  .pr-breadth .seg.down { background: #F08A7E; animation-delay: 120ms; }
+  .pr-breadth-key { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 8px; font-size: 14px; color: rgba(255,255,255,.85); font-variant-numeric: tabular-nums; }
+  .pr-breadth-key span { display: inline-flex; align-items: center; gap: 6px; }
+  .pr-breadth-key i { width: 9px; height: 9px; border-radius: 3px; display: inline-block; }
+  .pr-breadth-key i.up { background: #7EC478; } .pr-breadth-key i.flat { background: rgba(255,255,255,.35); } .pr-breadth-key i.down { background: #F08A7E; }
+  .pr-fresh {
+    display: inline-flex; align-items: center; gap: 8px; margin-top: 14px; padding: 5px 10px 5px 8px;
+    border-radius: 99px; background: rgba(255,255,255,.1); font-size: 13px; color: rgba(255,255,255,.85);
+  }
+  .pr-fresh-dot { width: 8px; height: 8px; border-radius: 50%; background: #7EC478; box-shadow: 0 0 0 3px rgba(126,196,120,.25); }
+  .pr-fresh.off .pr-fresh-dot { background: #F08A7E; box-shadow: 0 0 0 3px rgba(240,138,126,.25); animation: pulse 1.6s ease-in-out infinite; }
+
+  /* Change chip: arrow, sign and colour, so direction never rests on colour. */
+  .pr-chg {
+    display: inline-flex; align-items: center; gap: 2px; padding: 2px 8px 2px 6px; border-radius: 99px;
+    font-size: 13.5px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap;
+    background: var(--paper); color: var(--text-muted);
+  }
+  .pr-chg.up { background: var(--tanim-sk); color: var(--tanim); }
+  .pr-chg.down { background: var(--error-sk); color: var(--error); }
+  .pr-chg.big { font-size: 15px; padding: 4px 10px 4px 8px; }
+
+  /* 2 · Biggest moves: photo-first cards in a row you swipe, snapping per card. */
+  .pr-movers {
+    display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory;
+    margin: 0 -16px; padding: 2px 16px 8px; scroll-padding-left: 16px; scrollbar-width: none;
+  }
+  .pr-movers::-webkit-scrollbar { display: none; }
+  .pr-mover {
+    flex: 0 0 138px; scroll-snap-align: start; padding: 0; border: none; cursor: pointer; text-align: left;
+    background: var(--card); border-radius: 18px; overflow: hidden; font: inherit; color: inherit;
+    box-shadow: inset 0 0 0 1px var(--line), 0 6px 16px -12px rgba(22,33,27,.35);
+    transition: transform 180ms var(--ease-out);
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .pr-mover:active { transform: scale(.97); transition-duration: 90ms; }
+  .pr-mover-photo { display: flex; align-items: center; justify-content: center; height: 88px; background: var(--tanim-sk); }
+  .pr-mover-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .pr-mover-body { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 10px 12px 12px; }
+  /* Two lines, and always two lines' worth of room, so "Diamante Max F1"
+     isn't cut to "Diamante Ma…" and the prices still line up across cards. */
+  .pr-mover-name {
+    font-family: var(--font-display); font-size: 15px; font-weight: 700; line-height: 1.2; color: var(--text);
+    min-height: 2.4em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .pr-mover-price { font-family: var(--font-display); font-size: 17px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
+  .pr-mover-price small, .pr-row-price small, .pr-big small { font-size: .7em; font-weight: 600; color: var(--text-faint); margin-left: 1px; }
+
+  /* 3 · The list: one card holding the rows, like a settings group. */
+  .pr-clear {
+    width: 32px; height: 32px; margin: -6px -6px -6px auto; border: none; border-radius: 50%; cursor: pointer;
+    background: var(--paper-alt); color: var(--text-soft); display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .search-box input { flex: 1; min-width: 0; }
+  .pr-list { background: var(--card); border-radius: var(--radius); box-shadow: inset 0 0 0 1px var(--line); padding: 4px 0; }
+  .pr-row {
+    position: relative; width: 100%; display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px 10px 14px; border: none; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer;
+    transition: background-color 180ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .pr-row:active { background: var(--paper); transition-duration: 0ms; }
+  .pr-row + .pr-row::before { content: ""; position: absolute; top: 0; left: 76px; right: 12px; height: 1px; background: var(--line); }
+  .pr-row:active::before, .pr-row:active + .pr-row::before { opacity: 0; }
+  .pr-row-photo {
+    width: 50px; height: 50px; flex: 0 0 50px; border-radius: 13px; overflow: hidden;
+    background: var(--tanim-sk); display: flex; align-items: center; justify-content: center;
+  }
+  .pr-row-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .pr-row-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .pr-row-name { font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--text); line-height: 1.25; }
+  .pr-row-group { font-size: 14px; color: var(--text-faint); margin-top: 1px; }
+  .pr-row-end { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+  .pr-row-price { font-family: var(--font-display); font-size: 16.5px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .pr-row-chev { color: var(--line-strong); flex-shrink: 0; margin-left: -4px; }
+
+  /* ── Crop sheet ── */
+  .pr-sheet {
+    width: 100%; max-height: 90%; background: var(--card); border-radius: 24px 24px 0 0; overflow-y: auto;
+    padding-bottom: calc(22px + var(--safe-bottom));
+  }
+  .pr-sheet-hero { position: relative; height: 150px; overflow: hidden; border-radius: 24px 24px 0 0; }
+  .pr-sheet-photo { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: var(--tanim-sk); }
+  .pr-sheet-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .pr-sheet-shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10,14,12,.05) 30%, rgba(10,14,12,.72) 100%); }
+  .pr-sheet-id { position: absolute; left: 18px; right: 70px; bottom: 14px; color: #fff; }
+  .pr-sheet-group { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; opacity: .85; }
+  .pr-sheet-name { font-family: var(--font-display); font-size: 23px; font-weight: 700; line-height: 1.15; letter-spacing: -.015em; text-shadow: 0 1px 6px rgba(0,0,0,.35); }
+  .pr-sheet-x {
+    position: absolute; top: 12px; right: 12px; width: 40px; height: 40px; border: none; border-radius: 50%; cursor: pointer;
+    background: rgba(10,14,12,.45); color: #fff; display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    transition: transform 160ms var(--ease-out), background-color 160ms ease;
+  }
+  .pr-sheet-x:active { transform: scale(.92); background: rgba(10,14,12,.6); transition-duration: 90ms; }
+  .pr-sheet-body { padding: 16px 18px 0; }
+  .pr-sheet-price { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .pr-big { font-family: var(--font-display); font-size: 34px; font-weight: 800; color: var(--text); letter-spacing: -.02em; font-variant-numeric: tabular-nums; line-height: 1; }
+  .pr-sheet-sub { margin-top: 6px; font-size: 13.5px; color: var(--text-faint); }
+
+  .pr-story { margin-top: 18px; padding: 14px 14px 12px; border-radius: 18px; background: var(--paper); }
+  .pr-story-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+  .pr-story-title { font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--text); }
+  .pr-legend { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--text-faint); }
+  .pr-key { display: inline-block; width: 16px; height: 0; border-top: 3px solid var(--text-soft); border-radius: 2px; margin-left: 6px; }
+  .pr-key.dashed { border-top-style: dashed; border-top-width: 2.5px; }
+  .pr-chart { display: block; width: 100%; height: auto; overflow: visible; color: var(--tanim); }
+  .pr-chart.down { color: var(--error); }
+  .pr-chart.flat { color: var(--text-soft); }
+  .pr-today { stroke: var(--line-strong); stroke-width: 1.5; stroke-dasharray: 3 4; }
+  /* The history draws itself in once as the sheet lands: explanatory motion,
+     it traces the week in the order it happened. pathLength=1 makes the
+     dash math independent of the line's real length. */
+  .pr-line {
+    fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: 1; stroke-dashoffset: 1; animation: pr-draw 700ms var(--ease-out) 180ms forwards;
+  }
+  @keyframes pr-draw { to { stroke-dashoffset: 0; } }
+  .pr-next, .pr-dot, .pr-area { opacity: 0; animation: pr-show 260ms ease 760ms forwards; }
+  .pr-next { fill: none; stroke: currentColor; stroke-width: 2.5; stroke-dasharray: 5 6; stroke-linecap: round; }
+  .pr-dot { fill: currentColor; stroke: var(--paper); stroke-width: 3; }
+  @keyframes pr-show { to { opacity: 1; } }
+  .pr-axis { position: relative; height: 18px; margin-top: 4px; font-size: 12.5px; color: var(--text-faint); text-transform: capitalize; }
+  .pr-axis span { position: absolute; top: 0; white-space: nowrap; }
+  .pr-axis .now { font-weight: 700; color: var(--text-muted); }
+  .pr-facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+  .pr-facts div { display: flex; flex-direction: column; gap: 2px; padding: 10px; border-radius: 12px; background: var(--card); box-shadow: inset 0 0 0 1px var(--line); }
+  .pr-facts span { font-size: 12px; color: var(--text-faint); }
+  .pr-facts strong { font-family: var(--font-display); font-size: 15.5px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
+  .pr-facts strong.up { color: var(--tanim); } .pr-facts strong.down { color: var(--error); }
+  .pr-note { margin-top: 10px; font-size: 12.5px; color: var(--text-faint); }
+  .pr-story-none { margin-top: 16px; padding: 14px; border-radius: 14px; background: var(--paper); font-size: 14.5px; color: var(--text-muted); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pr-breadth .seg { animation: none; }
+    .pr-line { animation: none; stroke-dashoffset: 0; }
+    .pr-next, .pr-dot, .pr-area { animation: pr-show 200ms ease forwards; }
+    .pr-mover:active, .pr-sheet-x:active { transform: none; }
+  }
+
   /* Purchase history thumbnail: same rounded-square photo as the cart line,
      a touch smaller to suit a denser list. */
   .ptx-thumb {
@@ -2029,7 +2199,8 @@ export const appCss = `
      short fade is the only motion. */
   .shell[data-revisit] .scroll .stagger-list > *,
   .shell[data-revisit] .scroll .bar-fill,
-  .shell[data-revisit] .scroll .mo-fill { animation: none; }
+  .shell[data-revisit] .scroll .mo-fill,
+  .shell[data-revisit] .scroll .pr-breadth .seg { animation: none; }
 
   /* ── Alerts bell ─────────────────────────────────────────────────────────
      One ring, once per session, a beat after the screen lands, pivoting from
