@@ -15,14 +15,16 @@ export const tokensCss = `
     /* ── Colour ─────────────────────────────────────────────────────────── */
     --ink:        #16211B;   /* darkest surface, primary text */
     --ink-2:      #22302A;   /* raised panel on ink */
-    /* The app sits on a pale green ground rather than warm paper. Each step
-       down stays a step apart so a selected surface never matches the page
-       behind it — that is what makes selection disappear. */
-    --paper:      #EFF6F1;   /* app background (8.0:1 with --text-muted) */
-    --paper-alt:  #E4EDE7;   /* recessed / secondary background */
+    /* Neutral grey ground. Green is kept for what it means (the primary
+       action, a price going up, a selected option) instead of being the
+       colour of every surface, so where it does appear it carries weight.
+       Each step down stays a step apart so a selected surface never matches
+       the page behind it — that is what makes selection disappear. */
+    --paper:      #F2F3F4;   /* app background (7.9:1 with --text-muted) */
+    --paper-alt:  #E7E8EA;   /* recessed / secondary background */
     --card:       #FFFFFF;
-    --line:       #CFDCD4;   /* hairline, green-grey to match the ground */
-    --line-strong:#B6C8BE;
+    --line:       #D9DBDE;   /* hairline */
+    --line-strong:#C2C5C9;
 
     --tanim:      #0B6B41;   /* primary action, positive movement (5.9:1 on paper) */
     --tanim-deep: #0F3524;
@@ -37,9 +39,9 @@ export const tokensCss = `
     --error-line: #E9BDB8;
 
     --text:       #16211B;
-    --text-soft:  #2E3833;
-    --text-muted: #454F49;   /* 7.4:1 on paper */
-    --text-faint: #6A736D;   /* 4.9:1 on paper, the lightest text allowed */
+    --text-soft:  #2F3336;
+    --text-muted: #474B4F;   /* 7.9:1 on paper */
+    --text-faint: #606469;   /* 5.4:1 on paper, 4.9:1 on paper-alt: the lightest text allowed */
 
     /* ── Type ───────────────────────────────────────────────────────────── */
     --font-display: 'Lexend', system-ui, sans-serif;

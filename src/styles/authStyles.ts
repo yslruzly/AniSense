@@ -383,7 +383,7 @@ export const authCss = `
      jumping so the eye follows the change to the field below. */
   .a-seg {
     position: relative; display: grid; grid-template-columns: 1fr 1fr; padding: 4px; margin-bottom: 16px;
-    border-radius: var(--r-md); background: #E6E9E3;
+    border-radius: var(--r-md); background: var(--paper-alt);
   }
   .a-seg-thumb {
     position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px);
