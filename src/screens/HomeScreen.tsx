@@ -1,8 +1,8 @@
-import { Store, PhilippinePeso, BarChart2, CloudSun, CheckCircle, AlertTriangle, TrendingUp, TrendingDown, Bot, ChevronRight } from "lucide-react";
+import { CloudSun, CloudMoon, BarChart2, CheckCircle, AlertTriangle, Bot, ChevronRight, ArrowUpRight, ArrowDownRight, ArrowRight } from "lucide-react";
 import { useLang } from "../i18n";
 import { Screen, UserRole } from "../types";
 import { CROPS, CROP_GROUP_BY_ID } from "../data/crops";
-import { DotRow, Sparkline } from "../components/charts/Micro";
+import { Sparkline } from "../components/charts/Micro";
 import { cropPhoto } from "../data/cropPhotos";
 import { CropIcon } from "../components/icons";
 import { EXPENSES } from "../data/expenses";
@@ -10,9 +10,34 @@ import { AIAdvisorCard } from "../components/analytics/AIAdvisorCard";
 import { PredictedPriceCard } from "../components/analytics/PredictedPriceCard";
 import { Hdr } from "../components/layout/Hdr";
 import { AniSenseLogo } from "../components/AniSenseLogo";
+import { useIsNight } from "../hooks/useIsNight";
+import buyerMascot from "../assets/buyer-mascot.webp";
 
-// ─── Home / Summary Screen ────────────────────────────────────────────────────
-export function HomeScreen({ onNavigate, onProfile, isOffline, lastUpdated, userName = "Juan", userInitials = "JD", userRole, farmerCrops = ["Rice", "Corn"] }: {
+// ─── Home ─────────────────────────────────────────────────────────────────────
+// A morning check, in the order a farmer asks:
+//   1. Hello, what's today like?     → greeting, date, the weather in one chip
+//   2. How are MY crops doing?        → only their crops, price and change
+//   3. What should I do?              → the AI recommendations (unchanged)
+//   4. How's my money this month?     → one figure, its trend, vs last month
+//   5. Anything I should know?        → the DA advisory
+//   6. Where else can I go?           → the two pages the tab bar doesn't have
+// Market, Marketplace and Expenses used to be buttons here as well; the tab
+// bar already has them, so they only pushed the useful things further down.
+
+const dirOf = (n: number) => (n > 0 ? "up" : n < 0 ? "down" : "flat");
+
+function Chg({ value }: { value: number }) {
+  const dir = dirOf(value);
+  const Arrow = dir === "up" ? ArrowUpRight : dir === "down" ? ArrowDownRight : ArrowRight;
+  return (
+    <span className={`pr-chg ${dir}`}>
+      <Arrow size={14} strokeWidth={2.6} aria-hidden="true" />
+      {value > 0 ? "+" : value < 0 ? "−" : ""}{Math.abs(value)}%
+    </span>
+  );
+}
+
+export function HomeScreen({ onNavigate, onProfile, isOffline, userName = "Juan", userInitials = "JD", userRole, farmerCrops = ["Rice", "Corn"] }: {
   onNavigate: (s: Screen) => void;
   onProfile: () => void;
   isOffline: boolean;
@@ -23,108 +48,107 @@ export function HomeScreen({ onNavigate, onProfile, isOffline, lastUpdated, user
   farmerCrops?: string[];
 }) {
   const { t, tn, lang } = useLang();
+  const locale = lang === "tl" ? "fil-PH" : "en-PH";
+  const isNight = useIsNight();
+  const isBuyer = userRole === "buyer";
   const now = new Date();
-  const dateStr = now.toLocaleDateString(lang === "tl" ? "fil-PH" : "en-PH", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+  const dateStr = now.toLocaleDateString(locale, { weekday: "long", month: "long", day: "numeric" });
   const hour = now.getHours();
-  const greeting = hour < 12 ? t("good_morning") : hour < 18 ? t("good_afternoon") : t("good_evening");
+  // Before 5 AM it's still the night before, as far as a greeting goes.
+  const greeting = hour < 5 ? t("good_evening") : hour < 12 ? t("good_morning") : hour < 18 ? t("good_afternoon") : t("good_evening");
   const firstName = userName.split(" ")[0];
 
-  const allModules = [
-    { id: "market" as Screen, ico: <TrendingUp size={24} color="var(--tanim)" />, bg: "var(--tanim-sk)", lbl: t("home_mod_market"), desc: t("home_mod_market_desc"), roles: ["farmer", "buyer"] },
-    { id: "weather" as Screen, ico: <CloudSun size={24} color="var(--tanim-deep)" />, bg: "var(--paper-alt)", lbl: t("home_mod_weather"), desc: t("home_mod_weather_desc"), roles: ["farmer"] },
-    { id: "expenses" as Screen, ico: <PhilippinePeso size={24} color="var(--tanim)" />, bg: "var(--paper-alt)", lbl: t("home_mod_expenses"), desc: t("home_mod_expenses_desc"), roles: ["farmer", "buyer"] },
-    { id: "analytics" as Screen, ico: <BarChart2 size={24} color="var(--ink-2)" />, bg: "var(--paper-alt)", lbl: t("home_mod_analytics"), desc: t("home_mod_analytics_desc"), roles: ["farmer"] },
-    { id: "trade" as Screen, ico: <Store size={24} color="var(--gold-text)" />, bg: "var(--gold-sk)", lbl: t("home_mod_marketplace"), desc: t("home_mod_marketplace_desc"), roles: ["farmer", "buyer"] },
-  ];
+  // Farmers see their own crops (each group's lead variety); buyers, who
+  // don't grow anything, see the day's biggest moves instead.
+  const myCrops = farmerCrops
+    .map(g => CROPS.find(c => CROP_GROUP_BY_ID[c.id] === g))
+    .filter((c): c is NonNullable<typeof c> => !!c);
+  const movers = [...CROPS].sort((a, b) => Math.abs(b.change) - Math.abs(a.change)).slice(0, 4);
+  const cropRows = isBuyer ? movers : myCrops;
+  const up = CROPS.filter(c => c.change > 0).length;
 
-  const modules = userRole === "buyer"
-    ? allModules.filter(m => (m.roles as string[]).includes("buyer"))
-    : allModules;
-
-  const totalExpenses = EXPENSES.filter(e => {
-    const d = new Date(e.date);
-    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-  }).reduce((s, e) => s + e.amount, 0);
-  const risingCrops = CROPS.filter(c => c.change > 0).length;
-
-  // The five that moved most today, either direction — what a farmer actually
-  // scans a home screen for. The full twenty live in Market.
-  const topMovers = [...CROPS].sort((a, b) => Math.abs(b.change) - Math.abs(a.change)).slice(0, 5);
-
-  // Six months of spend, oldest first, for the sparkline under the total.
-  const expenseTrend = Array.from({ length: 6 }, (_, i) => {
-    const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+  // This month's spend, last month's, and six months of trend for the line.
+  const monthTotal = (offset: number) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - offset, 1);
     return EXPENSES
       .filter(e => { const x = new Date(e.date); return x.getMonth() === d.getMonth() && x.getFullYear() === d.getFullYear(); })
       .reduce((sum, e) => sum + e.amount, 0);
-  });
+  };
+  const thisMonth = monthTotal(0), lastMonth = monthTotal(1);
+  const vsLast = lastMonth > 0 ? Math.round(((thisMonth - lastMonth) / lastMonth) * 100) : null;
+  const expenseTrend = [5, 4, 3, 2, 1, 0].map(monthTotal);
 
   return (
     <div className="screen">
       <Hdr icon={<AniSenseLogo size={28} />} title="AniSense" onProfile={onProfile} userInitials={userInitials} />
       <div className="scroll screen-enter">
-        {/* Greeting card, on a lowland bukid rather than a flat colour. */}
-        <div className="home-header">
-          <div className="home-top">
+
+        {/* 1 ── Greeting. The same farm as the Weather screen, by day or by
+            night, and the weather itself as a chip that opens it. */}
+        <section className="home-header" data-time={isNight ? "night" : "day"}>
+          <div className="home-greeting">{greeting}, {firstName}! 👋</div>
+          <div className="home-date">{dateStr}</div>
+          <div className="hm-hero-foot">
+            {!isBuyer ? (
+              <button className="hm-wx" onClick={() => onNavigate("weather")}>
+                {isNight ? <CloudMoon size={22} strokeWidth={2} /> : <CloudSun size={22} strokeWidth={2} />}
+                <span className="hm-wx-temp">28°</span>
+                <span className="hm-wx-cond">{t("wx_partly_cloudy")}</span>
+                <ChevronRight size={18} strokeWidth={2.4} aria-hidden="true" />
+              </button>
+            ) : <span />}
+            {isOffline && (
+              <span className="hm-offline"><span className="hm-offline-dot" /> {t("home_offline_cached")}</span>
+            )}
+          </div>
+        </section>
+
+        {/* 2 ── Your crops today (buyers: the day's biggest moves). A short
+            vertical list: no swiping to find your own crop among twenty. */}
+        <section className="hm-card">
+          <div className="hm-card-head">
             <div>
-              <div className="home-greeting">{greeting},<br />{firstName}! 👋</div>
-              <div className="home-date">{dateStr}</div>
+              <h2 className="hm-title">{isBuyer ? t("mkt_movers") : t("home_your_crops")}</h2>
+              <div className="hm-sub">{t("mkt_pulse_head").replace("{up}", String(up)).replace("{n}", String(CROPS.length))}</div>
             </div>
+            <button className="hm-link" onClick={() => onNavigate("market")}>
+              {t("mkt_all")} <ChevronRight size={16} strokeWidth={2.6} />
+            </button>
           </div>
-          {/* Online/offline status */}
-          <div className="home-status">
-            <div className="home-status-dot" style={{ background: isOffline ? "var(--error)" : "var(--palay)", animation: isOffline ? "pulse 1.5s infinite" : "none" }} />
-            <span className="home-status-txt">{isOffline ? t("home_offline_cached") : t("online")}</span>
-          </div>
-        </div>
-
-        {/* Quick stats. The mark shows the shape behind the figure — how many of
-            the twenty rose, and which way the month has been running. */}
-        <div className="g2">
-          <div className="stat">
-            <div className="stat-lbl">{t("home_crops_rising")}</div>
-            <div className="stat-mark"><DotRow total={CROPS.length} filled={risingCrops} /></div>
-            <div className="stat-val">{risingCrops}/{CROPS.length}</div>
-            <div className="stat-foot">{t("home_crops_up")}</div>
-          </div>
-          <div className="stat">
-            <div className="stat-lbl">{t("home_total_expenses")}</div>
-            <div className="stat-mark"><Sparkline values={expenseTrend} /></div>
-            <div className="stat-val sm">₱{totalExpenses.toLocaleString()}</div>
-            <div className="stat-foot">{t("home_this_month")}</div>
-          </div>
-        </div>
-
-        {/* Current prices. A horizontal strip you swipe through, each crop
-            carrying its own photograph so the row is scannable by sight
-            rather than by reading twenty names. */}
-        <div>
-          <div className="home-sec">{t("home_current_prices")}</div>
-          <div className="home-sec-sub">{t("home_tap_market")}</div>
-          <div className="price-strip">
-            {CROPS.map(c => {
-              const up = c.change >= 0;
+          <div className="stagger-list">
+            {cropRows.map(c => {
+              const photo = cropPhoto(c.id);
+              const group = CROP_GROUP_BY_ID[c.id] || "";
               return (
-                <button key={c.id} className="pcard" onClick={() => onNavigate("market")}>
-                  <span className="pcard-photo">
-                    {cropPhoto(c.id)
-                      ? <img src={cropPhoto(c.id)} alt="" loading="lazy" decoding="async" />
-                      : <CropIcon crop={CROP_GROUP_BY_ID[c.id] || c.name} size={24} />}
-                    <span className={`pcard-chg ${up ? "up" : "down"}`}>
-                      {up ? <TrendingUp size={13} strokeWidth={2.8} /> : <TrendingDown size={13} strokeWidth={2.8} />}
-                      {up ? "+" : ""}{c.change}%
-                    </span>
+                <button key={c.id} className="hm-crop" onClick={() => onNavigate("market")}>
+                  <span className="hm-crop-photo">
+                    {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropIcon crop={group || c.name} size={22} />}
                   </span>
-                  <span className="pcard-name">{c.name}</span>
-                  <span className="pcard-group">{tn(CROP_GROUP_BY_ID[c.id] || "")}</span>
-                  <span className="pcard-price">
-                    ₱{c.pricePerKg}<span className="unit-suffix">{t("per_kg_short")}</span>
+                  <span className="hm-crop-body">
+                    <span className="hm-crop-name">{isBuyer ? c.name : tn(group)}</span>
+                    <span className="hm-crop-var">{isBuyer ? tn(group) : c.name}</span>
+                  </span>
+                  <span className="hm-crop-end">
+                    <span className="hm-crop-price">₱{c.pricePerKg}<small>{t("per_kg_short")}</small></span>
+                    <Chg value={c.change} />
                   </span>
                 </button>
               );
             })}
           </div>
-        </div>
+        </section>
+
+        {/* Buyers: the one thing they came for, one tap away. */}
+        {isBuyer && (
+          <button className="hm-shop" onClick={() => onNavigate("trade")}>
+            <span className="hm-shop-copy">
+              <span className="hm-shop-t">{t("home_buyer_cta_t")}</span>
+              <span className="hm-shop-s">{t("home_buyer_cta_s")}</span>
+              <span className="hm-shop-btn">{t("cart_browse")} <ChevronRight size={16} strokeWidth={2.6} /></span>
+            </span>
+            <img className="hm-shop-img" src={buyerMascot} alt="" aria-hidden="true" />
+          </button>
+        )}
 
         {/* Heading for the two model cards. Farmer-only like the cards it
             introduces, or a buyer would get a heading over nothing. */}
@@ -141,41 +165,73 @@ export function HomeScreen({ onNavigate, onProfile, isOffline, lastUpdated, user
         {/* Predicted Price, farmer only */}
         {userRole !== "buyer" && <PredictedPriceCard farmerCrops={farmerCrops} />}
 
-        {/* Module buttons */}
-        <div>
-          <div className="home-sec">{t("home_what_to_do")}</div>
-          <div className="home-sec-sub">{t("home_tap_any")}</div>
-          <div className="module-grid stagger-list">
-            {modules.map(m => (
-              <button key={m.id} className="module-btn" onClick={() => onNavigate(m.id)}>
-                <div className="module-ico-wrap" style={{ background: m.bg }}>{m.ico}</div>
-                <div className="module-text">
-                  <div className="module-lbl">{m.lbl}</div>
-                  <div className="module-desc">{m.desc}</div>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
+        {/* 4 ── This month's spending, farmer only (the figures are farm
+            expenses; a buyer's spending lives with their purchases). */}
+        {!isBuyer && (
+          <button className="hm-card hm-spend" onClick={() => onNavigate("expenses")}>
+            <span className="hm-spend-copy">
+              <span className="hm-title">{t("home_spent_month")}</span>
+              <span className="hm-spend-val">₱{thisMonth.toLocaleString()}</span>
+              {/* Nothing yet: say so, rather than drawing a flat line. */}
+              {thisMonth === 0 && <span className="hm-sub">{t("home_spent_none")}</span>}
+              {thisMonth > 0 && vsLast !== null && (
+                // More spending is not "good", so this chip reads neutral
+                // grey rather than borrowing the price colours.
+                <span className="hm-spend-vs">
+                  {vsLast > 0 ? "▲" : vsLast < 0 ? "▼" : "•"} {Math.abs(vsLast)}% {t("home_vs_last")}
+                </span>
+              )}
+            </span>
+            {expenseTrend.some(v => v > 0) && (
+              <span className="hm-spend-chart" aria-hidden="true">
+                <Sparkline values={expenseTrend} width={110} height={44} />
+              </span>
+            )}
+            <ChevronRight size={18} className="pr-row-chev" aria-hidden="true" />
+          </button>
+        )}
 
-        {/* Farming advisory, farmer only */}
-        {userRole !== "buyer" && (
-          <div>
-            <div className="home-sec">{t("home_advisory")}</div>
-            <div className="home-sec-sub">{t("home_advisory_sub")}</div>
+        {/* 5 ── Advisory, farmer only: one card, two rows. */}
+        {!isBuyer && (
+          <section className="hm-card">
+            <div className="hm-card-head">
+              <div>
+                <h2 className="hm-title">{t("home_advisory")}</h2>
+                <div className="hm-sub">{t("home_advisory_sub")}</div>
+              </div>
+            </div>
             {[
-              { bg: "var(--tanim-sk)", border: "var(--line)", ico: <CheckCircle size={20} color="var(--tanim)" />, txt: t("home_adv_planting"), sub: t("home_adv_planting_sub") },
-              { bg: "var(--gold-sk)", border: "var(--gold-line)", ico: <AlertTriangle size={20} color="var(--gold-text)" />, txt: t("home_adv_rain"), sub: t("home_adv_rain_sub") },
+              { tone: "good", ico: <CheckCircle size={20} strokeWidth={2.2} />, txt: t("home_adv_planting"), sub: t("home_adv_planting_sub") },
+              { tone: "warn", ico: <AlertTriangle size={20} strokeWidth={2.2} />, txt: t("home_adv_rain"), sub: t("home_adv_rain_sub") },
             ].map(a => (
-              <div key={a.txt} className="adv-banner" style={{ background: a.bg, border: `1px solid ${a.border}`, marginBottom: 8 }}>
-                <div style={{ flexShrink: 0, marginTop: 1 }}>{a.ico}</div>
-                <div>
-                  <div className="adv-banner-txt">{a.txt}</div>
-                  <div className="adv-banner-sub">{a.sub}</div>
-                </div>
+              <div key={a.txt} className={`hm-adv ${a.tone}`}>
+                <span className="hm-adv-ico">{a.ico}</span>
+                <span>
+                  <span className="hm-adv-t">{a.txt}</span>
+                  <span className="hm-adv-s">{a.sub}</span>
+                </span>
               </div>
             ))}
-          </div>
+          </section>
+        )}
+
+        {/* 6 ── The two pages the tab bar doesn't reach. */}
+        {!isBuyer && (
+          <section>
+            <h2 className="hm-title hm-out">{t("home_tools")}</h2>
+            <div className="hm-tools">
+              <button className="hm-tool" onClick={() => onNavigate("weather")}>
+                <span className="hm-tool-ico wx">{isNight ? <CloudMoon size={24} /> : <CloudSun size={24} />}</span>
+                <span className="hm-tool-t">{t("home_mod_weather")}</span>
+                <span className="hm-tool-s">{t("home_mod_weather_desc")}</span>
+              </button>
+              <button className="hm-tool" onClick={() => onNavigate("analytics")}>
+                <span className="hm-tool-ico an"><BarChart2 size={24} /></span>
+                <span className="hm-tool-t">{t("home_mod_analytics")}</span>
+                <span className="hm-tool-s">{t("home_mod_analytics_desc")}</span>
+              </button>
+            </div>
+          </section>
         )}
 
         <div className="version-txt">AniSense v1.0.0 · Ani mo, alam mo.</div>

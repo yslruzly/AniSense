@@ -162,6 +162,13 @@ export const translations: Dict = {
 
   /** Heading for the two model cards (ARIMA + AI, ARIMA forecast). */
   home_ai_recos: { en: "AI Recommendations", tl: "Mga rekomendasyon ng AI" },
+  home_your_crops: { en: "Your crops today", tl: "Ang iyong mga pananim ngayon" },
+  home_spent_month: { en: "Spent this month", tl: "Nagastos ngayong buwan" },
+  home_vs_last: { en: "vs last month", tl: "kumpara noong nakaraang buwan" },
+  home_spent_none: { en: "Nothing recorded yet this month", tl: "Wala pang naitala ngayong buwan" },
+  home_tools: { en: "More tools", tl: "Iba pang gamit" },
+  home_buyer_cta_t: { en: "Fresh from local farms", tl: "Sariwa mula sa lokal na bukid" },
+  home_buyer_cta_s: { en: "Buy straight from Nueva Ecija farmers.", tl: "Bumili nang diretso sa mga magsasaka ng Nueva Ecija." },
 
   // ── Market ────────────────────────────────────────────────────────────────
   market_title: { en: "Prices", tl: "Presyo" },

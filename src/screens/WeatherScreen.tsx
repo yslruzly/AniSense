@@ -1,24 +1,9 @@
-import { useEffect, useState } from "react";
 import { CloudSun, CloudMoon, MapPin, Sprout, Droplets, Wind, AlertTriangle, CheckCircle } from "lucide-react";
 import { useLang } from "../i18n";
 import { WEATHER_FORECAST } from "../data/weather";
 import { Hdr } from "../components/layout/Hdr";
 import { WeatherIcon } from "../components/icons";
-
-// Day runs 6:00 AM to 4:59 PM; from 5:00 PM the hero switches to the night
-// scene. Re-checked every minute, so a screen left open at 4:59 still turns
-// over on time instead of waiting for the next visit.
-const DAY_START = 6;
-const NIGHT_START = 17;
-function useIsNight() {
-  const check = () => { const h = new Date().getHours(); return h >= NIGHT_START || h < DAY_START; };
-  const [night, setNight] = useState(check);
-  useEffect(() => {
-    const id = window.setInterval(() => setNight(check()), 60_000);
-    return () => window.clearInterval(id);
-  }, []);
-  return night;
-}
+import { useIsNight } from "../hooks/useIsNight";
 
 // ─── Weather Screen ───────────────────────────────────────────────────────────
 export function WeatherScreen({ onProfile, onBack, userInitials = "JD" }: { onProfile: () => void; onBack: () => void; userInitials?: string }) {

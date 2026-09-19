@@ -1,4 +1,3 @@
-import riceFieldWide from "../assets/rice-field-wide.webp";
 import expensesBg from "../assets/expenses-terraces.webp";
 import wxDay from "../assets/wx-day.webp";
 import wxNight from "../assets/wx-night.webp";
@@ -1264,6 +1263,125 @@ export const appCss = `
     .mp-card:has(.mp-card-main:active), .mp-quick:active, .mp-cat:active, .mp-var:active, .mp-sell-btn:active, .mp-seller:active { transform: none; }
   }
 
+  /* ── Home ────────────────────────────────────────────────────────────────── */
+  .hm-hero-foot { margin-top: auto; padding-top: 18px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  /* The weather, as a glass chip that opens the Weather page. */
+  .hm-wx {
+    display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 10px 0 12px;
+    border: none; border-radius: 99px; cursor: pointer; color: #fff; font: inherit;
+    background: rgba(255,255,255,.16); box-shadow: inset 0 0 0 1px rgba(255,255,255,.28);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    transition: transform 160ms var(--ease-out), background-color 160ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .hm-wx:active { transform: scale(.96); background: rgba(255,255,255,.26); transition-duration: 90ms; }
+  .hm-wx-temp { font-family: var(--font-display); font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .hm-wx-cond { font-size: 14.5px; opacity: .92; }
+  .hm-offline { display: inline-flex; align-items: center; gap: 7px; padding: 5px 11px; border-radius: 99px; background: rgba(0,0,0,.35); font-size: 13px; font-weight: 600; }
+  .hm-offline-dot { width: 8px; height: 8px; border-radius: 50%; background: #F08A7E; animation: pulse 1.6s ease-in-out infinite; }
+
+  /* Cards on Home share one frame, so the page reads as a set. */
+  .hm-card {
+    display: block; width: 100%; padding: 16px; border: none; border-radius: var(--radius); text-align: left;
+    background: var(--card); box-shadow: inset 0 0 0 1px var(--line); font: inherit; color: inherit;
+  }
+  .hm-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+  .hm-title { margin: 0; font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -.01em; display: block; }
+  .hm-out { margin-bottom: 10px; }
+  .hm-sub { margin-top: 2px; font-size: 14px; color: var(--text-faint); }
+  .hm-link {
+    flex-shrink: 0; display: inline-flex; align-items: center; gap: 2px; min-height: 36px; padding: 0 4px 0 10px;
+    border: none; border-radius: 99px; background: var(--paper); color: var(--tanim); cursor: pointer;
+    font-family: var(--font-display); font-size: 14px; font-weight: 700;
+    transition: transform 160ms var(--ease-out), background-color 160ms ease;
+  }
+  .hm-link:active { transform: scale(.96); background: var(--tanim-sk); transition-duration: 90ms; }
+
+  /* Your crops: rows like the Prices list, so the two pages agree. */
+  .hm-crop {
+    position: relative; width: calc(100% + 16px); margin: 0 -8px; display: flex; align-items: center; gap: 12px;
+    padding: 10px 8px; border: none; border-radius: 14px; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer;
+    transition: background-color 180ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .hm-crop:active { background: var(--paper); transition-duration: 0ms; }
+  .hm-crop + .hm-crop::before { content: ""; position: absolute; top: 0; left: 70px; right: 8px; height: 1px; background: var(--line); }
+  .hm-crop:active::before, .hm-crop:active + .hm-crop::before { opacity: 0; }
+  .hm-crop-photo {
+    width: 50px; height: 50px; flex: 0 0 50px; border-radius: 13px; overflow: hidden;
+    background: var(--tanim-sk); display: flex; align-items: center; justify-content: center;
+  }
+  .hm-crop-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .hm-crop-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .hm-crop-name { font-family: var(--font-display); font-size: 16.5px; font-weight: 700; color: var(--text); line-height: 1.25; }
+  .hm-crop-var { font-size: 14px; color: var(--text-faint); }
+  .hm-crop-end { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+  .hm-crop-price { font-family: var(--font-display); font-size: 17px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .hm-crop-price small { font-size: .7em; font-weight: 600; color: var(--text-faint); margin-left: 1px; }
+
+  /* Spent this month: one figure, the line behind it, the month before. */
+  .hm-spend {
+    display: flex; align-items: center; gap: 12px; cursor: pointer;
+    transition: transform 180ms var(--ease-out), background-color 180ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .hm-spend:active { transform: scale(.985); background: var(--paper); transition-duration: 90ms; }
+  .hm-spend-copy { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .hm-spend-val { font-family: var(--font-display); font-size: 26px; font-weight: 800; color: var(--text); letter-spacing: -.02em; font-variant-numeric: tabular-nums; margin-top: 2px; }
+  .hm-spend-vs {
+    align-self: flex-start; margin-top: 4px; padding: 2px 9px; border-radius: 99px;
+    background: var(--paper); color: var(--text-muted); font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums;
+  }
+  .hm-spend-chart { flex-shrink: 0; display: flex; align-items: center; }
+
+  /* Advisory rows: tinted icon, then the message; the tint carries the tone. */
+  .hm-adv { display: flex; gap: 12px; padding: 12px 0 2px; }
+  .hm-adv + .hm-adv { border-top: 1px solid var(--line); margin-top: 10px; }
+  .hm-adv-ico { width: 38px; height: 38px; flex: 0 0 38px; border-radius: 11px; display: flex; align-items: center; justify-content: center; }
+  .hm-adv.good .hm-adv-ico { background: var(--tanim-sk); color: var(--tanim); }
+  .hm-adv.warn .hm-adv-ico { background: var(--gold-sk); color: var(--gold-text); }
+  .hm-adv-t { display: block; font-family: var(--font-display); font-size: 15.5px; font-weight: 700; color: var(--text); line-height: 1.3; }
+  .hm-adv-s { display: block; margin-top: 2px; font-size: 14px; line-height: 1.45; color: var(--text-muted); }
+
+  /* More tools: exactly two tiles, side by side. */
+  .hm-tools { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .hm-tool {
+    display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 14px; text-align: left;
+    border: none; border-radius: var(--radius); background: var(--card); box-shadow: inset 0 0 0 1px var(--line);
+    font: inherit; color: inherit; cursor: pointer;
+    transition: transform 180ms var(--ease-out), background-color 180ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .hm-tool:active { transform: scale(.97); background: var(--paper); transition-duration: 90ms; }
+  .hm-tool-ico { width: 46px; height: 46px; border-radius: 13px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; }
+  .hm-tool-ico.wx { background: #E3EEF8; color: #2F6FA8; }
+  .hm-tool-ico.an { background: var(--paper); color: var(--text-soft); box-shadow: inset 0 0 0 1px var(--line); }
+  .hm-tool-t { font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--text); }
+  .hm-tool-s { font-size: 13.5px; color: var(--text-faint); }
+
+  /* Buyer: the marketplace, with the buyer mascot standing at the edge. */
+  .hm-shop {
+    position: relative; overflow: hidden; display: flex; align-items: stretch; width: 100%; min-height: 150px;
+    padding: 0; border: none; border-radius: var(--radius-lg); cursor: pointer; text-align: left; font: inherit; color: #fff;
+    background: radial-gradient(120% 100% at 100% 0%, rgba(126,196,120,.3), transparent 60%), linear-gradient(150deg, #1D2E25, var(--ink));
+    transition: transform 180ms var(--ease-out);
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .hm-shop:active { transform: scale(.98); transition-duration: 90ms; }
+  .hm-shop-copy { position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column; gap: 4px; padding: 18px 0 18px 18px; max-width: 64%; }
+  .hm-shop-t { font-family: var(--font-display); font-size: 19px; font-weight: 700; line-height: 1.2; }
+  .hm-shop-s { font-size: 14px; color: rgba(255,255,255,.8); line-height: 1.4; }
+  .hm-shop-btn {
+    align-self: flex-start; margin-top: 8px; display: inline-flex; align-items: center; gap: 2px;
+    padding: 8px 8px 8px 14px; border-radius: 99px; background: var(--palay); color: var(--ink);
+    font-family: var(--font-display); font-size: 14px; font-weight: 700;
+  }
+  .hm-shop-img { position: absolute; right: -10px; bottom: -6px; height: 140px; width: auto; pointer-events: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hm-wx:active, .hm-link:active, .hm-spend:active, .hm-tool:active, .hm-shop:active { transform: none; }
+  }
+
   /* Purchase history thumbnail: same rounded-square photo as the cart line,
      a touch smaller to suit a denser list. */
   .ptx-thumb {
@@ -2010,21 +2128,24 @@ export const appCss = `
      enough that white text holds over the pale flooded terraces. */
   .home-header {
     position: relative; isolation: isolate; overflow: hidden;
-    border-radius: var(--radius-lg); padding: 24px 20px 22px; color: #fff;
+    border-radius: var(--radius-lg); padding: 22px 20px 18px; color: #fff;
     box-shadow: 0 16px 34px -16px rgba(22,33,27,.45);
-    /* Tall enough for the bukid to be a photograph rather than a strip. The
-       column lets the status pill fall to the bottom edge instead of crowding
-       the date, so the height goes to the field and not to dead space. */
-    min-height: 220px; display: flex; flex-direction: column;
+    min-height: 196px; display: flex; flex-direction: column;
   }
-  .home-header .home-status { margin-top: auto; }
+  /* The same farm as the Weather hero, by day or by night, washed from the
+     left so the greeting holds over the sky. */
   .home-header::before {
     content: ""; position: absolute; inset: 0; z-index: -1;
     background-image:
-      linear-gradient(100deg, rgba(16,21,18,.80) 0%, rgba(16,21,18,.60) 42%, rgba(16,21,18,.26) 100%),
-      url(${riceFieldWide});
+      linear-gradient(100deg, rgba(16,21,18,.78) 0%, rgba(16,21,18,.52) 45%, rgba(16,21,18,.18) 100%),
+      url(${wxDay});
     background-size: cover, cover;
-    background-position: center, center;
+    background-position: center, center 70%;
+  }
+  .home-header[data-time="night"]::before {
+    background-image:
+      linear-gradient(100deg, rgba(6,9,20,.7) 0%, rgba(6,9,20,.4) 50%, rgba(6,9,20,.1) 100%),
+      url(${wxNight});
   }
   .home-top { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; }
   /* The scrim is light enough to show the field, so the type carries its own
