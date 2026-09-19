@@ -873,6 +873,25 @@ export const appCss = `
   .wid-btn.ghost { background: rgba(255,255,255,.1); color: #fff; box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.28); }
   @keyframes wid-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
+  /* View mode (opened from Profile): no lanyard drop or delayed buttons, the
+     panel's own scale-in is enough; the light still passes once, quickly. */
+  .wid.is-view .wid-title, .wid.is-view .wid-sub, .wid.is-view .wid-actions { animation: none; }
+  .wid.is-view .wid-card { animation: none; }
+  .wid.is-view .wid-shine { animation-delay: 250ms; animation-duration: 800ms; }
+
+  /* "Show Member ID" on the profile card: glass on the dark, full width at
+     the card's foot, 48px so it's an easy reach. */
+  .prof-id-btn {
+    margin-top: 16px; width: 100%; min-height: 48px; border: none; border-radius: 14px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: rgba(255,255,255,.12); color: #fff; box-shadow: inset 0 0 0 1px rgba(255,255,255,.26);
+    font-family: var(--font-display); font-size: 15.5px; font-weight: 700;
+    transition: transform 160ms var(--ease-out), background-color 160ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .prof-id-btn:active { transform: scale(.97); background: rgba(255,255,255,.2); transition-duration: 90ms; }
+  @media (prefers-reduced-motion: reduce) { .prof-id-btn:active { transform: none; } }
+
   /* Profile avatar, when the member has added a photo. */
   .prof-ava { overflow: hidden; }
   .prof-ava-img { width: 100%; height: 100%; object-fit: cover; display: block; }

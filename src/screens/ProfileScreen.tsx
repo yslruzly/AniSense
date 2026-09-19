@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, Camera, Bell, ChevronRight, Globe, Lock, HelpCircle, Settings, LogOut, Phone, Mail, MapPin, Calendar } from "lucide-react";
+import { ArrowLeft, Camera, Bell, IdCard, ChevronRight, Globe, Lock, HelpCircle, Settings, LogOut, Phone, Mail, MapPin, Calendar } from "lucide-react";
 import { useLang, LanguageToggle } from "../i18n";
 import { Screen, UserRole, FarmerProfile } from "../types";
 import { CropEmoji } from "../components/CropEmoji";
@@ -7,7 +7,7 @@ import { AniSenseLogo } from "../components/AniSenseLogo";
 import leafMask from "../assets/anisense-leaf-mask.png";
 
 // ─── Profile Screen ───────────────────────────────────────────────────────────
-export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignOut, userInitials = "JD", userRole, userPhoto = null }: {
+export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignOut, userInitials = "JD", userRole, userPhoto = null, onShowId }: {
   onNavigate: (s: Screen) => void;
   onBack: () => void;
   profile: FarmerProfile;
@@ -16,6 +16,7 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
   userInitials?: string;
   userRole?: UserRole;
   userPhoto?: string | null;
+  onShowId?: () => void;
 }) {
   const { t, tn } = useLang();
   const [editing, setEditing] = useState(false);
@@ -110,6 +111,13 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
               </span>
             ))}
           </div>
+          {/* The ID lives on the card that already looks like one: the
+              natural place to reach for it when a buyer asks who you are. */}
+          {onShowId && !editing && (
+            <button className="prof-id-btn" onClick={onShowId}>
+              <IdCard size={19} strokeWidth={2.2} /> {t("id_show")}
+            </button>
+          )}
         </div>
 
         {/* Personal Stats, farmer only */}

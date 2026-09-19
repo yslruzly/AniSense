@@ -36,6 +36,7 @@ export default function App() {
   // The welcome ID: set once, when an account is created, and shown over Home.
   const [welcome, setWelcome] = useState<WelcomeInfo | null>(null);
   const [showWelcome, setShowWelcome] = useState(false);
+  const [idMode, setIdMode] = useState<"welcome" | "view">("welcome");
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
 
   // ── App state ──
@@ -98,11 +99,14 @@ export default function App() {
         phone: `+63 ${farmDetails.phone.replace(/^0/, "")}`,
       } : {}),
     }));
-    // New accounts land on Home with their member ID over it; closing the
-    // card leaves them exactly there.
+    // Every account has a member ID (Profile can show it any time). New
+    // accounts also land on Home with it open; closing leaves them there.
+    // Until the database is wired, a signed-in account's ID and "since" are
+    // made at sign-in; they should come from the user's record.
+    setWelcome({ id: makeMemberId(), since: new Date() });
     if (isNew) {
       setActive("home");
-      setWelcome({ id: makeMemberId(), since: new Date(), location: farmDetails?.location });
+      setIdMode("welcome");
       setShowWelcome(true);
     }
     setIsAuthed(true);
@@ -175,7 +179,7 @@ export default function App() {
       case "analytics": return <AnalyticsScreen onProfile={openProfile} onBack={goHome} userInitials={initials} farmerCrops={farmerProfile.crops} />;
       case "trade": return <TradeScreen onProfile={openProfile} onBack={goHome} userName={userName} userInitials={initials} userRole={userRole} />;
       case "weather": return <WeatherScreen onProfile={openProfile} onBack={goHome} userInitials={initials} />;
-      case "profile": return <ProfileScreen onNavigate={setActive} onBack={goBack} profile={farmerProfile} setProfile={setFarmerProfile} onSignOut={handleSignOut} userInitials={initials} userRole={userRole} userPhoto={userPhoto} />;
+      case "profile": return <ProfileScreen onNavigate={setActive} onBack={goBack} profile={farmerProfile} setProfile={setFarmerProfile} onSignOut={handleSignOut} userInitials={initials} userRole={userRole} userPhoto={userPhoto} onShowId={() => { setIdMode("view"); setShowWelcome(true); }} />;
     }
   };
 
@@ -190,9 +194,11 @@ export default function App() {
           <WelcomeID
             open={showWelcome}
             onClose={() => setShowWelcome(false)}
-            name={userName}
+            mode={idMode}
+            name={farmerProfile.name}
             initials={initials}
             role={userRole}
+            location={userRole === "farmer" ? farmerProfile.location : undefined}
             info={welcome}
             photo={userPhoto}
             onPhoto={setUserPhoto}

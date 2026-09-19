@@ -14,17 +14,25 @@ import { AniSenseLogo } from "./AniSenseLogo";
 // Seen once per account, at the end of sign-up, so it's the one place in the
 // app that earns a real entrance: the card drops in on its lanyard, settles
 // with a little swing, and a light sweeps across it like a laminated card.
+//
+// Profile reopens the same card in "view" mode: its own title, a Close
+// button, and a plain scale-in, because a swing that delights once becomes a
+// wait the fifth time someone pulls their ID up to show a buyer.
 
-export type WelcomeInfo = { id: string; since: Date; location?: string };
+export type WelcomeInfo = { id: string; since: Date };
 
 /** AS-2026-04817: "AS" for AniSense, the year joined, five digits. */
 export function makeMemberId(d = new Date()) {
   return `AS-${d.getFullYear()}-${String(Math.floor(Math.random() * 100000)).padStart(5, "0")}`;
 }
 
-export function WelcomeID({ open, onClose, name, initials, role, info, photo, onPhoto }: {
+export function WelcomeID({ open, onClose, mode = "welcome", name, initials, role, location, info, photo, onPhoto }: {
   open: boolean;
   onClose: () => void;
+  mode?: "welcome" | "view";
+  /** Farmers only; buyers aren't asked where they are. Passed live, so an
+   *  edit on Profile shows on the card. */
+  location?: string;
   name: string;
   initials: string;
   role: UserRole;
@@ -48,10 +56,10 @@ export function WelcomeID({ open, onClose, name, initials, role, info, photo, on
   const roleLabel = role === "buyer" ? t("role_buyer") : t("role_farmer");
 
   return (
-    <Sheet open={open} onClose={onClose} variant="center" className="wid-panel" label={t("welcome_sub")}>
-      <div className="wid">
-        <h2 className="wid-title">{t("welcome_title").replace("{name}", first)}</h2>
-        <p className="wid-sub">{t("welcome_sub")}</p>
+    <Sheet open={open} onClose={onClose} variant="center" className="wid-panel" label={mode === "view" ? t("id_view_title") : t("welcome_sub")}>
+      <div className={`wid ${mode === "view" ? "is-view" : ""}`}>
+        <h2 className="wid-title">{mode === "view" ? t("id_view_title") : t("welcome_title").replace("{name}", first)}</h2>
+        <p className="wid-sub">{mode === "view" ? t("id_view_sub") : t("welcome_sub")}</p>
 
         {/* The card. aria-label reads it as one thing; its parts are visual. */}
         <div className="wid-card" role="img"
@@ -78,8 +86,8 @@ export function WelcomeID({ open, onClose, name, initials, role, info, photo, on
 
             <div className="wid-name">{name}</div>
             <div className="wid-role">{roleLabel}</div>
-            {info.location && (
-              <div className="wid-loc"><MapPin size={13} strokeWidth={2.4} /> {info.location}</div>
+            {location && (
+              <div className="wid-loc"><MapPin size={13} strokeWidth={2.4} /> {location}</div>
             )}
           </div>
 
@@ -103,7 +111,7 @@ export function WelcomeID({ open, onClose, name, initials, role, info, photo, on
               <Camera size={18} strokeWidth={2.2} /> {t("welcome_add_photo")}
             </button>
           )}
-          <button type="button" className="wid-btn primary" onClick={onClose}>{t("welcome_home")}</button>
+          <button type="button" className="wid-btn primary" onClick={onClose}>{mode === "view" ? t("close") : t("welcome_home")}</button>
         </div>
       </div>
     </Sheet>

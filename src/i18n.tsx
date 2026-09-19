@@ -71,6 +71,9 @@ export const translations: Dict = {
   id_member: { en: "Member ID", tl: "Member ID" },
   id_no: { en: "ID No.", tl: "ID Blg." },
   id_since: { en: "Member since", tl: "Miyembro mula" },
+  id_show: { en: "Show Member ID", tl: "Ipakita ang Member ID" },
+  id_view_title: { en: "Your member ID", tl: "Ang iyong member ID" },
+  id_view_sub: { en: "Tap the photo to change it.", tl: "I-tap ang litrato para palitan ito." },
   role_farmer_desc: {
     en: "Post listings, track expenses, and monitor crop market prices.",
     tl: "Mag-post ng paninda, subaybayan ang gastos, at bantayan ang presyo ng pananim.",
