@@ -355,43 +355,68 @@ export const appCss = `
      screen read as one surface with chrome above it. */
   .bnav {
     position: absolute; z-index: 40;
-    left: 12px; right: 12px; bottom: 12px;
-    height: var(--bnav-h);
-    display: flex; align-items: center; justify-content: space-around;
-    padding: 0 6px; border-radius: var(--radius-lg);
+    left: 14px; right: 14px; bottom: 12px;
+    height: var(--bnav-h); padding: 6px;
+    /* A capsule, like the iOS tab bar: the ends are fully round, so it reads
+       as one object floating over the page rather than a docked strip. */
+    border-radius: 999px;
     /* Glass. The tint is thin enough that content reads through it; the blur
        and the saturate are what turn that into a material rather than a
        washed-out panel. A sheen across the top-left catches the light. */
     background:
-      linear-gradient(155deg, rgba(255,255,255,.42), rgba(255,255,255,.12) 52%, rgba(255,255,255,0) 82%),
-      rgba(255,255,255,.50);
-    backdrop-filter: blur(26px) saturate(190%);
-    -webkit-backdrop-filter: blur(26px) saturate(190%);
-    /* Bright top edge is light catching the material, the dark bottom edge is
-       its thickness, and the wide soft shadow is what sells the height off the
-       page. A bar is a big surface, so it takes a deeper shadow than a chip. */
+      linear-gradient(155deg, rgba(255,255,255,.46), rgba(255,255,255,.14) 52%, rgba(255,255,255,0) 82%),
+      rgba(255,255,255,.58);
+    backdrop-filter: blur(28px) saturate(190%);
+    -webkit-backdrop-filter: blur(28px) saturate(190%);
+    /* Bright top edge is light catching the material, the hairline is its
+       rim, and the wide soft shadow is what lifts it off the page. */
     box-shadow:
-      inset 0 1px 0 rgba(255,255,255,.9),
-      inset 0 0 0 1px rgba(22,33,27,.08),
-      inset 0 -1px 0 rgba(22,33,27,.06),
-      0 12px 34px -10px rgba(22,33,27,.30),
-      0 2px 8px -3px rgba(22,33,27,.14);
+      inset 0 1px 0 rgba(255,255,255,.95),
+      inset 0 0 0 1px rgba(22,33,27,.07),
+      0 14px 36px -12px rgba(22,33,27,.32),
+      0 3px 10px -4px rgba(22,33,27,.14);
   }
+  .bnav-track { position: relative; display: flex; height: 100%; }
+
+  /* The one moving part. Transform only, so it stays on the compositor, and
+     no overshoot: a tab switch has no momentum behind it, so a critically
+     damped settle (the curve below) is what Apple uses for the same move. */
+  .bnav-pill {
+    position: absolute; top: 0; bottom: 0; left: 0; width: calc(100% / var(--n));
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgba(11,107,65,.16), rgba(11,107,65,.11));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.7), inset 0 0 0 1px rgba(11,107,65,.10);
+    transition: transform 340ms cubic-bezier(.32,.72,0,1), opacity 160ms ease;
+    pointer-events: none;
+  }
+
   .ntab {
-    flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;
-    background:none; border:none; cursor:pointer; padding:8px 2px; border-radius:16px;
-    margin: 0 2px;
+    position: relative; flex: 1; min-width: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+    background: none; border: none; cursor: pointer; padding: 0; border-radius: 999px;
+    color: #6B736E;
+    transition: color 200ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
-  .ntab-ico { font-size:21px; display:flex; }
-  /* Vibrancy: over a translucent surface, muted grey text loses its footing.
-     One step darker holds the letterforms without shouting. */
-  .ntab-lbl { font-size: var(--fs-label); font-weight:600; color:var(--text-soft); }
-  /* Solid, never translucent: a light material stacked on a light material is
-     where legibility collapses. */
-  /* Solid, never translucent: a light material stacked on a light material is
-     where legibility collapses. */
-  .ntab.on { background: var(--green-bg); box-shadow: inset 0 0 0 1px rgba(11,107,65,.14); }
-  .ntab.on .ntab-lbl { color:var(--green); font-weight:700; }
+  .ntab.on { color: var(--green); }
+  /* Feedback on the press itself, not on release. Scaling the content rather
+     than the button keeps the pill beneath perfectly still. */
+  .ntab-ico, .ntab-lbl { transition: transform 160ms var(--ease-out); }
+  .ntab:active .ntab-ico, .ntab:active .ntab-lbl { transform: scale(.92); transition-duration: 90ms; }
+  .ntab-ico { display: flex; }
+  /* Apple-sized tab labels: small, but set heavier with a hair of positive
+     tracking, which is what keeps small type legible over glass. One size
+     for every tab so "Merkado" and "Home" sit on the same baseline. */
+  .ntab-lbl {
+    font-family: var(--font-display); font-size: 12px; line-height: 1; font-weight: 600;
+    letter-spacing: .01em; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis;
+  }
+  .ntab.on .ntab-lbl { font-weight: 700; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bnav-pill { transition: opacity 160ms ease; }
+    .ntab:active .ntab-ico, .ntab:active .ntab-lbl { transform: none; }
+  }
 
   /* Translucency is a preference, not a requirement. Both of these fall back
      to a solid bar rather than a washed-out one. */
