@@ -40,8 +40,7 @@ export function WelcomeID({ open, onClose, mode = "welcome", name, initials, rol
   photo: string | null;
   onPhoto: (dataUrl: string) => void;
 }) {
-  const { t, lang } = useLang();
-  const locale = lang === "tl" ? "fil-PH" : "en-PH";
+  const { t } = useLang();
   const fileRef = useRef<HTMLInputElement>(null);
   const first = name.split(" ")[0];
 
@@ -53,7 +52,10 @@ export function WelcomeID({ open, onClose, mode = "welcome", name, initials, rol
   };
 
   if (!info) return null;
-  const roleLabel = role === "buyer" ? t("role_buyer") : t("role_farmer");
+  // The card itself is a document, so it's always in English, whatever
+  // language the app is set to: the same ID reads the same to anyone it's
+  // shown to. The heading and buttons around it still follow the app.
+  const roleLabel = role === "buyer" ? "Buyer" : "Farmer";
 
   return (
     <Sheet open={open} onClose={onClose} variant="center" className="wid-panel" label={mode === "view" ? t("id_view_title") : t("welcome_sub")}>
@@ -63,12 +65,12 @@ export function WelcomeID({ open, onClose, mode = "welcome", name, initials, rol
 
         {/* The card. aria-label reads it as one thing; its parts are visual. */}
         <div className="wid-card" role="img"
-          aria-label={`${t("id_member")}: ${name}, ${roleLabel}, ${t("id_no")} ${info.id}`}>
+          aria-label={`Member ID: ${name}, ${roleLabel}, ID No. ${info.id}`}>
           <span className="wid-slot" aria-hidden="true" />
           <div className="wid-band">
             <span className="wid-mark"><AniSenseLogo size={20} /></span>
             <span className="wid-brand">AniSense</span>
-            <span className="wid-kind">{t("id_member")}</span>
+            <span className="wid-kind">Member ID</span>
           </div>
 
           <div className="wid-body">
@@ -93,12 +95,12 @@ export function WelcomeID({ open, onClose, mode = "welcome", name, initials, rol
 
           <div className="wid-foot">
             <div className="wid-field">
-              <span className="wid-lbl">{t("id_no")}</span>
+              <span className="wid-lbl">ID No.</span>
               <span className="wid-val">{info.id}</span>
             </div>
             <div className="wid-field end">
-              <span className="wid-lbl">{t("id_since")}</span>
-              <span className="wid-val">{info.since.toLocaleDateString(locale, { month: "short", year: "numeric" })}</span>
+              <span className="wid-lbl">Member since</span>
+              <span className="wid-val">{info.since.toLocaleDateString("en-PH", { month: "short", year: "numeric" })}</span>
             </div>
             <span className="wid-barcode" aria-hidden="true" />
           </div>
