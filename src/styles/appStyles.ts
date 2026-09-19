@@ -1,5 +1,5 @@
 import riceFieldWide from "../assets/rice-field-wide.webp";
-import expensesBg from "../assets/expenses-bg.webp";
+import expensesBg from "../assets/expenses-terraces.webp";
 
 export const appCss = `
   /* Tokens (colour, type ramp, radii, motion) live in styles/tokens.ts,
@@ -443,8 +443,10 @@ export const appCss = `
   }
 
   /* ── Expenses ── */
-  /* No colour cast: the photograph carries the card and is simply darkened
-     enough to hold white text. The base is ink rather than green so a failed
+  /* Flooded rice terraces (a crop of the splash photo): the money screen sits
+     on the farm it's spent on, for farmer and buyer alike. No colour cast:
+     the photograph carries the card and is simply darkened enough to hold
+     white text. The base is ink rather than green so a failed
      image load falls back to the same dark, not to a different card. */
   .exp-hero {
     position: relative; isolation: isolate; overflow: hidden;

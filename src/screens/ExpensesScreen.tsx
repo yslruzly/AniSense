@@ -264,14 +264,6 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
                   </span>
                 )}
               </div>
-
-              <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
-                {farmerCrops.map(c => (
-                  <div key={c} style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 99, padding: "4px 12px", fontSize: "var(--fs-label)", fontWeight: 700, display: "flex", alignItems: "center", gap: 5 }}>
-                    <CropEmoji crop={c} size={14} /> {tn(c)}
-                  </div>
-                ))}
-              </div>
             </div>
 
             {/* View mode tabs */}
