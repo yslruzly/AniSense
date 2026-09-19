@@ -18,7 +18,7 @@ export function RoleScreen({ onBack, onSelect, flow }: { onBack: () => void; onS
 
   return (
     <div className="a-screen">
-      <div className="a-inkhead">
+      <div className="a-inkhead" style={{ minHeight: 300 }}>
         <button className="a-iconbtn" onClick={onBack} aria-label={t("back")}>
           <ArrowLeft size={24} color="#fff" strokeWidth={2.4} />
         </button>
@@ -26,7 +26,8 @@ export function RoleScreen({ onBack, onSelect, flow }: { onBack: () => void; onS
         <p className="a-sub on-ink">{t("role_pick_one")}</p>
       </div>
 
-      <div className="a-scroll a-stagger" style={{ paddingTop: 22, display: "flex", flexDirection: "column", gap: 14 }}>
+      <div className="a-scroll a-stagger" style={{ paddingTop: 22, paddingBottom: 22, display: "flex", flexDirection: "column", gap: 14 }}>
+        <div style={{ flex: 1 }} />
         {roles.map(r => (
           <button
             key={r.id}
@@ -42,6 +43,7 @@ export function RoleScreen({ onBack, onSelect, flow }: { onBack: () => void; onS
             <span className="a-tick"><Check size={17} color="#fff" strokeWidth={3.4} /></span>
           </button>
         ))}
+        <div style={{ flex: 1 }} />
       </div>
 
       <div className="a-dock">

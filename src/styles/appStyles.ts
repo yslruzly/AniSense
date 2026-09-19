@@ -71,7 +71,7 @@ export const appCss = `
     padding: 0 18px; border-bottom: 1px solid var(--border);
   }
   .hdr-brand { display: flex; align-items: center; gap: 11px; }
-  .hdr-icon { font-size: 23px; }
+  .hdr-icon { font-size: 23px; display: flex; }
   .hdr-title { font-family: var(--font-display); font-size: var(--fs-body); font-weight: 700; color: var(--text); line-height: 1.15; }
   .hdr-sub   { font-size: var(--fs-label); color: var(--text-muted); margin-top: 1px; }
   .hdr-right { display: flex; align-items: center; gap: 12px; }

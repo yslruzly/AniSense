@@ -8,6 +8,8 @@ import { CropIcon } from "../components/icons";
 import { EXPENSES } from "../data/expenses";
 import { AIAdvisorCard } from "../components/analytics/AIAdvisorCard";
 import { PredictedPriceCard } from "../components/analytics/PredictedPriceCard";
+import { Hdr } from "../components/layout/Hdr";
+import { AniSenseLogo } from "../components/AniSenseLogo";
 
 // ─── Home / Summary Screen ────────────────────────────────────────────────────
 export function HomeScreen({ onNavigate, onProfile, isOffline, lastUpdated, userName = "Juan", userInitials = "JD", userRole, farmerCrops = ["Rice", "Corn"] }: {
@@ -59,6 +61,7 @@ export function HomeScreen({ onNavigate, onProfile, isOffline, lastUpdated, user
 
   return (
     <div className="screen">
+      <Hdr icon={<AniSenseLogo size={28} />} title="AniSense" onProfile={onProfile} userInitials={userInitials} />
       <div className="scroll screen-enter">
         {/* Greeting card, on a lowland bukid rather than a flat colour. */}
         <div className="home-header">
@@ -67,7 +70,6 @@ export function HomeScreen({ onNavigate, onProfile, isOffline, lastUpdated, user
               <div className="home-greeting">{greeting},<br />{firstName}! 👋</div>
               <div className="home-date">{dateStr}</div>
             </div>
-            <button className="home-ava-btn" onClick={onProfile}>{userInitials}</button>
           </div>
           {/* Online/offline status */}
           <div className="home-status">
