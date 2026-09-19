@@ -1,7 +1,7 @@
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { useLang } from "../../i18n";
 import { CROP_GROUPS, RICE_VARIETIES } from "../../data/crops";
-import { ARIMA_DATA } from "../../data/forecast";
+import { arimaProjection } from "../../data/forecast";
 import { CropEmoji } from "../CropEmoji";
 
 // ─── Predicted Price Card ─────────────────────────────────────────────────────
@@ -12,12 +12,12 @@ export function PredictedPriceCard({ farmerCrops = ["Rice", "Corn"] }: { farmerC
   groupPriceMap["Rice"] = RICE_VARIETIES[0].pricePerKg;
 
   const items = farmerCrops.map(cropName => {
-    const arima = ARIMA_DATA[cropName];
-    if (!arima) return null;
     const current = groupPriceMap[cropName] ?? 0;
-    const predicted = arima.d3;
-    const diff = predicted - current;
-    const pct = current > 0 ? ((diff / current) * 100).toFixed(1) : "0.0";
+    const proj = arimaProjection(cropName, current);
+    if (!proj) return null;
+    const predicted = proj.d3;
+    const diff = proj.change;
+    const pct = proj.pct.toFixed(1);
     const up = diff >= 0;
     return { name: cropName, current, predicted, diff, pct, up };
   }).filter(Boolean) as { name: string; current: number; predicted: number; diff: number; pct: string; up: boolean }[];

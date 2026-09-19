@@ -683,6 +683,53 @@ export const appCss = `
     .df-chip:active, .df-nav:active, .df-day:active { transform: none; }
   }
 
+  /* ── Sell now or wait? (advisor card) ────────────────────────────────────── */
+  .adv-head { margin-bottom: 4px; }
+  .adv-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -.01em; }
+  .adv-sub { margin-top: 3px; font-size: 14.5px; line-height: 1.4; color: var(--text-muted); }
+  .adv-row { display: flex; gap: 12px; padding: 14px 0; }
+  .adv-row + .adv-row { border-top: 1px solid var(--line); }
+  .adv-ico {
+    width: 44px; height: 44px; flex: 0 0 44px; border-radius: 12px;
+    background: var(--paper); box-shadow: inset 0 0 0 1px var(--line);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .adv-body { flex: 1; min-width: 0; }
+  .adv-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .adv-name { font-family: var(--font-display); font-size: 17px; font-weight: 700; color: var(--text); }
+  /* The decision, in words and colour. Title case, not SHOUTING: the colour
+     already carries the urgency. */
+  .adv-pill {
+    flex-shrink: 0; padding: 5px 12px; border-radius: 99px;
+    font-family: var(--font-display); font-size: 14px; font-weight: 700; white-space: nowrap;
+  }
+  .adv-pill.sell  { background: var(--error); color: #fff; }
+  .adv-pill.hold  { background: var(--tanim); color: #fff; }
+  .adv-pill.watch { background: var(--gold-sk); color: var(--gold-text); box-shadow: inset 0 0 0 1px var(--gold-line); }
+
+  .adv-prices { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 6px 10px; margin-top: 8px; }
+  .adv-p { display: flex; flex-direction: column; }
+  .adv-p-lbl { font-size: 12.5px; color: var(--text-faint); line-height: 1.2; }
+  .adv-p-val {
+    font-family: var(--font-display); font-size: 17px; font-weight: 700; color: var(--text);
+    font-variant-numeric: tabular-nums; line-height: 1.3;
+  }
+  .adv-arrow { color: var(--text-faint); margin-bottom: 3px; }
+  .adv-arrow.up { color: var(--tanim); }
+  .adv-arrow.down { color: var(--error); }
+  .adv-delta {
+    margin-bottom: 1px; padding: 2px 8px; border-radius: 99px;
+    font-size: 13.5px; font-weight: 700; font-variant-numeric: tabular-nums;
+    background: var(--paper); color: var(--text-muted);
+  }
+  .adv-delta.up { background: var(--tanim-sk); color: var(--tanim); }
+  .adv-delta.down { background: var(--error-sk); color: var(--error); }
+  .adv-why { margin-top: 8px; font-size: 15px; line-height: 1.45; color: var(--text-soft); }
+  .adv-foot {
+    margin-top: 4px; padding-top: 12px; border-top: 1px solid var(--line);
+    font-size: 13px; line-height: 1.45; color: var(--text-faint);
+  }
+
   /* Purchase history thumbnail: same rounded-square photo as the cart line,
      a touch smaller to suit a denser list. */
   .ptx-thumb {
