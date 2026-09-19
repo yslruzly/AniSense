@@ -76,9 +76,26 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
     });
   };
 
+  // What the calculator would show after "=": a pending "1,200 + 300" counts
+  // as 1,500, so Use never takes just the second number by mistake.
+  const calcResult = (() => {
+    const { prev, op, display, fresh } = calc;
+    if (!prev || !op || fresh) return parseFloat(display) || 0;
+    const a = parseFloat(prev), b = parseFloat(display);
+    const r = op === "+" ? a + b : op === "−" ? a - b : op === "×" ? a * b : b !== 0 ? a / b : 0;
+    return parseFloat(r.toFixed(2));
+  })();
+
+  // Opens the Add Expense form with the amount already in it. It used to set
+  // the amount on a closed form, which the next "Add expense" tap then reset,
+  // so the number was silently lost.
   const calcUseResult = () => {
-    setForm(f => ({ ...f, amount: calc.display }));
+    if (calcResult <= 0) return;
     setShowCalc(false);
+    setEditId(null);
+    setForm({ description: "", category: "Seeds", amount: String(calcResult), date: new Date().toISOString().split("T")[0], crop: farmerCrops[0] || "Rice" });
+    setFormError("");
+    setShowModal(true);
   };
 
   // Filtering logic
@@ -530,83 +547,73 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
       {/* Calculator modal */}
       <Sheet open={showCalc} onClose={() => setShowCalc(false)} className="calc-sheet" label={t("calc_title")}>
         <>
-            {/* Drag handle */}
-            <div style={{ display: "flex", justifyContent: "center", paddingTop: 12, marginBottom: 8 }}>
-              <div style={{ width: 40, height: 4, borderRadius: 99, background: "var(--text-soft)" }} />
-            </div>
+            <div className="calc-grab" aria-hidden="true" />
 
-            {/* Header */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 20px 12px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <div style={{ width: 32, height: 32, borderRadius: 10, background: "var(--tanim-sk)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <Calculator size={17} color="var(--tanim)" />
-                </div>
-                <span style={{ fontSize: "var(--fs-body)", fontWeight: 800, color: "var(--paper)" }}>{t("calc_title")}</span>
+            <div className="calc-head">
+              <div className="calc-title">
+                <span className="calc-title-ico"><Calculator size={18} /></span>
+                {t("calc_title")}
               </div>
-              <button onClick={() => setShowCalc(false)} style={{ background: "var(--ink)", border: "none", borderRadius: 10, width: 32, height: 32, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <X size={15} color="var(--text-faint)" />
+              <button className="calc-close" onClick={() => setShowCalc(false)} aria-label={t("close")}>
+                <X size={20} strokeWidth={2.4} />
               </button>
             </div>
 
-            {/* Display */}
-            <div style={{ margin: "0 16px 12px", background: "var(--ink)", borderRadius: 14, padding: "14px 18px" }}>
-              <div style={{ fontSize: "var(--fs-label)", color: "var(--text-muted)", fontFamily: "inherit", minHeight: 16 }}>
+            {/* Display: the running sum in grey, the number big. The number
+                shrinks as it grows so it never cuts off, and reads out on
+                change for screen readers. */}
+            <div className="calc-display">
+              <div className="calc-expr">
                 {calc.prev && calc.op ? `${parseFloat(calc.prev).toLocaleString("en-PH")} ${calc.op}` : ""}
               </div>
-              <div style={{ fontSize: calc.display.length > 9 ? 24 : 36, fontWeight: 900, color: "var(--paper)", textAlign: "right", letterSpacing: -1, fontFamily: "inherit", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", transition: "font-size 0.1s" }}>
-                {calc.display.endsWith(".") ? `₱${parseFloat(calc.display).toLocaleString("en-PH")}.` : `₱${parseFloat(calc.display).toLocaleString("en-PH", { maximumFractionDigits: 8 })}`}
+              <div className="calc-num" aria-live="polite" style={{ fontSize: calc.display.length > 11 ? 30 : calc.display.length > 8 ? 38 : 48 }}>
+                <small>₱</small>
+                {calc.display.endsWith(".") ? `${parseFloat(calc.display).toLocaleString("en-PH")}.` : parseFloat(calc.display).toLocaleString("en-PH", { maximumFractionDigits: 8 })}
               </div>
             </div>
 
-            {/* Use result button */}
-            <div style={{ margin: "0 16px 10px" }}>
-              <button onClick={calcUseResult}
-                style={{ width: "100%", padding: "11px", background: "var(--tanim)", color: "#fff", border: "none", borderRadius: 12, fontFamily: "inherit", fontSize: "var(--fs-label)", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-                <Receipt size={14} /> {t("calc_use")}
-              </button>
-            </div>
-
-            {/* Keypad */}
+            {/* Keypad: the standard phone-calculator layout, so nobody has to
+                look for a key. 0 spans two columns as it does everywhere. */}
             {(() => {
-              const rows = [
-                ["AC", "%", "⌫", "÷"],
-                ["7", "8", "9", "×"],
-                ["4", "5", "6", "−"],
-                ["1", "2", "3", "+"],
-                ["0", ".", "="],
+              const keys = [
+                "AC", "%", "⌫", "÷",
+                "7", "8", "9", "×",
+                "4", "5", "6", "−",
+                "1", "2", "3", "+",
+                "0", ".", "=",
               ];
-              const isOp = (k: string) => ["÷","×","−","+"].includes(k);
-              const isEq = (k: string) => k === "=";
-              const isFunc = (k: string) => ["AC","%","⌫"].includes(k);
-              const activeOp = calc.op;
+              const isOp = (k: string) => ["÷", "×", "−", "+"].includes(k);
+              const isFunc = (k: string) => ["AC", "%", "⌫"].includes(k);
+              const label: Record<string, string> = { "⌫": t("delete"), "AC": "AC" };
               return (
-                <div style={{ padding: "0 16px", display: "flex", flexDirection: "column", gap: 8 }}>
-                  {rows.map((row, ri) => (
-                    <div key={ri} style={{ display: "grid", gridTemplateColumns: row.length === 3 ? "2fr 1fr 1fr" : "1fr 1fr 1fr 1fr", gap: 8 }}>
-                      {row.map(k => {
-                        const active = isOp(k) && activeOp === k;
-                        return (
-                          // .calc-key carries the press feedback. A keypad is
-                          // the one control where a key that does not move
-                          // under the thumb is read as a missed tap, and the
-                          // user presses it again — which on a calculator
-                          // means a wrong number, not just a wasted second.
-                          <button key={k} className="calc-key" onClick={() => calcPress(k)}
-                            style={{
-                              border: active ? "2px solid var(--tanim-sk)" : "2px solid transparent",
-                              background: isEq(k) ? "var(--tanim)" : isOp(k) ? "var(--tanim-deep)" : isFunc(k) ? "var(--text-soft)" : "var(--ink)",
-                              color: isEq(k) ? "#fff" : isOp(k) ? "var(--tanim-sk)" : isFunc(k) ? "var(--line-strong)" : "var(--paper)",
-                              boxShadow: isEq(k) ? "0 4px 12px rgba(11,107,65,0.3)" : "none",
-                            }}>
-                            {k}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  ))}
+                <div className="calc-pad">
+                  {keys.map(k => {
+                    const cls = ["calc-key",
+                      isOp(k) ? "op" : "", isFunc(k) ? "fn" : "", k === "=" ? "eq" : "",
+                      k === "0" ? "span2" : "",
+                      isOp(k) && calc.op === k && calc.fresh ? "on" : "",
+                    ].filter(Boolean).join(" ");
+                    return (
+                      // .calc-key carries the press feedback. A keypad is the
+                      // one control where a key that does not move under the
+                      // thumb is read as a missed tap, and the user presses it
+                      // again — which on a calculator means a wrong number.
+                      <button key={k} className={cls} onClick={() => calcPress(k)} aria-label={label[k]}>
+                        {k}
+                      </button>
+                    );
+                  })}
                 </div>
               );
             })()}
+
+            {/* Use sits under the keypad, in the thumb zone, where the sum ends.
+                It carries the amount it will use, and takes a pending sum
+                ("1,200 + 300") as its total. */}
+            <button className="calc-use" onClick={calcUseResult} disabled={calcResult <= 0}>
+              <Receipt size={18} strokeWidth={2.2} />
+              {t("calc_use")}{calcResult > 0 && <> · ₱{calcResult.toLocaleString("en-PH", { maximumFractionDigits: 2 })}</>}
+            </button>
         </>
       </Sheet>
 

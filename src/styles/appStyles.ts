@@ -986,11 +986,48 @@ export const appCss = `
     border-radius: 22px 22px 0 0; padding-bottom: 28px;
     box-shadow: 0 -8px 40px rgba(0,0,0,0.18);
   }
+  /* Light, like the system calculator in light mode: white sheet, grey keys,
+     green only on the operators and the answer. */
   .calc-sheet {
-    width: 100%; background: var(--text);
-    border-radius: 22px 22px 0 0; padding-bottom: 28px;
-    box-shadow: 0 -8px 40px rgba(0,0,0,0.4);
+    width: 100%; background: var(--card);
+    border-radius: 24px 24px 0 0; padding: 10px 16px 22px;
+    box-shadow: 0 -8px 40px rgba(0,0,0,0.18);
   }
+  .calc-grab { width: 40px; height: 5px; border-radius: 99px; background: var(--line); margin: 0 auto 8px; }
+  .calc-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 2px 2px 4px; }
+  .calc-title { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-size: var(--fs-body); font-weight: 700; color: var(--text); }
+  .calc-title-ico { width: 34px; height: 34px; border-radius: 10px; background: var(--paper); box-shadow: inset 0 0 0 1px var(--line); display: flex; align-items: center; justify-content: center; color: var(--text-soft); }
+  .calc-close {
+    width: 40px; height: 40px; border-radius: 50%; border: none; cursor: pointer;
+    background: var(--paper); color: var(--text-soft); display: flex; align-items: center; justify-content: center;
+    transition: transform 160ms var(--ease-out), background-color 160ms ease;
+  }
+  .calc-close:active { transform: scale(.92); background: var(--paper-alt); transition-duration: 90ms; }
+
+  /* The display is the hero: no box around it, just a big right-aligned
+     number with the running sum above it in grey. */
+  .calc-display { padding: 18px 6px 16px; text-align: right; min-height: 104px; display: flex; flex-direction: column; justify-content: flex-end; }
+  .calc-expr { min-height: 22px; font-size: 16px; color: var(--text-faint); font-variant-numeric: tabular-nums; }
+  .calc-num {
+    font-family: var(--font-display); font-weight: 600; color: var(--text); line-height: 1.1;
+    letter-spacing: -.03em; font-variant-numeric: tabular-nums;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .calc-num small { font-size: .55em; font-weight: 500; color: var(--text-faint); margin-right: 4px; letter-spacing: 0; }
+
+  .calc-pad { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .calc-pad .span2 { grid-column: span 2; }
+
+  .calc-use {
+    width: 100%; min-height: 54px; margin-top: 14px; border: none; border-radius: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: var(--tanim); color: #fff; font-family: var(--font-display); font-size: var(--fs-label); font-weight: 700;
+    box-shadow: 0 8px 18px -10px rgba(11,107,65,.75);
+    transition: transform 160ms var(--ease-out), background-color 160ms ease, opacity 160ms ease;
+  }
+  .calc-use:active { transform: scale(.97); transition-duration: 90ms; }
+  .calc-use:disabled { background: var(--paper-alt); color: var(--text-faint); box-shadow: none; cursor: default; }
+  .calc-use:disabled:active { transform: none; }
 
   /* The compact pair used inside the expense sheets. */
   .btn-primary.sm, .btn-secondary.sm, .btn-danger.sm {
@@ -1006,15 +1043,28 @@ export const appCss = `
      wrong number rather than a wasted second. 0.94 and a hard 90ms, because
      the whole point is that it lands before the finger lifts. */
   .calc-key {
-    padding: 18px 0; border-radius: 14px; cursor: pointer;
-    font-family: inherit; font-size: var(--fs-body); font-weight: 800;
-    transition: transform 170ms var(--ease-out), filter var(--dur-fast) ease;
+    height: 62px; border: none; border-radius: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-display); font-size: 24px; font-weight: 500; font-variant-numeric: tabular-nums;
+    background: var(--paper); color: var(--text);
+    transition: transform 170ms var(--ease-out), background-color 160ms ease, color 160ms ease, filter var(--dur-fast) ease;
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
+  /* Three families, told apart by fill: numbers light grey, functions a step
+     darker, operators green-tinted. Equals is the only solid key. */
+  .calc-key.fn { background: var(--paper-alt); color: var(--text-soft); font-size: 19px; font-weight: 600; }
+  .calc-key.op { background: var(--tanim-sk); color: var(--tanim); font-size: 26px; }
+  /* The chosen operator inverts, so "which one did I press?" is answered
+     without reading the line above. */
+  .calc-key.op.on { background: var(--tanim); color: #fff; }
+  .calc-key.eq { background: var(--tanim); color: #fff; font-size: 28px; box-shadow: 0 6px 14px -8px rgba(11,107,65,.7); }
   .calc-key:active {
     transition-duration: 90ms;
     transform: scale(0.94);
-    filter: brightness(1.35);
+    filter: brightness(.92);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .calc-key:active, .calc-use:active, .calc-close:active { transform: none; }
   }
 
   /* ── Weather ── */
