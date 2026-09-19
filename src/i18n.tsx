@@ -602,6 +602,7 @@ export const translations: Dict = {
     en: "Tap one. We'll set up the app to match.",
     tl: "Pumili lamang ng isa.",
   },
+  role_continue_as: { en: "Continue as", tl: "Magpatuloy bilang" },
 
   // ── Form helpers ──────────────────────────────────────────────────────────
   auth_show: { en: "Show", tl: "Ipakita" },

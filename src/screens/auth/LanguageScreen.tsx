@@ -25,13 +25,11 @@ export function LanguageScreen({ onDone, onBack }: { onDone: () => void; onBack?
   return (
     <div className="a-screen">
       <div className="a-scroll a-stagger" style={{ paddingTop: 44 }}>
-        <div>
-          {onBack && (
-            <button className="a-iconbtn on-paper" onClick={onBack} aria-label={t("back")} style={{ marginBottom: 22 }}>
-              <ArrowLeft size={24} color="var(--ink)" strokeWidth={2.4} />
-            </button>
-          )}
-          <div className="a-langmark"><AniSenseLogo size={44} /></div>
+        {/* Brand lockup where the back arrow used to sit: the first screen of the
+            flow says whose app this is before it asks anything. */}
+        <div className="a-brandrow lg">
+          <span className="a-brandmark"><AniSenseLogo size={32} /></span>
+          <span className="a-brandname on-paper">AniSense</span>
         </div>
         <div>
           <h1 className="a-title">{t("lang_title")}</h1>
@@ -55,7 +53,15 @@ export function LanguageScreen({ onDone, onBack }: { onDone: () => void; onBack?
         </div>
         <p className="a-help" style={{ marginTop: 20 }}>{t("lang_change_later")}</p>
       </div>
-      <div className="a-dock">
+      {/* Back lives in the dock, beside Continue: both steps of the decision sit
+          in the thumb zone, and Back stays a quiet square so Continue reads as
+          the primary action. */}
+      <div className="a-dock a-dockrow">
+        {onBack && (
+          <button className="a-iconbtn on-paper" onClick={onBack} aria-label={t("back")}>
+            <ArrowLeft size={24} color="var(--ink)" strokeWidth={2.4} />
+          </button>
+        )}
         <button className="a-btn a-btn-green" onClick={confirm}>{t("continue")}</button>
       </div>
     </div>
