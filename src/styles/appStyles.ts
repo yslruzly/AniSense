@@ -1516,6 +1516,10 @@ export const appCss = `
     box-shadow: inset 0 0 0 1px rgba(11,107,65,.16);
   }
   .mp-peek  { position:absolute; right:-16px; bottom:-8px; height:132px; width:auto; pointer-events:none; user-select:none; }
+  /* The selling farmer is a whole figure, not a peek: he stands on the panel's
+     bottom edge, and the copy keeps clear of him. */
+  .mp-peek-sell { right: -14px; bottom: -14px; height: 168px; }
+  .mp-title-row:has(.mp-peek-sell) .mp-sub { max-width: 150px; }
   /* Plain greeting beside Juan, no bubble. */
   .mp-peek-bubble { position:absolute; right:76px; top:8px; color:var(--tanim);
     font-family: var(--font-display); font-size: var(--fs-lead); font-weight:800;

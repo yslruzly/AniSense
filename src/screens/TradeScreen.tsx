@@ -8,6 +8,7 @@ import { Hdr } from "../components/layout/Hdr";
 import { CropIcon } from "../components/icons";
 import { cropPhotoFor } from "../data/cropPhotos";
 import juanPeek from "../assets/juan-peek.webp";
+import farmerSell from "../assets/farmer-sell.webp";
 import { CropEmoji } from "../components/CropEmoji";
 import { Sheet } from "../components/ui/Sheet";
 import { useRetained } from "../hooks/usePresence";
@@ -285,8 +286,17 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
           </div>
           {/* Juan peeks in from the right edge of the screen, over the gap
               beside the title. Decorative only, so no alt text. */}
-          <span className="mp-peek-bubble" aria-hidden="true">{t("hi")} {userName.split(" ")[0]}!</span>
-          <img className="mp-peek" src={juanPeek} alt="" aria-hidden="true" />
+          {/* A farmer comes here to sell, so he's met by a farmer holding his
+              harvest and pointing at the page. A buyer is browsing, so Juan
+              keeps waving them in. Decorative either way. */}
+          {userRole === "buyer" ? (
+            <>
+              <span className="mp-peek-bubble" aria-hidden="true">{t("hi")} {userName.split(" ")[0]}!</span>
+              <img className="mp-peek" src={juanPeek} alt="" aria-hidden="true" />
+            </>
+          ) : (
+            <img className="mp-peek mp-peek-sell" src={farmerSell} alt="" aria-hidden="true" />
+          )}
         </div>
 
         {userRole !== "buyer" && (
