@@ -1087,6 +1087,27 @@ export const appCss = `
     .pr-mover:active, .pr-sheet-x:active { transform: none; }
   }
 
+  /* ── Card headings with a colour chip ────────────────────────────────────
+     Profile is a settings page: the cards stay white and the colour rides on
+     the chips, the way a phone's own Settings names its groups. Only the
+     stats card takes a wash, because it's the one that's about the person
+     rather than about a setting. */
+  .card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 13px; }
+  .card-ico {
+    width: 38px; height: 38px; flex: 0 0 38px; border-radius: 11px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .card-ico.tint-green { background: var(--tanim-sk); color: var(--tanim); box-shadow: inset 0 0 0 1px rgba(11,107,65,.14); }
+  .card-ico.tint-gold { background: var(--gold-sk); color: var(--gold-text); box-shadow: inset 0 0 0 1px rgba(138,93,12,.16); }
+  .card-ico.tint-blue { background: #DCEAF8; color: #2F6FA8; box-shadow: inset 0 0 0 1px rgba(47,111,168,.16); }
+  .card-ico.tint-violet { background: #EDE7FA; color: #5C45A8; box-shadow: inset 0 0 0 1px rgba(92,69,168,.16); }
+  .card-ico.tint-slate { background: var(--paper-alt); color: var(--text-soft); box-shadow: inset 0 0 0 1px var(--line); }
+  .card.tint-gold {
+    background-image: linear-gradient(180deg, #FCF3DF 0%, #FFFFFF 58%);
+    box-shadow: inset 0 0 0 1px rgba(138,93,12,.18);
+  }
+  .card.tint-gold .mini-stat-val { color: var(--gold-text); }
+
   /* ── Marketplace ─────────────────────────────────────────────────────────── */
   .mp-sell-btn {
     width: 100%; min-height: 54px; border: none; border-radius: 16px; cursor: pointer;
@@ -1133,13 +1154,29 @@ export const appCss = `
   .mp-var:active { transform: scale(.96); transition-duration: 90ms; }
   .mp-var.on { background: var(--tanim-sk); color: var(--tanim); box-shadow: inset 0 0 0 1.5px rgba(11,107,65,.25); }
 
-  .mp-list-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-  .mp-count { font-size: 14.5px; color: var(--text-faint); font-variant-numeric: tabular-nums; }
-  .mp-count strong { color: var(--text); font-weight: 700; }
+  /* Facts on the left, sort on the right, on one line: the count and the
+     going rate are read together, and wrapping split them apart. */
+  .mp-list-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .mp-facts { display: flex; align-items: center; gap: 6px; min-width: 0; }
+  .mp-fact {
+    display: inline-flex; align-items: center; gap: 4px; padding: 5px 10px; border-radius: 99px;
+    font-size: 13.5px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .mp-fact strong { font-weight: 800; }
+  .mp-fact.green { background: var(--tanim-sk); color: var(--tanim); box-shadow: inset 0 0 0 1px rgba(11,107,65,.14); }
+  .mp-fact.gold { background: var(--gold-sk); color: var(--gold-text); box-shadow: inset 0 0 0 1px rgba(138,93,12,.16); }
+  /* The seller's rating: gold, and boxed, so it reads as a score rather than
+     as another grey line of text. */
+  .mp-rate {
+    display: inline-flex; align-items: center; gap: 3px; flex-shrink: 0;
+    padding: 1px 7px; border-radius: 99px; background: var(--gold-sk); color: var(--gold-text);
+    font-size: 12.5px; font-weight: 700; font-variant-numeric: tabular-nums;
+  }
+  .mp-avail.green { background: var(--tanim-sk); color: var(--tanim); box-shadow: inset 0 0 0 1px rgba(11,107,65,.14); }
   /* A native select behind a small pill: the phone's own picker opens, which
      beats anything custom for four options. */
   .mp-sort {
-    position: relative; display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 0 12px;
+    position: relative; flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 0 10px;
     border-radius: 99px; background: var(--card); box-shadow: inset 0 0 0 1.5px var(--line); color: var(--text-soft);
   }
   .mp-sort select {
@@ -1286,11 +1323,38 @@ export const appCss = `
   .hm-offline-dot { width: 8px; height: 8px; border-radius: 50%; background: #F08A7E; animation: pulse 1.6s ease-in-out infinite; }
 
   /* Cards on Home share one frame, so the page reads as a set. */
+  /* One accent per card, as a wash that fades out by the second line: a
+     tinted top edge says what the card is about without turning the page
+     into a colour chart, and the text still sits on near-white. */
   .hm-card {
-    display: block; width: 100%; padding: 16px; border: none; border-radius: var(--radius); text-align: left;
-    background: var(--card); box-shadow: inset 0 0 0 1px var(--line); font: inherit; color: inherit;
+    position: relative; display: block; width: 100%; padding: 16px; border: none; border-radius: var(--radius);
+    text-align: left; background: var(--card); box-shadow: inset 0 0 0 1px var(--line);
+    font: inherit; color: inherit;
   }
-  .hm-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+  .hm-card.tint-green {
+    background-image: linear-gradient(180deg, #E8F3EC 0%, #FFFFFF 62%);
+    box-shadow: inset 0 0 0 1px rgba(11,107,65,.16);
+  }
+  .hm-card.tint-gold {
+    background-image: linear-gradient(180deg, #FCF3DF 0%, #FFFFFF 62%);
+    box-shadow: inset 0 0 0 1px rgba(138,93,12,.18);
+  }
+  .hm-card.tint-blue {
+    background-image: linear-gradient(180deg, #E9F1FA 0%, #FFFFFF 62%);
+    box-shadow: inset 0 0 0 1px rgba(47,111,168,.16);
+  }
+  /* The chip that carries the accent at full strength: small, so the colour
+     reads as a label rather than as decoration. */
+  .hm-ico {
+    width: 40px; height: 40px; flex: 0 0 40px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .tint-green .hm-ico { background: var(--tanim-sk); color: var(--tanim); box-shadow: inset 0 0 0 1px rgba(11,107,65,.14); }
+  .tint-gold .hm-ico { background: var(--gold-sk); color: var(--gold-text); box-shadow: inset 0 0 0 1px rgba(138,93,12,.16); }
+  .tint-blue .hm-ico { background: #DCEAF8; color: #2F6FA8; box-shadow: inset 0 0 0 1px rgba(47,111,168,.16); }
+  .tint-violet .hm-ico, .tint-violet .hm-tool-ico { background: #EDE7FA; color: #5C45A8; box-shadow: inset 0 0 0 1px rgba(92,69,168,.16); }
+  .hm-card-head { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 6px; }
+  .hm-card-head > div { flex: 1; min-width: 0; }
   .hm-title { margin: 0; font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -.01em; display: block; }
   .hm-out { margin-bottom: 10px; }
   .hm-sub { margin-top: 2px; font-size: 14px; color: var(--text-faint); }
@@ -1327,21 +1391,26 @@ export const appCss = `
   /* Spent this month: one figure, the line behind it, the month before. */
   .hm-spend {
     display: flex; align-items: center; gap: 12px; cursor: pointer;
+    background-image: linear-gradient(180deg, #FCF3DF 0%, #FFFFFF 70%);
     transition: transform 180ms var(--ease-out), background-color 180ms ease;
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
   .hm-spend:active { transform: scale(.985); background: var(--paper); transition-duration: 90ms; }
   .hm-spend-copy { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-  .hm-spend-val { font-family: var(--font-display); font-size: 26px; font-weight: 800; color: var(--text); letter-spacing: -.02em; font-variant-numeric: tabular-nums; margin-top: 2px; }
+  .hm-spend-val { font-family: var(--font-display); font-size: 26px; font-weight: 800; color: var(--gold-text); letter-spacing: -.02em; font-variant-numeric: tabular-nums; margin-top: 2px; }
+  /* Spending more is not "good news", so this stays a neutral fact in the
+     card's own colour rather than borrowing the price greens and reds. */
   .hm-spend-vs {
     align-self: flex-start; margin-top: 4px; padding: 2px 9px; border-radius: 99px;
-    background: var(--paper); color: var(--text-muted); font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums;
+    background: rgba(138,93,12,.1); color: var(--gold-text); font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums;
   }
   .hm-spend-chart { flex-shrink: 0; display: flex; align-items: center; }
 
   /* Advisory rows: tinted icon, then the message; the tint carries the tone. */
-  .hm-adv { display: flex; gap: 12px; padding: 12px 0 2px; }
-  .hm-adv + .hm-adv { border-top: 1px solid var(--line); margin-top: 10px; }
+  .hm-adv {
+    display: flex; gap: 12px; padding: 12px; margin-top: 10px; border-radius: 14px;
+    background: var(--card); box-shadow: inset 0 0 0 1px var(--line);
+  }
   .hm-adv-ico { width: 38px; height: 38px; flex: 0 0 38px; border-radius: 11px; display: flex; align-items: center; justify-content: center; }
   .hm-adv.good .hm-adv-ico { background: var(--tanim-sk); color: var(--tanim); }
   .hm-adv.warn .hm-adv-ico { background: var(--gold-sk); color: var(--gold-text); }
@@ -1359,8 +1428,16 @@ export const appCss = `
   }
   .hm-tool:active { transform: scale(.97); background: var(--paper); transition-duration: 90ms; }
   .hm-tool-ico { width: 46px; height: 46px; border-radius: 13px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; }
-  .hm-tool-ico.wx { background: #E3EEF8; color: #2F6FA8; }
-  .hm-tool-ico.an { background: var(--paper); color: var(--text-soft); box-shadow: inset 0 0 0 1px var(--line); }
+  .hm-tool-ico.wx { background: #DCEAF8; color: #2F6FA8; box-shadow: inset 0 0 0 1px rgba(47,111,168,.16); }
+  .hm-tool-ico.an { background: #EDE7FA; color: #5C45A8; box-shadow: inset 0 0 0 1px rgba(92,69,168,.16); }
+  .hm-tool.tint-blue {
+    background-image: linear-gradient(180deg, #E9F1FA 0%, #FFFFFF 64%);
+    box-shadow: inset 0 0 0 1px rgba(47,111,168,.16);
+  }
+  .hm-tool.tint-violet {
+    background-image: linear-gradient(180deg, #F0EBFB 0%, #FFFFFF 64%);
+    box-shadow: inset 0 0 0 1px rgba(92,69,168,.16);
+  }
   .hm-tool-t { font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--text); }
   .hm-tool-s { font-size: 13.5px; color: var(--text-faint); }
 
@@ -1430,7 +1507,14 @@ export const appCss = `
   .sum-lbl { font-size: var(--fs-label); color:var(--text-muted); margin-top:3px; text-align:center; }
 
   /* ── Marketplace ── */
-  .mp-title-row { display:flex; align-items:flex-start; justify-content:space-between; position:relative; }
+  /* The greeting sits on its own green panel now, so the page opens with the
+     brand's colour instead of a bare line of text above a search box. */
+  .mp-title-row {
+    display: flex; align-items: flex-start; justify-content: space-between; position: relative;
+    padding: 16px 16px 18px; border-radius: var(--radius-lg); overflow: hidden;
+    background-image: linear-gradient(180deg, #E8F3EC 0%, #FFFFFF 78%);
+    box-shadow: inset 0 0 0 1px rgba(11,107,65,.16);
+  }
   .mp-peek  { position:absolute; right:-16px; bottom:-8px; height:132px; width:auto; pointer-events:none; user-select:none; }
   /* Plain greeting beside Juan, no bubble. */
   .mp-peek-bubble { position:absolute; right:76px; top:8px; color:var(--tanim);

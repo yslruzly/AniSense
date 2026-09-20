@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { ArrowLeft, Camera, Bell, IdCard, ChevronRight, Globe, Lock, HelpCircle, Settings, LogOut, Phone, Mail, MapPin, Calendar } from "lucide-react";
+import React, { useState } from "react";
+import { ArrowLeft, Camera, Bell, IdCard, Award, Sprout, Wheat, SlidersHorizontal, LifeBuoy, ChevronRight, Globe, Lock, HelpCircle, Settings, LogOut, Phone, Mail, MapPin, Calendar } from "lucide-react";
 import { useLang, LanguageToggle } from "../i18n";
 import { Screen, UserRole, FarmerProfile } from "../types";
 import { CropEmoji } from "../components/CropEmoji";
@@ -19,6 +19,16 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
   onShowId?: () => void;
 }) {
   const { t, tn } = useLang();
+
+  // Each group gets one coloured chip: gold for what he's earned, blue for
+  // how to reach him, green for the farm and what grows on it, grey for the
+  // app's own switches. Colour as a label, not as decoration.
+  const head = (tone: string, ico: React.ReactNode, title: string) => (
+    <div className="card-head">
+      <span className={`card-ico ${tone}`}>{ico}</span>
+      <div className="card-title" style={{ margin: 0 }}>{title}</div>
+    </div>
+  );
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState({ ...profile });
 
@@ -122,8 +132,8 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
 
         {/* Personal Stats, farmer only */}
         {userRole !== "buyer" && (
-          <div className="card">
-            <div className="card-title">{t("prof_stats")}</div>
+          <div className="card tint-gold">
+            {head("tint-gold", <Award size={20} strokeWidth={2.2} />, t("prof_stats"))}
             <div className="stat-row-grid">
               {[
                 { val: "12", lbl: t("prof_years_farming") },
@@ -143,7 +153,7 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
 
         {/* Contact Info */}
         <div className="card">
-          <div className="card-title">{t("prof_contact")}</div>
+          {head("tint-blue", <Phone size={20} strokeWidth={2.2} />, t("prof_contact"))}
           {contactFields.map(f => (
             <div className="info-row" key={f.key}>
               <div className="info-ico">{f.ico}</div>
@@ -162,7 +172,7 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
         {/* Farm Details, farmer only */}
         {userRole !== "buyer" && (
           <div className="card">
-            <div className="card-title">{t("prof_farm_details")}</div>
+            {head("tint-green", <Sprout size={20} strokeWidth={2.2} />, t("prof_farm_details"))}
             {farmFields.map(f => (
               <div className="info-row" key={f.key}>
                 <div className="info-ico">{f.ico}</div>
@@ -182,7 +192,7 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
         {/* Crop Specialization, farmer only */}
         {userRole !== "buyer" && (
           <div className="card">
-            <div className="card-title">{t("prof_crop_spec")}</div>
+            {head("tint-green", <Wheat size={20} strokeWidth={2.2} />, t("prof_crop_spec"))}
             {editing
               ? <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                 {ALL_CROPS.map(c => (
@@ -208,7 +218,7 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
         {!editing && (
           <>
             <div className="card">
-              <div className="card-title">{t("prof_preferences")}</div>
+              {head("tint-slate", <SlidersHorizontal size={20} strokeWidth={2.2} />, t("prof_preferences"))}
               <div className="setting-row">
                 <div className="setting-ico" style={{ background: "var(--gold-sk)" }}><Bell size={16} color="var(--gold-text)" /></div>
                 <div style={{ flex: 1 }}>
@@ -230,7 +240,7 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
             </div>
 
             <div className="card">
-              <div className="card-title">{t("prof_support")}</div>
+              {head("tint-violet", <LifeBuoy size={20} strokeWidth={2.2} />, t("prof_support"))}
               {supportSettings.map(s => (
                 <div key={s.label} className="setting-row">
                   <div className="setting-ico" style={{ background: s.bg }}>{s.ico}</div>

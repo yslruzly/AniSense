@@ -339,9 +339,11 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
         {/* The count, the going rate for what's shown, and how it's sorted,
             on one line: what the old four-box stat strip was trying to say. */}
         <div className="mp-list-head">
-          <span className="mp-count">
-            <strong>{sorted.length}</strong> {sorted.length === 1 ? t("trade_listing_one") : t("trade_listings")}
-            {sorted.length > 0 && <> · {t("mp_avg")} ₱{avgShown}{t("per_kg_short")}</>}
+          {/* The two facts as chips: how many, and what they go for. Green
+              for the count, gold for money, the same pairing as Home. */}
+          <span className="mp-facts">
+            <span className="mp-fact green"><strong>{sorted.length}</strong> {sorted.length === 1 ? t("trade_listing_one") : t("trade_listings")}</span>
+            {sorted.length > 0 && <span className="mp-fact gold">{t("mp_avg")} ₱{avgShown}{t("per_kg_short")}</span>}
           </span>
           <label className="mp-sort">
             <ArrowUpDown size={15} strokeWidth={2.4} aria-hidden="true" />
@@ -375,8 +377,10 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                       <span className="mp-card-price">₱{l.pricePerKg}<small>{t("per_kg_short")}</small></span>
                       <span className="mp-card-meta">{l.kg} kg · {l.location}</span>
                       <span className="mp-card-seller">
-                        <Star size={13} fill="currentColor" strokeWidth={0} aria-hidden="true" /> {l.rating}
-                        <span className="mp-dot">·</span> <span className="mp-ellipsis">{l.seller}</span>
+                        {/* The rating is the one number a buyer weighs a
+                            stranger by, so it gets the gold chip. */}
+                        <span className="mp-rate"><Star size={12} fill="currentColor" strokeWidth={0} aria-hidden="true" /> {l.rating}</span>
+                        <span className="mp-ellipsis">{l.seller}</span>
                       </span>
                     </span>
                   </button>
@@ -433,7 +437,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
               <div className="pr-sheet-body">
                 <div className="pr-sheet-price">
                   <span className="pr-big">₱{l.pricePerKg}<small>{t("per_kg_short")}</small></span>
-                  <span className="mp-avail"><Package size={15} strokeWidth={2.2} /> {l.kg} {t("trade_kg_available")}</span>
+                  <span className="mp-avail green"><Package size={15} strokeWidth={2.2} /> {l.kg} {t("trade_kg_available")}</span>
                 </div>
                 <div className="pr-sheet-sub"><Calendar size={13} strokeWidth={2.2} /> {t("mp_posted")} {posted(l.date)}</div>
 
@@ -445,7 +449,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                   <span className="mp-seller-who">
                     <span className="mp-seller-name">{l.seller}</span>
                     <span className="mp-seller-meta">
-                      <Star size={13} fill="currentColor" strokeWidth={0} className="mp-star" /> {l.rating}
+                      <span className="mp-rate"><Star size={12} fill="currentColor" strokeWidth={0} /> {l.rating}</span>
                       <span className="mp-dot">·</span> <MapPin size={13} strokeWidth={2.2} /> <span className="mp-ellipsis">{l.location}</span>
                     </span>
                   </span>

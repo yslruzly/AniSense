@@ -1,4 +1,4 @@
-import { CloudSun, CloudMoon, BarChart2, CheckCircle, AlertTriangle, Bot, ChevronRight, ArrowUpRight, ArrowDownRight, ArrowRight } from "lucide-react";
+import { CloudSun, CloudMoon, BarChart2, CheckCircle, AlertTriangle, Bot, ChevronRight, ArrowUpRight, ArrowDownRight, ArrowRight, Sprout, Wallet, Megaphone } from "lucide-react";
 import { useLang } from "../i18n";
 import { Screen, UserRole } from "../types";
 import { CROPS, CROP_GROUP_BY_ID } from "../data/crops";
@@ -105,8 +105,12 @@ export function HomeScreen({ onNavigate, onProfile, isOffline, userName = "Juan"
 
         {/* 2 ── Your crops today (buyers: the day's biggest moves). A short
             vertical list: no swiping to find your own crop among twenty. */}
-        <section className="hm-card">
+        <section className="hm-card tint-green">
           <div className="hm-card-head">
+            {/* Each card carries one accent, and the accent means something:
+                green for what grows, gold for money, blue for the sky,
+                violet for the numbers. Never a colour for its own sake. */}
+            <span className="hm-ico"><Sprout size={20} strokeWidth={2.2} /></span>
             <div>
               <h2 className="hm-title">{isBuyer ? t("mkt_movers") : t("home_your_crops")}</h2>
               <div className="hm-sub">{t("mkt_pulse_head").replace("{up}", String(up)).replace("{n}", String(CROPS.length))}</div>
@@ -168,7 +172,8 @@ export function HomeScreen({ onNavigate, onProfile, isOffline, userName = "Juan"
         {/* 4 ── This month's spending, farmer only (the figures are farm
             expenses; a buyer's spending lives with their purchases). */}
         {!isBuyer && (
-          <button className="hm-card hm-spend" onClick={() => onNavigate("expenses")}>
+          <button className="hm-card tint-gold hm-spend" onClick={() => onNavigate("expenses")}>
+            <span className="hm-ico"><Wallet size={20} strokeWidth={2.2} /></span>
             <span className="hm-spend-copy">
               <span className="hm-title">{t("home_spent_month")}</span>
               <span className="hm-spend-val">₱{thisMonth.toLocaleString()}</span>
@@ -184,7 +189,7 @@ export function HomeScreen({ onNavigate, onProfile, isOffline, userName = "Juan"
             </span>
             {expenseTrend.some(v => v > 0) && (
               <span className="hm-spend-chart" aria-hidden="true">
-                <Sparkline values={expenseTrend} width={110} height={44} />
+                <Sparkline values={expenseTrend} width={96} height={44} tone="var(--gold-text)" />
               </span>
             )}
             <ChevronRight size={18} className="pr-row-chev" aria-hidden="true" />
@@ -193,8 +198,9 @@ export function HomeScreen({ onNavigate, onProfile, isOffline, userName = "Juan"
 
         {/* 5 ── Advisory, farmer only: one card, two rows. */}
         {!isBuyer && (
-          <section className="hm-card">
+          <section className="hm-card tint-blue">
             <div className="hm-card-head">
+              <span className="hm-ico"><Megaphone size={20} strokeWidth={2.2} /></span>
               <div>
                 <h2 className="hm-title">{t("home_advisory")}</h2>
                 <div className="hm-sub">{t("home_advisory_sub")}</div>
@@ -220,12 +226,12 @@ export function HomeScreen({ onNavigate, onProfile, isOffline, userName = "Juan"
           <section>
             <h2 className="hm-title hm-out">{t("home_tools")}</h2>
             <div className="hm-tools">
-              <button className="hm-tool" onClick={() => onNavigate("weather")}>
+              <button className="hm-tool tint-blue" onClick={() => onNavigate("weather")}>
                 <span className="hm-tool-ico wx">{isNight ? <CloudMoon size={24} /> : <CloudSun size={24} />}</span>
                 <span className="hm-tool-t">{t("home_mod_weather")}</span>
                 <span className="hm-tool-s">{t("home_mod_weather_desc")}</span>
               </button>
-              <button className="hm-tool" onClick={() => onNavigate("analytics")}>
+              <button className="hm-tool tint-violet" onClick={() => onNavigate("analytics")}>
                 <span className="hm-tool-ico an"><BarChart2 size={24} /></span>
                 <span className="hm-tool-t">{t("home_mod_analytics")}</span>
                 <span className="hm-tool-s">{t("home_mod_analytics_desc")}</span>
