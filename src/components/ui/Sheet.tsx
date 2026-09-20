@@ -48,6 +48,14 @@ export function Sheet({
   // handler stack stays honest about what is actually on screen.
   useHardwareBack(() => { if (!open) return false; onClose(); return true; }, open);
 
+  // Held in a ref, and deliberately NOT a dependency below. Callers pass an
+  // inline arrow (onClose={() => setOpen(false)}), which is a new function on
+  // every render, so listing it re-ran this effect on every keystroke: focus
+  // jumped from the field back to the panel and typing a word took one tap
+  // per letter.
+  const onCloseRef = useRef(onClose);
+  useEffect(() => { onCloseRef.current = onClose; });
+
   useEffect(() => {
     if (!open) return;
     restoreRef.current = document.activeElement as HTMLElement | null;
@@ -56,7 +64,7 @@ export function Sheet({
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
       e.stopPropagation();
-      onClose();
+      onCloseRef.current();
     };
     document.addEventListener("keydown", onKey);
     return () => {
@@ -65,7 +73,7 @@ export function Sheet({
       // over at the top of the page after a sheet closes.
       restoreRef.current?.focus?.({ preventScroll: true });
     };
-  }, [open, onClose]);
+  }, [open]);
 
   if (!mounted) return null;
 

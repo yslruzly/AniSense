@@ -465,6 +465,8 @@ export const translations: Dict = {
   farm_province_lbl: { en: "Province", tl: "Probinsya" },
   farm_municipality_lbl: { en: "City / Municipality", tl: "Lungsod / Bayan" },
   farm_barangay_lbl: { en: "Barangay", tl: "Barangay" },
+  pick_search: { en: "Search the list…", tl: "Maghanap sa listahan…" },
+  pick_none: { en: "Nothing matches “{q}”. Check the spelling, or scroll the list.", tl: "Walang tumugma sa “{q}”. Suriin ang baybay, o i-scroll ang listahan." },
   farm_pick_municipality: { en: "Choose your city or municipality", tl: "Piliin ang lungsod o bayan" },
   farm_pick_barangay: { en: "Choose your barangay", tl: "Piliin ang barangay" },
   farm_pick_municipality_first: { en: "Choose a city or municipality first", tl: "Piliin muna ang lungsod o bayan" },

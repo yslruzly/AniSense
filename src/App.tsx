@@ -7,6 +7,8 @@ import { useEffect } from "react";
 import { tokensCss } from "./styles/tokens";
 import { authCss } from "./styles/authStyles";
 import { appCss } from "./styles/appStyles";
+import { pickerCss } from "./styles/pickerStyles";
+import { sheetCss } from "./styles/sheetStyles";
 import { BUYER_TRANSACTIONS } from "./data/expenses";
 import { BottomNav } from "./components/layout/BottomNav";
 import { LanguageScreen } from "./screens/auth/LanguageScreen";
@@ -151,6 +153,8 @@ export default function App() {
       <>
         <style>{tokensCss}</style>
         <style>{authCss}</style>
+        <style>{sheetCss}</style>
+        <style>{pickerCss}</style>
         <div className="auth-outer">
           <div className="auth-shell">
             {authScreen === "lang" && (
@@ -209,6 +213,8 @@ export default function App() {
     <>
       <style>{tokensCss}</style>
       <style>{appCss}</style>
+      <style>{sheetCss}</style>
+      <style>{pickerCss}</style>
       <div className="outer">
         <div className="shell" data-nav={nav} data-revisit={revisit || undefined}>
           {renderScreen()}

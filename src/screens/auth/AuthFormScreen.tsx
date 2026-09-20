@@ -6,6 +6,7 @@ import { UserRole, FarmDetails } from "../../types";
 import { MAIN_CROPS } from "../../data/crops";
 import { FARM_PROVINCE, MUNICIPALITIES, BARANGAYS_BY_MUNICIPALITY, formatFarmLocation } from "../../data/locations";
 import { CropEmoji } from "../../components/CropEmoji";
+import { PickerField } from "../../components/ui/PickerField";
 import { AniSenseLogo } from "../../components/AniSenseLogo";
 
 // ─── Sign In / Sign Up Form ───────────────────────────────────────────────────
@@ -228,27 +229,30 @@ export function AuthFormScreen({
             </div>
           </div>
 
+          {/* Both were <select>s: 32 municipalities and up to 89 barangays in
+              a system dropdown of 36px rows, with no way to search. */}
           <div className="a-field">
-            <label className="a-lbl" htmlFor="f-mun">{t("farm_municipality_lbl")}</label>
-            <select id="f-mun" className="a-inp a-select" value={farmMunicipality}
-              onChange={e => { setFarmMunicipality(e.target.value); setFarmBarangay(""); setError(""); }}>
-              <option value="">{t("farm_pick_municipality")}</option>
-              {MUNICIPALITIES.map(m => <option key={m} value={m}>{m}</option>)}
-            </select>
+            <label className="a-lbl">{t("farm_municipality_lbl")}</label>
+            <PickerField
+              title={t("farm_municipality_lbl")}
+              placeholder={t("farm_pick_municipality")}
+              value={farmMunicipality}
+              options={MUNICIPALITIES}
+              onChange={v => { setFarmMunicipality(v); setFarmBarangay(""); setError(""); }}
+            />
           </div>
 
           <div className="a-field">
-            <label className="a-lbl" htmlFor="f-brgy">{t("farm_barangay_lbl")}</label>
-            <select id="f-brgy" className="a-inp a-select" value={farmBarangay}
+            <label className="a-lbl">{t("farm_barangay_lbl")}</label>
+            <PickerField
+              title={t("farm_barangay_lbl")}
+              placeholder={t("farm_pick_barangay")}
+              disabledHint={t("farm_pick_municipality_first")}
               disabled={!farmMunicipality}
-              onChange={e => { setFarmBarangay(e.target.value); setError(""); }}>
-              <option value="">
-                {farmMunicipality ? t("farm_pick_barangay") : t("farm_pick_municipality_first")}
-              </option>
-              {(BARANGAYS_BY_MUNICIPALITY[farmMunicipality] ?? []).map(bg => (
-                <option key={bg} value={bg}>{bg}</option>
-              ))}
-            </select>
+              value={farmBarangay}
+              options={BARANGAYS_BY_MUNICIPALITY[farmMunicipality] ?? []}
+              onChange={v => { setFarmBarangay(v); setError(""); }}
+            />
           </div>
 
           <div className="a-field">
