@@ -11,12 +11,13 @@
 //   · a light line along the top edge, where light would catch it
 //   · a darker line along the bottom edge, its thickness
 //   · a tight contact shadow, holding it to the surface
-//   · a wide, soft, colour-matched glow, the light it throws
 //
-// Pressing collapses that stack: the button shrinks, the glow shortens and
-// the highlight dims, so it reads as pushed INTO the page rather than merely
-// smaller. Press is 90ms (it must land before the finger lifts) and release
-// is 190ms, because a symmetric button feels rubbery.
+// No wide coloured glow: it reads as a halo rather than as light, and on a
+// page of cards every glowing button competes with the content around it.
+// Pressing collapses the stack: the button shrinks, the contact shadow
+// tightens and the highlight dims, so it reads as pushed INTO the page
+// rather than merely smaller. Press is 90ms (it must land before the finger
+// lifts) and release is 190ms, because a symmetric button feels rubbery.
 export const buttonCss = `
   /* Shared shape and motion for every filled button in the app. */
   .a-btn, .btn-primary, .btn-secondary, .btn-danger,
@@ -45,20 +46,18 @@ export const buttonCss = `
       inset 0 1px 0 rgba(255,255,255,.26),
       inset 0 -1px 0 rgba(0,0,0,.24),
       inset 0 0 0 1px rgba(4,40,24,.22),
-      0 1px 2px rgba(6,38,23,.30),
-      0 12px 24px -14px rgba(11,107,65,.95);
+      0 1px 2px rgba(6,38,23,.30);
   }
   .a-btn-green:active, .btn-primary:active, .buy-now-btn:active, .btn-call:active,
   .call-seller-btn:active, .cart-checkout-btn:active, .mp-sell-btn:active,
   .add-btn:active, .post-btn:active, .calc-use:active, .wid-btn.primary:active {
-    /* The glow shortens and the top highlight dims: pressed in, not just
-       smaller. */
+    /* The contact shadow tightens and the top highlight dims: pressed in,
+       not just smaller. */
     box-shadow:
       inset 0 1px 0 rgba(255,255,255,.12),
       inset 0 -1px 0 rgba(0,0,0,.28),
       inset 0 0 0 1px rgba(4,40,24,.26),
-      0 1px 1px rgba(6,38,23,.34),
-      0 4px 10px -8px rgba(11,107,65,.9);
+      0 1px 1px rgba(6,38,23,.34);
     filter: brightness(.97);
   }
 
@@ -69,16 +68,14 @@ export const buttonCss = `
       inset 0 1px 0 rgba(255,255,255,.55),
       inset 0 -1px 0 rgba(120,78,0,.3),
       inset 0 0 0 1px rgba(120,78,0,.22),
-      0 1px 2px rgba(95,62,0,.24),
-      0 12px 24px -14px rgba(242,179,44,.9);
+      0 1px 2px rgba(95,62,0,.24);
   }
   .a-btn-gold:active, .hm-shop-btn:active {
     box-shadow:
       inset 0 1px 0 rgba(255,255,255,.3),
       inset 0 -1px 0 rgba(120,78,0,.34),
       inset 0 0 0 1px rgba(120,78,0,.26),
-      0 1px 1px rgba(95,62,0,.28),
-      0 4px 10px -8px rgba(242,179,44,.85);
+      0 1px 1px rgba(95,62,0,.28);
     filter: brightness(.98);
   }
 
@@ -90,16 +87,14 @@ export const buttonCss = `
       inset 0 1px 0 rgba(255,255,255,.22),
       inset 0 -1px 0 rgba(0,0,0,.26),
       inset 0 0 0 1px rgba(60,10,6,.24),
-      0 1px 2px rgba(60,10,6,.3),
-      0 12px 24px -14px rgba(165,35,27,.9);
+      0 1px 2px rgba(60,10,6,.3);
   }
   .btn-danger:active {
     box-shadow:
       inset 0 1px 0 rgba(255,255,255,.1),
       inset 0 -1px 0 rgba(0,0,0,.3),
       inset 0 0 0 1px rgba(60,10,6,.28),
-      0 1px 1px rgba(60,10,6,.34),
-      0 4px 10px -8px rgba(165,35,27,.85);
+      0 1px 1px rgba(60,10,6,.34);
     filter: brightness(.97);
   }
 
@@ -111,8 +106,7 @@ export const buttonCss = `
     box-shadow:
       inset 0 1px 0 #FFFFFF,
       inset 0 0 0 1px rgba(22,33,27,.13),
-      0 1px 2px rgba(22,33,27,.10),
-      0 8px 16px -12px rgba(22,33,27,.45);
+      0 1px 2px rgba(22,33,27,.10);
   }
   .btn-secondary:active, .btn-details:active, .cart-empty-btn:active, .pick-field:active {
     background-image: linear-gradient(180deg, #F3F5F3 0%, #EAEDEA 100%);
@@ -130,8 +124,7 @@ export const buttonCss = `
     box-shadow:
       inset 0 1px 0 rgba(255,255,255,.8),
       inset 0 0 0 1px rgba(11,107,65,.2),
-      0 1px 2px rgba(11,107,65,.12),
-      0 8px 16px -12px rgba(11,107,65,.5);
+      0 1px 2px rgba(11,107,65,.12);
   }
   .add-cart-btn:active {
     background-image: linear-gradient(180deg, #D3E7DB 0%, #C2DCCC 100%);
@@ -142,8 +135,7 @@ export const buttonCss = `
     box-shadow:
       inset 0 1px 0 #FFFFFF,
       inset 0 0 0 1px rgba(22,33,27,.13),
-      0 1px 2px rgba(22,33,27,.10),
-      0 8px 16px -12px rgba(22,33,27,.45);
+      0 1px 2px rgba(22,33,27,.10);
   }
 
   /* ── Glass: buttons that sit on ink or on a photograph ──────────────────── */
@@ -179,8 +171,7 @@ export const buttonCss = `
     box-shadow:
       inset 0 1px 0 #FFFFFF,
       inset 0 0 0 1px rgba(22,33,27,.13),
-      0 1px 2px rgba(22,33,27,.12),
-      0 6px 14px -10px rgba(22,33,27,.4);
+      0 1px 2px rgba(22,33,27,.12);
   }
   .a-iconbtn.on-paper:active, .calc-close:active {
     background-image: linear-gradient(180deg, #EFF1EF 0%, #E6E9E6 100%);
