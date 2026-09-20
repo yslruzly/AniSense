@@ -137,17 +137,36 @@ export const authCss = `
   .a-pick {
     width: 100%; text-align: left; background: var(--card); border: none; cursor: pointer;
     box-shadow: inset 0 0 0 2px var(--line); border-radius: var(--r-lg);
-    padding: 22px; display: flex; align-items: center; gap: 16px;
+    padding: 18px; display: flex; align-items: center; gap: 16px;
     transition: transform 180ms var(--ease-out), box-shadow 160ms ease, background-color 160ms ease;
     touch-action: manipulation; -webkit-tap-highlight-color: transparent;
   }
   .a-pick:active { transform: scale(.985); }
   .a-pick.on { background: var(--tanim-sk); box-shadow: inset 0 0 0 3px var(--tanim); }
-  .a-pick-t { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-title); line-height: 1.2; }
-  .a-pick-d { font-size: var(--fs-label); color: var(--dilim); margin-top: 4px; }
+  .a-pick-copy { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .a-pick-t {
+    display: flex; align-items: baseline; gap: 8px;
+    font-family: var(--font-display); font-weight: 700; font-size: var(--fs-title); line-height: 1.2; letter-spacing: -.01em;
+  }
+  /* The two-letter code beside the name: another way in for someone who
+     recognises "EN" faster than the word English. */
+  .a-pick-t small {
+    font-size: 12px; font-weight: 700; letter-spacing: .1em; color: var(--dilim);
+    padding: 2px 7px; border-radius: 99px; background: var(--paper-alt);
+  }
+  .a-pick.on .a-pick-t small { background: rgba(11,107,65,.12); color: var(--tanim); }
+  .a-pick-d { font-size: 15px; color: var(--dilim); margin-top: 3px; line-height: 1.35; }
+  /* The flag sits in a small frame with a hairline, so a white stripe never
+     bleeds into the white card behind it. */
+  .a-pick-flag {
+    flex-shrink: 0; width: 56px; height: 40px; border-radius: 8px; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 1px 2px rgba(22,33,27,.18), inset 0 0 0 1px rgba(22,33,27,.14);
+  }
+  .a-pick-flag .flag { display: block; width: 100%; height: 100%; }
 
   .a-tick {
-    width: 32px; height: 32px; border-radius: 50%; margin-left: auto; flex: 0 0 32px;
+    width: 34px; height: 34px; border-radius: 50%; margin-left: auto; flex: 0 0 34px;
     box-shadow: inset 0 0 0 2.5px #C7C1B2; display: flex; align-items: center; justify-content: center;
     transition: box-shadow 160ms ease, background-color 160ms ease;
   }

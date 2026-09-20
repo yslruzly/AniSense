@@ -649,13 +649,13 @@ export const translations: Dict = {
   lang_sub: { en: "Piliin ang wika", tl: "Choose your language" },
   lang_tl: { en: "Tagalog", tl: "Tagalog" },
   lang_tl_desc: {
-    en: "Ito ang gagamitin sa buong app",
-    tl: "Ito ang gagamitin sa buong app",
+    en: "Buong app, sa Tagalog",
+    tl: "Buong app, sa Tagalog",
   },
   lang_en: { en: "English", tl: "English" },
   lang_en_desc: {
-    en: "Use English across the app",
-    tl: "Use English across the app",
+    en: "Whole app, in English",
+    tl: "Whole app, in English",
   },
   lang_change_later: {
     en: "You can change this any time in Settings.",

@@ -1,9 +1,10 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { haptic } from "../../lib/platform";
 import { ArrowLeft, Check } from "lucide-react";
 import { AniSenseLogo } from "../../components/AniSenseLogo";
 import juanPeek from "../../assets/juan-peek.webp";
 import { MascotStage } from "./MascotStage";
+import { FlagPH, FlagUS } from "../../components/Flags";
 import { useLang, Lang } from "../../i18n";
 
 // ─── Language Gate ────────────────────────────────────────────────────────────
@@ -14,9 +15,12 @@ export function LanguageScreen({ onDone, onBack }: { onDone: () => void; onBack?
   const { t, lang, setLang } = useLang();
   const [choice, setChoice] = useState<Lang>(lang);
 
-  const options: { id: Lang; title: string; desc: string }[] = [
-    { id: "tl", title: t("lang_tl"), desc: t("lang_tl_desc") },
-    { id: "en", title: t("lang_en"), desc: t("lang_en_desc") },
+  // The flag is the fastest way in: someone who reads little English still
+  // recognises their own flag, and the native name ("Tagalog") is written the
+  // same in both languages.
+  const options: { id: Lang; title: string; desc: string; note: string; flag: React.ReactNode }[] = [
+    { id: "tl", title: t("lang_tl"), desc: t("lang_tl_desc"), note: "PH", flag: <FlagPH /> },
+    { id: "en", title: t("lang_en"), desc: t("lang_en_desc"), note: "EN", flag: <FlagUS /> },
   ];
 
   const confirm = () => {
@@ -58,11 +62,12 @@ export function LanguageScreen({ onDone, onBack }: { onDone: () => void; onBack?
             aria-pressed={choice === o.id}
             onClick={() => { haptic.select(); setChoice(o.id); setLang(o.id); }}
           >
-            <span>
-              <span className="a-pick-t" style={{ display: "block" }}>{o.title}</span>
-              <span className="a-pick-d" style={{ display: "block" }}>{o.desc}</span>
+            <span className="a-pick-flag">{o.flag}</span>
+            <span className="a-pick-copy">
+              <span className="a-pick-t">{o.title} <small>{o.note}</small></span>
+              <span className="a-pick-d">{o.desc}</span>
             </span>
-            <span className="a-tick"><Check size={17} color="#fff" strokeWidth={3.4} /></span>
+            <span className="a-tick"><Check size={19} color="#fff" strokeWidth={3.4} /></span>
           </button>
         ))}
         <p className="a-help" style={{ marginTop: 2 }}>{t("lang_change_later")}</p>
