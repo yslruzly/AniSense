@@ -407,7 +407,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
       </div>
 
       {/* ── Listing detail ── */}
-      <Sheet open={!!openListing} onClose={() => setOpenId(null)} className="pr-sheet modal-sheet" label={shownListing ? titleOf(shownListing) : t("trade_marketplace")}>
+      <Sheet open={!!openListing} onClose={() => setOpenId(null)} className="pr-sheet mp-sheet modal-sheet" label={shownListing ? titleOf(shownListing) : t("trade_marketplace")}>
         {shownListing && (() => {
           const l = shownListing;
           const photo = photoOf(l);

@@ -1234,6 +1234,11 @@ export const appCss = `
   @media (prefers-reduced-motion: reduce) { .mp-photo-drop:active { transform: none; } .mp-photo-preview { animation: none; } }
 
   /* ── Listing sheet (shares the crop sheet's hero, price and close) ── */
+  /* A taller hero than the Prices sheet: here the photo is the seller's own
+     picture of the harvest, which is what a buyer is really looking at. */
+  .mp-sheet .pr-sheet-hero { height: 240px; }
+  .mp-sheet .pr-sheet-shade { background: linear-gradient(180deg, rgba(10,14,12,.45) 0%, rgba(10,14,12,.06) 42%, rgba(10,14,12,.72) 100%); }
+  .mp-sheet .pr-sheet-name { font-size: 25px; }
   .pr-sheet-sub { display: flex; align-items: center; gap: 5px; }
   .mp-avail {
     display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 99px;
