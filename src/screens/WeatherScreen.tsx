@@ -4,10 +4,15 @@ import { WEATHER_FORECAST } from "../data/weather";
 import { Hdr } from "../components/layout/Hdr";
 import { WeatherIcon } from "../components/icons";
 import { useIsNight } from "../hooks/useIsNight";
+import { UserRole } from "../types";
 
 // ─── Weather Screen ───────────────────────────────────────────────────────────
-export function WeatherScreen({ onProfile, onBack, userInitials = "JD" }: { onProfile: () => void; onBack: () => void; userInitials?: string }) {
+export function WeatherScreen({ onProfile, onBack, userInitials = "JD", userRole }: { onProfile: () => void; onBack: () => void; userInitials?: string; userRole?: UserRole }) {
   const { t } = useLang();
+  // A buyer opens this to know whether the drive out to collect will be wet.
+  // Planting windows, spraying and fungal disease are not their business, so
+  // the two farm blocks come off entirely for them.
+  const isBuyer = userRole === "buyer";
   const isNight = useIsNight();
   const RAIN_ICONS = ["Rainy", "Stormy", "LightRain"];
 
@@ -29,7 +34,7 @@ export function WeatherScreen({ onProfile, onBack, userInitials = "JD" }: { onPr
 
   return (
     <div className="screen">
-      <Hdr icon={<CloudSun size={20} color="var(--tanim)" />} title={t("wx_title")} sub={t("wx_sub")} onProfile={onProfile} onBack={onBack} userInitials={userInitials} />
+      <Hdr icon={<CloudSun size={20} color="var(--tanim)" />} title={t("wx_title")} sub={t(isBuyer ? "wx_sub_buyer" : "wx_sub")} onProfile={onProfile} onBack={onBack} userInitials={userInitials} />
       <div className="scroll screen-enter">
         {/* The same farm by day and by night. Both pictures stay mounted and
             crossfade, so the 5 PM switch dissolves rather than cuts. */}
@@ -46,7 +51,7 @@ export function WeatherScreen({ onProfile, onBack, userInitials = "JD" }: { onPr
           <div className="wx-loc" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}><MapPin size={12} color="rgba(255,255,255,0.7)" /> Nueva Ecija, PH</div>
         </div>
 
-        {bestWindowLabel && (
+        {!isBuyer && bestWindowLabel && (
           <div className="adv-banner" style={{ background: "var(--tanim-sk)", border: "1px solid var(--line)" }}>
             <Sprout size={18} color="var(--tanim-deep)" style={{ flexShrink: 0, marginTop: 1 }} />
             <div>
@@ -84,6 +89,7 @@ export function WeatherScreen({ onProfile, onBack, userInitials = "JD" }: { onPr
             ))}
           </div>
         </div>
+        {!isBuyer && (
         <div className="card">
           <div className="card-title">{t("wx_advisory")}</div>
           {[
@@ -94,6 +100,7 @@ export function WeatherScreen({ onProfile, onBack, userInitials = "JD" }: { onPr
             <div key={msg} className={`adv-item ${cls}`}><span>{icon}</span><span>{msg}</span></div>
           ))}
         </div>
+        )}
       </div>
     </div>
   );

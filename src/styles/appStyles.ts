@@ -1377,6 +1377,20 @@ export const appCss = `
   .hm-crop-price { font-family: var(--font-display); font-size: 17px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; white-space: nowrap; }
   .hm-crop-price small { font-size: .7em; font-weight: 600; color: var(--text-faint); margin-left: 1px; }
 
+  .hm-empty { padding: 10px 2px 4px; font-size: 14.5px; line-height: 1.45; color: var(--text-faint); }
+  /* "Buy again" as a quiet chip at the end of the row: the row is the
+     button, so this only names what tapping it does. */
+  .hm-again {
+    flex-shrink: 0; display: inline-flex; align-items: center; gap: 2px; padding: 5px 8px 5px 11px;
+    border-radius: 99px; background: #DCEAF8; color: #2F6FA8;
+    font-family: var(--font-display); font-size: 13.5px; font-weight: 700;
+  }
+  /* One line, cut with an ellipsis: a seller's full name wrapping turned a
+     three-line row into four. */
+  .hm-crop-var { display: flex; align-items: center; gap: 4px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hm-crop-var svg { flex-shrink: 0; }
+  .hm-crop-end { flex-shrink: 0; }
+
   /* Spent this month: one figure, the line behind it, the month before. */
   .hm-spend {
     display: flex; align-items: center; gap: 12px; cursor: pointer;

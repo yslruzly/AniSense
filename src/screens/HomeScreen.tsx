@@ -1,7 +1,10 @@
-import { CloudSun, CloudMoon, BarChart2, CheckCircle, AlertTriangle, Bot, ChevronRight, ArrowUpRight, ArrowDownRight, ArrowRight, Sprout, Wallet, Megaphone } from "lucide-react";
+import { CloudSun, CloudMoon, BarChart2, CheckCircle, AlertTriangle, Bot, ChevronRight, ArrowUpRight, ArrowDownRight, ArrowRight, Sprout, Wallet, Megaphone, Store, Tag, RotateCcw, MapPin } from "lucide-react";
 import { useLang } from "../i18n";
 import { Screen, UserRole } from "../types";
 import { CROPS, CROP_GROUP_BY_ID } from "../data/crops";
+import { LISTINGS } from "../data/marketplace";
+import { BUYER_TRANSACTIONS } from "../data/expenses";
+import { cropPhotoFor } from "../data/cropPhotos";
 import { Sparkline } from "../components/charts/Micro";
 import { cropPhoto } from "../data/cropPhotos";
 import { CropIcon } from "../components/icons";
@@ -67,6 +70,26 @@ export function HomeScreen({ onNavigate, onProfile, isOffline, userName = "Juan"
   const cropRows = isBuyer ? movers : myCrops;
   const up = CROPS.filter(c => c.change > 0).length;
 
+  // ── Buyer figures ──────────────────────────────────────────────────────
+  // What a crop goes for today, so a listing can be called cheap or not.
+  const marketPrice = (crop: string, variety: string) => {
+    const named = CROPS.find(c => c.name.toLowerCase() === (variety || "").toLowerCase() || c.name.toLowerCase() === crop.toLowerCase());
+    if (named) return named.pricePerKg;
+    const inGroup = CROPS.find(c => CROP_GROUP_BY_ID[c.id] === crop);
+    return inGroup?.pricePerKg ?? null;
+  };
+  // The three cheapest kilos on the marketplace, with how each compares to
+  // today's price. Ranking by "under market" alone leaves the card empty on
+  // a day when every farmer is asking the going rate, and an empty card is
+  // worse than none: this one always has something to say.
+  const deals = [...LISTINGS]
+    .sort((a, b) => a.pricePerKg - b.pricePerKg)
+    .slice(0, 3)
+    .map(l => { const m = marketPrice(l.crop, l.variety); return { l, save: m ? m - l.pricePerKg : 0 }; });
+  const recent = [...BUYER_TRANSACTIONS].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 2);
+  const spentAll = BUYER_TRANSACTIONS.reduce((sum, tx) => sum + tx.amount, 0);
+  const sellerCount = new Set(LISTINGS.map(l => l.seller)).size;
+
   // This month's spend, last month's, and six months of trend for the line.
   const monthTotal = (offset: number) => {
     const d = new Date(now.getFullYear(), now.getMonth() - offset, 1);
@@ -89,14 +112,15 @@ export function HomeScreen({ onNavigate, onProfile, isOffline, userName = "Juan"
           <div className="home-greeting">{greeting}, {firstName}! 👋</div>
           <div className="home-date">{dateStr}</div>
           <div className="hm-hero-foot">
-            {!isBuyer ? (
-              <button className="hm-wx" onClick={() => onNavigate("weather")}>
-                {isNight ? <CloudMoon size={22} strokeWidth={2} /> : <CloudSun size={22} strokeWidth={2} />}
-                <span className="hm-wx-temp">28°</span>
-                <span className="hm-wx-cond">{t("wx_partly_cloudy")}</span>
-                <ChevronRight size={18} strokeWidth={2.4} aria-hidden="true" />
-              </button>
-            ) : <span />}
+            {/* Weather for both: a buyer drives out to collect what they
+                buy, so rain is their business too. The advisory below is
+                still farmer-only — that one is about planting. */}
+            <button className="hm-wx" onClick={() => onNavigate("weather")}>
+              {isNight ? <CloudMoon size={22} strokeWidth={2} /> : <CloudSun size={22} strokeWidth={2} />}
+              <span className="hm-wx-temp">28°</span>
+              <span className="hm-wx-cond">{t("wx_partly_cloudy")}</span>
+              <ChevronRight size={18} strokeWidth={2.4} aria-hidden="true" />
+            </button>
             {isOffline && (
               <span className="hm-offline"><span className="hm-offline-dot" /> {t("home_offline_cached")}</span>
             )}
@@ -142,15 +166,106 @@ export function HomeScreen({ onNavigate, onProfile, isOffline, userName = "Juan"
           </div>
         </section>
 
-        {/* Buyers: the one thing they came for, one tap away. */}
+        {/* The marketplace itself, straight after the prices: it is what a
+            buyer opened the app for, so it leads the buying half of the
+            page rather than closing it. */}
         {isBuyer && (
           <button className="hm-shop" onClick={() => onNavigate("trade")}>
             <span className="hm-shop-copy">
               <span className="hm-shop-t">{t("home_buyer_cta_t")}</span>
-              <span className="hm-shop-s">{t("home_buyer_cta_s")}</span>
+              <span className="hm-shop-s">
+                {t("home_market_chip").replace("{n}", String(LISTINGS.length)).replace("{s}", String(sellerCount))}
+              </span>
               <span className="hm-shop-btn">{t("cart_browse")} <ChevronRight size={16} strokeWidth={2.6} /></span>
             </span>
             <img className="hm-shop-img" src={buyerMascot} alt="" aria-hidden="true" />
+          </button>
+        )}
+
+        {/* The cheapest kilos on the marketplace right now. */}
+        {isBuyer && (
+          <section className="hm-card tint-green">
+            <div className="hm-card-head">
+              <span className="hm-ico"><Tag size={20} strokeWidth={2.2} /></span>
+              <div>
+                <h2 className="hm-title">{t("home_deals")}</h2>
+                <div className="hm-sub">{t("home_deals_sub")}</div>
+              </div>
+            </div>
+            {deals.length === 0 ? (
+              <p className="hm-empty">{t("home_no_deals")}</p>
+            ) : (
+              <div className="stagger-list">
+                {deals.map(({ l, save }) => {
+                  const photo = cropPhotoFor(l.crop, l.variety);
+                  return (
+                    <button key={l.id} className="hm-crop" onClick={() => onNavigate("trade")}>
+                      <span className="hm-crop-photo">
+                        {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropIcon crop={l.crop} size={22} />}
+                      </span>
+                      <span className="hm-crop-body">
+                        <span className="hm-crop-name">{l.variety && l.variety !== l.crop ? l.variety : l.crop}</span>
+                        <span className="hm-crop-var"><MapPin size={12} strokeWidth={2.4} /> {l.location} · {l.seller}</span>
+                      </span>
+                      <span className="hm-crop-end">
+                        <span className="hm-crop-price">₱{l.pricePerKg}<small>{t("per_kg_short")}</small></span>
+                        {/* The saving, not just the price: a number means more
+                            beside the one it beats. */}
+                        {/* Only when there is something to say. A chip on
+                            every row reading "at market price" is noise, and
+                            it was squeezing the seller's name off the line. */}
+                        {save > 0 && <span className="pr-chg up">−₱{save} {t("home_below")}</span>}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* Buy again: most buying is repeat buying. */}
+        {isBuyer && recent.length > 0 && (
+          <section className="hm-card tint-blue">
+            <div className="hm-card-head">
+              <span className="hm-ico"><RotateCcw size={20} strokeWidth={2.2} /></span>
+              <div>
+                <h2 className="hm-title">{t("home_buy_again")}</h2>
+                <div className="hm-sub">{t("home_buy_again_sub")}</div>
+              </div>
+            </div>
+            <div className="stagger-list">
+              {recent.map(tx => {
+                const photo = cropPhotoFor(tx.crop, tx.variety);
+                return (
+                  <button key={tx.id} className="hm-crop" onClick={() => onNavigate("trade")}>
+                    <span className="hm-crop-photo">
+                      {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropIcon crop={tx.crop} size={22} />}
+                    </span>
+                    <span className="hm-crop-body">
+                      <span className="hm-crop-name">{tx.variety || tn(tx.crop)}</span>
+                      <span className="hm-crop-var">{tx.kg} kg · ₱{tx.amount.toLocaleString()} · {tx.seller}</span>
+                    </span>
+                    <span className="hm-again">{t("home_buy_again")} <ChevronRight size={15} strokeWidth={2.6} /></span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* What they have spent here so far. */}
+        {isBuyer && spentAll > 0 && (
+          <button className="hm-card tint-gold hm-spend" onClick={() => onNavigate("expenses")}>
+            <span className="hm-ico"><Wallet size={20} strokeWidth={2.2} /></span>
+            <span className="hm-spend-copy">
+              <span className="hm-title">{t("home_spent_purchases")}</span>
+              <span className="hm-spend-val">₱{spentAll.toLocaleString()}</span>
+              <span className="hm-spend-vs">
+                {BUYER_TRANSACTIONS.length} {BUYER_TRANSACTIONS.length === 1 ? t("home_purchase_one") : t("home_purchases_n")}
+              </span>
+            </span>
+            <ChevronRight size={18} className="pr-row-chev" aria-hidden="true" />
           </button>
         )}
 
