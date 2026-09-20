@@ -75,13 +75,15 @@ export function LanguageScreen({ onDone, onBack }: { onDone: () => void; onBack?
       {/* Back lives in the dock, beside Continue: both steps of the decision sit
           in the thumb zone, and Back stays a quiet square so Continue reads as
           the primary action. */}
-      <div className="a-dock a-dockrow">
-        {onBack && (
-          <button className="a-iconbtn on-paper" onClick={onBack} aria-label={t("back")}>
-            <ArrowLeft size={24} color="var(--ink)" strokeWidth={2.4} />
-          </button>
-        )}
-        <button className="a-btn a-btn-green" onClick={confirm}>{t("continue")}</button>
+      <div className="a-dock">
+        <div className="a-dockrow">
+          {onBack && (
+            <button className="a-iconbtn on-paper" onClick={onBack} aria-label={t("back")}>
+              <ArrowLeft size={24} color="var(--ink)" strokeWidth={2.4} />
+            </button>
+          )}
+          <button className="a-btn a-btn-green" onClick={confirm}>{t("continue")}</button>
+        </div>
       </div>
     </div>
   );

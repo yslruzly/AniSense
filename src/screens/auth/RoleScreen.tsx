@@ -71,13 +71,15 @@ export function RoleScreen({ onBack, onSelect, flow }: { onBack: () => void; onS
       {/* Back sits beside Continue, as on the language step, so the whole flow
           moves from the same place. Continue names the choice once one is made:
           the button confirms what will happen, not just that something will. */}
-      <div className="a-dock a-dockrow">
-        <button className="a-iconbtn on-paper" onClick={onBack} aria-label={t("back")}>
-          <ArrowLeft size={24} color="var(--ink)" strokeWidth={2.4} />
-        </button>
-        <button className="a-btn a-btn-green" disabled={!role} onClick={() => role && onSelect(role, flow)}>
-          {picked ? `${t("role_continue_as")} ${picked.title}` : t("continue")}
-        </button>
+      <div className="a-dock">
+        <div className="a-dockrow">
+          <button className="a-iconbtn on-paper" onClick={onBack} aria-label={t("back")}>
+            <ArrowLeft size={24} color="var(--ink)" strokeWidth={2.4} />
+          </button>
+          <button className="a-btn a-btn-green" disabled={!role} onClick={() => role && onSelect(role, flow)}>
+            {picked ? `${t("role_continue_as")} ${picked.title}` : t("continue")}
+          </button>
+        </div>
       </div>
     </div>
   );

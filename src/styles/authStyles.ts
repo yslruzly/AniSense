@@ -87,10 +87,10 @@ export const authCss = `
   }
   /* No hairline above the button. The soft lift alone is enough to separate the
      dock from content scrolling under it. */
-  .a-dock {
-    padding: 16px 22px 26px; background: var(--paper);
-    box-shadow: 0 -18px 24px -18px rgba(22,33,27,.14);
-  }
+  /* No fill and no shadow of its own: the buttons sit on the same ground as
+     everything above them. The lift used to draw a line across the screen and
+     make the last two buttons look like a separate panel. */
+  .a-dock { padding: 16px 22px 26px; background: transparent; }
   .a-brandrow { display: flex; align-items: center; gap: 10px; }
   .a-brandmark {
     width: 34px; height: 34px; border-radius: 10px; background: #fff;
@@ -99,7 +99,10 @@ export const authCss = `
   .a-brandname { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-lead); color: #fff; letter-spacing: -.01em; }
   /* Back + primary in one row. Back matches the button height so the pair
      lines up, and never grows; Continue takes the rest. */
-  .a-dockrow, .a-dockpair { display: flex; gap: 12px; }
+  /* Two buttons, side by side: a white square for back and the green one for
+     forward. Two shapes, two colours, and the difference is the point: at a
+     glance it's obvious which one goes on. */
+  .a-dockrow, .a-dockpair { display: flex; align-items: center; gap: 12px; }
   .a-dockrow .a-iconbtn, .a-dockpair .a-iconbtn { width: 60px; height: 60px; flex: 0 0 60px; }
 
   /* ── Entry choreography (stagger 40–280ms, ease-out) ───────────────────── */

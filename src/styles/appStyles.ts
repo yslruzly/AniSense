@@ -1402,9 +1402,10 @@ export const appCss = `
      shell, so the dock carries that clearance itself; and when a dock is
      present the scroll above it must NOT also reserve the nav gap, or the two
      stack into a dead band. */
+  /* Part of the page, not a white tray stuck to the bottom of it. */
   .screen-dock {
     flex-shrink: 0; display: flex; flex-direction: column; gap: 8px;
-    background: var(--card); border-top: 1px solid var(--paper-alt);
+    background: transparent;
     padding: 10px 14px calc(var(--bnav-h) + 22px);
   }
   .scroll.has-dock { padding-bottom: 10px; }
