@@ -9,6 +9,7 @@ import { authCss } from "./styles/authStyles";
 import { appCss } from "./styles/appStyles";
 import { pickerCss } from "./styles/pickerStyles";
 import { sheetCss } from "./styles/sheetStyles";
+import { buttonCss } from "./styles/buttonStyles";
 import { BUYER_TRANSACTIONS } from "./data/expenses";
 import { BottomNav } from "./components/layout/BottomNav";
 import { LanguageScreen } from "./screens/auth/LanguageScreen";
@@ -155,6 +156,7 @@ export default function App() {
         <style>{authCss}</style>
         <style>{sheetCss}</style>
         <style>{pickerCss}</style>
+        <style>{buttonCss}</style>
         <div className="auth-outer">
           <div className="auth-shell">
             {authScreen === "lang" && (
@@ -215,6 +217,7 @@ export default function App() {
       <style>{appCss}</style>
       <style>{sheetCss}</style>
       <style>{pickerCss}</style>
+      <style>{buttonCss}</style>
       <div className="outer">
         <div className="shell" data-nav={nav} data-revisit={revisit || undefined}>
           {renderScreen()}

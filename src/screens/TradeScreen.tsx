@@ -705,7 +705,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                     ← {t("back")}
                   </button>
                   <button className="btn-primary" onClick={saveForm} style={{ flex: 2 }}>
-                    {editId ? `✔ ${t("save_changes")}` : `✔ ${t("trade_post_now")}`}
+                    {editId ? t("save_changes") : t("trade_post_now")}
                   </button>
                 </div>
               </div>
