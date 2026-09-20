@@ -16,6 +16,7 @@ import { AutoHeight } from "../components/ui/AutoHeight";
 import { localISO } from "../components/ui/DateField";
 import { EmptyState } from "../components/states";
 import { downscaleImage } from "../lib/image";
+import { MenuPicker } from "../components/ui/MenuPicker";
 
 // ─── Trade / Marketplace Screen ───────────────────────────────────────────────
 export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", userInitials = "JD", userRole }: { onProfile: () => void; onBack: () => void; userName?: string; userInitials?: string; userRole?: UserRole }) {
@@ -355,15 +356,21 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
             <span className="mp-fact green"><strong>{sorted.length}</strong> {sorted.length === 1 ? t("trade_listing_one") : t("trade_listings")}</span>
             {sorted.length > 0 && <span className="mp-fact gold">{t("mp_avg")} ₱{avgShown}{t("per_kg_short")}</span>}
           </span>
-          <label className="mp-sort">
-            <ArrowUpDown size={15} strokeWidth={2.4} aria-hidden="true" />
-            <select value={sortBy} onChange={e => setSortBy(e.target.value as typeof sortBy)} aria-label={t("mp_sort")}>
-              <option value="default">{t("trade_sort_newest")}</option>
-              <option value="price-asc">{t("trade_sort_price_asc")}</option>
-              <option value="price-desc">{t("trade_sort_price_desc")}</option>
-              <option value="rating">{t("trade_sort_rating")}</option>
-            </select>
-          </label>
+          {/* Four options, so a plain menu under the button: the sheet we use
+              for long lists was a lot of machinery between a tap and an
+              answer, and it misbehaved here. */}
+          <MenuPicker
+            label={t("mp_sort")}
+            icon={<ArrowUpDown size={16} strokeWidth={2.4} aria-hidden="true" />}
+            value={sortBy}
+            onChange={v => setSortBy(v as typeof sortBy)}
+            options={[
+              { value: "default", label: t("trade_sort_newest") },
+              { value: "price-asc", label: t("trade_sort_price_asc") },
+              { value: "price-desc", label: t("trade_sort_price_desc") },
+              { value: "rating", label: t("trade_sort_rating") },
+            ]}
+          />
         </div>
 
         {sorted.length > 0 ? (

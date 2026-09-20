@@ -20,6 +20,45 @@ export const pickerCss = `
   .pick-field-arrow { color: var(--text-soft); flex-shrink: 0; }
   .pick-field:disabled .pick-field-arrow { opacity: .4; }
 
+  /* The compact variant, for a toolbar: same field, pill-shaped, sized to
+     its label so it sits beside the facts it sorts. */
+  .pick-pill {
+    flex-shrink: 0; min-height: 40px; padding: 0 10px 0 12px; border: none; border-radius: 99px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+    background: var(--card); box-shadow: inset 0 0 0 1.5px var(--line);
+    font-family: var(--font-display); font-size: 14px; font-weight: 600; color: var(--text);
+    transition: transform 160ms var(--ease-out), box-shadow 140ms ease, background-color 140ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .pick-pill:active { transform: scale(.96); background: var(--paper); transition-duration: 90ms; }
+  .pick-pill .pick-field-val { flex: 0 1 auto; }
+  .pick-pill .pick-field-arrow { color: var(--text-faint); }
+
+  /* The dropdown for short lists: it belongs to its button, so it hangs off
+     it and scales out of the corner nearest it. */
+  .menu-pick { position: relative; flex-shrink: 0; }
+  .menu-pop {
+    position: absolute; top: calc(100% + 8px); right: 0; z-index: 60; min-width: 220px; padding: 6px;
+    background: var(--card); border-radius: 16px;
+    box-shadow:
+      inset 0 0 0 1px rgba(22,33,27,.12),
+      0 2px 6px rgba(22,33,27,.12),
+      0 16px 32px -16px rgba(22,33,27,.5);
+    transform-origin: top right;
+    animation: menu-in 160ms var(--ease-out);
+  }
+  @keyframes menu-in { from { opacity: 0; transform: scale(.94) translateY(-4px); } to { opacity: 1; transform: none; } }
+  .menu-row {
+    width: 100%; min-height: 46px; padding: 8px 12px; border: none; border-radius: 11px; cursor: pointer;
+    display: flex; align-items: center; justify-content: space-between; gap: 10px; text-align: left;
+    background: none; color: var(--ink); font-family: var(--font-body); font-size: 15.5px;
+    transition: background-color 140ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .menu-row:active { background: var(--paper-alt); transition-duration: 0ms; }
+  .menu-row.on { background: var(--tanim-sk); color: var(--tanim); font-weight: 700; }
+  @media (prefers-reduced-motion: reduce) { .menu-pop { animation: none; } }
+
   /* The sheet: nearly the full screen, because the list is the task. */
   .pick-sheet {
     width: 100%; height: 88%; background: var(--paper);
@@ -77,6 +116,6 @@ export const pickerCss = `
   .pick-none { padding: 28px 16px; text-align: center; font-size: var(--fs-body); color: var(--text-muted); line-height: 1.5; }
 
   @media (prefers-reduced-motion: reduce) {
-    .pick-field:active, .pick-close:active { transform: none; }
+    .pick-field:active, .pick-close:active, .pick-pill:active { transform: none; }
   }
 `;

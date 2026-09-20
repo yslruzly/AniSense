@@ -1173,17 +1173,6 @@ export const appCss = `
     font-size: 12.5px; font-weight: 700; font-variant-numeric: tabular-nums;
   }
   .mp-avail.green { background: var(--tanim-sk); color: var(--tanim); box-shadow: inset 0 0 0 1px rgba(11,107,65,.14); }
-  /* A native select behind a small pill: the phone's own picker opens, which
-     beats anything custom for four options. */
-  .mp-sort {
-    position: relative; flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 0 10px;
-    border-radius: 99px; background: var(--card); box-shadow: inset 0 0 0 1.5px var(--line); color: var(--text-soft);
-  }
-  .mp-sort select {
-    appearance: none; -webkit-appearance: none; border: none; background: none; cursor: pointer;
-    font-family: var(--font-display); font-size: 14px; font-weight: 600; color: var(--text); padding-right: 2px;
-  }
-  .mp-sort select:focus { outline: none; }
 
   /* Goods in a two-column grid, photo first: six listings on a screen
      where there used to be one and a half. */
@@ -2652,7 +2641,6 @@ export const appCss = `
     .stagger-list > * { animation: row-in-reduced 200ms ease both; }
     @keyframes row-in-reduced { from { opacity: 0; } }
     .bar-fill { animation: none; }
-    }
     .shm-bottom > .shm-panel[data-open="true"],
     .shm-center > .shm-panel[data-open="true"] { transform: none; opacity: 1; }
     .shm-center > .shm-panel:not([data-open="true"]) { transform: none; }
