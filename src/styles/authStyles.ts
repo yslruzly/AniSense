@@ -457,6 +457,12 @@ export const authCss = `
     font-family: var(--font-display); font-weight: 600; font-size: var(--fs-body);
     color: var(--ink); display: block; margin-bottom: 9px;
   }
+  /* Quieter than the label it rides, louder than nothing: enough to be read
+     before the field is tapped, not enough to compete with the question. */
+  .a-lbl small {
+    font-family: var(--font-body); font-weight: 600; font-size: var(--fs-label);
+    color: var(--dilim);
+  }
   .a-inp {
     width: 100%; min-height: 62px; border-radius: var(--r-md); background: var(--card);
     border: none; box-shadow: inset 0 0 0 2px var(--line); padding: 0 18px;

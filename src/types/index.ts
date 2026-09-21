@@ -2,7 +2,9 @@
 export type Screen = "home" | "market" | "expenses" | "analytics" | "trade" | "weather" | "profile";
 export type AuthScreen = "lang" | "splash" | "role" | "signin" | "signup";
 export type UserRole = "farmer" | "buyer" | null;
-export type FarmDetails = { years: string; location: string; phone: string };
+/** Collected at signup. A buyer answers location only, so the other two are
+ *  optional rather than a second near-identical type. */
+export type FarmDetails = { years?: string; location: string; phone?: string };
 export interface CropPrice {
   id: string; name: string; pricePerKg: number; change: number;
   volume: number; color: string;

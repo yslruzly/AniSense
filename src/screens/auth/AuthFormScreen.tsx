@@ -63,8 +63,8 @@ export function AuthFormScreen({
   const [step, setStep] = useState<"form" | "details" | "crops">("form");
   const [selectedCrops, setSelectedCrops] = useState<string[]>([]);
   const [farmYears, setFarmYears] = useState("");
-  const [farmMunicipality, setFarmMunicipality] = useState("");
-  const [farmBarangay, setFarmBarangay] = useState("");
+  const [municipality, setMunicipality] = useState("");
+  const [barangay, setBarangay] = useState("");
   const [farmPhone, setFarmPhone] = useState("");
   const { t, tn } = useLang();
 
@@ -103,7 +103,11 @@ export function AuthFormScreen({
   const submit = () => {
     clear();
     if (!validate()) return;
-    if (signup && role === "farmer") {
+    // Both roles say where they are before the account exists: a farmer so
+    // buyers can find them, a buyer so the listings they are shown are ones
+    // they can actually drive to. It was only ever asked of farmers, which
+    // left every buyer sitting in a default town they never chose.
+    if (signup) {
       if (mode === "phone" && !farmPhone) setFarmPhone(contact);
       setStep("details");
       return;
@@ -119,12 +123,27 @@ export function AuthFormScreen({
   const finishDetails = () => {
     const yrs = Number(farmYears);
     if (!farmYears.trim() || isNaN(yrs) || yrs < 0 || yrs > 80) { setError(t("err_years_required")); return; }
-    if (!farmMunicipality) { setError(t("err_municipality_required")); return; }
-    if (!farmBarangay) { setError(t("err_barangay_required")); return; }
+    if (!municipality) { setError(t("err_municipality_required")); return; }
+    if (!barangay) { setError(t("err_barangay_required")); return; }
     if (!farmPhone.trim()) { setError(t("err_phone_required")); return; }
     if (!/^0?9\d{9}$/.test(farmPhone)) { setError(t("err_valid_phone")); return; }
     setError("");
     setStep("crops");
+  };
+
+  // Municipality is the unit the marketplace filters on, so that one is
+  // required; barangay only sharpens a delivery estimate, so it is not.
+  const finishBuyerLocation = () => {
+    if (!municipality) { setError(t("err_municipality_required")); return; }
+    setError("");
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      onSuccess(name.trim(), role, [], {
+        location: formatFarmLocation(barangay, municipality),
+        phone: contact.trim(),
+      }, true);
+    }, 1200);
   };
 
   const finishCrops = () => {
@@ -135,7 +154,7 @@ export function AuthFormScreen({
       setLoading(false);
       onSuccess(name.trim(), role, selectedCrops, {
         years: farmYears.trim(),
-        location: formatFarmLocation(farmBarangay, farmMunicipality),
+        location: formatFarmLocation(barangay, municipality),
         phone: farmPhone.trim(),
       }, true);
     }, 1200);
@@ -203,6 +222,66 @@ export function AuthFormScreen({
     <><span className="a-spin" aria-hidden="true" />{label}</>
   );
 
+  // ── Step 2 (buyer): where they buy from ──
+  // Deliberately the same two pickers, province row and dock as the farmer
+  // step: one setup flow with two endings, not two flows.
+  if (step === "details" && role === "buyer") {
+    return (
+      <div className="a-screen">
+        {head(t("buyer_loc_title"), t("buyer_loc_sub"))}
+        <div className="a-scroll">
+          <div className="a-field">
+            <label className="a-lbl">{t("buyer_loc_lbl")}</label>
+            <div className="a-locked">
+              <MapPin size={20} color="var(--tanim)" />
+              <span>{FARM_PROVINCE}</span>
+              <span className="a-locked-note">{t("farm_province_lbl")}</span>
+            </div>
+          </div>
+
+          <div className="a-field">
+            <label className="a-lbl">{t("farm_municipality_lbl")}</label>
+            <PickerField
+              title={t("farm_municipality_lbl")}
+              placeholder={t("farm_pick_municipality")}
+              value={municipality}
+              options={MUNICIPALITIES}
+              onChange={v => { setMunicipality(v); setBarangay(""); setError(""); }}
+            />
+            <p className="a-help">{t("buyer_municipality_help")}</p>
+          </div>
+
+          <div className="a-field">
+            {/* The word "optional" sits on the label, not in the placeholder:
+                a field you may skip should say so before it is tapped. */}
+            <label className="a-lbl">{t("farm_barangay_lbl")} <small>{t("optional")}</small></label>
+            <PickerField
+              title={t("farm_barangay_lbl")}
+              placeholder={t("farm_pick_barangay")}
+              disabledHint={t("farm_pick_municipality_first")}
+              disabled={!municipality}
+              value={barangay}
+              options={BARANGAYS_BY_MUNICIPALITY[municipality] ?? []}
+              onChange={v => { setBarangay(v); setError(""); }}
+            />
+            <p className="a-help">{t("buyer_barangay_help")}</p>
+          </div>
+
+          {alert()}
+          <div style={{ height: 24 }} />
+        </div>
+        {dock(
+          () => { setStep("form"); setError(""); },
+          // Last step for a buyer, so the button says what it finishes, not
+          // "Continue" into a step that does not exist.
+          <button type="button" className="a-btn a-btn-green" disabled={loading} onClick={finishBuyerLocation}>
+            {loading ? busy(t("please_wait")) : t("auth_create_btn")}
+          </button>,
+        )}
+      </div>
+    );
+  }
+
   // ── Step 2 (farmer): farm details ──
   if (step === "details") {
     return (
@@ -236,9 +315,9 @@ export function AuthFormScreen({
             <PickerField
               title={t("farm_municipality_lbl")}
               placeholder={t("farm_pick_municipality")}
-              value={farmMunicipality}
+              value={municipality}
               options={MUNICIPALITIES}
-              onChange={v => { setFarmMunicipality(v); setFarmBarangay(""); setError(""); }}
+              onChange={v => { setMunicipality(v); setBarangay(""); setError(""); }}
             />
           </div>
 
@@ -248,10 +327,10 @@ export function AuthFormScreen({
               title={t("farm_barangay_lbl")}
               placeholder={t("farm_pick_barangay")}
               disabledHint={t("farm_pick_municipality_first")}
-              disabled={!farmMunicipality}
-              value={farmBarangay}
-              options={BARANGAYS_BY_MUNICIPALITY[farmMunicipality] ?? []}
-              onChange={v => { setFarmBarangay(v); setError(""); }}
+              disabled={!municipality}
+              value={barangay}
+              options={BARANGAYS_BY_MUNICIPALITY[municipality] ?? []}
+              onChange={v => { setBarangay(v); setError(""); }}
             />
           </div>
 

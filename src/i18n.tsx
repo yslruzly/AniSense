@@ -465,6 +465,23 @@ export const translations: Dict = {
   err_select_crop: { en: "Please select at least one crop.", tl: "Pumili ng kahit isang pananim." },
 
   // ── Extra: farm details step (farmer signup) ─────────────────────────────
+  // ── Buyer location ────────────────────────────────────────────────────────
+  buyer_loc_title: { en: "Where do you buy?", tl: "Saan ka bumibili?" },
+  buyer_loc_sub: {
+    en: "So the listings you see are ones you can actually reach.",
+    tl: "Para ang mga listing na makikita mo ay yung kaya mong puntahan.",
+  },
+  buyer_loc_lbl: { en: "Your area", tl: "Lugar mo" },
+  buyer_municipality_help: {
+    en: "We put the nearest farmers first.",
+    tl: "Ipapakita muna ang pinakamalapit na magsasaka.",
+  },
+  buyer_barangay_help: {
+    en: "Sellers use this to estimate delivery. Skip it if you would rather not say.",
+    tl: "Ginagamit ito ng nagbebenta para tantiyahin ang hatid. Pwedeng laktawan.",
+  },
+  optional: { en: "optional", tl: "opsyonal" },
+
   farm_details_title: { en: "About your farm", tl: "Tungkol sa bukid mo" },
   farm_details_sub: {
     en: "Tell us a bit about your farming background.",

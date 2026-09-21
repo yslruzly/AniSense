@@ -119,9 +119,9 @@ export default function App() {
       name,
       crops: crops.length > 0 ? crops : p.crops,
       ...(farmDetails ? {
-        experience: `${farmDetails.years} years`,
         location: farmDetails.location,
-        phone: `+63 ${farmDetails.phone.replace(/^0/, "")}`,
+        ...(farmDetails.years ? { experience: `${farmDetails.years} years` } : {}),
+        ...(farmDetails.phone ? { phone: `+63 ${farmDetails.phone.replace(/^0/, "")}` } : {}),
       } : {}),
     }));
     // Every account has a member ID (Profile can show it any time). New
@@ -232,7 +232,7 @@ export default function App() {
             name={farmerProfile.name}
             initials={initials}
             role={userRole}
-            location={userRole === "farmer" ? farmerProfile.location : undefined}
+            location={farmerProfile.location}
             info={welcome}
             photo={userPhoto}
             onPhoto={setUserPhoto}

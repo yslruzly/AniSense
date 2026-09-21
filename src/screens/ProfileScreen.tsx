@@ -114,6 +114,9 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
               stranded beside two lines of text. The role moved to the pill in
               the card's corner. */}
           <div className="prof-loc">{profile.location}</div>
+          {/* Crops say what this person grows, so they belong to a farmer.
+              A buyer was being shown Rice and Corn they never chose. */}
+          {userRole !== "buyer" && (
           <div className="prof-crops">
             {(editing ? draft : profile).crops.map(c => (
               <span key={c} className="crop-tag" style={{ display: "flex", alignItems: "center", gap: 4 }}>
@@ -121,6 +124,7 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
               </span>
             ))}
           </div>
+          )}
           {/* The ID lives on the card that already looks like one: the
               natural place to reach for it when a buyer asks who you are. */}
           {onShowId && !editing && (
