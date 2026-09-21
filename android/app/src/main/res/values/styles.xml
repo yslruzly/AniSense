@@ -11,10 +11,14 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:background">@null</item>
-        <!-- Status bar starts ink because the first screen behind it is ink.
-             lib/platform.ts takes over per screen once the webview is up. -->
-        <item name="android:statusBarColor">@color/anisenseInk</item>
-        <item name="android:navigationBarColor">@color/anisensePaper</item>
+        <!-- Both bars are transparent: the app draws under them and paints
+             those strips itself (.hdr takes the top inset, .bnav the bottom).
+             Android 15+ ignores these two attributes and forces transparency
+             anyway; they are what makes Android 14 and below behave the same.
+             lib/platform.ts still sets the icon colour per screen. -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
     </style>
 
     <!-- Launch theme. On Android 12+ the system draws this and there is no way

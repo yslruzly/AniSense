@@ -63,6 +63,7 @@ export const pickerCss = `
   .pick-sheet {
     width: 100%; height: 88%; background: var(--paper);
     border-radius: 24px 24px 0 0; display: flex; flex-direction: column; overflow: hidden;
+    padding-bottom: var(--safe-bottom);
   }
   .pick-head {
     flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px;

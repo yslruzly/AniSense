@@ -19,10 +19,11 @@ const config: CapacitorConfig = {
       showSpinner: false,
     },
     StatusBar: {
-      // We drive this per screen from lib/platform.ts. `overlaysWebView: false`
-      // keeps the bar as its own strip rather than letting content slide under
-      // it, which is what you want when the header is already a solid colour.
-      overlaysWebView: false,
+      // The app is edge to edge: the webview runs under the status bar and
+      // the header paints that strip. Style (icon colour) is still driven per
+      // screen from lib/platform.ts; the colour set there is ignored from
+      // Android 15 on, which is exactly why the strip has to come from CSS.
+      overlaysWebView: true,
       style: 'DARK',
       backgroundColor: '#16211B',
     },

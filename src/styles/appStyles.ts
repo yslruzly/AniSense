@@ -33,8 +33,10 @@ export const appCss = `
       height: 100dvh;
       border-radius: 0;
       box-shadow: none;
-      padding-top: var(--safe-top);
-      padding-bottom: var(--safe-bottom);
+      /* No safe-area padding here, on purpose. Padding the shell would band
+         the screen in the shell's own colour; instead every element that
+         reaches an edge takes the inset itself, so the header's white runs
+         under the status bar and the page runs under the gesture pill. */
     }
   }
 
@@ -67,7 +69,10 @@ export const appCss = `
 
   /* ── Header ── */
   .hdr {
-    height: 66px; background: var(--white); flex-shrink: 0;
+    /* Grows by the status bar so its white fills that strip; the row inside
+       still centres on its own 66px. */
+    height: calc(66px + var(--safe-top)); padding-top: var(--safe-top);
+    background: var(--white); flex-shrink: 0;
     display: flex; align-items: center; justify-content: space-between;
     padding: 0 18px; border-bottom: 1px solid var(--border);
   }
@@ -201,7 +206,7 @@ export const appCss = `
     display: flex; flex-direction: column; gap: 14px;
     /* The bar floats over this, so the last card needs room to clear it
        rather than coming to rest underneath. */
-    padding-bottom: calc(var(--bnav-h) + 26px);
+    padding-bottom: calc(var(--bnav-h) + 26px + var(--safe-bottom));
   }
   .scroll > * { flex-shrink: 0; }
   .scroll::-webkit-scrollbar { display: none; }
@@ -361,7 +366,7 @@ export const appCss = `
      screen read as one surface with chrome above it. */
   .bnav {
     position: absolute; z-index: 40;
-    left: 14px; right: 14px; bottom: 12px;
+    left: 14px; right: 14px; bottom: calc(12px + var(--safe-bottom));
     height: var(--bnav-h); padding: 6px;
     /* A capsule, like the iOS tab bar: the ends are fully round, so it reads
        as one object floating over the page rather than a docked strip. */
@@ -1486,7 +1491,7 @@ export const appCss = `
   .screen-dock {
     flex-shrink: 0; display: flex; flex-direction: column; gap: 8px;
     background: transparent;
-    padding: 10px 14px calc(var(--bnav-h) + 22px);
+    padding: 10px 14px calc(var(--bnav-h) + 22px + var(--safe-bottom));
   }
   .scroll.has-dock { padding-bottom: 10px; }
 
@@ -1617,6 +1622,7 @@ export const appCss = `
   .cart-sheet {
     background: var(--paper); border-radius: 24px 24px 0 0;
     width: 100%; max-height: 88%; display: flex; flex-direction: column;
+    padding-bottom: var(--safe-bottom);
   }
   /* Matches the alerts sheet header, so the app's two sheets feel like one family. */
   .cart-sheet-hdr {
@@ -1826,7 +1832,7 @@ export const appCss = `
   .seller-modal-sheet {
     background:var(--paper); border-radius:30px 30px 0 0;
     width:100%; max-height:90%; display:flex; flex-direction:column;
-    overflow:hidden;
+    overflow:hidden; padding-bottom: var(--safe-bottom);
   }
   .seller-modal-hero {
     background: var(--tanim);
@@ -1901,12 +1907,12 @@ export const appCss = `
 
   .confirm-sheet {
     width: 100%; background: var(--card);
-    border-radius: 24px 24px 0 0; padding: 28px;
+    border-radius: 24px 24px 0 0; padding: 28px 28px calc(28px + var(--safe-bottom));
   }
-  .confirm-sheet.sm { border-radius: 16px 16px 0 0; padding: 24px; }
+  .confirm-sheet.sm { border-radius: 16px 16px 0 0; padding: 24px 24px calc(24px + var(--safe-bottom)); }
   .post-sheet {
     width: 100%; max-height: 93%; background: var(--paper);
-    border-radius: 24px 24px 0 0; padding-bottom: 24px;
+    border-radius: 24px 24px 0 0; padding-bottom: calc(24px + var(--safe-bottom));
   }
   .exp-sheet {
     width: 100%; max-height: 93%; background: var(--card);
@@ -1917,7 +1923,7 @@ export const appCss = `
      green only on the operators and the answer. */
   .calc-sheet {
     width: 100%; background: var(--card);
-    border-radius: 24px 24px 0 0; padding: 10px 16px 22px;
+    border-radius: 24px 24px 0 0; padding: 10px 16px calc(22px + var(--safe-bottom));
     box-shadow: 0 -8px 40px rgba(0,0,0,0.18);
   }
   .calc-grab { width: 40px; height: 5px; border-radius: 99px; background: var(--line); margin: 0 auto 8px; }

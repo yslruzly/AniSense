@@ -29,10 +29,9 @@ export const authCss = `
   @media (max-width: 430px) {
     .auth-shell {
       width: 100vw; height: 100dvh; max-height: none; border-radius: 0; box-shadow: none;
-      /* Without these the dock button sits under the gesture pill, and the
-         status bar clips the back arrow. dvh alone does not account for either. */
-      padding-top: var(--safe-top);
-      padding-bottom: var(--safe-bottom);
+      /* The insets live on .a-inkhead, .a-welcome and .a-dock rather than
+         here, so the ink header and the terraces photo reach the top edge
+         instead of stopping below the status bar. */
     }
   }
 
@@ -78,7 +77,7 @@ export const authCss = `
   /* The ink variant disappears on paper, so screens outside the ink head get this. */
   .a-iconbtn.on-paper { background: var(--card); box-shadow: inset 0 0 0 2px var(--line); }
 
-  .a-inkhead { background: var(--ink); padding: 14px 22px 30px; border-radius: 0 0 26px 26px; }
+  .a-inkhead { background: var(--ink); padding: calc(14px + var(--safe-top)) 22px 30px; border-radius: 0 0 26px 26px; }
   .a-badge {
     display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px;
     border-radius: var(--r-pill); background: rgba(255,255,255,.15);
@@ -90,7 +89,7 @@ export const authCss = `
   /* No fill and no shadow of its own: the buttons sit on the same ground as
      everything above them. The lift used to draw a line across the screen and
      make the last two buttons look like a separate panel. */
-  .a-dock { padding: 16px 22px 26px; background: transparent; }
+  .a-dock { padding: 16px 22px calc(26px + var(--safe-bottom)); background: transparent; }
   .a-brandrow { display: flex; align-items: center; gap: 10px; }
   .a-brandmark {
     width: 34px; height: 34px; border-radius: 10px; background: #fff;
@@ -188,7 +187,7 @@ export const authCss = `
   .a-welcome-shell { background: var(--ink); position: relative; isolation: isolate; }
   .a-welcome {
     flex: 1; min-height: 0; display: flex; flex-direction: column;
-    padding: 20px 22px 26px;
+    padding: calc(20px + var(--safe-top)) 22px calc(26px + var(--safe-bottom));
     overflow-y: auto; overscroll-behavior: contain;
   }
   .a-welcome::-webkit-scrollbar { width: 0; }
@@ -298,7 +297,7 @@ export const authCss = `
      like someone behind a market stall. */
   .a-rolehead {
     flex: 1 1 auto; min-height: 0; position: relative; overflow: hidden;
-    display: flex; flex-direction: column; padding: 18px 22px 0;
+    display: flex; flex-direction: column; padding: calc(18px + var(--safe-top)) 22px 0;
   }
   .a-rolehead-copy { margin-top: 22px; }
   .a-rolehead-copy .a-sub { margin-top: 6px; }
@@ -391,7 +390,7 @@ export const authCss = `
   /* Same lockup as the setup steps, plus the account type as a pill on the
      brand row. The glow echoes the mascot stage so the flow feels like one
      place, at a fraction of the height a form can afford to give up. */
-  .a-formhead { position: relative; overflow: hidden; padding: 18px 22px 26px; }
+  .a-formhead { position: relative; overflow: hidden; padding: calc(18px + var(--safe-top)) 22px 26px; }
   .a-formhead::before {
     content: ""; position: absolute; right: -80px; top: -90px; width: 260px; height: 260px; border-radius: 50%;
     background: radial-gradient(closest-side, rgba(126,196,120,.2), rgba(126,196,120,0)); pointer-events: none;

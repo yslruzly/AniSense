@@ -70,7 +70,10 @@ export default function App() {
   // The status bar sits over the content, so it has to follow whatever screen is
   // underneath it. Auth and the app headers are ink; the rest is paper.
   useEffect(() => {
-    if (!isAuthed) { setStatusBar(authScreen === "splash" ? "dark" : "light"); return; }
+    // Every signup screen is ink at the top -- the terraces photo on welcome,
+    // the ink header on the rest -- and the bar now sits over it, so the icons
+    // stay light for the whole flow.
+    if (!isAuthed) { setStatusBar("dark"); return; }
     // Home used to open on a full-bleed ink header; the greeting is a card on
     // paper now, so the bar matches the paper like every other screen.
     setStatusBar("light");
