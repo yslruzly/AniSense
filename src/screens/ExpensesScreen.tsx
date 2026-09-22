@@ -185,7 +185,7 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
 
   return (
     <div className="screen">
-      <Hdr title={t("exp_title")} onProfile={onProfile} onBack={onBack} userInitials={userInitials} />
+      <Hdr title={t("exp_title")} onBack={onBack} />
       <div className={`scroll screen-enter ${!isBuyer ? "has-dock" : ""}`}>
 
         {/* ── BUYER: read-only past transactions only ── */}

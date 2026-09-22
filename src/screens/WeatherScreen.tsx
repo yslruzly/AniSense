@@ -34,7 +34,7 @@ export function WeatherScreen({ onProfile, onBack, userInitials = "JD", userRole
 
   return (
     <div className="screen">
-      <Hdr icon={<CloudSun size={20} color="var(--tanim)" />} title={t("wx_title")} sub={t(isBuyer ? "wx_sub_buyer" : "wx_sub")} onProfile={onProfile} onBack={onBack} userInitials={userInitials} />
+      <Hdr icon={<CloudSun size={20} color="var(--tanim)" />} title={t("wx_title")} sub={t(isBuyer ? "wx_sub_buyer" : "wx_sub")} onBack={onBack} />
       <div className="scroll screen-enter">
         {/* The same farm by day and by night. Both pictures stay mounted and
             crossfade, so the 5 PM switch dissolves rather than cuts. */}

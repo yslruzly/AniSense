@@ -16,7 +16,7 @@ export function AnalyticsScreen({ onProfile, onBack, userInitials = "JD", farmer
 
   return (
     <div className="screen">
-      <Hdr icon={<BarChart2 size={20} color="var(--tanim)" />} title={t("ana_title")} sub={t("ana_sub")} onProfile={onProfile} onBack={onBack} userInitials={userInitials} />
+      <Hdr icon={<BarChart2 size={20} color="var(--tanim)" />} title={t("ana_title")} sub={t("ana_sub")} onBack={onBack} />
       <div className="scroll screen-enter">
         <div>
           <div className="sec-title">{t("ana_glance")}</div>

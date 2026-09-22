@@ -263,7 +263,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
 
   return (
     <div className="screen">
-      <Hdr title={t("trade_title")} onProfile={onProfile} onBack={onBack} userInitials={userInitials}
+      <Hdr title={t("trade_title")} onBack={onBack}
         extra={userRole === "buyer" ? (
           // Dressed exactly like the alerts bell beside it: same bare button,
           // same glyph size and ink, same badge. Two header icons styled two

@@ -141,7 +141,7 @@ export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userIn
 
   return (
     <div className="screen">
-      <Hdr title={t("market_title")} onProfile={onProfile} onBack={onBack} userInitials={userInitials} />
+      <Hdr title={t("market_title")} onBack={onBack} />
       <div className="scroll screen-enter">
 
         {/* 1 ── Today's market ── */}

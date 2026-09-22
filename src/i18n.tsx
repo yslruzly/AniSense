@@ -531,6 +531,20 @@ export const translations: Dict = {
   alert_price_up: { en: "Price going up", tl: "Tumataas ang presyo" },
   alert_price_down: { en: "Price going down", tl: "Bumababa ang presyo" },
   alerts_open: { en: "Open alerts", tl: "Buksan ang mga abiso" },
+  // Buyer set: same sheet, different news.
+  alerts_sub_buyer: {
+    en: "Deals and new harvests worth knowing today",
+    tl: "Mga sulit at bagong ani na dapat mong malaman ngayon",
+  },
+  alerts_none_sub_buyer: {
+    en: "We'll tell you when prices drop or a farmer near you posts a harvest.",
+    tl: "Sasabihin namin kapag bumaba ang presyo o may bagong ani malapit sa iyo.",
+  },
+  alert_new_near: { en: "New harvest near you", tl: "Bagong ani malapit sa iyo" },
+  alert_buy_cheaper: { en: "Cheaper today", tl: "Mas mura ngayon" },
+  alert_buy_cheaper_note: { en: "good time to buy", tl: "magandang bumili ngayon" },
+  alert_buy_rising: { en: "Price rising", tl: "Tumataas ang presyo" },
+  alert_buy_rising_note: { en: "buy before it climbs", tl: "bumili na bago tumaas pa" },
 
   home_advisory: { en: "Today's Advisory", tl: "Payo Ngayon" },
   home_advisory_sub: { en: "From your local DA office", tl: "Mula sa lokal na opisina ng DA" },

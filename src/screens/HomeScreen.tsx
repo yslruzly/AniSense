@@ -103,7 +103,7 @@ export function HomeScreen({ onNavigate, onProfile, isOffline, userName = "Juan"
 
   return (
     <div className="screen">
-      <Hdr icon={<AniSenseLogo size={28} />} title="AniSense" onProfile={onProfile} userInitials={userInitials} />
+      <Hdr icon={<AniSenseLogo size={28} />} title="AniSense" />
       <div className="scroll screen-enter">
 
         {/* 1 ── Greeting. The same farm as the Weather screen, by day or by

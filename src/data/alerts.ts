@@ -1,34 +1,39 @@
 import { CROPS } from "./crops";
 import { WEATHER_FORECAST } from "./weather";
+import { LISTINGS } from "./marketplace";
+import { UserRole } from "../types";
 
 // ─── Alerts ───────────────────────────────────────────────────────────────────
 // What the bell in the header is counting. Derived from the data already on
 // screen rather than a separate feed, so the badge can never claim something
 // the app cannot then show.
+//
+// Farmers and buyers get different sets because the same fact means opposite
+// things to them. A price drop is bad news for the one selling and a bargain
+// for the one buying; rain is a harvest deadline for one and nothing for the
+// other. One list for both was always wrong for somebody.
 
-export type AlertKind = "price-up" | "price-down" | "weather";
+export type AlertKind = "price-up" | "price-down" | "weather" | "new-listing";
 
 export interface Alert {
   id: string;
   kind: AlertKind;
-  /** Crop name for price alerts; undefined for weather. */
+  /** Crop name for price alerts and new listings. */
   crop?: string;
   /** Percent move, already rounded, for price alerts. */
   change?: number;
   /** Weather day label, for weather alerts. */
   day?: string;
+  /** For new listings: who posted it and at what price. */
+  seller?: string;
+  pricePerKg?: number;
 }
 
 const WET = ["Rainy", "Stormy", "LightRain"];
 
-export function buildAlerts(): Alert[] {
+/** The sharpest move in each direction, and only if it is worth a look. */
+function priceMoves(): Alert[] {
   const out: Alert[] = [];
-
-  // Weather first: it is the one with a deadline attached.
-  const wet = WEATHER_FORECAST.find(d => WET.includes(d.icon));
-  if (wet) out.push({ id: "wx-" + wet.day, kind: "weather", day: wet.day });
-
-  // Then the sharpest move in each direction, and only if it is worth a look.
   const sorted = [...CROPS].sort((a, b) => b.change - a.change);
   const top = sorted[0];
   const bottom = sorted[sorted.length - 1];
@@ -39,4 +44,36 @@ export function buildAlerts(): Alert[] {
     out.push({ id: "down-" + bottom.id, kind: "price-down", crop: bottom.name, change: bottom.change });
   }
   return out;
+}
+
+function farmerAlerts(): Alert[] {
+  const out: Alert[] = [];
+  // Weather first: it is the one with a deadline attached.
+  const wet = WEATHER_FORECAST.find(d => WET.includes(d.icon));
+  if (wet) out.push({ id: "wx-" + wet.day, kind: "weather", day: wet.day });
+  return [...out, ...priceMoves()];
+}
+
+function buyerAlerts(location: string): Alert[] {
+  const out: Alert[] = [];
+  // A fresh harvest in their own town first: it is the only alert that is
+  // about them rather than the market, and the one most likely to be gone
+  // tomorrow. Matched on the municipality they picked at signup; no match
+  // means no alert, rather than a "near you" that isn't.
+  const near = LISTINGS
+    .filter(l => l.location && location.includes(l.location))
+    .sort((a, b) => b.date.localeCompare(a.date))[0];
+  if (near) {
+    out.push({
+      id: "new-" + near.id, kind: "new-listing",
+      crop: near.variety || near.crop, seller: near.seller, pricePerKg: near.pricePerKg,
+    });
+  }
+  // Then prices, cheaper first: a drop is the thing a buyer can act on today.
+  const moves = priceMoves();
+  return [...out, ...moves.filter(m => m.kind === "price-down"), ...moves.filter(m => m.kind === "price-up")];
+}
+
+export function buildAlerts(role: UserRole = "farmer", location = ""): Alert[] {
+  return role === "buyer" ? buyerAlerts(location) : farmerAlerts();
 }

@@ -24,6 +24,7 @@ import { TradeScreen } from "./screens/TradeScreen";
 import { WeatherScreen } from "./screens/WeatherScreen";
 import { ProfileScreen } from "./screens/ProfileScreen";
 import { WelcomeID, WelcomeInfo, makeMemberId } from "./components/WelcomeID";
+import { ViewerContext } from "./lib/viewer";
 
 // The bottom-nav destinations. Anything else is a page opened from one of them.
 const TABS: Screen[] = ["home", "market", "trade", "expenses", "profile"];
@@ -221,6 +222,7 @@ export default function App() {
       <style>{sheetCss}</style>
       <style>{pickerCss}</style>
       <style>{buttonCss}</style>
+      <ViewerContext.Provider value={{ role: userRole, location: farmerProfile.location }}>
       <div className="outer">
         <div className="shell" data-nav={nav} data-revisit={revisit || undefined}>
           {renderScreen()}
@@ -239,6 +241,7 @@ export default function App() {
           />
         </div>
       </div>
+      </ViewerContext.Provider>
     </>
   );
 }

@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { ArrowLeft, Bell, TrendingUp, TrendingDown, CloudRain, X } from "lucide-react";
+import { ArrowLeft, Bell, TrendingUp, TrendingDown, CloudRain, X, Sprout } from "lucide-react";
 import { useLang } from "../../i18n";
 import { haptic } from "../../lib/platform";
 import { buildAlerts, Alert } from "../../data/alerts";
 import { Sheet } from "../ui/Sheet";
+import { useViewer } from "../../lib/viewer";
 
 // The bell rings once per session, on the first screen that shows it with
 // unread alerts: enough to say "something's waiting", and never again, so it
@@ -11,10 +12,15 @@ import { Sheet } from "../ui/Sheet";
 let bellRung = false;
 
 // ─── Shared Header ────────────────────────────────────────────────────────────
-export function Hdr({ icon, title, sub, onProfile, onBack, userInitials = "JD", extra }: { icon?: React.ReactNode; title: string; sub?: string; onProfile?: () => void; onBack?: () => void; userInitials?: string; extra?: React.ReactNode }) {
+// No avatar on the right. It duplicated the Profile tab one thumb-reach
+// below, and two doors to the same room is one more thing to read on every
+// screen. The bell takes its place at the edge.
+export function Hdr({ icon, title, sub, onBack, extra }: { icon?: React.ReactNode; title: string; sub?: string; onBack?: () => void; extra?: React.ReactNode }) {
   const { t, tn } = useLang();
   const [showAlerts, setShowAlerts] = useState(false);
-  const alerts = buildAlerts();
+  const { role, location } = useViewer();
+  const isBuyer = role === "buyer";
+  const alerts = buildAlerts(role, location);
 
   // The badge counts what the sheet can actually show. A hardcoded "3" over an
   // empty sheet is the kind of small lie that costs trust.
@@ -26,6 +32,27 @@ export function Hdr({ icon, title, sub, onProfile, onBack, userInitials = "JD", 
   });
 
   const row = (a: Alert) => {
+    const pct = `${(a.change || 0) > 0 ? "+" : ""}${a.change}%`;
+    if (a.kind === "new-listing") {
+      return {
+        ico: <Sprout size={20} color="var(--tanim)" />,
+        bg: "var(--tanim-sk)",
+        title: t("alert_new_near"),
+        body: `${tn(a.crop || "")} · ₱${a.pricePerKg}${t("per_kg_short")} · ${a.seller}`,
+      };
+    }
+    if (isBuyer) {
+      // The colours flip for a buyer: a drop is the good news, so it gets the
+      // green; a rise is the warning, so it gets the gold. Red would say
+      // "something is wrong", and nothing is — it is just time to buy.
+      const down = a.kind === "price-down";
+      return {
+        ico: down ? <TrendingDown size={20} color="var(--tanim)" /> : <TrendingUp size={20} color="var(--gold-text)" />,
+        bg: down ? "var(--tanim-sk)" : "var(--gold-sk)",
+        title: down ? t("alert_buy_cheaper") : t("alert_buy_rising"),
+        body: `${tn(a.crop || "")} · ${pct} · ${down ? t("alert_buy_cheaper_note") : t("alert_buy_rising_note")}`,
+      };
+    }
     if (a.kind === "weather") {
       return {
         ico: <CloudRain size={20} color="var(--gold-text)" />,
@@ -39,7 +66,7 @@ export function Hdr({ icon, title, sub, onProfile, onBack, userInitials = "JD", 
       ico: up ? <TrendingUp size={20} color="var(--tanim)" /> : <TrendingDown size={20} color="var(--error)" />,
       bg: up ? "var(--tanim-sk)" : "var(--error-sk)",
       title: up ? t("alert_price_up") : t("alert_price_down"),
-      body: `${tn(a.crop || "")} · ${(a.change || 0) > 0 ? "+" : ""}${a.change}%`,
+      body: `${tn(a.crop || "")} · ${pct}`,
     };
   };
 
@@ -70,7 +97,6 @@ export function Hdr({ icon, title, sub, onProfile, onBack, userInitials = "JD", 
               {count > 0 && <span className="nbadge">{count}</span>}
             </span>
           </button>
-          <button className="ava" onClick={onProfile} disabled={!onProfile}>{userInitials}</button>
         </div>
       </div>
 
@@ -83,7 +109,7 @@ export function Hdr({ icon, title, sub, onProfile, onBack, userInitials = "JD", 
         <div className="alerts-head">
           <div>
             <div className="alerts-head-t">{t("alerts_title")}</div>
-            <div className="alerts-head-s">{t("alerts_sub")}</div>
+            <div className="alerts-head-s">{t(isBuyer ? "alerts_sub_buyer" : "alerts_sub")}</div>
           </div>
           <button className="alerts-close" onClick={() => setShowAlerts(false)} aria-label={t("close")}>
             <X size={22} color="#fff" strokeWidth={2.4} />
@@ -98,7 +124,7 @@ export function Hdr({ icon, title, sub, onProfile, onBack, userInitials = "JD", 
           {alerts.length === 0 ? (
             <div className="alerts-empty">
               <div className="alerts-empty-t">{t("alerts_none")}</div>
-              <div className="alerts-empty-s">{t("alerts_none_sub")}</div>
+              <div className="alerts-empty-s">{t(isBuyer ? "alerts_none_sub_buyer" : "alerts_none_sub")}</div>
             </div>
           ) : alerts.map(a => {
             const r = row(a);

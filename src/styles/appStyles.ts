@@ -91,6 +91,10 @@ export const appCss = `
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
   .notif:active { transition-duration: 100ms; transform: scale(0.94); background: var(--paper-alt); }
+  /* Where the bell sits against the right edge. 0 keeps its 40px tap box
+     inside the gutter; a bigger number moves it further left, a negative
+     one pushes it toward the edge. */
+  .hdr-right > .notif:last-child { margin-right: 0; }
   /* The badge was 16px type in a 15px pill hung off a 19px bell, which is what
      made it read as a blob. 12px in a 17px disc, tucked onto the bell rather
      than floating clear of it, and ringed in the header's own white so it
@@ -186,19 +190,6 @@ export const appCss = `
   .alerts-empty { padding: 26px 6px 10px; text-align: center; }
   .alerts-empty-t { font-size: var(--fs-body); font-weight: 700; color: var(--text); }
   .alerts-empty-s { font-size: var(--fs-label); color: var(--text-muted); margin-top: 6px; line-height: 1.5; }
-  .ava {
-    font-family: inherit; padding: 0;
-    width: 34px; height: 34px; border-radius: 50%;
-    background: var(--tanim);
-    color:#fff; font-size: var(--fs-label); font-weight:700;
-    display:flex; align-items:center; justify-content:center;
-    border: 2px solid var(--tanim-sk); cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-  }
-  /* Gated: on a touchscreen :hover latches on tap and the state sticks. */
-  @media (hover: hover) and (pointer: fine) {
-    .ava:hover { box-shadow: 0 0 0 3px var(--line); }
-  }
 
   /* ── Scroll ── */
   .scroll {
@@ -2457,7 +2448,7 @@ export const appCss = `
   .fchip, .lstm-tab, .add-btn, .post-btn,
   .ntab, .signout-btn,
   .cat-tab, .var-tab, .crop-pick,
-  .hdr-back, .ava, .alerts-close, .prof-edit-btn,
+  .hdr-back, .alerts-close, .prof-edit-btn,
   .qty-pick-btn,
   .btn-call, .btn-details, .add-cart-btn, .buy-now-btn, .cart-checkout-btn, .call-seller-btn {
     transition: transform 190ms var(--ease-out), background-color var(--dur-fast) ease;
@@ -2468,7 +2459,7 @@ export const appCss = `
   .fchip:active, .lstm-tab:active, .add-btn:active, .post-btn:active,
   .ntab:active, .signout-btn:active,
   .cat-tab:active, .var-tab:active, .crop-pick:active,
-  .hdr-back:active, .ava:active, .alerts-close:active,
+  .hdr-back:active, .alerts-close:active,
   .prof-edit-btn:active, .qty-pick-btn:active,
   .btn-call:active, .btn-details:active,
   .add-cart-btn:active, .buy-now-btn:active, .cart-checkout-btn:active, .call-seller-btn:active {
@@ -2482,7 +2473,7 @@ export const appCss = `
   .add-btn:active, .post-btn:active, .signout-btn:active,
   .btn-call:active, .btn-details:active, .add-cart-btn:active, .buy-now-btn:active,
   .cart-checkout-btn:active, .call-seller-btn:active { transform: scale(0.97); }
-  .hdr-back:active, .ava:active, .alerts-close:active,
+  .hdr-back:active, .alerts-close:active,
   .prof-edit-btn:active, .qty-pick-btn:active { transform: scale(0.92); }
 
   .hdr-back:active { background: var(--tanim); }
