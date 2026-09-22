@@ -1,5 +1,5 @@
 import { ChevronRight, MapPin, Star, Award, RotateCcw, ArrowLeft, ArrowRight, TrendingUp, TrendingDown, ArrowLeftRight } from "lucide-react";
-import { useLang } from "../../i18n";
+import { useLang, translations } from "../../i18n";
 import { CROPS, CROP_FILTER_MAP } from "../../data/crops";
 import { SELLER_DETAILS } from "../../data/marketplace";
 import { BUYER_TRANSACTIONS } from "../../data/expenses";
@@ -20,11 +20,13 @@ type Shop = (intent: TradeIntent) => void;
 const SHOP_CATS = Object.keys(CROP_FILTER_MAP);
 const catPhoto = (cat: string) => (cat === "Rice" ? cropPhoto("rice-special") : cropPhotoFor(cat));
 
+// Always in English, whichever language the app is set to: the crop names
+// here are the ones printed on market signs and sacks, so they stay as the
+// buyer will see them at the bagsakan.
 export function ShopByCrop({ onShop }: { onShop: Shop }) {
-  const { t, tn } = useLang();
   return (
     <section className="hm-sec" aria-labelledby="shop-t">
-      <h2 className="hm-sec-title" id="shop-t">{t("home_shop_by_crop")}</h2>
+      <h2 className="hm-sec-title" id="shop-t">{translations.home_shop_by_crop.en}</h2>
       <div className="shop-grid stagger-list">
         {SHOP_CATS.map(cat => {
           const photo = catPhoto(cat);
@@ -33,7 +35,7 @@ export function ShopByCrop({ onShop }: { onShop: Shop }) {
               <span className="shop-cat-img">
                 {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropIcon crop={cat} size={26} />}
               </span>
-              <span className="shop-cat-lbl">{tn(cat)}</span>
+              <span className="shop-cat-lbl">{cat}</span>
             </button>
           );
         })}
