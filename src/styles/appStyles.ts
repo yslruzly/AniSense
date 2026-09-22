@@ -1739,10 +1739,20 @@ export const appCss = `
      bottom edge, and the copy keeps clear of him. */
   .mp-peek-sell { right: -14px; bottom: -14px; height: 168px; }
   .mp-title-row:has(.mp-peek-sell) .mp-sub { max-width: 150px; }
-  /* Plain greeting beside Juan, no bubble. */
-  .mp-peek-bubble { position:absolute; right:76px; top:8px; color:var(--tanim);
-    font-family: var(--font-display); font-size: var(--fs-lead); font-weight:800;
-    white-space:nowrap; pointer-events:none; user-select:none; }
+  /* The buyer's market poster, framed like the panels around it: same
+     large radius, and the hairline drawn over the image (not under it,
+     where the picture would hide it). aspect-ratio holds its shape before
+     the image arrives, so the search box below never jumps. */
+  .mp-poster {
+    position: relative; margin: 0; aspect-ratio: 1000 / 562; overflow: hidden;
+    border-radius: var(--radius-lg); background: #EAF3E6;
+    box-shadow: 0 14px 30px -20px rgba(22,33,27,.4);
+  }
+  .mp-poster img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .mp-poster::after {
+    content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    box-shadow: inset 0 0 0 1px rgba(11,107,65,.16);
+  }
   .mp-title { font-family: var(--font-display); font-size: var(--fs-title); font-weight:700; color:var(--text); }
   .mp-sub   { font-size: var(--fs-label); color:var(--text-muted); margin-top:3px; max-width:170px; line-height:1.45; }
   .post-btn { background:var(--text); color:#fff; border:none; border-radius:11px; padding:11px 15px; font-family:inherit; font-size: var(--fs-label); font-weight:700; cursor:pointer; flex-shrink:0; }

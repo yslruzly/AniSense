@@ -248,6 +248,10 @@ export const translations: Dict = {
   trade_title: { en: "Market", tl: "Merkado" },
   hi: { en: "Hi", tl: "Hi" },
   trade_marketplace: { en: "Marketplace", tl: "Bentahan" },
+  mp_poster_alt: {
+    en: "AniSense marketplace: connect directly with local farmers, fresh and quality produce, support local communities.",
+    tl: "AniSense bentahan: direktang kumonekta sa lokal na magsasaka, sariwa at de-kalidad na ani, suportahan ang lokal na komunidad.",
+  },
   trade_sub: {
     en: "Buy and sell crops directly with local farmers",
     tl: "Bumili at magbenta ng pananim nang direkta sa mga magsasaka",

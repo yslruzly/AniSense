@@ -43,4 +43,3 @@ yarn-error.log*
 # Claude Code / agent skills (local tooling, not part of the app)
 .claude/
 .agents/
-skills-lock.json
