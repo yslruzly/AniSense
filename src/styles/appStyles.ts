@@ -1540,39 +1540,50 @@ export const appCss = `
   .yp-bar-row:nth-child(4) .yp-bar { animation-delay: 150ms; }
   .yp-bar-amt { font-size: 14.5px; font-weight: 700; color: var(--text); text-align: right; font-variant-numeric: tabular-nums; }
 
-  /* Buy again: last two orders, each a whole-row button. */
+  /* Buy again: the last two orders as two small cards. The button lives
+     inside each card, along its bottom edge. As a row, a narrow phone
+     wrapped it loose into the corner, away from the order it would buy;
+     inside the card it can only belong to that order, at any width. */
   .yp-h-again { padding-top: 16px; border-top: 1px solid var(--line); }
-  .yp-again { margin: 0 -8px; }
+  .yp-again { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding-bottom: 6px; }
   .yp-item {
-    width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px 8px; min-height: 76px;
-    border: none; border-radius: 14px; background: none; text-align: left; font: inherit; color: inherit; cursor: pointer;
-    transition: background-color 160ms ease;
+    display: flex; flex-direction: column; min-width: 0; padding: 0; overflow: hidden;
+    border: none; border-radius: 16px; background: var(--card);
+    text-align: left; font: inherit; color: inherit; cursor: pointer;
+    box-shadow: inset 0 0 0 1px var(--line), 0 8px 18px -12px rgba(22,33,27,.35);
+    transition: transform 190ms var(--ease-out);
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
-  .yp-item + .yp-item { margin-top: 2px; }
-  .yp-item:active { background: var(--paper); transition-duration: var(--dur-press); }
+  /* A card-sized surface: a small scale reads as a press, not a collapse. */
+  .yp-item:active { transform: scale(.97); transition-duration: var(--dur-press); }
   .yp-photo {
-    width: 54px; height: 54px; flex: 0 0 54px; border-radius: 14px; overflow: hidden;
-    display: flex; align-items: center; justify-content: center; background: var(--tanim-sk); color: var(--tanim);
+    position: relative; height: 86px; display: flex; align-items: center; justify-content: center;
+    background: var(--tanim-sk); color: var(--tanim);
   }
-  .yp-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  /* On a narrow phone the button drops under the text (right-aligned)
-     rather than squeezing the crop and seller names onto broken lines. */
-  .yp-item { flex-wrap: wrap; row-gap: 8px; }
-  .yp-item-body { flex: 1 1 130px; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .yp-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+  /* The date rides the photo like a stamp on a receipt: one line saved. */
+  .yp-date {
+    position: absolute; left: 8px; top: 8px; padding: 3px 9px; border-radius: 99px;
+    background: rgba(255,255,255,.94); color: var(--text); font-size: 13px; font-weight: 700;
+    box-shadow: 0 2px 6px rgba(0,0,0,.16);
+  }
+  .yp-item-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; padding: 10px 12px 12px; }
   .yp-item-name { font-family: var(--font-display); font-size: 16px; font-weight: 700; line-height: 1.25; color: var(--text); }
-  .yp-item-meta { font-size: 14px; line-height: 1.35; color: var(--text-muted); }
+  .yp-item-meta { font-size: 14px; line-height: 1.35; color: var(--text-muted); overflow-wrap: anywhere; }
+  .yp-item-meta b { font-weight: 700; color: var(--text); }
+  /* Pinned to the bottom edge, so the two buttons line up even when one
+     name wraps and the other does not. */
   .yp-again-btn {
-    flex-shrink: 0; margin-left: auto; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px;
-    border-radius: 99px; background: var(--tanim-sk); color: var(--tanim-deep);
+    margin: auto 10px 10px; display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px;
+    border-radius: 12px; background: var(--tanim-sk); color: var(--tanim-deep);
     font-family: var(--font-display); font-size: 14.5px; font-weight: 700;
-    transition: transform 190ms var(--ease-out), background-color 160ms ease;
+    transition: background-color 160ms ease;
   }
-  .yp-item:active .yp-again-btn { transform: scale(.95); background: #CFE6D8; transition-duration: var(--dur-press); }
+  .yp-item:active .yp-again-btn { background: #CFE6D8; transition-duration: var(--dur-press); }
 
   @media (prefers-reduced-motion: reduce) {
     .yp-bar { animation: none; }
-    .yp-item:active .yp-again-btn { transform: none; }
+    .yp-item:active { transform: none; }
   }
   .shell[data-revisit] .scroll .yp-bar { animation: none; }
 

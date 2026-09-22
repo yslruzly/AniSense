@@ -285,16 +285,19 @@ export function YourPurchases({ onShop, onHistory }: { onShop: Shop; onHistory: 
             const photo = cropPhotoFor(tx.crop, tx.variety);
             const when = new Date(tx.date).toLocaleDateString(locale, { month: "short", day: "numeric" });
             return (
-              // The whole row is the button, a big target for an older
-              // thumb; the pill only names what the tap does.
+              // Each past order is its own small card, and the card is the
+              // button: a big target for an older thumb. "Buy again" sits
+              // inside it, along the bottom, so it can only ever belong to
+              // this order.
               <button key={tx.id} className="yp-item" onClick={() => onShop({ search: tx.variety || tx.crop })}>
                 <span className="yp-photo">
-                  {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropIcon crop={tx.crop} size={24} />}
+                  {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropIcon crop={tx.crop} size={26} />}
+                  <span className="yp-date">{when}</span>
                 </span>
                 <span className="yp-item-body">
                   <span className="yp-item-name">{tx.variety || tn(tx.crop)}</span>
-                  <span className="yp-item-meta">{tx.kg} kg · {tx.seller}</span>
-                  <span className="yp-item-meta">{when} · ₱{tx.amount.toLocaleString()}</span>
+                  <span className="yp-item-meta">{tx.seller}</span>
+                  <span className="yp-item-meta">{tx.kg} kg · <b>₱{tx.amount.toLocaleString()}</b></span>
                 </span>
                 <span className="yp-again-btn"><RotateCcw size={16} strokeWidth={2.6} /> {t("home_buy_again")}</span>
               </button>
