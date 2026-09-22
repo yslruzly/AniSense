@@ -1,4 +1,4 @@
-import { ChevronRight, MapPin, Star, Award, ShoppingBag, ArrowLeft, ArrowRight, TrendingUp, TrendingDown, ArrowLeftRight } from "lucide-react";
+import { ChevronRight, MapPin, Star, Award, RotateCcw, ArrowLeft, ArrowRight, TrendingUp, TrendingDown, ArrowLeftRight } from "lucide-react";
 import { useLang } from "../../i18n";
 import { CROPS, CROP_FILTER_MAP } from "../../data/crops";
 import { SELLER_DETAILS } from "../../data/marketplace";
@@ -216,51 +216,91 @@ export function FeaturedFarmers({ onShop, buyerLocation }: { onShop: Shop; buyer
 }
 
 // ── Your purchases ───────────────────────────────────────────────────────────
-// "Buy again" and "Spent on purchases" were two cards about the same thing.
-// One card now: the three numbers up top, the reorder rows under them.
+// One number, where it went, and what to buy again. Laid out like the other
+// new sections: the title sits on the page, the card holds the content.
+//
+// "Where it went" is part-to-whole across crops, so one bar per crop in one
+// colour, each labelled with its name and peso amount. Separate colours per
+// crop were tried and failed the colour-blind check (rice green vs tomato
+// red: ΔE 2.2), and a legend would make an older reader match swatches.
+// One gold, labels beside every bar: nothing to decode. Gold #B87A0B is
+// 3.6:1 on white, over the 3:1 a graphic needs.
 
 export function YourPurchases({ onShop, onHistory }: { onShop: Shop; onHistory: () => void }) {
-  const { t, tn } = useLang();
+  const { t, tn, lang } = useLang();
   if (BUYER_TRANSACTIONS.length === 0) return null;
-  const recent = [...BUYER_TRANSACTIONS].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 2);
+  const locale = lang === "tl" ? "fil-PH" : "en-PH";
+
   const spent = BUYER_TRANSACTIONS.reduce((sum, tx) => sum + tx.amount, 0);
+  const orders = BUYER_TRANSACTIONS.length;
   const farmers = new Set(BUYER_TRANSACTIONS.map(tx => tx.seller)).size;
 
+  // Spend per crop, biggest first. Past four, the tail folds into "Other"
+  // rather than becoming a fifth, sixth, seventh bar.
+  const byCrop = new Map<string, number>();
+  BUYER_TRANSACTIONS.forEach(tx => byCrop.set(tx.crop, (byCrop.get(tx.crop) || 0) + tx.amount));
+  let parts = [...byCrop.entries()].map(([crop, amount]) => ({ crop, amount })).sort((a, b) => b.amount - a.amount);
+  if (parts.length > 4) {
+    const other = parts.slice(3).reduce((sum, p) => sum + p.amount, 0);
+    parts = [...parts.slice(0, 3), { crop: "__other", amount: other }];
+  }
+  const top = parts[0]?.amount || 1;
+
+  const recent = [...BUYER_TRANSACTIONS].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 2);
+  const summary = t("yp_summary")
+    .replace("{orders}", `${orders} ${orders === 1 ? t("yp_order_one") : t("yp_orders_n")}`)
+    .replace("{farmers}", `${farmers} ${farmers === 1 ? t("yp_farmer_one") : t("yp_farmers")}`);
+
   return (
-    <section className="hm-card tint-blue" aria-labelledby="yp-t">
-      <div className="hm-card-head">
-        <span className="hm-ico"><ShoppingBag size={20} strokeWidth={2.2} /></span>
-        {/* No subtitle: the three numbers below say what this card is. */}
-        <div>
-          <h2 className="hm-title" id="yp-t">{t("yp_title")}</h2>
-        </div>
+    <section className="hm-sec" aria-labelledby="yp-t">
+      <div className="hm-sec-row">
+        <h2 className="hm-sec-title" id="yp-t">{t("yp_title")}</h2>
         <button className="hm-link" onClick={onHistory}>
           {t("yp_history")} <ChevronRight size={16} strokeWidth={2.6} />
         </button>
       </div>
 
-      <div className="yp-stats">
-        <span><b>₱{spent.toLocaleString()}</b><small>{t("yp_spent")}</small></span>
-        <span><b>{BUYER_TRANSACTIONS.length}</b><small>{t("home_purchases_n")}</small></span>
-        <span><b>{farmers}</b><small>{t("yp_farmers")}</small></span>
-      </div>
+      <div className="yp">
+        {/* The one number, big, with the sentence that makes it mean
+            something right under it. */}
+        <div className="yp-total">₱{spent.toLocaleString()}</div>
+        <p className="yp-summary">{summary}</p>
 
-      <div className="stagger-list">
-        {recent.map(tx => {
-          const photo = cropPhotoFor(tx.crop, tx.variety);
-          return (
-            <button key={tx.id} className="hm-crop" onClick={() => onShop({ search: tx.variety || tx.crop })}>
-              <span className="hm-crop-photo">
-                {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropIcon crop={tx.crop} size={22} />}
+        <h3 className="yp-h">{t("yp_where")}</h3>
+        <ul className="yp-bars">
+          {parts.map(p => (
+            <li key={p.crop} className="yp-bar-row">
+              <span className="yp-bar-name">{p.crop === "__other" ? t("yp_other") : tn(p.crop)}</span>
+              <span className="yp-bar-track" aria-hidden="true">
+                <span className="yp-bar" style={{ width: `${Math.max(4, (p.amount / top) * 100)}%` }} />
               </span>
-              <span className="hm-crop-body">
-                <span className="hm-crop-name">{tx.variety || tn(tx.crop)}</span>
-                <span className="hm-crop-var">{tx.kg} kg · ₱{tx.amount.toLocaleString()} · {tx.seller}</span>
-              </span>
-              <span className="hm-again">{t("home_buy_again")} <ChevronRight size={15} strokeWidth={2.6} /></span>
-            </button>
-          );
-        })}
+              <span className="yp-bar-amt">₱{p.amount.toLocaleString()}</span>
+            </li>
+          ))}
+        </ul>
+
+        <h3 className="yp-h yp-h-again">{t("home_buy_again")}</h3>
+        <div className="yp-again stagger-list">
+          {recent.map(tx => {
+            const photo = cropPhotoFor(tx.crop, tx.variety);
+            const when = new Date(tx.date).toLocaleDateString(locale, { month: "short", day: "numeric" });
+            return (
+              // The whole row is the button, a big target for an older
+              // thumb; the pill only names what the tap does.
+              <button key={tx.id} className="yp-item" onClick={() => onShop({ search: tx.variety || tx.crop })}>
+                <span className="yp-photo">
+                  {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropIcon crop={tx.crop} size={24} />}
+                </span>
+                <span className="yp-item-body">
+                  <span className="yp-item-name">{tx.variety || tn(tx.crop)}</span>
+                  <span className="yp-item-meta">{tx.kg} kg · {tx.seller}</span>
+                  <span className="yp-item-meta">{when} · ₱{tx.amount.toLocaleString()}</span>
+                </span>
+                <span className="yp-again-btn"><RotateCcw size={16} strokeWidth={2.6} /> {t("home_buy_again")}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
     </section>
   );

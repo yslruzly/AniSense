@@ -1505,14 +1505,76 @@ export const appCss = `
   .hm-poster:active { transform: scale(.98); transition-duration: var(--dur-press); }
   @media (prefers-reduced-motion: reduce) { .hm-poster:active { transform: none; } }
 
-  /* Your purchases: three numbers, then the reorder rows. */
-  .yp-stats { display: grid; grid-template-columns: 1.45fr 1fr 1fr; gap: 8px; margin: 10px 0 6px; }
-  .yp-stats span {
-    display: flex; flex-direction: column; gap: 1px; min-width: 0; padding: 10px 12px; border-radius: 14px;
-    background: rgba(255,255,255,.8); box-shadow: inset 0 0 0 1px rgba(47,111,168,.14);
+  /* Your purchases: gold, because on this page gold means money. */
+  .hm-sec-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .hm-sec-row .hm-sec-title { margin-top: 8px; }
+  .yp {
+    margin-top: 14px; padding: 18px 16px 10px; border-radius: var(--radius);
+    background-image: linear-gradient(180deg, #FCF3DF 0%, #FFFFFF 46%);
+    box-shadow: inset 0 0 0 1px rgba(138,93,12,.18), 0 14px 30px -22px rgba(22,33,27,.35);
   }
-  .yp-stats b { font-family: var(--font-display); font-size: 20px; font-weight: 800; letter-spacing: -.01em; color: var(--text); font-variant-numeric: tabular-nums; }
-  .yp-stats small { font-size: 13.5px; font-weight: 600; color: var(--text-muted); }
+  /* Proportional figures on the big number: tabular digits look loose at
+     this size. */
+  .yp-total {
+    font-family: var(--font-display); font-size: 34px; font-weight: 800; line-height: 1.05;
+    letter-spacing: -.025em; color: var(--text);
+  }
+  .yp-summary { margin: 5px 0 0; font-size: 15px; color: var(--text-muted); }
+  .yp-h {
+    margin: 18px 0 8px; font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--text);
+  }
+
+  /* Where it went: name, bar, amount on one grid, so every bar starts on the
+     same line and every amount lines up on the right. */
+  .yp-bars { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
+  .yp-bar-row { display: grid; grid-template-columns: 78px minmax(0, 1fr) 64px; align-items: center; column-gap: 10px; }
+  .yp-bar-name { font-size: 14.5px; font-weight: 600; color: var(--text); overflow-wrap: anywhere; }
+  .yp-bar-track { height: 10px; }
+  /* Square at the start line, 4px round at the end, grows from the start. */
+  .yp-bar {
+    display: block; height: 100%; border-radius: 0 4px 4px 0; background: #B87A0B;
+    transform-origin: left center; animation: bar-grow 520ms var(--ease-out) both;
+  }
+  .yp-bar-row:nth-child(2) .yp-bar { animation-delay: 50ms; }
+  .yp-bar-row:nth-child(3) .yp-bar { animation-delay: 100ms; }
+  .yp-bar-row:nth-child(4) .yp-bar { animation-delay: 150ms; }
+  .yp-bar-amt { font-size: 14.5px; font-weight: 700; color: var(--text); text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* Buy again: last two orders, each a whole-row button. */
+  .yp-h-again { padding-top: 16px; border-top: 1px solid var(--line); }
+  .yp-again { margin: 0 -8px; }
+  .yp-item {
+    width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px 8px; min-height: 76px;
+    border: none; border-radius: 14px; background: none; text-align: left; font: inherit; color: inherit; cursor: pointer;
+    transition: background-color 160ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .yp-item + .yp-item { margin-top: 2px; }
+  .yp-item:active { background: var(--paper); transition-duration: var(--dur-press); }
+  .yp-photo {
+    width: 54px; height: 54px; flex: 0 0 54px; border-radius: 14px; overflow: hidden;
+    display: flex; align-items: center; justify-content: center; background: var(--tanim-sk); color: var(--tanim);
+  }
+  .yp-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  /* On a narrow phone the button drops under the text (right-aligned)
+     rather than squeezing the crop and seller names onto broken lines. */
+  .yp-item { flex-wrap: wrap; row-gap: 8px; }
+  .yp-item-body { flex: 1 1 130px; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .yp-item-name { font-family: var(--font-display); font-size: 16px; font-weight: 700; line-height: 1.25; color: var(--text); }
+  .yp-item-meta { font-size: 14px; line-height: 1.35; color: var(--text-muted); }
+  .yp-again-btn {
+    flex-shrink: 0; margin-left: auto; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px;
+    border-radius: 99px; background: var(--tanim-sk); color: var(--tanim-deep);
+    font-family: var(--font-display); font-size: 14.5px; font-weight: 700;
+    transition: transform 190ms var(--ease-out), background-color 160ms ease;
+  }
+  .yp-item:active .yp-again-btn { transform: scale(.95); background: #CFE6D8; transition-duration: var(--dur-press); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .yp-bar { animation: none; }
+    .yp-item:active .yp-again-btn { transform: none; }
+  }
+  .shell[data-revisit] .scroll .yp-bar { animation: none; }
 
   @media (prefers-reduced-motion: reduce) {
     .hm-search:active, .shop-cat:active, .ff-spot:active .ff-cta { transform: none; }
