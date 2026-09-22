@@ -1,9 +1,10 @@
-import { CloudSun, CloudMoon, BarChart2, CheckCircle, AlertTriangle, Bot, ChevronRight, ArrowUpRight, ArrowDownRight, ArrowRight, Sprout, Wallet, Megaphone, Store, Tag, RotateCcw, MapPin } from "lucide-react";
+import { CloudSun, CloudMoon, BarChart2, CheckCircle, AlertTriangle, Bot, ChevronRight, ArrowUpRight, ArrowDownRight, ArrowRight, Sprout, Wallet, Megaphone, Store, Tag, MapPin, Search } from "lucide-react";
 import { useLang } from "../i18n";
-import { Screen, UserRole } from "../types";
+import { Screen, UserRole, TradeIntent } from "../types";
+import { ShopByCrop, FeaturedFarmers, YourPurchases, PriceMoves } from "../components/home/BuyerHome";
+import { useViewer } from "../lib/viewer";
 import { CROPS, CROP_GROUP_BY_ID } from "../data/crops";
 import { LISTINGS } from "../data/marketplace";
-import { BUYER_TRANSACTIONS } from "../data/expenses";
 import { cropPhotoFor } from "../data/cropPhotos";
 import { Sparkline } from "../components/charts/Micro";
 import { cropPhoto } from "../data/cropPhotos";
@@ -15,6 +16,7 @@ import { Hdr } from "../components/layout/Hdr";
 import { AniSenseLogo } from "../components/AniSenseLogo";
 import { useIsNight } from "../hooks/useIsNight";
 import buyerMascot from "../assets/buyer-mascot.webp";
+import anisensePoster from "../assets/anisense-poster.webp";
 
 // ─── Home ─────────────────────────────────────────────────────────────────────
 // A morning check, in the order a farmer asks:
@@ -40,8 +42,10 @@ function Chg({ value }: { value: number }) {
   );
 }
 
-export function HomeScreen({ onNavigate, onProfile, isOffline, userName = "Juan", userInitials = "JD", userRole, farmerCrops = ["Rice", "Corn"] }: {
+export function HomeScreen({ onNavigate, onShop, onProfile, isOffline, userName = "Juan", userInitials = "JD", userRole, farmerCrops = ["Rice", "Corn"] }: {
   onNavigate: (s: Screen) => void;
+  /** Open the marketplace already showing a crop, a farmer or the search. */
+  onShop?: (intent: TradeIntent) => void;
   onProfile: () => void;
   isOffline: boolean;
   lastUpdated: string;
@@ -66,8 +70,6 @@ export function HomeScreen({ onNavigate, onProfile, isOffline, userName = "Juan"
   const myCrops = farmerCrops
     .map(g => CROPS.find(c => CROP_GROUP_BY_ID[c.id] === g))
     .filter((c): c is NonNullable<typeof c> => !!c);
-  const movers = [...CROPS].sort((a, b) => Math.abs(b.change) - Math.abs(a.change)).slice(0, 4);
-  const cropRows = isBuyer ? movers : myCrops;
   const up = CROPS.filter(c => c.change > 0).length;
 
   // ── Buyer figures ──────────────────────────────────────────────────────
@@ -86,8 +88,8 @@ export function HomeScreen({ onNavigate, onProfile, isOffline, userName = "Juan"
     .sort((a, b) => a.pricePerKg - b.pricePerKg)
     .slice(0, 3)
     .map(l => { const m = marketPrice(l.crop, l.variety); return { l, save: m ? m - l.pricePerKg : 0 }; });
-  const recent = [...BUYER_TRANSACTIONS].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 2);
-  const spentAll = BUYER_TRANSACTIONS.reduce((sum, tx) => sum + tx.amount, 0);
+  const { location: buyerLocation } = useViewer();
+  const shop = (intent: TradeIntent) => (onShop ? onShop(intent) : onNavigate("trade"));
   const sellerCount = new Set(LISTINGS.map(l => l.seller)).size;
 
   // This month's spend, last month's, and six months of trend for the line.
@@ -108,7 +110,7 @@ export function HomeScreen({ onNavigate, onProfile, isOffline, userName = "Juan"
 
         {/* 1 ── Greeting. The same farm as the Weather screen, by day or by
             night, and the weather itself as a chip that opens it. */}
-        <section className="home-header" data-time={isNight ? "night" : "day"}>
+        <section className={`home-header${isBuyer ? " with-search" : ""}`} data-time={isNight ? "night" : "day"}>
           <div className="home-greeting">{greeting}, {firstName}! 👋</div>
           <div className="home-date">{dateStr}</div>
           <div className="hm-hero-foot">
@@ -127,48 +129,22 @@ export function HomeScreen({ onNavigate, onProfile, isOffline, userName = "Juan"
           </div>
         </section>
 
-        {/* 2 ── Your crops today (buyers: the day's biggest moves). A short
-            vertical list: no swiping to find your own crop among twenty. */}
-        <section className="hm-card tint-green">
-          <div className="hm-card-head">
-            {/* Each card carries one accent, and the accent means something:
-                green for what grows, gold for money, blue for the sky,
-                violet for the numbers. Never a colour for its own sake. */}
-            <span className="hm-ico"><Sprout size={20} strokeWidth={2.2} /></span>
-            <div>
-              <h2 className="hm-title">{isBuyer ? t("mkt_movers") : t("home_your_crops")}</h2>
-              <div className="hm-sub">{t("mkt_pulse_head").replace("{up}", String(up)).replace("{n}", String(CROPS.length))}</div>
-            </div>
-            <button className="hm-link" onClick={() => onNavigate("market")}>
-              {t("mkt_all")} <ChevronRight size={16} strokeWidth={2.6} />
-            </button>
-          </div>
-          <div className="stagger-list">
-            {cropRows.map(c => {
-              const photo = cropPhoto(c.id);
-              const group = CROP_GROUP_BY_ID[c.id] || "";
-              return (
-                <button key={c.id} className="hm-crop" onClick={() => onNavigate("market")}>
-                  <span className="hm-crop-photo">
-                    {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropIcon crop={group || c.name} size={22} />}
-                  </span>
-                  <span className="hm-crop-body">
-                    <span className="hm-crop-name">{isBuyer ? c.name : tn(group)}</span>
-                    <span className="hm-crop-var">{isBuyer ? tn(group) : c.name}</span>
-                  </span>
-                  <span className="hm-crop-end">
-                    <span className="hm-crop-price">₱{c.pricePerKg}<small>{t("per_kg_short")}</small></span>
-                    <Chg value={c.change} />
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </section>
+        {/* Buyers: search first. It floats over the hero's bottom edge,
+            the one control on the page that works for any goal, and it opens
+            the marketplace with the keyboard ready rather than pretending
+            to be a field of its own. */}
+        {isBuyer && (
+          <button className="hm-search" onClick={() => shop({ focusSearch: true })}>
+            <Search size={22} strokeWidth={2.4} aria-hidden="true" />
+            <span>{t("home_search_ph")}</span>
+          </button>
+        )}
 
-        {/* The marketplace itself, straight after the prices: it is what a
-            buyer opened the app for, so it leads the buying half of the
-            page rather than closing it. */}
+        {/* Then every crop on one screen, as pictures. */}
+        {isBuyer && <ShopByCrop onShop={shop} />}
+
+        {/* "Browse the marketplace" as the see-everything step after the
+            eight crops: every way to start shopping sits in one place. */}
         {isBuyer && (
           <button className="hm-shop" onClick={() => onNavigate("trade")}>
             <span className="hm-shop-copy">
@@ -181,6 +157,65 @@ export function HomeScreen({ onNavigate, onProfile, isOffline, userName = "Juan"
             <img className="hm-shop-img" src={buyerMascot} alt="" aria-hidden="true" />
           </button>
         )}
+
+        {/* 2 ── Buyers: the day's price moves, as one light chart. */}
+        {isBuyer && <PriceMoves onOpen={() => onNavigate("market")} />}
+
+        {/* 2 ── Your crops today, farmer only. A short vertical list: no
+            swiping to find your own crop among twenty. */}
+        {!isBuyer && (
+        <section className="hm-card tint-green">
+          <div className="hm-card-head">
+            {/* Each card carries one accent, and the accent means something:
+                green for what grows, gold for money, blue for the sky,
+                violet for the numbers. Never a colour for its own sake. */}
+            <span className="hm-ico"><Sprout size={20} strokeWidth={2.2} /></span>
+            <div>
+              <h2 className="hm-title">{t("home_your_crops")}</h2>
+              <div className="hm-sub">{t("mkt_pulse_head").replace("{up}", String(up)).replace("{n}", String(CROPS.length))}</div>
+            </div>
+            <button className="hm-link" onClick={() => onNavigate("market")}>
+              {t("mkt_all")} <ChevronRight size={16} strokeWidth={2.6} />
+            </button>
+          </div>
+          <div className="stagger-list">
+            {myCrops.map(c => {
+              const photo = cropPhoto(c.id);
+              const group = CROP_GROUP_BY_ID[c.id] || "";
+              return (
+                <button key={c.id} className="hm-crop" onClick={() => onNavigate("market")}>
+                  <span className="hm-crop-photo">
+                    {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropIcon crop={group || c.name} size={22} />}
+                  </span>
+                  <span className="hm-crop-body">
+                    <span className="hm-crop-name">{tn(group)}</span>
+                    <span className="hm-crop-var">{c.name}</span>
+                  </span>
+                  <span className="hm-crop-end">
+                    <span className="hm-crop-price">₱{c.pricePerKg}<small>{t("per_kg_short")}</small></span>
+                    <Chg value={c.change} />
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+        )}
+
+        {/* The brand poster, as a mid-page break. Its last line, "buy
+            directly from local farmers", is what the next section shows.
+            A banner looks tappable, so it is: it opens the marketplace,
+            like the poster's first line promises. The frame holds the
+            poster's shape before the image loads, so nothing below jumps. */}
+        {isBuyer && (
+          <button className="hm-poster" onClick={() => shop({})} aria-label={t("poster_alt")}>
+            <img src={anisensePoster} alt="" width={1000} height={562} loading="lazy" decoding="async" />
+          </button>
+        )}
+
+        {/* Who grows it: the trust half of a marketplace, after the day's
+            prices. */}
+        {isBuyer && <FeaturedFarmers onShop={shop} buyerLocation={buyerLocation} />}
 
         {/* The cheapest kilos on the marketplace right now. */}
         {isBuyer && (
@@ -199,7 +234,7 @@ export function HomeScreen({ onNavigate, onProfile, isOffline, userName = "Juan"
                 {deals.map(({ l, save }) => {
                   const photo = cropPhotoFor(l.crop, l.variety);
                   return (
-                    <button key={l.id} className="hm-crop" onClick={() => onNavigate("trade")}>
+                    <button key={l.id} className="hm-crop" onClick={() => shop({ search: l.variety || l.crop })}>
                       <span className="hm-crop-photo">
                         {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropIcon crop={l.crop} size={22} />}
                       </span>
@@ -224,50 +259,8 @@ export function HomeScreen({ onNavigate, onProfile, isOffline, userName = "Juan"
           </section>
         )}
 
-        {/* Buy again: most buying is repeat buying. */}
-        {isBuyer && recent.length > 0 && (
-          <section className="hm-card tint-blue">
-            <div className="hm-card-head">
-              <span className="hm-ico"><RotateCcw size={20} strokeWidth={2.2} /></span>
-              <div>
-                <h2 className="hm-title">{t("home_buy_again")}</h2>
-                <div className="hm-sub">{t("home_buy_again_sub")}</div>
-              </div>
-            </div>
-            <div className="stagger-list">
-              {recent.map(tx => {
-                const photo = cropPhotoFor(tx.crop, tx.variety);
-                return (
-                  <button key={tx.id} className="hm-crop" onClick={() => onNavigate("trade")}>
-                    <span className="hm-crop-photo">
-                      {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropIcon crop={tx.crop} size={22} />}
-                    </span>
-                    <span className="hm-crop-body">
-                      <span className="hm-crop-name">{tx.variety || tn(tx.crop)}</span>
-                      <span className="hm-crop-var">{tx.kg} kg · ₱{tx.amount.toLocaleString()} · {tx.seller}</span>
-                    </span>
-                    <span className="hm-again">{t("home_buy_again")} <ChevronRight size={15} strokeWidth={2.6} /></span>
-                  </button>
-                );
-              })}
-            </div>
-          </section>
-        )}
-
-        {/* What they have spent here so far. */}
-        {isBuyer && spentAll > 0 && (
-          <button className="hm-card tint-gold hm-spend" onClick={() => onNavigate("expenses")}>
-            <span className="hm-ico"><Wallet size={20} strokeWidth={2.2} /></span>
-            <span className="hm-spend-copy">
-              <span className="hm-title">{t("home_spent_purchases")}</span>
-              <span className="hm-spend-val">₱{spentAll.toLocaleString()}</span>
-              <span className="hm-spend-vs">
-                {BUYER_TRANSACTIONS.length} {BUYER_TRANSACTIONS.length === 1 ? t("home_purchase_one") : t("home_purchases_n")}
-              </span>
-            </span>
-            <ChevronRight size={18} className="pr-row-chev" aria-hidden="true" />
-          </button>
-        )}
+        {/* Buy again and the running total, as one card about "my buying". */}
+        {isBuyer && <YourPurchases onShop={shop} onHistory={() => onNavigate("expenses")} />}
 
         {/* Heading for the two model cards. Farmer-only like the cards it
             introduces, or a buyer would get a heading over nothing. */}

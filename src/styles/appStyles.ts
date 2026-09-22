@@ -1387,6 +1387,226 @@ export const appCss = `
   .hm-crop-var svg { flex-shrink: 0; }
   .hm-crop-end { flex-shrink: 0; }
 
+  /* ── Buyer Home ────────────────────────────────────────────────────────
+     Section titles sit on the page, not inside another boxed card with an
+     icon badge: boxes are kept for things you act on, so the page reads as
+     sections of a store rather than a stack of identical tiles. */
+  .hm-sec { display: flex; flex-direction: column; }
+  .hm-sec-title {
+    margin: 8px 2px 0; font-family: var(--font-display); font-size: 20px; font-weight: 700;
+    letter-spacing: -.015em; line-height: 1.2; color: var(--text);
+  }
+  .hm-sec-sub { margin: 3px 2px 0; font-size: 14.5px; color: var(--text-faint); }
+
+  /* Search floats over the hero's bottom edge. The hero grows to make room,
+     so the weather chip is never underneath it. */
+  .home-header.with-search { padding-bottom: 50px; }
+  .hm-search {
+    position: relative; z-index: 2; margin: -46px 12px 0; min-height: 58px; padding: 0 18px;
+    display: flex; align-items: center; gap: 12px; border: none; border-radius: 18px; cursor: pointer;
+    background: var(--card); color: var(--text-faint); text-align: left;
+    font-family: var(--font-body); font-size: 16.5px; font-weight: 500;
+    box-shadow: 0 14px 30px -12px rgba(22,33,27,.38), inset 0 0 0 1px var(--line);
+    transition: transform 190ms var(--ease-out);
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .hm-search svg { color: var(--tanim); flex-shrink: 0; }
+  .hm-search:active { transform: scale(.98); transition-duration: var(--dur-press); }
+
+  /* Shop by crop: 4 × 2, pictures first. */
+  .shop-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px 8px; margin-top: 14px; }
+  .shop-cat {
+    min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 0;
+    border: none; background: none; cursor: pointer; font: inherit; color: inherit;
+    transition: transform 190ms var(--ease-out);
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .shop-cat-img {
+    width: 100%; max-width: 76px; aspect-ratio: 1; border-radius: 24px; overflow: hidden;
+    display: flex; align-items: center; justify-content: center; background: var(--tanim-sk); color: var(--tanim);
+    box-shadow: 0 8px 16px -10px rgba(22,33,27,.45);
+  }
+  .shop-cat-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .shop-cat-lbl {
+    max-width: 100%; font-family: var(--font-display); font-size: 14px; font-weight: 600; line-height: 1.2;
+    color: var(--text); text-align: center; overflow-wrap: anywhere;
+  }
+  .shop-cat:active { transform: scale(.94); transition-duration: var(--dur-press); }
+
+  /* Featured farmers: one spotlight, three rows, one card. */
+  .ff {
+    margin-top: 14px; border-radius: var(--radius); overflow: hidden; background: var(--card);
+    box-shadow: inset 0 0 0 1px var(--line), 0 14px 30px -20px rgba(22,33,27,.4);
+  }
+  .ff-spot, .ff-row {
+    display: flex; width: 100%; padding: 0; border: none; background: none; cursor: pointer;
+    text-align: left; font: inherit; color: inherit;
+    transition: background-color 160ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .ff-spot { flex-direction: column; }
+  /* A large surface takes a tint, not a scale: shrinking a whole spotlight
+     inside its card reads as the card breaking. The button inside it is
+     what scales. */
+  .ff-spot:active, .ff-row:active { background: var(--paper); transition-duration: var(--dur-press); }
+  .ff-cover { position: relative; display: block; height: 132px; background: linear-gradient(135deg, #1F5E3B, #0B3D26); }
+  .ff-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .ff-cover::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10,14,12,0) 45%, rgba(10,14,12,.42)); }
+  .ff-badge {
+    position: absolute; z-index: 1; left: 12px; top: 12px; display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px 6px 9px; border-radius: 99px; background: #F2B32C; color: var(--ink);
+    font-family: var(--font-display); font-size: 13.5px; font-weight: 800; box-shadow: 0 4px 12px rgba(0,0,0,.22);
+  }
+  .ff-spot-body { position: relative; display: flex; flex-direction: column; gap: 5px; padding: 42px 16px 16px; }
+  .ff-ava {
+    width: 46px; height: 46px; flex: 0 0 46px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+    color: #fff; font-family: var(--font-display); font-size: 15px; font-weight: 800; letter-spacing: .02em;
+  }
+  .ff-ava.lg {
+    position: absolute; left: 16px; top: -34px; width: 66px; height: 66px; font-size: 21px;
+    box-shadow: 0 0 0 4px var(--card), 0 10px 20px -8px rgba(0,0,0,.4);
+  }
+  .ff-name { font-family: var(--font-display); font-size: 20px; font-weight: 700; letter-spacing: -.015em; line-height: 1.2; color: var(--text); }
+  .ff-meta { display: flex; flex-wrap: wrap; gap: 0 6px; font-size: 14.5px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+  .ff-star { display: inline-flex; align-items: center; gap: 3px; color: #A0661A; font-weight: 800; }
+  .ff-loc { display: inline-flex; align-items: center; gap: 5px; font-size: 14.5px; color: var(--text-muted); }
+  .ff-loc svg { color: var(--tanim); flex-shrink: 0; }
+  .ff-bio {
+    margin-top: 4px; font-size: 15px; line-height: 1.5; color: var(--text);
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden;
+  }
+  .ff-crops { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .ff-chip { padding: 5px 12px; border-radius: 99px; background: var(--tanim-sk); color: var(--tanim-deep); font-size: 13.5px; font-weight: 700; }
+  .ff-cta {
+    align-self: flex-start; display: inline-flex; align-items: center; gap: 4px; margin-top: 12px; min-height: 46px; padding: 0 14px 0 20px;
+    border-radius: 99px; background: var(--tanim); color: #fff; font-family: var(--font-display); font-size: 15.5px; font-weight: 700;
+    transition: transform 190ms var(--ease-out);
+  }
+  .ff-spot:active .ff-cta { transform: scale(.96); transition-duration: var(--dur-press); }
+  .ff-list { border-top: 1px solid var(--line); }
+  .ff-row { align-items: center; gap: 12px; min-height: 68px; padding: 12px 16px; }
+  .ff-row + .ff-row { border-top: 1px solid var(--line); }
+  .ff-row-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+  .ff-row-name { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--text); }
+  .ff-near { padding: 2px 9px; border-radius: 99px; background: #DCEAF8; color: #2F6FA8; font-size: 13px; font-weight: 800; }
+  .ff-row-meta { font-size: 14px; color: var(--text-muted); }
+  .ff-chev { color: var(--line-strong); flex-shrink: 0; }
+
+  /* The brand poster. aspect-ratio reserves its exact shape up front, so
+     the page does not jump when the image arrives. */
+  .hm-poster {
+    display: block; width: 100%; aspect-ratio: 1000 / 562; padding: 0; border: none; overflow: hidden; cursor: pointer;
+    border-radius: var(--radius); background: #EAF3E6;
+    box-shadow: 0 14px 30px -20px rgba(22,33,27,.4);
+    transition: transform 190ms var(--ease-out);
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .hm-poster img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .hm-poster:active { transform: scale(.98); transition-duration: var(--dur-press); }
+  @media (prefers-reduced-motion: reduce) { .hm-poster:active { transform: none; } }
+
+  /* Your purchases: three numbers, then the reorder rows. */
+  .yp-stats { display: grid; grid-template-columns: 1.45fr 1fr 1fr; gap: 8px; margin: 10px 0 6px; }
+  .yp-stats span {
+    display: flex; flex-direction: column; gap: 1px; min-width: 0; padding: 10px 12px; border-radius: 14px;
+    background: rgba(255,255,255,.8); box-shadow: inset 0 0 0 1px rgba(47,111,168,.14);
+  }
+  .yp-stats b { font-family: var(--font-display); font-size: 20px; font-weight: 800; letter-spacing: -.01em; color: var(--text); font-variant-numeric: tabular-nums; }
+  .yp-stats small { font-size: 13.5px; font-weight: 600; color: var(--text-muted); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hm-search:active, .shop-cat:active, .ff-spot:active .ff-cta { transform: none; }
+  }
+
+  /* ── Buyer price moves ─────────────────────────────────────────────────
+     A light card and one chart. The ink board it replaces sat under another
+     dark card and repeated the crop-photo grid above it; this is calm to
+     look at and different in kind from everything around it.
+     Colours: a validated diverging pair, green #1F7A55 for cheaper and amber
+     #DC8F14 for pricier, around a neutral grey centre line. Numbers stay in
+     ink; only the bars and swatches carry colour. */
+  .mv {
+    padding: 16px 16px 10px; border-radius: var(--radius); background: var(--card);
+    box-shadow: inset 0 0 0 1px var(--line), 0 14px 30px -22px rgba(22,33,27,.35);
+  }
+  .mv-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .mv-title { margin: 0; font-family: var(--font-display); font-size: 18px; font-weight: 700; letter-spacing: -.01em; color: var(--text); }
+  /* The headline in words: what a buyer would say about today. */
+  .mv-verdict {
+    display: flex; align-items: center; gap: 9px; margin: 12px 0 0;
+    font-family: var(--font-display); font-size: 18px; font-weight: 700; line-height: 1.3; letter-spacing: -.01em; color: var(--text);
+  }
+  .mv-verdict-ico {
+    width: 30px; height: 30px; flex: 0 0 30px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .mv-verdict.up .mv-verdict-ico { background: #FBEBD0; color: #9A5B0B; }
+  .mv-verdict.down .mv-verdict-ico { background: #DDEFE4; color: #1F7A55; }
+  .mv-verdict.mixed .mv-verdict-ico { background: var(--paper); color: var(--text-muted); }
+  .mv-count { margin: 3px 0 0 39px; font-size: 14px; color: var(--text-faint); }
+
+  .mv-axis {
+    display: flex; justify-content: space-between; margin-top: 16px; padding-bottom: 8px;
+    font-size: 13.5px; font-weight: 700; color: var(--text-muted);
+  }
+  .mv-axis span { display: inline-flex; align-items: center; gap: 5px; }
+  .mv-axis svg { color: var(--text-faint); }
+  .mv-axis i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+  .mv-axis i.down, .mv-row.down .mv-bar { background: #1F7A55; }
+  .mv-axis i.up, .mv-row.up .mv-bar { background: #DC8F14; }
+
+  /* One solid hairline down the middle of every row: "same as yesterday". */
+  .mv-list { position: relative; margin: 0 -8px; }
+  .mv-list::before {
+    content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; margin-left: -.5px;
+    background: var(--line-strong); pointer-events: none;
+  }
+  .mv-row {
+    width: 100%; min-height: 56px; padding: 0 8px; border: none; border-radius: 12px; background: none;
+    display: grid; grid-template-columns: 1fr 1fr; align-items: center;
+    text-align: left; font: inherit; color: inherit; cursor: pointer;
+    transition: background-color 160ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .mv-row:active { background: var(--paper); transition-duration: var(--dur-press); }
+
+  /* Name side: hugs the line, photo nearest it, text reading outward. */
+  .mv-id { display: flex; align-items: center; gap: 9px; min-width: 0; padding: 7px 0; }
+  .mv-row.up .mv-id { flex-direction: row-reverse; padding-right: 10px; text-align: right; }
+  .mv-row.down .mv-id { padding-left: 10px; }
+  .mv-photo {
+    width: 34px; height: 34px; flex: 0 0 34px; border-radius: 10px; overflow: hidden;
+    display: flex; align-items: center; justify-content: center; background: var(--tanim-sk); color: var(--tanim);
+  }
+  .mv-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .mv-txt { display: flex; flex-direction: column; min-width: 0; }
+  .mv-name { font-family: var(--font-display); font-size: 15px; font-weight: 600; line-height: 1.2; color: var(--text); overflow-wrap: anywhere; }
+  .mv-price { margin-top: 1px; font-size: 14px; font-weight: 600; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+  .mv-price small { font-size: 13px; font-weight: 500; }
+
+  /* Bar side: the bar leaves the line and the value rides its end. Length
+     is the move as a share of the day's biggest, out of the half's width
+     less room for the label. */
+  .mv-barcell { display: flex; align-items: center; gap: 7px; min-width: 0; }
+  .mv-row.down .mv-barcell { flex-direction: row-reverse; }
+  .mv-bar {
+    flex: 0 0 auto; height: 14px; width: calc((100% - 58px) * var(--p));
+    animation: mv-grow 480ms var(--ease-out) both;
+  }
+  /* Square where it leaves the line, 4px round where it ends. */
+  .mv-row.up .mv-bar { border-radius: 0 4px 4px 0; transform-origin: left center; }
+  .mv-row.down .mv-bar { border-radius: 4px 0 0 4px; transform-origin: right center; }
+  @keyframes mv-grow { from { transform: scaleX(0); } }
+  .mv-chg {
+    flex-shrink: 0; font-family: var(--font-display); font-size: 15px; font-weight: 700;
+    color: var(--text); font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mv-bar { animation: none; }
+  }
+  .shell[data-revisit] .scroll .mv-bar { animation: none; }
+
   /* Spent this month: one figure, the line behind it, the month before. */
   .hm-spend {
     display: flex; align-items: center; gap: 12px; cursor: pointer;

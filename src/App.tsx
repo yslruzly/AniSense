@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Screen, AuthScreen, UserRole, FarmDetails } from "./types";
+import { Screen, AuthScreen, UserRole, FarmDetails, TradeIntent } from "./types";
 import { useOffline } from "./hooks/useOffline";
 import { useHardwareBack } from "./hooks/useHardwareBack";
 import { setStatusBar, initKeyboard } from "./lib/platform";
@@ -57,13 +57,19 @@ export default function App() {
   // twentieth tab switch of the day.
   const visited = useRef(new Set<Screen>(["home"]));
   const [revisit, setRevisit] = useState(false);
+  // Set only by openMarketplace, and cleared by every other navigation, so a
+  // later tap on the Market tab opens the plain marketplace, not the last
+  // filter Home asked for.
+  const [tradeIntent, setTradeIntent] = useState<TradeIntent | null>(null);
   const navigate = (next: Screen) => {
     if (next === active) return;
+    setTradeIntent(null);
     setNav(!TABS.includes(next) ? "push" : !TABS.includes(active) ? "pop" : "tab");
     setRevisit(visited.current.has(next));
     visited.current.add(next);
     setActive(next);
   };
+  const openMarketplace = (intent: TradeIntent) => { navigate("trade"); setTradeIntent(intent); };
   const { isOffline, lastUpdated } = useOffline();
 
   useEffect(() => { initKeyboard(); }, []);
@@ -205,11 +211,11 @@ export default function App() {
 
   const renderScreen = () => {
     switch (active) {
-      case "home": return <HomeScreen onNavigate={navigate} onProfile={openProfile} isOffline={isOffline} lastUpdated={lastUpdated} userName={userName} userInitials={initials} userRole={userRole} farmerCrops={farmerProfile.crops} />;
+      case "home": return <HomeScreen onNavigate={navigate} onShop={openMarketplace} onProfile={openProfile} isOffline={isOffline} lastUpdated={lastUpdated} userName={userName} userInitials={initials} userRole={userRole} farmerCrops={farmerProfile.crops} />;
       case "market": return <MarketScreen onProfile={openProfile} isOffline={isOffline} lastUpdated={lastUpdated} onBack={goHome} userInitials={initials} userRole={userRole} />;
       case "expenses": return <ExpensesScreen onProfile={openProfile} onBack={goHome} farmerCrops={farmerProfile.crops} userInitials={initials} isBuyer={userRole === "buyer"} buyerTransactions={BUYER_TRANSACTIONS} />;
       case "analytics": return <AnalyticsScreen onProfile={openProfile} onBack={goHome} userInitials={initials} farmerCrops={farmerProfile.crops} />;
-      case "trade": return <TradeScreen onProfile={openProfile} onBack={goHome} userName={userName} userInitials={initials} userRole={userRole} />;
+      case "trade": return <TradeScreen onProfile={openProfile} onBack={goHome} userName={userName} userInitials={initials} userRole={userRole} intent={tradeIntent ?? undefined} />;
       case "weather": return <WeatherScreen onProfile={openProfile} onBack={goHome} userInitials={initials} userRole={userRole} />;
       case "profile": return <ProfileScreen onNavigate={navigate} onBack={goBack} profile={farmerProfile} setProfile={setFarmerProfile} onSignOut={handleSignOut} userInitials={initials} userRole={userRole} userPhoto={userPhoto} onShowId={() => { setIdMode("view"); setShowWelcome(true); }} />;
     }
