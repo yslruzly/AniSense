@@ -2079,6 +2079,9 @@ export const appCss = `
   .hm-adv-s { display: block; margin-top: 2px; font-size: 14px; line-height: 1.45; color: var(--text-muted); }
 
   /* More tools: exactly two tiles, side by side. */
+  /* One tool, one full-width card: a lone tile beside an empty half looks
+     like something failed to load. */
+  .hm-tools.one { grid-template-columns: 1fr; }
   .hm-tools { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .hm-tool {
     display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 14px; text-align: left;

@@ -148,26 +148,29 @@ export function HomeScreen({ onNavigate, onShop, onProfile, isOffline, userName 
           </figure>
         )}
 
-        {/* 1 ── Greeting. The same farm as the Weather screen, by day or by
-            night, and the weather itself as a chip that opens it. */}
-        <section className="home-header" data-time={isNight ? "night" : "day"}>
-          <div className="home-greeting">{greeting}, {firstName}! 👋</div>
-          <div className="home-date">{dateStr}</div>
-          <div className="hm-hero-foot">
-            {/* Weather for both: a buyer drives out to collect what they
-                buy, so rain is their business too. The advisory below is
-                still farmer-only — that one is about planting. */}
-            <button className="hm-wx" onClick={() => onNavigate("weather")}>
-              {isNight ? <CloudMoon size={22} strokeWidth={2} /> : <CloudSun size={22} strokeWidth={2} />}
-              <span className="hm-wx-temp">28°</span>
-              <span className="hm-wx-cond">{t("wx_partly_cloudy")}</span>
-              <ChevronRight size={18} strokeWidth={2.4} aria-hidden="true" />
-            </button>
-            {isOffline && (
-              <span className="hm-offline"><span className="hm-offline-dot" /> {t("home_offline_cached")}</span>
-            )}
-          </div>
-        </section>
+        {/* 1 ── Greeting, farmer only. A buyer opens on the search bar and
+            the banner; the weather they need is a tool, not a headline, so
+            it lives in More tools below. */}
+        {!isBuyer && (
+          <section className="home-header" data-time={isNight ? "night" : "day"}>
+            <div className="home-greeting">{greeting}, {firstName}! 👋</div>
+            <div className="home-date">{dateStr}</div>
+            <div className="hm-hero-foot">
+              {/* Weather for both: a buyer drives out to collect what they
+                  buy, so rain is their business too. The advisory below is
+                  still farmer-only — that one is about planting. */}
+              <button className="hm-wx" onClick={() => onNavigate("weather")}>
+                {isNight ? <CloudMoon size={22} strokeWidth={2} /> : <CloudSun size={22} strokeWidth={2} />}
+                <span className="hm-wx-temp">28°</span>
+                <span className="hm-wx-cond">{t("wx_partly_cloudy")}</span>
+                <ChevronRight size={18} strokeWidth={2.4} aria-hidden="true" />
+              </button>
+              {isOffline && (
+                <span className="hm-offline"><span className="hm-offline-dot" /> {t("home_offline_cached")}</span>
+              )}
+            </div>
+          </section>
+        )}
 
         {/* Farmers: their own half of the marketplace. Everything else on
             this page is something to read; this is the one block about their
@@ -371,24 +374,27 @@ export function HomeScreen({ onNavigate, onShop, onProfile, isOffline, userName 
           </section>
         )}
 
-        {/* 6 ── The two pages the tab bar doesn't reach. */}
-        {!isBuyer && (
-          <section>
-            <h2 className="hm-title hm-out">{t("home_tools")}</h2>
-            <div className="hm-tools">
-              <button className="hm-tool tint-blue" onClick={() => onNavigate("weather")}>
-                <span className="hm-tool-ico wx">{isNight ? <CloudMoon size={24} /> : <CloudSun size={24} />}</span>
-                <span className="hm-tool-t">{t("home_mod_weather")}</span>
-                <span className="hm-tool-s">{t("home_mod_weather_desc")}</span>
-              </button>
+        {/* 6 ── The pages the tab bar doesn't reach. Weather is here for
+            both: a buyer drives out to collect what they buy, so rain is
+            their business too — it is just not their headline. Analytics
+            forecasts a farm's own crops, so it stays with the farmer. */}
+        <section>
+          <h2 className="hm-title hm-out">{t("home_tools")}</h2>
+          <div className={`hm-tools${isBuyer ? " one" : ""}`}>
+            <button className="hm-tool tint-blue" onClick={() => onNavigate("weather")}>
+              <span className="hm-tool-ico wx">{isNight ? <CloudMoon size={24} /> : <CloudSun size={24} />}</span>
+              <span className="hm-tool-t">{t("home_mod_weather")}</span>
+              <span className="hm-tool-s">{t(isBuyer ? "home_mod_weather_buyer" : "home_mod_weather_desc")}</span>
+            </button>
+            {!isBuyer && (
               <button className="hm-tool tint-violet" onClick={() => onNavigate("analytics")}>
                 <span className="hm-tool-ico an"><BarChart2 size={24} /></span>
                 <span className="hm-tool-t">{t("home_mod_analytics")}</span>
                 <span className="hm-tool-s">{t("home_mod_analytics_desc")}</span>
               </button>
-            </div>
-          </section>
-        )}
+            )}
+          </div>
+        </section>
 
         <div className="version-txt">AniSense v1.0.0 · Ani mo, alam mo.</div>
       </div>

@@ -168,6 +168,7 @@ export const translations: Dict = {
   home_vs_last: { en: "vs last month", tl: "kumpara noong nakaraang buwan" },
   home_spent_none: { en: "Nothing recorded yet this month", tl: "Wala pang naitala ngayong buwan" },
   home_tools: { en: "More tools", tl: "Iba pang gamit" },
+  home_mod_weather_buyer: { en: "Before you drive out", tl: "Bago ka pumunta" },
   home_market_chip: { en: "{n} listings · {s} farmers", tl: "{n} listing · {s} magsasaka" },
   home_deals: { en: "Cheapest today", tl: "Pinakamura ngayon" },
   home_deals_sub: { en: "Lowest price per kilo in the marketplace now.", tl: "Pinakamababang presyo kada kilo sa bentahan ngayon." },
