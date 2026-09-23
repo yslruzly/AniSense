@@ -1,6 +1,6 @@
 import React from "react";
 import { haptic } from "../../lib/platform";
-import { Home as HomeIcon, Store, TrendingUp, PhilippinePeso, Receipt, User } from "lucide-react";
+import { Home as HomeIcon, Store, TrendingUp, PhilippinePeso, Package, User } from "lucide-react";
 import { useLang } from "../../i18n";
 import { Screen } from "../../types";
 import { useViewer } from "../../lib/viewer";
@@ -19,7 +19,7 @@ export function BottomNav({ active, onNavigate }: { active: Screen; onNavigate: 
     { id: "home", lbl: t("nav_home"), Ico: HomeIcon },
     { id: "market", lbl: t("nav_market"), Ico: TrendingUp },
     { id: "trade", lbl: t("nav_trade"), Ico: Store },
-    { id: "expenses", lbl: t(isBuyer ? "nav_orders" : "nav_expenses"), Ico: isBuyer ? Receipt : PhilippinePeso },
+    { id: "expenses", lbl: t(isBuyer ? "nav_orders" : "nav_expenses"), Ico: isBuyer ? Package : PhilippinePeso },
     { id: "profile", lbl: t("nav_profile"), Ico: User },
   ];
   const idx = items.findIndex(it => it.id === active);
