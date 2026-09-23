@@ -3,7 +3,7 @@ import { useLang, translations } from "../../i18n";
 import { CROPS, CROP_FILTER_MAP } from "../../data/crops";
 import { SELLER_DETAILS } from "../../data/marketplace";
 import { BUYER_TRANSACTIONS } from "../../data/expenses";
-import { cropPhoto, cropPhotoFor } from "../../data/cropPhotos";
+import { cropPhoto, cropPhotoFor, cropGroupPhoto } from "../../data/cropPhotos";
 import { CropIcon } from "../icons";
 import { TradeIntent } from "../../types";
 
@@ -18,7 +18,7 @@ type Shop = (intent: TradeIntent) => void;
 // Eight crops, eight tiles, a 4 × 2 grid: every category on one screen with no
 // swiping, and a picture to recognise before a word to read.
 const SHOP_CATS = Object.keys(CROP_FILTER_MAP);
-const catPhoto = (cat: string) => (cat === "Rice" ? cropPhoto("rice-special") : cropPhotoFor(cat));
+const catPhoto = cropGroupPhoto;
 
 // Always in English, whichever language the app is set to: the crop names
 // here are the ones printed on market signs and sacks, so they stay as the

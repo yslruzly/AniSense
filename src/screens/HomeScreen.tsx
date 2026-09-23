@@ -4,6 +4,8 @@ import { Screen, UserRole, TradeIntent, Listing } from "../types";
 import { ShopByCrop, FeaturedFarmers, YourPurchases, PriceMoves } from "../components/home/BuyerHome";
 import { YourHarvest } from "../components/home/FarmerHome";
 import { PriceAlerts } from "../components/home/PriceAlerts";
+import { CropTracker } from "../components/home/CropTracker";
+import { Planting } from "../lib/plantings";
 import { PriceAlert } from "../lib/priceAlerts";
 import { useViewer } from "../lib/viewer";
 import { CROPS, CROP_GROUP_BY_ID } from "../data/crops";
@@ -45,7 +47,7 @@ function Chg({ value }: { value: number }) {
   );
 }
 
-export function HomeScreen({ onNavigate, onShop, onProfile, isOffline, userName = "Juan", userInitials = "JD", userRole, farmerCrops = ["Rice", "Corn"], listings = [], priceAlerts = [], onPriceAlerts }: {
+export function HomeScreen({ onNavigate, onShop, onProfile, isOffline, userName = "Juan", userInitials = "JD", userRole, farmerCrops = ["Rice", "Corn"], listings = [], priceAlerts = [], onPriceAlerts, plantings = [], onPlantings }: {
   onNavigate: (s: Screen) => void;
   /** Open the marketplace already showing a crop, a farmer or the search. */
   onShop?: (intent: TradeIntent) => void;
@@ -58,6 +60,8 @@ export function HomeScreen({ onNavigate, onShop, onProfile, isOffline, userName 
   listings?: Listing[];
   priceAlerts?: PriceAlert[];
   onPriceAlerts?: (next: PriceAlert[]) => void;
+  plantings?: Planting[];
+  onPlantings?: (next: Planting[]) => void;
   userRole?: UserRole;
   farmerCrops?: string[];
 }) {
@@ -295,6 +299,12 @@ export function HomeScreen({ onNavigate, onShop, onProfile, isOffline, userName 
 
         {/* Predicted Price, farmer only */}
         {userRole !== "buyer" && <PredictedPriceCard farmerCrops={farmerCrops} />}
+
+        {/* What is in the ground, and how far along. The one thing on this
+            page that changes overnight without the market doing anything. */}
+        {!isBuyer && onPlantings && (
+          <CropTracker plantings={plantings} onChange={onPlantings} />
+        )}
 
         {/* The forecast above says a price is climbing; this is what a
             farmer does about it. Directly under the two model cards, where

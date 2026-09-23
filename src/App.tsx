@@ -27,6 +27,7 @@ import { ProfileScreen } from "./screens/ProfileScreen";
 import { WelcomeID, WelcomeInfo, makeMemberId } from "./components/WelcomeID";
 import { ViewerContext } from "./lib/viewer";
 import { PriceAlert, loadAlerts, saveAlerts } from "./lib/priceAlerts";
+import { Planting, loadPlantings, savePlantings } from "./lib/plantings";
 
 // The bottom-nav destinations. Anything else is a page opened from one of them.
 const TABS: Screen[] = ["home", "market", "trade", "expenses", "profile"];
@@ -65,6 +66,13 @@ export default function App() {
   const alertsLoaded = useRef(false);
   useEffect(() => { loadAlerts().then(a => { setPriceAlerts(a); alertsLoaded.current = true; }); }, []);
   useEffect(() => { if (alertsLoaded.current) saveAlerts(priceAlerts); }, [priceAlerts]);
+
+  // What the farmer has in the ground. Same shape as the price targets:
+  // read once at launch, written back on every change.
+  const [plantings, setPlantings] = useState<Planting[]>([]);
+  const plantingsLoaded = useRef(false);
+  useEffect(() => { loadPlantings().then(p => { setPlantings(p); plantingsLoaded.current = true; }); }, []);
+  useEffect(() => { if (plantingsLoaded.current) savePlantings(plantings); }, [plantings]);
 
   // The marketplace listings live here, not inside the marketplace screen.
   // That screen is unmounted whenever the farmer changes tab, so a harvest
@@ -226,7 +234,7 @@ export default function App() {
 
   const renderScreen = () => {
     switch (active) {
-      case "home": return <HomeScreen onNavigate={navigate} onShop={openMarketplace} listings={listings} priceAlerts={priceAlerts} onPriceAlerts={setPriceAlerts} onProfile={openProfile} isOffline={isOffline} lastUpdated={lastUpdated} userName={userName} userInitials={initials} userRole={userRole} farmerCrops={farmerProfile.crops} />;
+      case "home": return <HomeScreen onNavigate={navigate} onShop={openMarketplace} listings={listings} priceAlerts={priceAlerts} onPriceAlerts={setPriceAlerts} plantings={plantings} onPlantings={setPlantings} onProfile={openProfile} isOffline={isOffline} lastUpdated={lastUpdated} userName={userName} userInitials={initials} userRole={userRole} farmerCrops={farmerProfile.crops} />;
       case "market": return <MarketScreen onProfile={openProfile} isOffline={isOffline} lastUpdated={lastUpdated} onBack={goHome} userInitials={initials} userRole={userRole} />;
       case "expenses": return <ExpensesScreen onProfile={openProfile} onBack={goHome} farmerCrops={farmerProfile.crops} userInitials={initials} isBuyer={userRole === "buyer"} buyerTransactions={BUYER_TRANSACTIONS} />;
       case "analytics": return <AnalyticsScreen onProfile={openProfile} onBack={goHome} userInitials={initials} farmerCrops={farmerProfile.crops} />;
@@ -243,7 +251,7 @@ export default function App() {
       <style>{sheetCss}</style>
       <style>{pickerCss}</style>
       <style>{buttonCss}</style>
-      <ViewerContext.Provider value={{ role: userRole, location: farmerProfile.location, priceAlerts }}>
+      <ViewerContext.Provider value={{ role: userRole, location: farmerProfile.location, priceAlerts, plantings }}>
       <div className="outer">
         <div className="shell" data-nav={nav} data-revisit={revisit || undefined}>
           {renderScreen()}

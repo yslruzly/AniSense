@@ -212,6 +212,38 @@ export const translations: Dict = {
   mv_axis_pricier: { en: "Pricier", tl: "Mas mahal" },
   bm_cheaper_aria: { en: "cheaper than yesterday", tl: "mas mura kaysa kahapon" },
   bm_pricier_aria: { en: "pricier than yesterday", tl: "mas mahal kaysa kahapon" },
+  // Farmer Home: crop tracker.
+  ct_title: { en: "In the ground", tl: "Nakatanim ngayon" },
+  ct_sub: {
+    en: "How far along each planting is, counted from the day you planted.",
+    tl: "Gaano na katagal ang bawat tanim, bilang mula sa araw ng pagtatanim.",
+  },
+  ct_empty: { en: "Nothing tracked yet.", tl: "Wala pang sinusubaybayan." },
+  ct_add: { en: "Add a planting", tl: "Magdagdag ng tanim" },
+  ct_crop: { en: "Crop", tl: "Pananim" },
+  ct_planted: { en: "Date planted", tl: "Petsa ng pagtatanim" },
+  ct_days_lbl: { en: "Days to harvest", tl: "Araw bago anihin" },
+  ct_days: { en: "days", tl: "araw" },
+  ct_days_help: {
+    en: "The usual figure for this crop. Change it if your variety runs longer or shorter.",
+    tl: "Ito ang karaniwan para sa pananim na ito. Palitan kung mas matagal o mas maikli ang klase mo.",
+  },
+  ct_days_less: { en: "Fewer days", tl: "Bawasan ang araw" },
+  ct_days_more: { en: "More days", tl: "Dagdagan ang araw" },
+  ct_save: { en: "Start tracking", tl: "Simulan ang pagsubaybay" },
+  ct_remove: { en: "Stop tracking", tl: "Itigil ang pagsubaybay" },
+  ct_day: { en: "Day {day} of {days}", tl: "Araw {day} ng {days}" },
+  ct_ready: { en: "Ready to harvest", tl: "Pwede nang anihin" },
+  ct_days_left: { en: "about {n} days to harvest", tl: "mga {n} araw na lang bago anihin" },
+  ct_weeks_left: { en: "about {n} weeks to harvest", tl: "mga {n} linggo na lang bago anihin" },
+  ct_stage_seedling: { en: "Seedling", tl: "Punla" },
+  ct_stage_growing: { en: "Growing", tl: "Lumalaki" },
+  ct_stage_flowering: { en: "Flowering", tl: "Namumulaklak" },
+  ct_stage_filling: { en: "Filling", tl: "Nagbubunga" },
+  ct_stage_ready: { en: "Ready", tl: "Handa na" },
+  ct_alert_title: { en: "Ready to harvest", tl: "Pwede nang anihin" },
+  ct_alert_body: { en: "{crop} has reached day {days}", tl: "Umabot na sa araw {days} ang {crop}" },
+
   // Farmer Home: price alerts.
   pa_title: { en: "Price alerts", tl: "Abiso sa presyo" },
   pa_sub: {

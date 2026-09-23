@@ -3,6 +3,7 @@ import { WEATHER_FORECAST } from "./weather";
 import { LISTINGS } from "./marketplace";
 import { UserRole } from "../types";
 import { PriceAlert, alertHit } from "../lib/priceAlerts";
+import { Planting, daysLeft } from "../lib/plantings";
 
 // ─── Alerts ───────────────────────────────────────────────────────────────────
 // What the bell in the header is counting. Derived from the data already on
@@ -14,7 +15,7 @@ import { PriceAlert, alertHit } from "../lib/priceAlerts";
 // for the one buying; rain is a harvest deadline for one and nothing for the
 // other. One list for both was always wrong for somebody.
 
-export type AlertKind = "price-up" | "price-down" | "weather" | "new-listing" | "price-target";
+export type AlertKind = "price-up" | "price-down" | "weather" | "new-listing" | "price-target" | "harvest-due";
 
 export interface Alert {
   id: string;
@@ -30,6 +31,8 @@ export interface Alert {
   pricePerKg?: number;
   /** For a price target that has been met: the price asked for. */
   target?: number;
+  /** For a planting that has come due: the crop's day count. */
+  dayCount?: number;
 }
 
 const WET = ["Rainy", "Stormy", "LightRain"];
@@ -89,7 +92,20 @@ function targetAlerts(alerts: PriceAlert[]): Alert[] {
     .map(a => ({ id: "tgt-" + a.id, kind: "price-target" as const, crop: a.cropName, target: a.target }));
 }
 
-export function buildAlerts(role: UserRole = "farmer", location = "", priceAlerts: PriceAlert[] = []): Alert[] {
+/** Plantings that have reached their harvest day. A season ending outranks
+ *  a price move: the crop is standing in the field either way. */
+function harvestAlerts(plantings: Planting[]): Alert[] {
+  return plantings
+    .filter(p => daysLeft(p) === 0)
+    .map(p => ({ id: "hrv-" + p.id, kind: "harvest-due" as const, crop: p.crop, dayCount: p.days }));
+}
+
+export function buildAlerts(
+  role: UserRole = "farmer",
+  location = "",
+  priceAlerts: PriceAlert[] = [],
+  plantings: Planting[] = [],
+): Alert[] {
   if (role === "buyer") return buyerAlerts(location);
-  return [...targetAlerts(priceAlerts), ...farmerAlerts()];
+  return [...harvestAlerts(plantings), ...targetAlerts(priceAlerts), ...farmerAlerts()];
 }

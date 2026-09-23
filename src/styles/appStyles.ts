@@ -1505,6 +1505,80 @@ export const appCss = `
   .hm-poster:active { transform: scale(.98); transition-duration: var(--dur-press); }
   @media (prefers-reduced-motion: reduce) { .hm-poster:active { transform: none; } }
 
+  /* ── Crop tracker ───────────────────────────────────────────────────────
+     A row per planting: what it is and which day it is on, a bar for the
+     season, and the weeks left underneath. The bar is the only thing on the
+     farmer's Home that moves without the market moving. */
+  .ct {
+    margin-top: 12px; padding: 6px 14px 14px; border-radius: var(--radius); background: var(--card);
+    box-shadow: inset 0 0 0 1px var(--line), 0 14px 30px -22px rgba(22,33,27,.35);
+  }
+  .ct-empty { margin: 12px 2px; font-size: 14.5px; color: var(--text-muted); }
+  .ct-list { list-style: none; margin: 0; padding: 0; }
+  .ct-row { padding: 12px 0; }
+  .ct-row + .ct-row { border-top: 1px solid var(--line); }
+  .ct-head { display: flex; align-items: center; gap: 11px; }
+  .ct-photo {
+    width: 42px; height: 42px; flex: 0 0 42px; border-radius: 12px; overflow: hidden;
+    display: flex; align-items: center; justify-content: center; background: var(--tanim-sk); color: var(--tanim);
+  }
+  .ct-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .ct-id { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .ct-name { font-family: var(--font-display); font-size: 15.5px; font-weight: 700; color: var(--text); }
+  /* The day number is the headline: it is what changed overnight. */
+  .ct-day { font-family: var(--font-display); font-size: 14.5px; font-weight: 600; color: var(--tanim-deep); font-variant-numeric: tabular-nums; }
+  .ct-stage {
+    flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 99px;
+    background: var(--paper-alt); color: var(--text-muted); font-size: 13px; font-weight: 700;
+  }
+  .ct-stage.ready { background: var(--tanim-sk); color: var(--tanim-deep); }
+  .ct-x {
+    flex-shrink: 0; width: 34px; height: 34px; border: none; border-radius: 50%; background: none; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; color: var(--text-faint);
+    transition: transform 190ms var(--ease-out), background-color 160ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .ct-x:active { transform: scale(.9); background: var(--paper); transition-duration: var(--dur-press); }
+
+  .ct-track {
+    height: 10px; margin: 10px 0 7px; border-radius: 99px; overflow: hidden;
+    background: var(--paper-alt); box-shadow: inset 0 0 0 1px rgba(22,33,27,.06);
+  }
+  /* Grows from the left on the first visit of a session; on later visits it
+     is simply at today's mark. */
+  .ct-fill {
+    display: block; height: 100%; border-radius: 99px;
+    background: linear-gradient(90deg, #7EC478, var(--tanim));
+    transform-origin: left center; animation: bar-grow 620ms var(--ease-out) both;
+  }
+  .ct-row.ready .ct-fill { background: linear-gradient(90deg, var(--tanim), var(--palay)); }
+  .ct-foot { font-size: 14px; color: var(--text-muted); }
+  .ct-row.ready .ct-foot { color: var(--tanim-deep); font-weight: 700; }
+
+  .ct-add {
+    width: 100%; margin-top: 12px; min-height: 48px; display: flex; align-items: center; justify-content: center; gap: 8px;
+    border: none; border-radius: 14px; cursor: pointer;
+    background: var(--tanim-sk); color: var(--tanim-deep);
+    font-family: var(--font-display); font-size: 15.5px; font-weight: 700;
+    transition: transform 190ms var(--ease-out), background-color 160ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .ct-add:active { transform: scale(.97); background: #CFE6D8; transition-duration: var(--dur-press); }
+
+  /* The phone's own date field, dressed like the app's other inputs. */
+  .ct-date {
+    width: 100%; min-height: 54px; padding: 0 14px; border: none; border-radius: 16px;
+    background: var(--paper); box-shadow: inset 0 0 0 1.5px var(--line);
+    font-family: var(--font-display); font-size: 16.5px; font-weight: 600; color: var(--text);
+  }
+  .ct-date:focus { outline: none; box-shadow: inset 0 0 0 2px var(--tanim); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ct-fill { animation: none; }
+    .ct-x:active, .ct-add:active { transform: none; }
+  }
+  .shell[data-revisit] .scroll .ct-fill { animation: none; }
+
   /* ── Price alerts ───────────────────────────────────────────────────────
      A short list of targets and one button. A reached target turns the row
      green and swaps the waiting line for the price it hit, so the state is

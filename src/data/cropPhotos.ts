@@ -82,3 +82,12 @@ export function cropPhotoFor(crop: string, variety?: string): string | undefined
   }
   return undefined;
 }
+
+/**
+ * A photo for a crop *group* ("Rice", "Onions"). Rice is the exception: its
+ * varieties are priced on their own and are not a group, so nothing matches
+ * the bare word and the caller was left with a line icon.
+ */
+export function cropGroupPhoto(group: string): string | undefined {
+  return group === "Rice" ? CROP_PHOTOS["rice-special"] : cropPhotoFor(group);
+}
