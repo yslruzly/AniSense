@@ -69,12 +69,16 @@ export const appCss = `
 
   /* ── Header ── */
   .hdr {
-    /* Grows by the status bar so its white fills that strip; the row inside
-       still centres on its own 66px. */
-    height: calc(66px + var(--safe-top)); padding-top: var(--safe-top);
-    background: var(--white); flex-shrink: 0;
+    /* No line, no colour of its own: the bar, the status strip above it and
+       the page below are one surface, so nothing cuts across the top of the
+       screen. The header still owns the status-bar inset, so the row inside
+       centres on its own 66px underneath it.
+       (The shorthand goes first: written after padding-top it reset the
+       inset to zero and let the row drift up under the status bar.) */
+    height: calc(66px + var(--safe-top));
+    padding: 0 18px; padding-top: var(--safe-top);
+    background: transparent; flex-shrink: 0;
     display: flex; align-items: center; justify-content: space-between;
-    padding: 0 18px; border-bottom: 1px solid var(--border);
   }
   .hdr-brand { display: flex; align-items: center; gap: 11px; }
   /* Centred brand: the mark and name sit in the middle of the bar whatever
