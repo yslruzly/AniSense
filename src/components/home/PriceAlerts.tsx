@@ -126,10 +126,15 @@ export function PriceAlerts({ alerts, onChange, farmerCrops }: {
         <div className="pa-field">
           <label className="pa-lbl">{t("pa_crop")}</label>
           <PickerField
-            title={t("pa_crop")}
+            title={t("pick_crop_title")}
             placeholder={t("pa_crop")}
             value={cropId}
-            options={ordered.map(c => ({ value: c.id, label: `${c.name} · ₱${c.pricePerKg}` }))}
+            options={ordered.map(c => ({
+              value: c.id,
+              label: c.name,
+              sub: t("pa_today").replace("{price}", `₱${c.pricePerKg}`),
+              photo: cropPhoto(c.id),
+            }))}
             onChange={pickCrop}
           />
         </div>

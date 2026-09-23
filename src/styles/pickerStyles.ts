@@ -96,7 +96,12 @@ export const pickerCss = `
   }
   .pick-search:focus-within { box-shadow: inset 0 0 0 2px var(--tanim); }
 
-  .pick-list { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 8px 12px 20px; -webkit-overflow-scrolling: touch; }
+  /* The last row clears the gesture bar; without it the final crop sat
+     under the home indicator and looked like the list had been cut. */
+  .pick-list {
+    flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+    padding: 8px 12px calc(20px + var(--safe-bottom)); -webkit-overflow-scrolling: touch;
+  }
   .pick-list::-webkit-scrollbar { width: 0; }
   /* 60px rows and 17px names: a list meant to be read at arm's length and
      hit without aiming. A native select gives about 36px and 14px. */
@@ -114,6 +119,17 @@ export const pickerCss = `
   .pick-row.on { background: var(--tanim-sk); color: var(--tanim); font-weight: 700; }
   .pick-row.on::before, .pick-row.on + .pick-row::before { opacity: 0; }
   .pick-row.on svg { flex-shrink: 0; }
+  /* A crop is recognised by its picture first, so the list shows one. */
+  .pick-photo {
+    width: 44px; height: 44px; flex: 0 0 44px; border-radius: 12px; overflow: hidden;
+    background: var(--tanim-sk); display: flex; align-items: center; justify-content: center;
+  }
+  .pick-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .pick-row-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .pick-row-lbl { line-height: 1.25; }
+  /* The second line stays quiet: it is context, not the choice. */
+  .pick-row-sub { font-size: 14.5px; color: var(--text-muted); font-weight: 500; }
+  .pick-row.on .pick-row-sub { color: var(--tanim-deep); }
   .pick-none { padding: 28px 16px; text-align: center; font-size: var(--fs-body); color: var(--text-muted); line-height: 1.5; }
 
   @media (prefers-reduced-motion: reduce) {

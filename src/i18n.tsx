@@ -212,6 +212,8 @@ export const translations: Dict = {
   mv_axis_pricier: { en: "Pricier", tl: "Mas mahal" },
   bm_cheaper_aria: { en: "cheaper than yesterday", tl: "mas mura kaysa kahapon" },
   bm_pricier_aria: { en: "pricier than yesterday", tl: "mas mahal kaysa kahapon" },
+  pick_crop_title: { en: "Choose a crop", tl: "Pumili ng pananim" },
+
   // Farmer Home: profit snapshot.
   ps_title: { en: "Earned and spent", tl: "Kita at gastos" },
   ps_month: { en: "Month", tl: "Buwan" },

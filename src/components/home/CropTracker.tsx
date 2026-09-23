@@ -128,10 +128,15 @@ export function CropTracker({ plantings, onChange }: {
         <div className="pa-field">
           <label className="pa-lbl">{t("ct_crop")}</label>
           <PickerField
-            title={t("ct_crop")}
+            title={t("pick_crop_title")}
             placeholder={t("ct_crop")}
             value={crop}
-            options={CROP_CYCLES.map(c => ({ value: c.crop, label: `${tn(c.crop)} · ${c.days} ${t("ct_days")}` }))}
+            options={CROP_CYCLES.map(c => ({
+              value: c.crop,
+              label: tn(c.crop),
+              sub: `${c.days} ${t("ct_days")}`,
+              photo: cropGroupPhoto(c.crop),
+            }))}
             onChange={pickCrop}
           />
         </div>

@@ -4,6 +4,7 @@ import { useLang } from "../../i18n";
 import { CROPS, CROP_GROUP_BY_ID } from "../../data/crops";
 import { EXPENSES } from "../../data/expenses";
 import { CROP_CYCLES } from "../../data/cropCycles";
+import { cropGroupPhoto } from "../../data/cropPhotos";
 import { Sheet } from "../ui/Sheet";
 import { PickerField } from "../ui/PickerField";
 import { haptic } from "../../lib/platform";
@@ -131,10 +132,15 @@ export function ProfitSnapshot({ sales, onChange, plantings, onOpenExpenses }: {
         <div className="pa-field">
           <label className="pa-lbl">{t("ct_crop")}</label>
           <PickerField
-            title={t("ct_crop")}
+            title={t("pick_crop_title")}
             placeholder={t("ct_crop")}
             value={crop}
-            options={CROP_CYCLES.map(c => ({ value: c.crop, label: tn(c.crop) }))}
+            options={CROP_CYCLES.map(c => ({
+              value: c.crop,
+              label: tn(c.crop),
+              sub: t("pa_today").replace("{price}", `₱${priceOfGroup(c.crop)}`),
+              photo: cropGroupPhoto(c.crop),
+            }))}
             onChange={pickCrop}
           />
         </div>

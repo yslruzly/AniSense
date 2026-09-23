@@ -16,7 +16,16 @@ import { Sheet } from "./Sheet";
 
 /** A plain string is its own label; an object separates the two, for lists
  *  whose values are ids ("price-asc") rather than words. */
-export type PickerOption = string | { value: string; label: string };
+export type PickerOption =
+  | string
+  | {
+      value: string;
+      label: string;
+      /** A second, quieter line: today's price, a day count, a province. */
+      sub?: string;
+      /** A thumbnail. A crop is recognised by its picture before its name. */
+      photo?: string;
+    };
 
 export function PickerField({ value, options, placeholder, title, onChange, disabled, disabledHint, searchPlaceholder, variant = "field", icon }: {
   value: string;
@@ -43,7 +52,7 @@ export function PickerField({ value, options, placeholder, title, onChange, disa
   // search box above four options only asks for typing that isn't required.
   const searchable = items.length > 10;
   const q = query.trim().toLowerCase();
-  const shown = q ? items.filter(o => o.label.toLowerCase().includes(q)) : items;
+  const shown = q ? items.filter(o => `${o.label} ${o.sub ?? ""}`.toLowerCase().includes(q)) : items;
 
   // Open on what's already chosen, rather than at the top of the alphabet.
   useEffect(() => {
@@ -112,7 +121,15 @@ export function PickerField({ value, options, placeholder, title, onChange, disa
                 className={`pick-row ${on ? "on" : ""}`}
                 onClick={() => choose(option.value)}
               >
-                <span>{option.label}</span>
+                {option.photo && (
+                  <span className="pick-photo">
+                    <img src={option.photo} alt="" loading="lazy" decoding="async" />
+                  </span>
+                )}
+                <span className="pick-row-txt">
+                  <span className="pick-row-lbl">{option.label}</span>
+                  {option.sub && <span className="pick-row-sub">{option.sub}</span>}
+                </span>
                 {on && <Check size={22} strokeWidth={2.8} aria-hidden="true" />}
               </button>
             );
