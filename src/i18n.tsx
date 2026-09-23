@@ -316,6 +316,10 @@ export const translations: Dict = {
   },
 
   // Buyer Home.
+  home_poster_alt: {
+    en: "AniSense: fresh local produce, from our farms to your table.",
+    tl: "AniSense: sariwang ani mula sa lokal na bukid, diretso sa hapag mo.",
+  },
   poster_alt: {
     en: "AniSense: fresh produce, better prices, stronger communities. Browse the marketplace.",
     tl: "AniSense: sariwang ani, mas magandang presyo, mas matibay na komunidad. Buksan ang bentahan.",

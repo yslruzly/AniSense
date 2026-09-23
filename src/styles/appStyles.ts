@@ -77,6 +77,16 @@ export const appCss = `
     padding: 0 18px; border-bottom: 1px solid var(--border);
   }
   .hdr-brand { display: flex; align-items: center; gap: 11px; }
+  /* Centred brand: the mark and name sit in the middle of the bar whatever
+     is beside them, so the bell moving in or out never shifts the logo.
+     Absolute, because centring it in the flex row would only centre it in
+     the space the bell leaves over. */
+  .hdr.center { justify-content: flex-end; }
+  .hdr.center .hdr-brand {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    pointer-events: none;
+  }
+  .hdr.center .hdr-title { font-size: 19px; letter-spacing: -.01em; }
   .hdr-icon { font-size: 23px; display: flex; }
   .hdr-title { font-family: var(--font-display); font-size: var(--fs-body); font-weight: 700; color: var(--text); line-height: 1.15; }
   .hdr-sub   { font-size: var(--fs-label); color: var(--text-muted); margin-top: 1px; }
@@ -1491,6 +1501,14 @@ export const appCss = `
   .ff-near { padding: 2px 9px; border-radius: 99px; background: #DCEAF8; color: #2F6FA8; font-size: 13px; font-weight: 800; }
   .ff-row-meta { font-size: 14px; color: var(--text-muted); }
   .ff-chev { color: var(--line-strong); flex-shrink: 0; }
+
+  /* The banner that opens the buyer's Home. Not a button: it is the page's
+     own masthead, and a tap that navigated from here would surprise. */
+  .hm-banner {
+    margin: 0; aspect-ratio: 1000 / 500; overflow: hidden; border-radius: var(--radius);
+    background: #EAF3E6; box-shadow: 0 10px 24px -18px rgba(22,33,27,.4);
+  }
+  .hm-banner img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
   /* The brand poster. aspect-ratio reserves its exact shape up front, so
      the page does not jump when the image arrives. */

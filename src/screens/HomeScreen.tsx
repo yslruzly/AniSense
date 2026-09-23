@@ -24,6 +24,7 @@ import { AniSenseLogo } from "../components/AniSenseLogo";
 import { useIsNight } from "../hooks/useIsNight";
 import buyerMascot from "../assets/buyer-mascot.webp";
 import anisensePoster from "../assets/anisense-poster.webp";
+import homePoster from "../assets/anisense-poster-home.webp";
 
 // ─── Home ─────────────────────────────────────────────────────────────────────
 // A morning check, in the order a farmer asks:
@@ -120,8 +121,17 @@ export function HomeScreen({ onNavigate, onShop, onProfile, isOffline, userName 
 
   return (
     <div className="screen">
-      <Hdr icon={<AniSenseLogo size={28} />} title="AniSense" />
+      {/* Buyers open on the brand: the mark is larger and the pair sits in
+          the middle of the bar, with the bell keeping its corner. */}
+      <Hdr icon={<AniSenseLogo size={isBuyer ? 36 : 28} />} title="AniSense" center={isBuyer} />
       <div className="scroll screen-enter">
+
+        {/* Buyers: the brand banner opens the page, above the greeting. */}
+        {isBuyer && (
+          <figure className="hm-banner">
+            <img src={homePoster} alt={t("home_poster_alt")} width={1000} height={500} decoding="async" />
+          </figure>
+        )}
 
         {/* 1 ── Greeting. The same farm as the Weather screen, by day or by
             night, and the weather itself as a chip that opens it. */}

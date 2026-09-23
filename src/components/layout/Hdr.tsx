@@ -15,7 +15,7 @@ let bellRung = false;
 // No avatar on the right. It duplicated the Profile tab one thumb-reach
 // below, and two doors to the same room is one more thing to read on every
 // screen. The bell takes its place at the edge.
-export function Hdr({ icon, title, sub, onBack, extra }: { icon?: React.ReactNode; title: string; sub?: string; onBack?: () => void; extra?: React.ReactNode }) {
+export function Hdr({ icon, title, sub, onBack, extra, center }: { icon?: React.ReactNode; title: string; sub?: string; onBack?: () => void; extra?: React.ReactNode; center?: boolean }) {
   const { t, tn } = useLang();
   const [showAlerts, setShowAlerts] = useState(false);
   const { role, location, priceAlerts, plantings } = useViewer();
@@ -88,7 +88,7 @@ export function Hdr({ icon, title, sub, onBack, extra }: { icon?: React.ReactNod
 
   return (
     <>
-      <div className="hdr">
+      <div className={`hdr${center ? " center" : ""}`}>
         <div className="hdr-brand">
           {onBack && (
             <button onClick={onBack} className="hdr-back" aria-label={t("back")}>
