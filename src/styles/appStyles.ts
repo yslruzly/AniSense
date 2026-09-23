@@ -1505,6 +1505,62 @@ export const appCss = `
   .hm-poster:active { transform: scale(.98); transition-duration: var(--dur-press); }
   @media (prefers-reduced-motion: reduce) { .hm-poster:active { transform: none; } }
 
+  /* ── Profit snapshot ────────────────────────────────────────────────────
+     Two tiles and a net. Money in is green, money out is gold — the same
+     two meanings those colours carry everywhere else in the app — and the
+     net says which way it went in words as well as in colour. */
+  .ps-range {
+    flex-shrink: 0; display: flex; gap: 2px; padding: 3px; border-radius: 99px; background: var(--paper-alt);
+  }
+  .ps-range button {
+    min-height: 34px; padding: 0 14px; border: none; border-radius: 99px; background: none; cursor: pointer;
+    font-family: var(--font-display); font-size: 14px; font-weight: 700; color: var(--text-muted);
+    transition: background-color 160ms ease, color 160ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .ps-range button.on { background: var(--card); color: var(--text); box-shadow: 0 1px 3px rgba(22,33,27,.14); }
+
+  .ps {
+    margin-top: 12px; padding: 14px; border-radius: var(--radius); background: var(--card);
+    box-shadow: inset 0 0 0 1px var(--line), 0 14px 30px -22px rgba(22,33,27,.35);
+  }
+  .ps-2up { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .ps-tile {
+    position: relative; display: flex; flex-direction: column; gap: 2px; min-width: 0; padding: 12px 14px;
+    border: none; border-radius: 16px; text-align: left; font: inherit; color: inherit;
+  }
+  .ps-tile.earned { background: #E8F3EC; box-shadow: inset 0 0 0 1px rgba(11,107,65,.16); }
+  .ps-tile.spent { background: #FCF3DF; box-shadow: inset 0 0 0 1px rgba(138,93,12,.18); cursor: pointer; }
+  .ps-tile.spent:active { background: #F7E9C9; }
+  .ps-ico { color: var(--tanim-deep); }
+  .ps-tile.spent .ps-ico { color: #8A5A0B; }
+  .ps-lbl { font-size: 14px; font-weight: 600; color: var(--text-muted); }
+  .ps-val {
+    font-family: var(--font-display); font-size: 21px; font-weight: 800; letter-spacing: -.015em; color: var(--text);
+    font-variant-numeric: tabular-nums; overflow-wrap: anywhere;
+  }
+  .ps-tile-chev { position: absolute; right: 8px; top: 12px; color: rgba(138,93,12,.5); }
+
+  /* The net, and the word that says which way it went. */
+  .ps-net { display: flex; align-items: baseline; gap: 8px; margin-top: 12px; padding: 0 2px; }
+  .ps-net-val {
+    font-family: var(--font-display); font-size: 30px; font-weight: 800; letter-spacing: -.025em; line-height: 1.1;
+  }
+  .ps-net.up .ps-net-val { color: var(--tanim-deep); }
+  .ps-net.down .ps-net-val { color: var(--error); }
+  .ps-net-lbl { font-size: 15px; font-weight: 600; color: var(--text-muted); }
+  .ps-hint { margin: 6px 2px 0; font-size: 14px; line-height: 1.45; color: var(--text-muted); }
+  .ps-add { margin-top: 14px; }
+
+  /* Kilos and price side by side: they are one thought, and together they
+     make the total underneath. */
+  .ps-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .ps-pair .pa-step button { width: 44px; flex: 0 0 44px; height: 50px; border-radius: 14px; }
+  .ps-pair .pa-step-val { height: 50px; font-size: 20px; }
+  .ps-pair .pa-step-val input { width: 4ch; }
+  .ps-total { display: flex; align-items: baseline; gap: 6px; }
+  .ps-total b { font-family: var(--font-display); font-size: 19px; font-weight: 800; }
+
   /* ── Crop tracker ───────────────────────────────────────────────────────
      A row per planting: what it is and which day it is on, a bar for the
      season, and the weeks left underneath. The bar is the only thing on the

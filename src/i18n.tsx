@@ -212,6 +212,29 @@ export const translations: Dict = {
   mv_axis_pricier: { en: "Pricier", tl: "Mas mahal" },
   bm_cheaper_aria: { en: "cheaper than yesterday", tl: "mas mura kaysa kahapon" },
   bm_pricier_aria: { en: "pricier than yesterday", tl: "mas mahal kaysa kahapon" },
+  // Farmer Home: profit snapshot.
+  ps_title: { en: "Earned and spent", tl: "Kita at gastos" },
+  ps_month: { en: "Month", tl: "Buwan" },
+  ps_season: { en: "Season", tl: "Panahon" },
+  ps_earned: { en: "Earned", tl: "Kita" },
+  ps_spent: { en: "Spent", tl: "Gastos" },
+  ps_net_up: { en: "left over", tl: "ang natira" },
+  ps_net_down: { en: "short", tl: "ang kulang" },
+  ps_hint: {
+    en: "Record a sale and it lands here, beside what the farm cost you.",
+    tl: "Itala ang benta at lalabas ito rito, katabi ng gastos sa bukid.",
+  },
+  ps_record: { en: "Record a sale", tl: "Itala ang benta" },
+  ps_kg: { en: "Kilos sold", tl: "Kilong naibenta" },
+  ps_kg_less: { en: "Fewer kilos", tl: "Bawasan ang kilo" },
+  ps_kg_more: { en: "More kilos", tl: "Dagdagan ang kilo" },
+  ps_price: { en: "Price per kilo", tl: "Presyo kada kilo" },
+  ps_price_less: { en: "Lower the price", tl: "Babaan ang presyo" },
+  ps_price_more: { en: "Raise the price", tl: "Itaas ang presyo" },
+  ps_date: { en: "Date sold", tl: "Petsa ng benta" },
+  ps_total: { en: "Total for this sale: ", tl: "Kabuuan ng bentang ito: " },
+  ps_save: { en: "Save the sale", tl: "I-save ang benta" },
+
   // Farmer Home: crop tracker.
   ct_title: { en: "In the ground", tl: "Nakatanim ngayon" },
   ct_sub: {

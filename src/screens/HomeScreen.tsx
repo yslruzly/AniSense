@@ -5,6 +5,8 @@ import { ShopByCrop, FeaturedFarmers, YourPurchases, PriceMoves } from "../compo
 import { YourHarvest } from "../components/home/FarmerHome";
 import { PriceAlerts } from "../components/home/PriceAlerts";
 import { CropTracker } from "../components/home/CropTracker";
+import { ProfitSnapshot } from "../components/home/ProfitSnapshot";
+import { Sale } from "../lib/sales";
 import { Planting } from "../lib/plantings";
 import { PriceAlert } from "../lib/priceAlerts";
 import { useViewer } from "../lib/viewer";
@@ -47,7 +49,7 @@ function Chg({ value }: { value: number }) {
   );
 }
 
-export function HomeScreen({ onNavigate, onShop, onProfile, isOffline, userName = "Juan", userInitials = "JD", userRole, farmerCrops = ["Rice", "Corn"], listings = [], priceAlerts = [], onPriceAlerts, plantings = [], onPlantings }: {
+export function HomeScreen({ onNavigate, onShop, onProfile, isOffline, userName = "Juan", userInitials = "JD", userRole, farmerCrops = ["Rice", "Corn"], listings = [], priceAlerts = [], onPriceAlerts, plantings = [], onPlantings, sales = [], onSales }: {
   onNavigate: (s: Screen) => void;
   /** Open the marketplace already showing a crop, a farmer or the search. */
   onShop?: (intent: TradeIntent) => void;
@@ -62,6 +64,8 @@ export function HomeScreen({ onNavigate, onShop, onProfile, isOffline, userName 
   onPriceAlerts?: (next: PriceAlert[]) => void;
   plantings?: Planting[];
   onPlantings?: (next: Planting[]) => void;
+  sales?: Sale[];
+  onSales?: (next: Sale[]) => void;
   userRole?: UserRole;
   farmerCrops?: string[];
 }) {
@@ -313,31 +317,16 @@ export function HomeScreen({ onNavigate, onShop, onProfile, isOffline, userName 
           <PriceAlerts alerts={priceAlerts} onChange={onPriceAlerts} farmerCrops={farmerCrops} />
         )}
 
-        {/* 4 ── This month's spending, farmer only (the figures are farm
-            expenses; a buyer's spending lives with their purchases). */}
-        {!isBuyer && (
-          <button className="hm-card tint-gold hm-spend" onClick={() => onNavigate("expenses")}>
-            <span className="hm-ico"><Wallet size={20} strokeWidth={2.2} /></span>
-            <span className="hm-spend-copy">
-              <span className="hm-title">{t("home_spent_month")}</span>
-              <span className="hm-spend-val">₱{thisMonth.toLocaleString()}</span>
-              {/* Nothing yet: say so, rather than drawing a flat line. */}
-              {thisMonth === 0 && <span className="hm-sub">{t("home_spent_none")}</span>}
-              {thisMonth > 0 && vsLast !== null && (
-                // More spending is not "good", so this chip reads neutral
-                // grey rather than borrowing the price colours.
-                <span className="hm-spend-vs">
-                  {vsLast > 0 ? "▲" : vsLast < 0 ? "▼" : "•"} {Math.abs(vsLast)}% {t("home_vs_last")}
-                </span>
-              )}
-            </span>
-            {expenseTrend.some(v => v > 0) && (
-              <span className="hm-spend-chart" aria-hidden="true">
-                <Sparkline values={expenseTrend} width={96} height={44} tone="var(--gold-text)" />
-              </span>
-            )}
-            <ChevronRight size={18} className="pr-row-chev" aria-hidden="true" />
-          </button>
+        {/* 4 ── Earned, spent, and what is left. It replaces the card that
+            showed spending alone: a cost with nothing beside it is half the
+            story, and the net is the figure a farmer is actually after. */}
+        {!isBuyer && onSales && (
+          <ProfitSnapshot
+            sales={sales}
+            onChange={onSales}
+            plantings={plantings}
+            onOpenExpenses={() => onNavigate("expenses")}
+          />
         )}
 
         {/* 5 ── Advisory, farmer only: one card, two rows. */}

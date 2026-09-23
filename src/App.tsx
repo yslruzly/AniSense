@@ -28,6 +28,7 @@ import { WelcomeID, WelcomeInfo, makeMemberId } from "./components/WelcomeID";
 import { ViewerContext } from "./lib/viewer";
 import { PriceAlert, loadAlerts, saveAlerts } from "./lib/priceAlerts";
 import { Planting, loadPlantings, savePlantings } from "./lib/plantings";
+import { Sale, loadSales, saveSales } from "./lib/sales";
 
 // The bottom-nav destinations. Anything else is a page opened from one of them.
 const TABS: Screen[] = ["home", "market", "trade", "expenses", "profile"];
@@ -66,6 +67,13 @@ export default function App() {
   const alertsLoaded = useRef(false);
   useEffect(() => { loadAlerts().then(a => { setPriceAlerts(a); alertsLoaded.current = true; }); }, []);
   useEffect(() => { if (alertsLoaded.current) saveAlerts(priceAlerts); }, [priceAlerts]);
+
+  // What the farmer sold. The income half of the profit snapshot; the app
+  // has no other record of a farmer's earnings.
+  const [sales, setSales] = useState<Sale[]>([]);
+  const salesLoaded = useRef(false);
+  useEffect(() => { loadSales().then(s => { setSales(s); salesLoaded.current = true; }); }, []);
+  useEffect(() => { if (salesLoaded.current) saveSales(sales); }, [sales]);
 
   // What the farmer has in the ground. Same shape as the price targets:
   // read once at launch, written back on every change.
@@ -234,7 +242,7 @@ export default function App() {
 
   const renderScreen = () => {
     switch (active) {
-      case "home": return <HomeScreen onNavigate={navigate} onShop={openMarketplace} listings={listings} priceAlerts={priceAlerts} onPriceAlerts={setPriceAlerts} plantings={plantings} onPlantings={setPlantings} onProfile={openProfile} isOffline={isOffline} lastUpdated={lastUpdated} userName={userName} userInitials={initials} userRole={userRole} farmerCrops={farmerProfile.crops} />;
+      case "home": return <HomeScreen onNavigate={navigate} onShop={openMarketplace} listings={listings} priceAlerts={priceAlerts} onPriceAlerts={setPriceAlerts} plantings={plantings} onPlantings={setPlantings} sales={sales} onSales={setSales} onProfile={openProfile} isOffline={isOffline} lastUpdated={lastUpdated} userName={userName} userInitials={initials} userRole={userRole} farmerCrops={farmerProfile.crops} />;
       case "market": return <MarketScreen onProfile={openProfile} isOffline={isOffline} lastUpdated={lastUpdated} onBack={goHome} userInitials={initials} userRole={userRole} />;
       case "expenses": return <ExpensesScreen onProfile={openProfile} onBack={goHome} farmerCrops={farmerProfile.crops} userInitials={initials} isBuyer={userRole === "buyer"} buyerTransactions={BUYER_TRANSACTIONS} />;
       case "analytics": return <AnalyticsScreen onProfile={openProfile} onBack={goHome} userInitials={initials} farmerCrops={farmerProfile.crops} />;
