@@ -55,7 +55,7 @@ export function CropTracker({ plantings, onChange }: {
   };
 
   return (
-    <section className="hm-sec" aria-labelledby="ct-t">
+    <section className="hm-sec" aria-labelledby="ct-t" data-tour="tracker">
       <div className="hm-sec-row">
         <h2 className="hm-sec-title" id="ct-t">{t("ct_title")}</h2>
       </div>

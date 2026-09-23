@@ -598,6 +598,7 @@ export const translations: Dict = {
   prof_privacy_sub: { en: "Password, data settings", tl: "Password at datos" },
   prof_help: { en: "Help & Support", tl: "Tulong at Suporta" },
   prof_help_sub: { en: "FAQs, contact support", tl: "Mga FAQ at suporta" },
+  prof_help_sub_farmer: { en: "How to use AniSense, step by step", tl: "Paano gamitin ang AniSense, hakbang-hakbang" },
   prof_about: { en: "About", tl: "Tungkol Dito" },
   prof_version: { en: "Version 1.0.0", tl: "Bersyon 1.0.0" },
   prof_sign_out: { en: "Sign Out", tl: "Mag-sign Out" },
@@ -945,6 +946,154 @@ export const translations: Dict = {
   },
   state_retry: { en: "Try again", tl: "Subukan ulit" },
   state_loading_prices: { en: "Loading prices", tl: "Kinukuha ang presyo" },
+
+  // ── Guided tour, farmer ─────────────────────────────────────────
+  // Every line is read once, by someone holding the phone for the first time.
+  // Short sentences, the real button names, and nothing about the app that
+  // isn't about their farm.
+  tour_title: { en: "Quick tour", tl: "Mabilis na gabay" },
+  tour_step: { en: "Step {n} of {total}", tl: "Hakbang {n} sa {total}" },
+  tour_start: { en: "Start", tl: "Simulan" },
+  tour_next: { en: "Next", tl: "Susunod" },
+  tour_skip: { en: "Skip", tl: "Laktawan" },
+  tour_done: { en: "Done", tl: "Tapos na" },
+
+  tour_intro_t: { en: "Welcome to AniSense", tl: "Maligayang pagdating sa AniSense" },
+  tour_intro_b: {
+    en: "A quick look at your Home screen — nine short steps, about a minute. You can skip it now and open it again any time from More tools.",
+    tl: "Mabilis na pasyal sa Home mo — siyam na maikling hakbang, mga isang minuto. Puwede mong laktawan ngayon at buksan ulit kahit kailan sa Iba pang gamit.",
+  },
+  tour_harvest_t: { en: "What you are selling", tl: "Ang binebenta mo" },
+  tour_harvest_b: {
+    en: "Your listings and what they are worth today. The green button posts a new harvest — it goes straight to the Market, where buyers look.",
+    tl: "Ang mga nakalista mo at ang halaga nito ngayon. Ang berdeng buton ang nagpo-post ng bagong ani — diretso ito sa Merkado, kung saan tumitingin ang mga bumibili.",
+  },
+  tour_prices_t: { en: "Today's prices", tl: "Presyo ngayon" },
+  tour_prices_b: {
+    en: "The farmgate price of the crops you grow, and whether it rose or fell. Tap one to see its last seven days.",
+    tl: "Ang presyo sa bukid ng mga tinatanim mo, at kung tumaas o bumaba. Pindutin ang isa para makita ang huling pitong araw.",
+  },
+  tour_forecast_t: { en: "Sell, hold, or wait", tl: "Ibenta, itago, o maghintay" },
+  tour_forecast_b: {
+    en: "What the model expects the price to do next, and what it suggests you do about it. Treat it as advice, not a promise.",
+    tl: "Ang inaasahan ng modelo sa presyo, at ang mungkahi nito sa iyo. Gabay lang ito, hindi katiyakan.",
+  },
+  tour_tracker_t: { en: "What is in the ground", tl: "Ang nakatanim mo" },
+  tour_tracker_b: {
+    en: "Add the day you planted and the app counts for you: \u201Crice, day 62 of 110\u201D. You never have to work out the date again.",
+    tl: "Ilagay ang araw ng pagtatanim at ito na ang bibilang: \u201Cpalay, ika-62 araw sa 110\u201D. Hindi mo na kailangang bilangin ang petsa.",
+  },
+  tour_alerts_t: { en: "Tell it your price", tl: "Sabihin ang presyo mo" },
+  tour_alerts_b: {
+    en: "Waiting for calamansi to reach ₱170? Set it here and the app tells you the day the market gets there.",
+    tl: "Hinihintay mong umabot sa ₱170 ang kalamansi? Ilagay dito at sasabihin ng app kung kailan ito naabot ng merkado.",
+  },
+  tour_profit_t: { en: "Earned, spent, left over", tl: "Kita, gastos, natira" },
+  tour_profit_b: {
+    en: "Record each sale here. With your expenses it shows what you actually kept this month or this season.",
+    tl: "Itala ang bawat benta dito. Kasama ang mga gastos, makikita mo kung magkano talaga ang natira ngayong buwan o anihan.",
+  },
+  tour_tools_t: { en: "More tools", tl: "Iba pang gamit" },
+  tour_tools_b: {
+    en: "Weather before you spray or dry palay, Analytics for the longer view, and this guide whenever you need it again.",
+    tl: "Panahon bago mag-spray o magbilad ng palay, Analytics para sa mas malawak na tanaw, at ang gabay na ito kahit kailan.",
+  },
+  tour_nav_t: { en: "The five tabs", tl: "Ang limang tab" },
+  tour_nav_b: {
+    en: "Home, Prices, Market, Expenses, Profile. Everything in AniSense is one tap from this bar.",
+    tl: "Home, Presyo, Merkado, Gastos, Profile. Isang pindot lang ang lahat mula sa bar na ito.",
+  },
+  tour_done_t: { en: "That's everything", tl: "Ayan na ang lahat" },
+  tour_done_b: {
+    en: "Open this again whenever you like: More tools → How to use AniSense. It has step-by-step instructions for each job as well.",
+    tl: "Buksan ulit ito kahit kailan: Iba pang gamit → Paano gamitin ang AniSense. May hakbang-hakbang din doon sa bawat gawain.",
+  },
+
+  // ── The guide page ─────────────────────────────────────────────
+  gd_title: { en: "How to use AniSense", tl: "Paano gamitin ang AniSense" },
+  gd_sub: { en: "Step by step", tl: "Hakbang-hakbang" },
+  gd_replay_t: { en: "Take the tour again", tl: "Ulitin ang gabay" },
+  gd_replay_s: {
+    en: "The same walkthrough the app ran the first time you opened it. About a minute.",
+    tl: "Ang parehong gabay noong una mong binuksan ang app. Mga isang minuto.",
+  },
+  gd_replay_btn: { en: "Start the tour", tl: "Simulan ang gabay" },
+  gd_topics: { en: "What do you want to do?", tl: "Ano ang gusto mong gawin?" },
+  gd_foot: {
+    en: "AniSense v1.0.0 · Ani mo, alam mo.",
+    tl: "AniSense v1.0.0 · Ani mo, alam mo.",
+  },
+
+  gd_post_t: { en: "Post a harvest for sale", tl: "Mag-post ng ani para ibenta" },
+  gd_post_s: { en: "From your Home to the Market", tl: "Mula sa Home papunta sa Merkado" },
+  gd_post_1: { en: "On Home, go to Your harvest — the first card on the page.", tl: "Sa Home, pumunta sa Ang ani mo — ang unang card sa pahina." },
+  gd_post_2: { en: "Tap Post a harvest. The Market opens with the form ready.", tl: "Pindutin ang Mag-post ng ani. Bubukas ang Merkado kasama ang form." },
+  gd_post_3: { en: "Choose the kind of crop, then the variety — Rice, then Well Milled, for example.", tl: "Piliin ang uri ng pananim, tapos ang klase — halimbawa Bigas, tapos Well Milled." },
+  gd_post_4: { en: "Fill in the price per kilo, how many kilos, a short description, and where you are.", tl: "Ilagay ang presyo kada kilo, ilang kilo, maikling paglalarawan, at kung saan ka." },
+  gd_post_5: { en: "Tap Post Now! Your listing appears in the Market immediately, and on your own Home under Your harvest.", tl: "Pindutin ang I-post Na! Agad itong lalabas sa Merkado, at sa sarili mong Home sa ilalim ng Ang ani mo." },
+  gd_post_note: {
+    en: "Add a photo of the actual harvest if you can. A listing with a real photo is the one a buyer opens first.",
+    tl: "Maglagay ng litrato ng totoong ani kung kaya. Ang listing na may litrato ang unang binubuksan ng bumibili.",
+  },
+
+  gd_alerts_t: { en: "Set a price alert", tl: "Maglagay ng abiso sa presyo" },
+  gd_alerts_s: { en: "Be told when your price arrives", tl: "Malaman kung kailan dumating ang presyo mo" },
+  gd_alerts_1: { en: "On Home, scroll down to Price alerts.", tl: "Sa Home, mag-scroll pababa sa Abiso sa presyo." },
+  gd_alerts_2: { en: "Tap Add a price alert.", tl: "Pindutin ang Magdagdag ng abiso." },
+  gd_alerts_3: { en: "Choose the crop, then set the price you are waiting for with the − and + buttons.", tl: "Piliin ang pananim, tapos itakda ang hinihintay mong presyo gamit ang − at +." },
+  gd_alerts_4: { en: "Save it. When the market reaches that price, the alert waits for you under the bell at the top of the screen.", tl: "I-save. Kapag inabot ng merkado ang presyong iyon, naghihintay ang abiso sa ilalim ng kampana sa itaas ng screen." },
+
+  gd_tracker_t: { en: "Track what you planted", tl: "Subaybayan ang itinanim mo" },
+  gd_tracker_s: { en: "The app counts the days for you", tl: "Ang app na ang bibilang ng araw" },
+  gd_tracker_1: { en: "On Home, find In the ground.", tl: "Sa Home, hanapin ang Nakatanim ngayon." },
+  gd_tracker_2: { en: "Tap Add a planting.", tl: "Pindutin ang Magdagdag ng tanim." },
+  gd_tracker_3: { en: "Choose the crop and the day you planted it. The usual days to harvest are filled in for you — change them with − and + if your variety is different.", tl: "Piliin ang pananim at ang araw ng pagtatanim. Nakalagay na ang karaniwang bilang ng araw bago mag-ani — baguhin gamit ang − at + kung iba ang klase mo." },
+  gd_tracker_4: { en: "Save. From then on the card counts on its own, and the bell tells you the week your harvest is due.", tl: "I-save. Mula noon, mag-isa nang bibilang ang card, at sasabihin ng kampana kung anong linggo dapat anihin." },
+
+  gd_sale_t: { en: "Record a sale", tl: "Itala ang isang benta" },
+  gd_sale_s: { en: "So the net figure is true", tl: "Para totoo ang natirang halaga" },
+  gd_sale_1: { en: "On Home, go to Earned and spent.", tl: "Sa Home, pumunta sa Kita at gastos." },
+  gd_sale_2: { en: "Tap Record a sale.", tl: "Pindutin ang Itala ang benta." },
+  gd_sale_3: { en: "Choose the crop, the kilos you sold, and the price you were paid.", tl: "Piliin ang pananim, ang kilong naibenta, at ang presyong ibinayad sa iyo." },
+  gd_sale_4: { en: "Save. The green figure is what came in; the one under it is what is left after your expenses.", tl: "I-save. Ang berdeng halaga ang pumasok; ang nasa ilalim nito ang natira pagkatapos ng gastos." },
+  gd_sale_note: {
+    en: "Record the small sales too. The net figure is only as honest as what you put into it.",
+    tl: "Itala rin ang maliliit na benta. Kasingtotoo lang ng inilagay mo ang halagang lalabas.",
+  },
+
+  gd_prices_t: { en: "Read today's prices", tl: "Basahin ang presyo ngayon" },
+  gd_prices_s: { en: "Seven days back, three days forward", tl: "Pitong araw pabalik, tatlong araw pasulong" },
+  gd_prices_1: { en: "Tap Prices in the bar at the bottom.", tl: "Pindutin ang Presyo sa bar sa ibaba." },
+  gd_prices_2: { en: "The dark card at the top says how many crops went up today.", tl: "Sinasabi ng maitim na card sa itaas kung ilang pananim ang tumaas ngayon." },
+  gd_prices_3: { en: "Search for a crop, or tap one in the list.", tl: "Maghanap ng pananim, o pindutin ang isa sa listahan." },
+  gd_prices_4: { en: "Inside you get the last seven days and the next three as the model expects them.", tl: "Sa loob makikita mo ang huling pitong araw at ang susunod na tatlo ayon sa modelo." },
+  gd_prices_note: {
+    en: "A forecast is a guide, not a guarantee. Weigh it against what traders are actually paying you this week.",
+    tl: "Ang hula ay gabay, hindi garantiya. Timbangin ito sa aktuwal na binabayad sa iyo ngayong linggo.",
+  },
+
+  gd_expenses_t: { en: "Keep your costs", tl: "Itala ang mga gastos" },
+  gd_expenses_s: { en: "Seeds, fertiliser, labour, fuel", tl: "Binhi, abono, trabaho, gasolina" },
+  gd_expenses_1: { en: "Tap Expenses in the bar at the bottom.", tl: "Pindutin ang Gastos sa bar sa ibaba." },
+  gd_expenses_2: { en: "Tap + Add Expense, then choose what it was for, the amount, and the crop.", tl: "Pindutin ang + Magdagdag ng Gastos, tapos piliin kung para saan, ang halaga, at ang pananim." },
+  gd_expenses_3: { en: "The total at the top is this month against last month; the tabs break it down by crop and by month.", tl: "Ang kabuuan sa itaas ay ngayong buwan kumpara noong nakaraan; hinahati ito ng mga tab ayon sa pananim at buwan." },
+
+  gd_weather_t: { en: "Check the weather", tl: "Tingnan ang panahon" },
+  gd_weather_s: { en: "Before you spray or dry palay", tl: "Bago mag-spray o magbilad ng palay" },
+  gd_weather_1: { en: "On Home, open More tools, then Weather.", tl: "Sa Home, buksan ang Iba pang gamit, tapos Panahon." },
+  gd_weather_2: { en: "You get the next hours and the rest of the week for your own town.", tl: "Makikita mo ang susunod na oras at ang natitirang linggo para sa bayan mo." },
+  gd_weather_3: { en: "The advisory card on Home is the short version: when it is a poor week to spray, or to dry palay outside.", tl: "Ang payo sa Home ang maikling bersyon: kung hindi magandang linggo para mag-spray, o magbilad ng palay sa labas." },
+
+  gd_profile_t: { en: "Your profile and ID", tl: "Ang profile at ID mo" },
+  gd_profile_s: { en: "How buyers reach you", tl: "Paano ka maaabot ng mga bumibili" },
+  gd_profile_1: { en: "Tap Profile in the bar at the bottom.", tl: "Pindutin ang Profile sa bar sa ibaba." },
+  gd_profile_2: { en: "Tap Edit to correct your phone number — that is the number a buyer calls when they want your harvest.", tl: "Pindutin ang I-edit para itama ang numero mo — iyan ang tinatawagan ng bumibili kapag gusto nila ang ani mo." },
+  gd_profile_3: { en: "Show Member ID opens your AniSense card. You can save it to your phone.", tl: "Binubuksan ng Ipakita ang Member ID ang card mo sa AniSense. Puwede mo itong i-save sa telepono." },
+  gd_profile_4: { en: "Language switches the whole app between English and Tagalog. Nothing is lost when you switch.", tl: "Pinapalitan ng Wika ang buong app sa Ingles o Tagalog. Walang mawawala kapag nagpalit ka." },
+
+  // The guide's own tile in More tools.
+  home_mod_guide: { en: "How to use", tl: "Paano gamitin" },
+  home_mod_guide_desc: { en: "A step-by-step guide", tl: "Gabay hakbang-hakbang" },
 };
 
 // ── Data-name labels (crop groups, expense categories) ───────────────────────

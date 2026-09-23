@@ -66,7 +66,7 @@ export function PriceAlerts({ alerts, onChange, farmerCrops }: {
   const nudge = (by: number) => setTarget(v => Math.max(1, v + by));
 
   return (
-    <section className="hm-sec" aria-labelledby="pa-t">
+    <section className="hm-sec" aria-labelledby="pa-t" data-tour="alerts">
       <div className="hm-sec-row">
         <h2 className="hm-sec-title" id="pa-t">{t("pa_title")}</h2>
       </div>

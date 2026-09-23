@@ -44,10 +44,18 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
   const save = () => { setProfile({ ...draft }); setEditing(false); };
   const cancel = () => { setDraft({ ...profile }); setEditing(false); };
 
+  // A farmer's help row opens the guide. It used to be a chevron pointing at
+  // nothing, which is the worst kind of button: it teaches people that the
+  // arrows in this app are decoration.
+  const isFarmer = userRole !== "buyer";
   const supportSettings = [
-    { ico: <Lock size={16} color="var(--text-soft)" />, bg: "var(--paper-alt)", label: t("prof_privacy"), sub: t("prof_privacy_sub") },
-    { ico: <HelpCircle size={16} color="var(--tanim)" />, bg: "var(--tanim-sk)", label: t("prof_help"), sub: t("prof_help_sub") },
-    { ico: <Settings size={16} color="var(--ink-2)" />, bg: "var(--paper-alt)", label: t("prof_about"), sub: t("prof_version") },
+    { ico: <Lock size={16} color="var(--text-soft)" />, bg: "var(--paper-alt)", label: t("prof_privacy"), sub: t("prof_privacy_sub"), go: undefined as (() => void) | undefined },
+    {
+      ico: <HelpCircle size={16} color="var(--tanim)" />, bg: "var(--tanim-sk)",
+      label: t("prof_help"), sub: t(isFarmer ? "prof_help_sub_farmer" : "prof_help_sub"),
+      go: isFarmer ? () => onNavigate("guide") : undefined,
+    },
+    { ico: <Settings size={16} color="var(--ink-2)" />, bg: "var(--paper-alt)", label: t("prof_about"), sub: t("prof_version"), go: undefined as (() => void) | undefined },
   ];
 
   const contactFields = [
@@ -245,16 +253,21 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
 
             <div className="card">
               {head("tint-violet", <LifeBuoy size={20} strokeWidth={2.2} />, t("prof_support"))}
-              {supportSettings.map(s => (
-                <div key={s.label} className="setting-row">
-                  <div className="setting-ico" style={{ background: s.bg }}>{s.ico}</div>
-                  <div style={{ flex: 1 }}>
-                    <div className="setting-lbl">{s.label}</div>
-                    <div className="setting-sub">{s.sub}</div>
-                  </div>
-                  <ChevronRight size={16} color="var(--line-strong)" />
-                </div>
-              ))}
+              {supportSettings.map(s => {
+                const body = (
+                  <>
+                    <div className="setting-ico" style={{ background: s.bg }}>{s.ico}</div>
+                    <div style={{ flex: 1 }}>
+                      <div className="setting-lbl">{s.label}</div>
+                      <div className="setting-sub">{s.sub}</div>
+                    </div>
+                    <ChevronRight size={16} color="var(--line-strong)" />
+                  </>
+                );
+                return s.go
+                  ? <button key={s.label} className="setting-row as-btn" onClick={s.go}>{body}</button>
+                  : <div key={s.label} className="setting-row">{body}</div>;
+              })}
             </div>
 
             <button className="signout-btn" onClick={onSignOut} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>

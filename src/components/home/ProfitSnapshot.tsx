@@ -68,7 +68,7 @@ export function ProfitSnapshot({ sales, onChange, plantings, onOpenExpenses }: {
   };
 
   return (
-    <section className="hm-sec" aria-labelledby="ps-t">
+    <section className="hm-sec" aria-labelledby="ps-t" data-tour="profit">
       <div className="hm-sec-row">
         <h2 className="hm-sec-title" id="ps-t">{t("ps_title")}</h2>
         {/* Only offered when a season has a start date to mean. */}

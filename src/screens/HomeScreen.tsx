@@ -1,4 +1,4 @@
-import { CloudSun, CloudMoon, BarChart2, CheckCircle, AlertTriangle, Bot, ChevronRight, ArrowUpRight, ArrowDownRight, ArrowRight, Sprout, Wallet, Megaphone, Store, Tag, MapPin, Search } from "lucide-react";
+import { CloudSun, CloudMoon, BarChart2, BookOpen, CheckCircle, AlertTriangle, Bot, ChevronRight, ArrowUpRight, ArrowDownRight, ArrowRight, Sprout, Wallet, Megaphone, Store, Tag, MapPin, Search } from "lucide-react";
 import { useLang } from "../i18n";
 import { Screen, UserRole, TradeIntent, Listing } from "../types";
 import { ShopByCrop, FeaturedProducts, FeaturedFarmers, YourPurchases, PriceMoves } from "../components/home/BuyerHome";
@@ -211,7 +211,7 @@ export function HomeScreen({ onNavigate, onShop, onProfile, isOffline, userName 
         {/* 2 ── Your crops today, farmer only. A short vertical list: no
             swiping to find your own crop among twenty. */}
         {!isBuyer && (
-        <section className="hm-card tint-green">
+        <section className="hm-card tint-green" data-tour="prices">
           <div className="hm-card-head">
             {/* Each card carries one accent, and the accent means something:
                 green for what grows, gold for money, blue for the sky,
@@ -312,7 +312,7 @@ export function HomeScreen({ onNavigate, onShop, onProfile, isOffline, userName 
         {/* Heading for the two model cards. Farmer-only like the cards it
             introduces, or a buyer would get a heading over nothing. */}
         {userRole !== "buyer" && (
-          <div className="ai-reco-head">
+          <div className="ai-reco-head" data-tour="forecast">
             <Bot size={22} color="#fff" strokeWidth={2.2} />
             <span>{t("home_ai_recos")}</span>
           </div>
@@ -378,7 +378,7 @@ export function HomeScreen({ onNavigate, onShop, onProfile, isOffline, userName 
             both: a buyer drives out to collect what they buy, so rain is
             their business too — it is just not their headline. Analytics
             forecasts a farm's own crops, so it stays with the farmer. */}
-        <section>
+        <section data-tour="tools">
           <h2 className="hm-title hm-out">{t("home_tools")}</h2>
           <div className={`hm-tools${isBuyer ? " one" : ""}`}>
             <button className="hm-tool tint-blue" onClick={() => onNavigate("weather")}>
@@ -391,6 +391,13 @@ export function HomeScreen({ onNavigate, onShop, onProfile, isOffline, userName 
                 <span className="hm-tool-ico an"><BarChart2 size={24} /></span>
                 <span className="hm-tool-t">{t("home_mod_analytics")}</span>
                 <span className="hm-tool-s">{t("home_mod_analytics_desc")}</span>
+              </button>
+            )}
+            {!isBuyer && (
+              <button className="hm-tool wide" onClick={() => onNavigate("guide")}>
+                <span className="hm-tool-ico gd"><BookOpen size={24} /></span>
+                <span className="hm-tool-t">{t("home_mod_guide")}</span>
+                <span className="hm-tool-s">{t("home_mod_guide_desc")}</span>
               </button>
             )}
           </div>

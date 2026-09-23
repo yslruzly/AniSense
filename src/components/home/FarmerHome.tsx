@@ -32,7 +32,7 @@ export function YourHarvest({ listings, userInitials, onPost, onOpenMarket }: {
   const kilos = mine.reduce((sum, l) => sum + l.kg, 0);
 
   return (
-    <section className="hm-sec" aria-labelledby="fh-t">
+    <section className="hm-sec" aria-labelledby="fh-t" data-tour="harvest">
       <div className="hm-sec-row">
         <h2 className="hm-sec-title" id="fh-t">{t("fh_title")}</h2>
         {mine.length > 0 && (

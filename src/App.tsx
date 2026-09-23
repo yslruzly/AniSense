@@ -10,6 +10,7 @@ import { appCss } from "./styles/appStyles";
 import { pickerCss } from "./styles/pickerStyles";
 import { sheetCss } from "./styles/sheetStyles";
 import { buttonCss } from "./styles/buttonStyles";
+import { tourCss } from "./styles/tourStyles";
 import { BUYER_TRANSACTIONS } from "./data/expenses";
 import { LISTINGS } from "./data/marketplace";
 import { BottomNav } from "./components/layout/BottomNav";
@@ -23,8 +24,11 @@ import { ExpensesScreen } from "./screens/ExpensesScreen";
 import { AnalyticsScreen } from "./screens/AnalyticsScreen";
 import { TradeScreen } from "./screens/TradeScreen";
 import { WeatherScreen } from "./screens/WeatherScreen";
+import { GuideScreen } from "./screens/GuideScreen";
 import { ProfileScreen } from "./screens/ProfileScreen";
 import { WelcomeID, WelcomeInfo, makeMemberId } from "./components/WelcomeID";
+import { Tour } from "./components/tour/Tour";
+import { loadTourSeen, saveTourSeen } from "./lib/tour";
 import { ViewerContext } from "./lib/viewer";
 import { PriceAlert, loadAlerts, saveAlerts } from "./lib/priceAlerts";
 import { Planting, loadPlantings, savePlantings } from "./lib/plantings";
@@ -81,6 +85,27 @@ export default function App() {
   const plantingsLoaded = useRef(false);
   useEffect(() => { loadPlantings().then(p => { setPlantings(p); plantingsLoaded.current = true; }); }, []);
   useEffect(() => { if (plantingsLoaded.current) savePlantings(plantings); }, [plantings]);
+
+  // ── The guided tour ──
+  // Runs once per phone, for farmers, on the first Home they land on. It is
+  // held back until the welcome ID is out of the way, because two things
+  // introducing themselves at once is neither of them being read.
+  const [tourOpen, setTourOpen] = useState(false);
+  const [tourPending, setTourPending] = useState(false);
+  const tourChecked = useRef(false);
+  useEffect(() => {
+    if (!isAuthed || userRole !== "farmer" || tourChecked.current) return;
+    tourChecked.current = true;
+    loadTourSeen().then(seen => { if (!seen) setTourPending(true); });
+  }, [isAuthed, userRole]);
+  useEffect(() => {
+    if (!tourPending || showWelcome || active !== "home") return;
+    // Home's own entrance runs first; the spotlight lands on a page that has
+    // finished arriving rather than on one still sliding into place.
+    const id = setTimeout(() => { setTourPending(false); setTourOpen(true); }, 520);
+    return () => clearTimeout(id);
+  }, [tourPending, showWelcome, active]);
+  const endTour = () => { setTourOpen(false); void saveTourSeen(); };
 
   // The marketplace listings live here, not inside the marketplace screen.
   // That screen is unmounted whenever the farmer changes tab, so a harvest
@@ -247,6 +272,7 @@ export default function App() {
       case "expenses": return <ExpensesScreen onProfile={openProfile} onBack={goHome} farmerCrops={farmerProfile.crops} userInitials={initials} isBuyer={userRole === "buyer"} buyerTransactions={BUYER_TRANSACTIONS} />;
       case "analytics": return <AnalyticsScreen onProfile={openProfile} onBack={goHome} userInitials={initials} farmerCrops={farmerProfile.crops} />;
       case "trade": return <TradeScreen onProfile={openProfile} onBack={goHome} userName={userName} userInitials={initials} userRole={userRole} intent={tradeIntent ?? undefined} listings={listings} setListings={setListings} />;
+      case "guide": return <GuideScreen onBack={goHome} onReplay={() => { navigate("home"); setTourPending(true); }} />;
       case "weather": return <WeatherScreen onProfile={openProfile} onBack={goHome} userInitials={initials} userRole={userRole} />;
       case "profile": return <ProfileScreen onNavigate={navigate} onBack={goBack} profile={farmerProfile} setProfile={setFarmerProfile} onSignOut={handleSignOut} userInitials={initials} userRole={userRole} userPhoto={userPhoto} onShowId={() => { setIdMode("view"); setShowWelcome(true); }} />;
     }
@@ -259,6 +285,7 @@ export default function App() {
       <style>{sheetCss}</style>
       <style>{pickerCss}</style>
       <style>{buttonCss}</style>
+      <style>{tourCss}</style>
       <ViewerContext.Provider value={{ role: userRole, location: farmerProfile.location, priceAlerts, plantings }}>
       <div className="outer">
         <div className="shell" data-nav={nav} data-revisit={revisit || undefined}>
@@ -276,6 +303,8 @@ export default function App() {
             photo={userPhoto}
             onPhoto={setUserPhoto}
           />
+          {/* Last inside the shell, so it covers the tab bar and the ID. */}
+          <Tour open={tourOpen} onFinish={endTour} />
         </div>
       </div>
       </ViewerContext.Provider>

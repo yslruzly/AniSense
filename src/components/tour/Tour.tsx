@@ -1,0 +1,241 @@
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight, Check, Sprout } from "lucide-react";
+import { useLang } from "../../i18n";
+import { haptic } from "../../lib/platform";
+import { useHardwareBack } from "../../hooks/useHardwareBack";
+import { usePresence } from "../../hooks/usePresence";
+
+// ─── Guided tour ──────────────────────────────────────────────────────────────
+// The first minute of a farmer's first launch. The screen dims, one real
+// thing on Home is lit, and a card under it says what that thing is for.
+//
+// It points at the app itself rather than at drawings of it: every step
+// resolves a live element by `data-tour`, scrolls it to the middle of the
+// screen and measures where it landed. So the tour cannot drift out of date
+// as the page changes, and a farmer is looking at the button they will press
+// a moment later, in the place they will press it.
+//
+// The hole is a plain div with an enormous shadow spread — no SVG mask, no
+// clip-path — which works in every WebView an old phone might carry. It also
+// means moving between steps is a transition on top/left/width/height: the
+// light glides to the next card, so the eye follows instead of re-finding it.
+
+type Step = {
+  id: string;
+  /** Live selectors to light up. The hole is the union of their rectangles.
+   *  Absent → a plain card in the middle, for the opening and the closing. */
+  targets?: string[];
+};
+
+// Farmers only, and everything on one screen: Home. A tour that changes tabs
+// underneath the person taking it is a tour they cannot retrace afterwards.
+const STEPS: Step[] = [
+  { id: "intro" },
+  { id: "harvest", targets: ['[data-tour="harvest"]'] },
+  { id: "prices", targets: ['[data-tour="prices"]'] },
+  // The heading and the card under it: one light over the pair, because the
+  // heading alone explains nothing and the card alone looks unannounced.
+  { id: "forecast", targets: ['[data-tour="forecast"]', ".adv-card"] },
+  { id: "tracker", targets: ['[data-tour="tracker"]'] },
+  { id: "alerts", targets: ['[data-tour="alerts"]'] },
+  { id: "profit", targets: ['[data-tour="profit"]'] },
+  { id: "tools", targets: ['[data-tour="tools"]'] },
+  { id: "nav", targets: ['[data-tour="nav"]'] },
+  { id: "done" },
+];
+
+type Box = { top: number; left: number; width: number; height: number };
+
+const PAD = 8;          // breathing room around the lit element
+const GAP = 14;         // between the hole and the card
+const EDGE = 12;        // the card never touches the screen edge
+const near = (a: number, b: number) => Math.abs(a - b) < 0.5;
+
+/** The union of the targets' rectangles, in the shell's own coordinates. */
+function measure(targets: string[] | undefined, host: DOMRect): Box | null {
+  if (!targets?.length) return null;
+  let top = Infinity, left = Infinity, right = -Infinity, bottom = -Infinity;
+  for (const sel of targets) {
+    const el = document.querySelector(sel);
+    if (!el) continue;
+    const r = el.getBoundingClientRect();
+    if (r.width === 0 && r.height === 0) continue;
+    top = Math.min(top, r.top); left = Math.min(left, r.left);
+    right = Math.max(right, r.right); bottom = Math.max(bottom, r.bottom);
+  }
+  if (top === Infinity) return null;
+  return {
+    top: top - host.top - PAD,
+    left: left - host.left - PAD,
+    width: right - left + PAD * 2,
+    height: bottom - top + PAD * 2,
+  };
+}
+
+export function Tour({ open, onFinish }: { open: boolean; onFinish: () => void }) {
+  const { t } = useLang();
+  const [i, setI] = useState(0);
+  // Mounted for the length of its exit, so the tour fades out instead of
+  // being deleted from under the last thing the farmer read.
+  const { mounted, visible } = usePresence(open, 160);
+  const host = useRef<HTMLDivElement>(null);
+  const card = useRef<HTMLDivElement>(null);
+  const [box, setBox] = useState<Box | null>(null);
+  const [cardH, setCardH] = useState(200);
+  const [shellH, setShellH] = useState(844);
+  const step = STEPS[i];
+  const last = i === STEPS.length - 1;
+
+  // Every run starts at the beginning, including a replay from the guide.
+  useEffect(() => { if (open) setI(0); }, [open]);
+
+  // Where the light goes, and when. Scroll events are what drive it: while
+  // the page glides to the next card the container reports every frame of it,
+  // so the hole arrives with the card rather than after it. The timers cover
+  // what scrolling does not — a photo that loads late and pushes the page
+  // down, a card that grows when its content arrives.
+  const place = React.useCallback(() => {
+    const h = host.current?.getBoundingClientRect();
+    if (!h) return;
+    setShellH(prev => (near(prev, h.height) ? prev : h.height));
+    const next = measure(step.targets, h);
+    // A step whose element has gone missing keeps the last light rather than
+    // dropping the farmer into a dark screen; the fallback below handles the
+    // case where it never turns up at all.
+    if (!next) return;
+    setBox(prev => (
+      prev && near(prev.top, next.top) && near(prev.left, next.left)
+        && near(prev.width, next.width) && near(prev.height, next.height) ? prev : next
+    ));
+  }, [step.targets]);
+
+  useEffect(() => {
+    if (!open) return;
+    const sel = step.targets?.[0];
+    if (!sel) { setBox(null); return; }
+
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const el = document.querySelector(sel);
+    el?.scrollIntoView({ block: "center", behavior: reduce ? "auto" : "smooth" });
+
+    const scroller = el?.closest(".scroll");
+    scroller?.addEventListener("scroll", place, { passive: true });
+    window.addEventListener("resize", place);
+    const ro = el ? new ResizeObserver(place) : null;
+    if (el) ro?.observe(el);
+    // Through the scroll and a little past it, then one last look: if the
+    // step's element is nowhere, the card drops to the middle of a plain
+    // dimmed screen instead of lighting the wrong thing.
+    const ids = [0, 60, 140, 260, 400, 560, 760, 1000].map(ms => window.setTimeout(place, ms));
+    ids.push(window.setTimeout(() => { if (!document.querySelector(sel)) setBox(null); }, 1100));
+
+    return () => {
+      ids.forEach(clearTimeout);
+      scroller?.removeEventListener("scroll", place);
+      window.removeEventListener("resize", place);
+      ro?.disconnect();
+    };
+  }, [open, i, step.targets, place]);
+
+  // The card is measured, not guessed: the copy is two lines in English and
+  // often three in Filipino, and the difference decides which side it sits on.
+  useLayoutEffect(() => {
+    if (open && card.current) setCardH(card.current.offsetHeight);
+  }, [open, i, box]);
+
+  // Leaving hands the page back the way it was found. The tour scrolls Home
+  // to its foot; without this, a farmer's first act in the app would be to
+  // scroll back up from a page they never scrolled down.
+  const end = () => {
+    haptic.select();
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    document.querySelector(".scroll")?.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+    onFinish();
+  };
+  const go = (n: number) => {
+    haptic.select();
+    if (n < 0) { onFinish(); return; }
+    if (n >= STEPS.length) { onFinish(); return; }
+    setI(n);
+  };
+
+  // Back steps back rather than leaving: the phone's own gesture should undo
+  // the last thing that happened, which here is a step, not the whole tour.
+  useHardwareBack(() => { if (i > 0) { setI(i - 1); } else { onFinish(); } return true; }, open);
+
+  if (!mounted) return null;
+
+  // Under the hole if it fits, over it if not, and pinned to the bottom when
+  // the lit thing is too tall for either — the card is never off-screen.
+  let cardTop: number;
+  if (!box) {
+    cardTop = Math.max(EDGE, (shellH - cardH) / 2);
+  } else if (box.top + box.height + GAP + cardH + EDGE <= shellH) {
+    cardTop = box.top + box.height + GAP;
+  } else if (box.top - GAP - cardH >= EDGE) {
+    cardTop = box.top - GAP - cardH;
+  } else {
+    cardTop = shellH - cardH - EDGE;
+  }
+  // Whatever the arithmetic said, the card stays on the screen. A target that
+  // has not finished scrolling into view would otherwise take the card with
+  // it, and a farmer would be looking at a dimmed page with no way forward.
+  cardTop = Math.max(EDGE, Math.min(cardTop, shellH - cardH - EDGE));
+
+  return (
+    <div className="tour" ref={host} data-open={visible || undefined} role="dialog" aria-modal="true" aria-label={t("tour_title")}>
+      {/* The dimmer. With a hole it is that element's shadow, so the two can
+          never come apart; without one it is a plain sheet of the same ink.
+          It travels on a transform rather than on `top`/`left`: the light
+          crossing the screen is the one moment of this interface that has to
+          stay at sixty frames on a five-year-old phone. */}
+      {box ? (
+        <div
+          className="tour-hole"
+          style={{ transform: `translate3d(${box.left}px, ${box.top}px, 0)`, width: box.width, height: box.height }}
+        />
+      ) : (
+        <div className="tour-scrim" />
+      )}
+
+      {/* Two elements, two jobs: the outer one carries the step's position,
+          the inner one its entrance. Neither has to undo the other. */}
+      <div className="tour-pos" style={{ transform: `translateY(${cardTop}px)` }}>
+      <div className="tour-card" ref={card}>
+        {!box && <span className="tour-mark"><Sprout size={26} strokeWidth={2.2} /></span>}
+        <h2 className="tour-t">{t(`tour_${step.id}_t`)}</h2>
+        <p className="tour-b">{t(`tour_${step.id}_b`)}</p>
+
+        <div className="tour-foot">
+          {/* Where you are, twice: dots to glance at, a count to read. */}
+          <span className="tour-dots" aria-hidden="true">
+            {STEPS.map((s, n) => <span key={s.id} className={`tour-dot ${n === i ? "on" : ""} ${n < i ? "done" : ""}`} />)}
+          </span>
+          <span className="tour-count">{t("tour_step").replace("{n}", String(i + 1)).replace("{total}", String(STEPS.length))}</span>
+        </div>
+
+        <div className="tour-btns">
+          {last ? (
+            <button className="tour-next wide" onClick={end}>
+              <Check size={19} strokeWidth={2.8} /> {t("tour_done")}
+            </button>
+          ) : (
+            <>
+              <button className="tour-skip" onClick={end}>{t("tour_skip")}</button>
+              {i > 0 && (
+                <button className="tour-back" onClick={() => go(i - 1)} aria-label={t("back")}>
+                  <ChevronLeft size={20} strokeWidth={2.6} />
+                </button>
+              )}
+              <button className="tour-next" onClick={() => go(i + 1)}>
+                {i === 0 ? t("tour_start") : t("tour_next")}
+                <ChevronRight size={19} strokeWidth={2.8} />
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+      </div>
+    </div>
+  );
+}
