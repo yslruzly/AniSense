@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { usePresence } from "../../hooks/usePresence";
 import { useHardwareBack } from "../../hooks/useHardwareBack";
 
@@ -77,7 +78,17 @@ export function Sheet({
 
   if (!mounted) return null;
 
-  return (
+  // Sheets render into the shell, not where they were written. A sheet
+  // declared inside a scrolling section would otherwise be clipped by it and
+  // slide up *behind* the floating tab bar, which is what happened to the
+  // first sheet that lived inside a Home card. From the shell it covers the
+  // whole phone, above the bar, wherever the code that opened it sits.
+  const host = typeof document === "undefined"
+    ? null
+    : document.querySelector(".shell") ?? document.querySelector(".auth-shell") ?? document.body;
+  if (!host) return null;
+
+  return createPortal(
     <div
       className={`shm-scrim shm-${variant}`}
       data-open={visible}
@@ -95,6 +106,7 @@ export function Sheet({
       >
         {children}
       </div>
-    </div>
+    </div>,
+    host,
   );
 }
