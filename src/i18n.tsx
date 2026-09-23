@@ -138,6 +138,7 @@ export const translations: Dict = {
   nav_market: { en: "Prices", tl: "Presyo" },
   nav_trade: { en: "Market", tl: "Merkado" },
   nav_expenses: { en: "Expenses", tl: "Gastos" },
+  nav_orders: { en: "Orders", tl: "Mga Order" },
   nav_profile: { en: "Profile", tl: "Profile" },
 
   // ── Home ──────────────────────────────────────────────────────────────────
@@ -453,6 +454,7 @@ export const translations: Dict = {
 
   // ── Expenses ──────────────────────────────────────────────────────────────
   exp_title: { en: "Expenses", tl: "Mga Gastos" },
+  orders_title: { en: "Orders", tl: "Mga Order" },
   exp_sub: { en: "Farm cost tracker", tl: "Tala ng gastos sa bukid" },
   exp_total_month: {
     en: "Farm expenses this month",

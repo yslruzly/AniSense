@@ -1,8 +1,9 @@
 import React from "react";
 import { haptic } from "../../lib/platform";
-import { Home as HomeIcon, Store, TrendingUp, PhilippinePeso, User } from "lucide-react";
+import { Home as HomeIcon, Store, TrendingUp, PhilippinePeso, Receipt, User } from "lucide-react";
 import { useLang } from "../../i18n";
 import { Screen } from "../../types";
+import { useViewer } from "../../lib/viewer";
 
 // ─── Bottom Navigation ──────────────────────────────────────────────────────
 // A floating glass capsule. One pill sits under the active tab and slides to
@@ -11,11 +12,14 @@ import { Screen } from "../../types";
 // mid-slide simply re-targets it from wherever it is.
 export function BottomNav({ active, onNavigate }: { active: Screen; onNavigate: (s: Screen) => void }) {
   const { t } = useLang();
+  // Same screen, two jobs: a farmer tracks what the farm cost, a buyer looks
+  // up what they ordered. The tab is named for what the reader keeps there.
+  const isBuyer = useViewer().role === "buyer";
   const items: { id: Screen; lbl: string; Ico: typeof HomeIcon }[] = [
     { id: "home", lbl: t("nav_home"), Ico: HomeIcon },
     { id: "market", lbl: t("nav_market"), Ico: TrendingUp },
     { id: "trade", lbl: t("nav_trade"), Ico: Store },
-    { id: "expenses", lbl: t("nav_expenses"), Ico: PhilippinePeso },
+    { id: "expenses", lbl: t(isBuyer ? "nav_orders" : "nav_expenses"), Ico: isBuyer ? Receipt : PhilippinePeso },
     { id: "profile", lbl: t("nav_profile"), Ico: User },
   ];
   const idx = items.findIndex(it => it.id === active);
