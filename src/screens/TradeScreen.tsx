@@ -8,7 +8,7 @@ import { Hdr } from "../components/layout/Hdr";
 import { CropIcon } from "../components/icons";
 import { cropPhotoFor } from "../data/cropPhotos";
 import marketPoster from "../assets/anisense-poster-market.webp";
-import farmerSell from "../assets/farmer-sell.webp";
+import sellPoster from "../assets/sell-your-ani.webp";
 import { CropEmoji } from "../components/CropEmoji";
 import { Sheet } from "../components/ui/Sheet";
 import { useRetained } from "../hooks/usePresence";
@@ -309,26 +309,16 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
         ) : undefined}
       />
       <div className="scroll screen-enter">
-        {/* Buyers open on the market poster, framed as a card. It says what
-            this place is (buy straight from local farmers) better than a line
-            of copy did, and the header above already names the page. Not
-            lazy: it is the first thing on screen. Farmers keep their own
-            panel, because they came here to sell. */}
-        {userRole === "buyer" ? (
-          <figure className="mp-poster">
-            <img src={marketPoster} alt={t("mp_poster_alt")} width={1000} height={562} decoding="async" />
-          </figure>
-        ) : (
-          <div className="mp-title-row">
-            <div>
-              <div className="mp-title">{t("trade_marketplace")}</div>
-              <div className="mp-sub">{t("trade_sub")}</div>
-            </div>
-            {/* A farmer comes here to sell, so he's met by a farmer holding
-                his harvest and pointing at the page. Decorative. */}
-            <img className="mp-peek mp-peek-sell" src={farmerSell} alt="" aria-hidden="true" />
-          </div>
-        )}
+        {/* Each side opens on its own poster: buyers on "connect with local
+            farmers", farmers on "sell your ani now" — the thing each of them
+            came here to do, said once, where a line of copy used to be. The
+            header above already names the page. Neither is lazy-loaded: it
+            is the first thing on screen. */}
+        <figure className={`mp-poster${userRole === "buyer" ? "" : " tall"}`}>
+          {userRole === "buyer"
+            ? <img src={marketPoster} alt={t("mp_poster_alt")} width={1000} height={562} decoding="async" />
+            : <img src={sellPoster} alt={t("mp_poster_sell_alt")} width={1000} height={667} decoding="async" />}
+        </figure>
 
         {userRole !== "buyer" && (
           <button className="mp-sell-btn" onClick={openPost}>
