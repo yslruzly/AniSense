@@ -1441,6 +1441,60 @@ export const appCss = `
     .hm-search:active, .hm-search:active .hm-search-go { transform: none; }
   }
 
+  /* ── Featured products ──────────────────────────────────────────────────
+     Two to a row, photo on top: a product card, not a list row, so the page
+     has something to look at between its lists. */
+  /* One line, pushed along by the thumb. The row bleeds to both screen
+     edges; the card past the edge shows about a third of itself, which is
+     what says "there is more this way" without an arrow or a hint. Narrow
+     enough that the cut always lands mid-card, never mid-word.
+     The app keeps sideways scrolling out of the marketplace, where an older
+     buyer hunts for a particular crop; here it is a showcase they can
+     ignore, and every card is also reachable from See all. */
+  .fp-row {
+    display: flex; gap: 12px; margin: 14px -16px 0; padding: 4px 16px 8px;
+    overflow-x: auto; overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity; scroll-padding-left: 16px; -webkit-overflow-scrolling: touch;
+  }
+  .fp-row::-webkit-scrollbar { height: 0; }
+  .fp-card {
+    flex: 0 0 152px; scroll-snap-align: start;
+    display: flex; flex-direction: column; min-width: 0; padding: 0; overflow: hidden;
+    border: none; border-radius: 16px; background: var(--card); text-align: left; font: inherit; color: inherit; cursor: pointer;
+    box-shadow: inset 0 0 0 1px var(--line), 0 8px 18px -14px rgba(22,33,27,.35);
+    transition: transform 190ms var(--ease-out);
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .fp-card:active { transform: scale(.97); transition-duration: var(--dur-press); }
+  .fp-photo {
+    height: 114px; display: flex; align-items: center; justify-content: center;
+    background: var(--tanim-sk); color: var(--tanim);
+  }
+  .fp-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .fp-body { display: flex; flex-direction: column; padding: 10px 12px 12px; min-width: 0; }
+  /* Two lines held open whether the name needs them or not, so every price
+     in the row sits on the same line and the cards read as a set. */
+  .fp-name {
+    min-height: 2.5em; font-size: 14.5px; font-weight: 600; line-height: 1.25; color: var(--text-muted);
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
+  }
+  .fp-price {
+    margin-top: 2px; font-family: var(--font-display); font-size: 19px; font-weight: 800; letter-spacing: -.015em;
+    color: var(--text); font-variant-numeric: tabular-nums;
+  }
+  .fp-price small { margin-left: 1px; font-size: 13px; font-weight: 600; color: var(--text-faint); letter-spacing: 0; }
+  /* The town is context, so it is the quietest line: no pill, no colour. */
+  .fp-loc {
+    display: flex; align-items: center; gap: 4px; margin-top: 5px;
+    font-size: 13px; font-weight: 600; color: var(--text-faint);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .fp-loc svg { flex-shrink: 0; color: var(--tanim); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fp-card:active { transform: none; }
+  }
+
   /* Shop by crop: 4 × 2, pictures first. */
   .shop-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px 8px; margin-top: 14px; }
   .shop-cat {

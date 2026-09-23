@@ -90,6 +90,7 @@ export const CROP_FILTER_MAP: Record<string, string[]> = {
   "Squash": ["Kalabasa"],
 };
 export const CROP_CATEGORIES = ["All Crops", ...Object.keys(CROP_FILTER_MAP)];
+
 // All rice-related crop names (for matching)
 export const ALL_RICE_NAMES = new Set(["Rice", "Rice (All Varieties)", ...RICE_VARIETY_LIST]);
 

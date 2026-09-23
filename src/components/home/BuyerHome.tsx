@@ -1,7 +1,7 @@
 import { ChevronRight, MapPin, Star, Award, RotateCcw, ArrowLeft, ArrowRight, TrendingUp, TrendingDown, ArrowLeftRight } from "lucide-react";
 import { useLang, translations } from "../../i18n";
-import { CROPS, CROP_FILTER_MAP } from "../../data/crops";
-import { SELLER_DETAILS } from "../../data/marketplace";
+import { CROPS, CROP_GROUP_BY_ID, CROP_FILTER_MAP } from "../../data/crops";
+import { SELLER_DETAILS, LISTINGS } from "../../data/marketplace";
 import { BUYER_TRANSACTIONS } from "../../data/expenses";
 import { cropPhoto, cropPhotoFor, cropGroupPhoto } from "../../data/cropPhotos";
 import { CropIcon } from "../icons";
@@ -125,6 +125,69 @@ export function PriceMoves({ onOpen }: { onOpen: () => void }) {
               aria-label={`${name}, ₱${c.pricePerKg} ${t("per_kg_short")}, ${pct}% ${dir === "down" ? t("bm_cheaper_aria") : t("bm_pricier_aria")}`}
             >
               {dir === "up" ? <>{id}{bar}</> : <>{bar}{id}</>}
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+// ── Featured products ────────────────────────────────────────────────────────
+// Four listings as products, not rows: a photo big enough to judge, the price,
+// and where it is coming from. Ranked by the seller's rating, so "featured"
+// means something that can be checked rather than a word.
+
+export function FeaturedProducts({ onShop }: { onShop: Shop }) {
+  const { t, tn } = useLang();
+  // Best-rated first, but one per crop: ranking alone filled the shelf with
+  // four sacks of rice, because the top-rated sellers here all grow rice.
+  // A featured shelf that shows the same thing four times is a shelf of one.
+  const seen = new Set<string>();
+  // A row holds more than a grid of four did, and the ones past the edge are
+  // the reason to push it along.
+  const picks = [...LISTINGS]
+    .sort((a, b) => b.rating - a.rating || new Date(b.date).getTime() - new Date(a.date).getTime())
+    .filter(l => {
+      const group = CROP_GROUP_BY_ID[CROPS.find(c => c.name === l.crop)?.id ?? ""] || l.crop;
+      if (seen.has(group)) return false;
+      seen.add(group);
+      return true;
+    })
+    .slice(0, 8);
+
+  return (
+    <section className="hm-sec" aria-labelledby="fp-t">
+      <div className="hm-sec-row">
+        <h2 className="hm-sec-title" id="fp-t">{t("fp_title")}</h2>
+        <button className="hm-link" onClick={() => onShop({})}>
+          {t("fp_see_all")} <ChevronRight size={16} strokeWidth={2.6} />
+        </button>
+      </div>
+      <p className="hm-sec-sub">{t("fp_sub")}</p>
+
+      <div className="fp-row">
+        {picks.map(l => {
+          const photo = l.photo || cropPhotoFor(l.crop, l.variety);
+          // "Red" under Onions reads as "Red Onions"; "Yellow Corn" already
+          // says it, so it is said once.
+          const name = !l.variety || l.variety === l.crop
+            ? tn(l.crop)
+            : l.variety.toLowerCase().includes(l.crop.toLowerCase())
+              ? l.variety
+              : l.variety + " " + tn(l.crop);
+          return (
+            <button key={l.id} className="fp-card" onClick={() => onShop({ search: l.variety || l.crop })}>
+              <span className="fp-photo">
+                {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropIcon crop={l.crop} size={28} />}
+              </span>
+              <span className="fp-body">
+                <span className="fp-name">{name}</span>
+                {/* Price is the loudest thing on the card, then the name,
+                    then where it is from. One thing bold, not three. */}
+                <span className="fp-price">₱{l.pricePerKg}<small>{t("per_kg_short")}</small></span>
+                <span className="fp-loc"><MapPin size={12} strokeWidth={2.4} aria-hidden="true" />{l.location}</span>
+              </span>
             </button>
           );
         })}

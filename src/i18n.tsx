@@ -316,6 +316,9 @@ export const translations: Dict = {
   },
 
   // Buyer Home.
+  fp_title: { en: "Featured products", tl: "Mga tampok na produkto" },
+  fp_sub: { en: "From the best-rated farmers selling today.", tl: "Mula sa may pinakamataas na rating na nagbebenta ngayon." },
+  fp_see_all: { en: "See all", tl: "Lahat" },
   home_poster_alt: {
     en: "AniSense: fresh local produce, from our farms to your table.",
     tl: "AniSense: sariwang ani mula sa lokal na bukid, diretso sa hapag mo.",

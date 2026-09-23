@@ -1,7 +1,7 @@
 import { CloudSun, CloudMoon, BarChart2, CheckCircle, AlertTriangle, Bot, ChevronRight, ArrowUpRight, ArrowDownRight, ArrowRight, Sprout, Wallet, Megaphone, Store, Tag, MapPin, Search } from "lucide-react";
 import { useLang } from "../i18n";
 import { Screen, UserRole, TradeIntent, Listing } from "../types";
-import { ShopByCrop, FeaturedFarmers, YourPurchases, PriceMoves } from "../components/home/BuyerHome";
+import { ShopByCrop, FeaturedProducts, FeaturedFarmers, YourPurchases, PriceMoves } from "../components/home/BuyerHome";
 import { YourHarvest } from "../components/home/FarmerHome";
 import { PriceAlerts } from "../components/home/PriceAlerts";
 import { CropTracker } from "../components/home/CropTracker";
@@ -183,6 +183,9 @@ export function HomeScreen({ onNavigate, onShop, onProfile, isOffline, userName 
 
         {/* Then every crop on one screen, as pictures. */}
         {isBuyer && <ShopByCrop onShop={shop} />}
+
+        {/* What is worth looking at today, as products rather than rows. */}
+        {isBuyer && <FeaturedProducts onShop={shop} />}
 
         {/* "Browse the marketplace" as the see-everything step after the
             eight crops: every way to start shopping sits in one place. */}
