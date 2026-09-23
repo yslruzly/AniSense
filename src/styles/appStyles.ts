@@ -1178,7 +1178,9 @@ export const appCss = `
   /* Its own line, full width. Sharing the row with the sort menu squeezed
      "Vegetables" into "Veg…", and a label a reader has to decode is not a
      label. */
-  .mp-list-head:has(.fseg) { flex-wrap: wrap; row-gap: 10px; }
+  /* The switch takes the first line; the sort button keeps the right-hand
+     end of the second, where it has always been. */
+  .mp-list-head:has(.fseg) { flex-wrap: wrap; row-gap: 10px; justify-content: flex-end; }
   .mp-list-head .fseg { flex: 0 0 100%; order: -1; }
   .fseg {
     position: relative; flex: 1; min-width: 0; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
@@ -1449,8 +1451,12 @@ export const appCss = `
 
   /* The search bar opens the page, directly under the brand. A pill with
      the magnifier at one end and a green key at the other: the same shape
-     people press in every other app they own. */
-  .hm-search {
+     people press in every other app they own.
+
+     One rule, three pages. Prices and the Marketplace use this same bar with
+     a real input where Home has its label, so search never changes shape as
+     you move around the app. */
+  .hm-search, .search-box {
     position: relative; min-height: 56px; padding: 6px 6px 6px 16px;
     display: flex; align-items: center; gap: 10px; border: none; border-radius: 16px; cursor: pointer;
     /* No outline: a pale green field, the colour of the leaves in the mark,
@@ -1461,19 +1467,33 @@ export const appCss = `
     transition: transform 190ms var(--ease-out), background-color 160ms ease;
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
-  .hm-search > svg { color: var(--tanim); flex-shrink: 0; }
+  .hm-search > svg, .search-box > svg { color: var(--tanim); flex-shrink: 0; }
   .hm-search > span:first-of-type { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .hm-search-go {
-    flex-shrink: 0; width: 44px; height: 44px; border-radius: 12px;
+
+  /* The two bars that hold a real input: a caret rather than a finger, and
+     the same deepened green while you type that Home shows while you press. */
+  .search-box { cursor: text; }
+  .search-box input {
+    flex: 1; min-width: 0; border: none; outline: none; background: transparent;
+    font: inherit; color: var(--text);
+  }
+  .search-box input::placeholder { color: var(--text-muted); font-weight: 500; }
+  .search-box:focus-within { background: #E3EFE5; }
+  /* The clear button sits inside the bar now, so it drops the negative
+     margins that hung it off the old bordered field's edge. */
+  .search-box .pr-clear { margin: 0; }
+
+  .hm-search-go, .search-go {
+    flex-shrink: 0; width: 44px; height: 44px; border-radius: 12px; border: none; padding: 0; cursor: pointer;
     display: inline-flex; align-items: center; justify-content: center; color: #fff;
     background-image: linear-gradient(180deg, #14875A 0%, var(--tanim) 54%, #075232 100%);
     box-shadow: inset 0 1px 0 rgba(255,255,255,.26), inset 0 -1px 0 rgba(0,0,0,.24), 0 1px 2px rgba(6,38,23,.3);
     transition: transform 190ms var(--ease-out);
   }
   .hm-search:active { transform: scale(.985); background: #E3EFE5; transition-duration: var(--dur-press); }
-  .hm-search:active .hm-search-go { transform: scale(.94); transition-duration: var(--dur-press); }
+  .hm-search:active .hm-search-go, .search-go:active { transform: scale(.94); transition-duration: var(--dur-press); }
   @media (prefers-reduced-motion: reduce) {
-    .hm-search:active, .hm-search:active .hm-search-go { transform: none; }
+    .hm-search:active, .hm-search:active .hm-search-go, .search-go:active { transform: none; }
   }
 
   /* ── Featured products ──────────────────────────────────────────────────
@@ -2237,10 +2257,6 @@ export const appCss = `
   .mp-title { font-family: var(--font-display); font-size: var(--fs-title); font-weight:700; color:var(--text); }
   .mp-sub   { font-size: var(--fs-label); color:var(--text-muted); margin-top:3px; max-width:170px; line-height:1.45; }
   .post-btn { background:var(--text); color:#fff; border:none; border-radius:11px; padding:11px 15px; font-family:inherit; font-size: var(--fs-label); font-weight:700; cursor:pointer; flex-shrink:0; }
-
-  .search-box { display:flex; align-items:center; gap:9px; background:var(--white); border:1.5px solid var(--border); border-radius:13px; padding:12px 14px; }
-  .search-box input { border:none; outline:none; font-family:inherit; font-size: var(--fs-label); color:var(--text); flex:1; background:transparent; }
-  .search-box input::placeholder { color:var(--text-faint); }
 
   .mp-filter-row { display:flex; flex-direction:column; gap:7px; }
   .cat-tabs { display:grid; grid-template-columns:repeat(3,1fr); gap:9px; }
@@ -3235,17 +3251,6 @@ export const appCss = `
                 border-color var(--dur-fast) ease,
                 color var(--dur-fast) ease,
                 box-shadow var(--dur-fast) ease;
-  }
-
-  /* The search field earns a visible focus ring: on a phone the keyboard
-     covers half the screen, and the ring is what confirms which field it
-     belongs to. Border-colour only — no layout-shifting border-width change. */
-  .search-box {
-    transition: border-color var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
-  }
-  .search-box:focus-within {
-    border-color: var(--tanim);
-    box-shadow: 0 0 0 3px var(--tanim-sk);
   }
 
   /* ── Content arrival ─────────────────────────────────────────────────────

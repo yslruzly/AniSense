@@ -3,10 +3,12 @@
 // or Pexels licence, so none of them carries an attribution obligation;
 // provenance is recorded in ../assets/crops/CREDITS.md.
 //
-// 16 photographs cover 20 rows. The 4 rows that share an image do so because
+// 20 photographs cover 24 rows. The 4 rows that share an image do so because
 // the difference does not photograph: all three rice grades are milled white
 // rice, and a Diamante Max F1 and an Assila F1 are both a red tomato.
 
+import ampalaya_galaxy from "../assets/crops/ampalaya-galaxy.webp";
+import ampalaya_native from "../assets/crops/ampalaya-native.webp";
 import cala_regular from "../assets/crops/cala-regular.webp";
 import corn_sweet from "../assets/crops/corn-sweet.webp";
 import corn_white from "../assets/crops/corn-white.webp";
@@ -15,6 +17,8 @@ import garlic_native from "../assets/crops/garlic-native.webp";
 import mango_carab from "../assets/crops/mango-carab.webp";
 import mango_indian from "../assets/crops/mango-indian.webp";
 import mango_pahutan from "../assets/crops/mango-pahutan.webp";
+import melon_seedless from "../assets/crops/melon-seedless.webp";
+import melon_sweet from "../assets/crops/melon-sweet.webp";
 import onion_red from "../assets/crops/onion-red.webp";
 import onion_spring from "../assets/crops/onion-spring.webp";
 import onion_white from "../assets/crops/onion-white.webp";
@@ -46,6 +50,10 @@ export const CROP_PHOTOS: Record<string, string> = {
   "corn-white": corn_white,
   "corn-sweet": corn_sweet,
   "squash-kalabasa": squash_kalabasa,
+  "ampalaya-native": ampalaya_native,
+  "ampalaya-galaxy": ampalaya_galaxy,
+  "melon-sweet": melon_sweet,
+  "melon-seedless": melon_seedless,
 };
 
 /** Falls back to undefined so the caller can keep showing the line icon. */

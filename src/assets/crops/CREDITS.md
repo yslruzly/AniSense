@@ -6,6 +6,8 @@ provenance of each file can be checked later.
 
 | File | Source | License | Original title |
 | --- | --- | --- | --- |
+| `ampalaya-galaxy.webp` | Unsplash | Unsplash License | Pile of fresh, bumpy green bitter melons, Louise Tomczak (unsplash.com/photos/1766714534617) |
+| `ampalaya-native.webp` | Unsplash | Unsplash License | Pile of bumpy green bitter melons, Imad 786 (unsplash.com/photos/1763266065684) |
 | `cala-regular.webp` | Pexels | Pexels License | Calamansi on the branch (pexels.com/photo/35307299) |
 | `corn-sweet.webp` | Unsplash | Unsplash License | Sweet corn cobs (unsplash.com/photos/1634467524884) |
 | `corn-white.webp` | Unsplash | Unsplash License | White corn cobs (unsplash.com/photos/1594099632993) |
@@ -14,6 +16,8 @@ provenance of each file can be checked later.
 | `mango-carab.webp` | WordPress Photo Directory | CC0 | A close-up image of a pile of ripe yellow mangoes |
 | `mango-indian.webp` | openverse/wikimedia | cc0 | Unripe green mangoes (local wild variety - Gaauti Aam) of Nandurbar district |
 | `mango-pahutan.webp` | Unsplash | Unsplash License | Mangoes on the tree (unsplash.com/photos/1705723115413) |
+| `melon-seedless.webp` | Unsplash | Unsplash License | Watermelon fruit on white table, Art Rachen (unsplash.com/photos/1587049352846) |
+| `melon-sweet.webp` | Unsplash | Unsplash License | A large pile of watermelon with a piece of watermelon on top, Crina-Miriam Cretu (unsplash.com/photos/1708982553355) |
 | `onion-red.webp` | openverse/flickr | cc0 | Red Onions |
 | `onion-spring.webp` | openverse/flickr | cc0 | Spring onions |
 | `onion-white.webp` | openverse/wikimedia | cc0 | Alibag White Onions from Pezari village of Alibag taluka |

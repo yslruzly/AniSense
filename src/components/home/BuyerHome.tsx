@@ -4,7 +4,7 @@ import { CROPS, CROP_GROUP_BY_ID, CROP_FILTER_MAP } from "../../data/crops";
 import { SELLER_DETAILS, LISTINGS } from "../../data/marketplace";
 import { BUYER_TRANSACTIONS } from "../../data/expenses";
 import { cropPhoto, cropPhotoFor, cropGroupPhoto } from "../../data/cropPhotos";
-import { CropIcon } from "../icons";
+import { CropEmoji } from "../CropEmoji";
 import { TradeIntent } from "../../types";
 
 // ─── Buyer Home sections ──────────────────────────────────────────────────────
@@ -33,7 +33,7 @@ export function ShopByCrop({ onShop }: { onShop: Shop }) {
           return (
             <button key={cat} className="shop-cat" onClick={() => onShop({ category: cat })}>
               <span className="shop-cat-img">
-                {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropIcon crop={cat} size={26} />}
+                {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropEmoji crop={cat} size={30} />}
               </span>
               <span className="shop-cat-lbl">{cat}</span>
             </button>
@@ -103,7 +103,7 @@ export function PriceMoves({ onOpen }: { onOpen: () => void }) {
           const id = (
             <span className="mv-id">
               <span className="mv-photo">
-                {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropIcon crop={c.name} size={18} />}
+                {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropEmoji crop={c.name} size={22} />}
               </span>
               <span className="mv-txt">
                 <span className="mv-name">{name}</span>
@@ -179,7 +179,7 @@ export function FeaturedProducts({ onShop }: { onShop: Shop }) {
           return (
             <button key={l.id} className="fp-card" onClick={() => onShop({ search: l.variety || l.crop })}>
               <span className="fp-photo">
-                {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropIcon crop={l.crop} size={28} />}
+                {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropEmoji crop={l.crop} size={32} />}
               </span>
               <span className="fp-body">
                 <span className="fp-name">{name}</span>
@@ -356,7 +356,7 @@ export function YourPurchases({ onShop, onHistory }: { onShop: Shop; onHistory: 
               // this order.
               <button key={tx.id} className="yp-item" onClick={() => onShop({ search: tx.variety || tx.crop })}>
                 <span className="yp-photo">
-                  {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropIcon crop={tx.crop} size={26} />}
+                  {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropEmoji crop={tx.crop} size={30} />}
                   <span className="yp-date">{when}</span>
                 </span>
                 <span className="yp-item-body">

@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { EmptyState, ErrorState, SkeletonList } from "../components/states";
 import { useResource } from "../hooks/useResource";
 import { fetchPrices, PriceItem } from "../services/prices";
 import { ArrowDownRight, ArrowUpRight, ArrowRight, Search, ChevronRight, X } from "lucide-react";
+import { haptic } from "../lib/platform";
 import { useLang } from "../i18n";
 import { UserRole } from "../types";
 import { CROP_GROUPS } from "../data/crops";
@@ -124,6 +125,8 @@ export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userIn
   const categories = ["All", "Rice", ...CROP_GROUPS.map(g => g.group)];
   const [activeCat, setActiveCat] = useState("All");
   const [search, setSearch] = useState("");
+  /* The green key at the end of the bar puts this keyboard away. */
+  const searchRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState<PriceItem | null>(null);
   // Keeps the sheet filled while it slides away after `open` is cleared.
   const shown = useRetained(open);
@@ -199,13 +202,24 @@ export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userIn
         <section className="pr-all">
           <h2 className="pr-sec">{t("mkt_all")}</h2>
           <div className="search-box">
-            <Search size={18} color="var(--text-faint)" />
-            <input placeholder={t("market_search_ph")} value={search} onChange={e => setSearch(e.target.value)} enterKeyHint="search" />
+            <Search size={21} strokeWidth={2.4} aria-hidden="true" />
+            <input ref={searchRef} placeholder={t("market_search_ph")} value={search} onChange={e => setSearch(e.target.value)} enterKeyHint="search" />
             {search && (
               <button className="pr-clear" onClick={() => setSearch("")} aria-label={t("state_clear_search")}>
                 <X size={16} strokeWidth={2.6} />
               </button>
             )}
+            {/* The same green key as Home's bar. The list has already filtered
+                as you typed, so pressing it puts the keyboard away and hands the
+                screen back to the results. */}
+            <button
+              className="search-go"
+              aria-label={t("search")}
+              onMouseDown={e => e.preventDefault()}
+              onClick={() => { haptic.select(); searchRef.current?.blur(); }}
+            >
+              <Search size={20} strokeWidth={2.8} />
+            </button>
           </div>
 
           <div className="frow">

@@ -24,6 +24,8 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
   const { t, tn, lang } = useLang();
   const locale = lang === "tl" ? "fil-PH" : "en-PH";
   const [search, setSearch] = useState(intent?.search ?? "");
+  /* The green key at the end of the bar puts this keyboard away. */
+  const searchRef = useRef<HTMLInputElement>(null);
   // The listing open in the detail sheet. Held by id, so an edit or a cart
   // change shows in the sheet straight away.
   const [openId, setOpenId] = useState<string | null>(null);
@@ -337,13 +339,24 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
         )}
 
         <div className="search-box">
-          <Search size={18} color="var(--text-faint)" />
-          <input placeholder={t("trade_search_ph")} value={search} onChange={e => setSearch(e.target.value)} enterKeyHint="search" autoFocus={!!intent?.focusSearch} />
+          <Search size={21} strokeWidth={2.4} aria-hidden="true" />
+          <input ref={searchRef} placeholder={t("trade_search_ph")} value={search} onChange={e => setSearch(e.target.value)} enterKeyHint="search" autoFocus={!!intent?.focusSearch} />
           {search && (
             <button className="pr-clear" onClick={() => setSearch("")} aria-label={t("state_clear_search")}>
               <X size={16} strokeWidth={2.6} />
             </button>
           )}
+          {/* The same green key as Home's bar. The list has already filtered
+              as you typed, so pressing it puts the keyboard away and hands the
+              screen back to the results. */}
+          <button
+            className="search-go"
+            aria-label={t("search")}
+            onMouseDown={e => e.preventDefault()}
+            onClick={() => { haptic.select(); searchRef.current?.blur(); }}
+          >
+            <Search size={20} strokeWidth={2.8} />
+          </button>
         </div>
 
         {/* Filters: the nine crop choices as an even 3 × 3 grid of tiles, all
@@ -413,6 +426,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
               for long lists was a lot of machinery between a tap and an
               answer, and it misbehaved here. */}
           <MenuPicker
+            align="end"
             label={t("mp_sort")}
             icon={<ArrowUpDown size={16} strokeWidth={2.4} aria-hidden="true" />}
             value={sortBy}
@@ -491,7 +505,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
           return (
             <>
               <div className="pr-sheet-hero">
-                <span className="pr-sheet-photo">{photo ? <img src={photo} alt="" /> : <CropIcon crop={l.crop} size={40} />}</span>
+                <span className="pr-sheet-photo">{photo ? <img src={photo} alt="" /> : <CropEmoji crop={l.crop} size={44} />}</span>
                 <div className="pr-sheet-shade" />
                 <div className="pr-sheet-id">
                   {mine && <div className="pr-sheet-group">{t("mp_your_listing")}</div>}
@@ -976,7 +990,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                       return (
                         <button key={l.id} className="sml-row" onClick={() => openFromProfile(l.id)}>
                           <span className="sml-photo">
-                            {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropIcon crop={l.crop} size={20} />}
+                            {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropEmoji crop={l.crop} size={24} />}
                           </span>
                           <span className="sml-body">
                             <span className="sml-name">{titleOf(l)}</span>
