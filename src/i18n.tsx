@@ -212,6 +212,22 @@ export const translations: Dict = {
   mv_axis_pricier: { en: "Pricier", tl: "Mas mahal" },
   bm_cheaper_aria: { en: "cheaper than yesterday", tl: "mas mura kaysa kahapon" },
   bm_pricier_aria: { en: "pricier than yesterday", tl: "mas mahal kaysa kahapon" },
+  // Farmer Home: their own listings.
+  fh_title: { en: "Your harvest", tl: "Ang ani mo" },
+  fh_summary: { en: "listed across {n} · {kg} kg on sale", tl: "nakalista sa {n} · {kg} kilo ang benta" },
+  fh_listing_one: { en: "1 listing", tl: "1 listing" },
+  fh_listings_n: { en: "{n} listings", tl: "{n} listing" },
+  fh_left: { en: "kg left", tl: "kilo ang natitira" },
+  fh_above: { en: "above market", tl: "mas mataas sa merkado" },
+  fh_below: { en: "below market", tl: "mas mababa sa merkado" },
+  fh_at: { en: "at market price", tl: "kapantay ng merkado" },
+  fh_post: { en: "Post a harvest", tl: "Mag-post ng ani" },
+  fh_empty_t: { en: "Nothing on sale yet", tl: "Wala ka pang benta" },
+  fh_empty_s: {
+    en: "Post your harvest and buyers across Nueva Ecija can find it.",
+    tl: "I-post ang ani mo para makita ka ng mga bumibili sa buong Nueva Ecija.",
+  },
+
   // Buyer Home.
   poster_alt: {
     en: "AniSense: fresh produce, better prices, stronger communities. Browse the marketplace.",

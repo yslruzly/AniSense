@@ -1,7 +1,8 @@
 import { CloudSun, CloudMoon, BarChart2, CheckCircle, AlertTriangle, Bot, ChevronRight, ArrowUpRight, ArrowDownRight, ArrowRight, Sprout, Wallet, Megaphone, Store, Tag, MapPin, Search } from "lucide-react";
 import { useLang } from "../i18n";
-import { Screen, UserRole, TradeIntent } from "../types";
+import { Screen, UserRole, TradeIntent, Listing } from "../types";
 import { ShopByCrop, FeaturedFarmers, YourPurchases, PriceMoves } from "../components/home/BuyerHome";
+import { YourHarvest } from "../components/home/FarmerHome";
 import { useViewer } from "../lib/viewer";
 import { CROPS, CROP_GROUP_BY_ID } from "../data/crops";
 import { LISTINGS } from "../data/marketplace";
@@ -42,7 +43,7 @@ function Chg({ value }: { value: number }) {
   );
 }
 
-export function HomeScreen({ onNavigate, onShop, onProfile, isOffline, userName = "Juan", userInitials = "JD", userRole, farmerCrops = ["Rice", "Corn"] }: {
+export function HomeScreen({ onNavigate, onShop, onProfile, isOffline, userName = "Juan", userInitials = "JD", userRole, farmerCrops = ["Rice", "Corn"], listings = [] }: {
   onNavigate: (s: Screen) => void;
   /** Open the marketplace already showing a crop, a farmer or the search. */
   onShop?: (intent: TradeIntent) => void;
@@ -51,6 +52,8 @@ export function HomeScreen({ onNavigate, onShop, onProfile, isOffline, userName 
   lastUpdated: string;
   userName?: string;
   userInitials?: string;
+  /** Live marketplace listings, so a farmer sees their own on Home. */
+  listings?: Listing[];
   userRole?: UserRole;
   farmerCrops?: string[];
 }) {
@@ -128,6 +131,18 @@ export function HomeScreen({ onNavigate, onShop, onProfile, isOffline, userName 
             )}
           </div>
         </section>
+
+        {/* Farmers: their own half of the marketplace. Everything else on
+            this page is something to read; this is the one block about their
+            business, and the only place on Home they can act from. */}
+        {!isBuyer && (
+          <YourHarvest
+            listings={listings}
+            userInitials={userInitials}
+            onPost={() => shop({ post: true })}
+            onOpenMarket={() => shop({})}
+          />
+        )}
 
         {/* Buyers: search first. It floats over the hero's bottom edge,
             the one control on the page that works for any goal, and it opens

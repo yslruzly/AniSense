@@ -1505,6 +1505,59 @@ export const appCss = `
   .hm-poster:active { transform: scale(.98); transition-duration: var(--dur-press); }
   @media (prefers-reduced-motion: reduce) { .hm-poster:active { transform: none; } }
 
+  /* Your harvest: the farmer's listings on Home. Green, because on this
+     page green is what grows; the money figure here is the harvest's worth,
+     not a cost. */
+  .fh {
+    margin-top: 14px; padding: 18px 16px 16px; border-radius: var(--radius);
+    background-image: linear-gradient(180deg, #E8F3EC 0%, #FFFFFF 46%);
+    box-shadow: inset 0 0 0 1px rgba(11,107,65,.16), 0 14px 30px -22px rgba(22,33,27,.35);
+  }
+  .fh-total {
+    font-family: var(--font-display); font-size: 34px; font-weight: 800; line-height: 1.05;
+    letter-spacing: -.025em; color: var(--text);
+  }
+  .fh-summary { margin: 5px 0 0; font-size: 15px; color: var(--text-muted); }
+
+  .fh-list { list-style: none; margin: 14px 0 0; padding: 0; }
+  .fh-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; }
+  .fh-row + .fh-row { border-top: 1px solid var(--line); }
+  .fh-photo {
+    width: 46px; height: 46px; flex: 0 0 46px; border-radius: 13px; overflow: hidden;
+    display: flex; align-items: center; justify-content: center; background: var(--tanim-sk); color: var(--tanim);
+  }
+  .fh-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .fh-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .fh-name { font-family: var(--font-display); font-size: 15.5px; font-weight: 700; line-height: 1.25; color: var(--text); }
+  .fh-meta { font-size: 14px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+  .fh-end { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex-shrink: 0; }
+  .fh-price { font-family: var(--font-display); font-size: 16.5px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
+  .fh-price small { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+  /* Above the market price means more per kilo for the one selling, so the
+     green sits on that side here — the mirror of the buyer's chart. */
+  .fh-vs {
+    display: inline-flex; align-items: center; gap: 3px; padding: 3px 9px; border-radius: 99px;
+    font-size: 13px; font-weight: 700; white-space: nowrap;
+  }
+  .fh-vs.up { background: var(--tanim-sk); color: var(--tanim-deep); }
+  .fh-vs.down { background: #FBEBD0; color: #8A5A0B; }
+  .fh-vs.same { background: var(--paper-alt); color: var(--text-muted); }
+
+  .fh-empty { display: flex; align-items: flex-start; gap: 12px; padding-bottom: 4px; }
+  .fh-empty-ico {
+    width: 52px; height: 52px; flex: 0 0 52px; border-radius: 16px; background: #fff; color: var(--tanim);
+    display: inline-flex; align-items: center; justify-content: center; box-shadow: inset 0 0 0 1px var(--line);
+  }
+  .fh-empty-t { font-family: var(--font-display); font-size: 17px; font-weight: 700; color: var(--text); }
+  .fh-empty-s { margin: 3px 0 0; font-size: 14.5px; line-height: 1.45; color: var(--text-muted); }
+
+  /* The one action on the whole page. It wears .mp-sell-btn, the app's
+     sell button, so the gradient, the lit top edge, the contact shadow and
+     the 90ms press all come from the button system; only its place on the
+     card is set here. */
+  .fh-post { margin-top: 16px; }
+  @media (prefers-reduced-motion: reduce) { .mp-sell-btn:active { transform: none; } }
+
   /* Your purchases: gold, because on this page gold means money. */
   .hm-sec-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .hm-sec-row .hm-sec-title { margin-top: 8px; }

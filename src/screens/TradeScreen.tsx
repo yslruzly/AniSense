@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { ShoppingCart, Plus, Minus, X, Check, Search, Pencil, Trash2, ChevronRight, Package, Calendar, Star, MapPin, Phone, ShoppingBag, CreditCard, AlertTriangle, Wheat, Sprout, ArrowUpDown, Camera, ImageOff, LayoutGrid } from "lucide-react";
 import { useLang } from "../i18n";
-import { UserRole, CartItem, SellerDetail, TradeIntent } from "../types";
+import { UserRole, CartItem, SellerDetail, TradeIntent, Listing } from "../types";
 import { LISTINGS, SELLER_DETAILS } from "../data/marketplace";
 import { CROP_FILTER_MAP, CROP_CATEGORIES, ALL_RICE_NAMES, RICE_VARIETY_LIST } from "../data/crops";
 import { Hdr } from "../components/layout/Hdr";
@@ -19,7 +19,7 @@ import { downscaleImage } from "../lib/image";
 import { MenuPicker } from "../components/ui/MenuPicker";
 
 // ─── Trade / Marketplace Screen ───────────────────────────────────────────────
-export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", userInitials = "JD", userRole, intent }: { onProfile: () => void; onBack: () => void; userName?: string; userInitials?: string; userRole?: UserRole; intent?: TradeIntent }) {
+export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", userInitials = "JD", userRole, intent, listings, setListings }: { onProfile: () => void; onBack: () => void; userName?: string; userInitials?: string; userRole?: UserRole; intent?: TradeIntent; listings: Listing[]; setListings: React.Dispatch<React.SetStateAction<Listing[]>> }) {
   const { t, tn, lang } = useLang();
   const locale = lang === "tl" ? "fil-PH" : "en-PH";
   const [search, setSearch] = useState(intent?.search ?? "");
@@ -29,7 +29,6 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
   const [category, setCategory] = useState(intent?.category ?? "All Crops");
   const [variety, setVariety] = useState("All");
   const [sortBy, setSortBy] = useState<"default" | "price-asc" | "price-desc" | "rating">("default");
-  const [listings, setListings] = useState([...LISTINGS]);
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
@@ -203,6 +202,13 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
     setShowModal(true);
   };
 
+  // Sent here by "Post a harvest" on Home: open the form on arrival.
+  useEffect(() => {
+    if (intent?.post) openPost();
+    // Once, on arrival; the intent is fixed for this visit.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const openEdit = (l: typeof LISTINGS[0]) => {
     setEditId(l.id);
     setForm({ crop: l.crop, variety: l.variety, desc: l.desc, pricePerKg: String(l.pricePerKg), kg: String(l.kg), location: l.location, photo: l.photo ?? null });
@@ -224,7 +230,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
         id: Date.now().toString(), crop: form.crop, variety: form.variety, desc: form.desc,
         pricePerKg: Number(form.pricePerKg), kg: Number(form.kg),
         date: localISO(),
-        seller: "Juan Dela Cruz", sellerInitials: userInitials, rating: 5.0, location: form.location,
+        seller: userName, sellerInitials: userInitials, rating: 5.0, location: form.location,
         photo: form.photo ?? undefined,
       };
       setListings(ls => [newListing, ...ls]);
