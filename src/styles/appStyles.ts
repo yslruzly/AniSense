@@ -1412,20 +1412,34 @@ export const appCss = `
   }
   .hm-sec-sub { margin: 3px 2px 0; font-size: 14.5px; color: var(--text-faint); }
 
-  /* Search floats over the hero's bottom edge. The hero grows to make room,
-     so the weather chip is never underneath it. */
-  .home-header.with-search { padding-bottom: 50px; }
+  /* The search bar opens the page, directly under the brand. A pill with
+     the magnifier at one end and a green key at the other: the same shape
+     people press in every other app they own. */
   .hm-search {
-    position: relative; z-index: 2; margin: -46px 12px 0; min-height: 58px; padding: 0 18px;
-    display: flex; align-items: center; gap: 12px; border: none; border-radius: 18px; cursor: pointer;
-    background: var(--card); color: var(--text-faint); text-align: left;
-    font-family: var(--font-body); font-size: 16.5px; font-weight: 500;
-    box-shadow: 0 14px 30px -12px rgba(22,33,27,.38), inset 0 0 0 1px var(--line);
-    transition: transform 190ms var(--ease-out);
+    position: relative; min-height: 56px; padding: 6px 6px 6px 16px;
+    display: flex; align-items: center; gap: 10px; border: none; border-radius: 16px; cursor: pointer;
+    /* No outline: a pale green field, the colour of the leaves in the mark,
+       so it reads as a soft surface rather than a boxed-in input. */
+    background: #EDF5EE; color: var(--text-muted); text-align: left;
+    font-family: var(--font-body); font-size: 16px; font-weight: 500;
+    box-shadow: 0 6px 16px -14px rgba(22,33,27,.35);
+    transition: transform 190ms var(--ease-out), background-color 160ms ease;
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
-  .hm-search svg { color: var(--tanim); flex-shrink: 0; }
-  .hm-search:active { transform: scale(.98); transition-duration: var(--dur-press); }
+  .hm-search > svg { color: var(--tanim); flex-shrink: 0; }
+  .hm-search > span:first-of-type { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hm-search-go {
+    flex-shrink: 0; width: 44px; height: 44px; border-radius: 12px;
+    display: inline-flex; align-items: center; justify-content: center; color: #fff;
+    background-image: linear-gradient(180deg, #14875A 0%, var(--tanim) 54%, #075232 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.26), inset 0 -1px 0 rgba(0,0,0,.24), 0 1px 2px rgba(6,38,23,.3);
+    transition: transform 190ms var(--ease-out);
+  }
+  .hm-search:active { transform: scale(.985); background: #E3EFE5; transition-duration: var(--dur-press); }
+  .hm-search:active .hm-search-go { transform: scale(.94); transition-duration: var(--dur-press); }
+  @media (prefers-reduced-motion: reduce) {
+    .hm-search:active, .hm-search:active .hm-search-go { transform: none; }
+  }
 
   /* Shop by crop: 4 × 2, pictures first. */
   .shop-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px 8px; margin-top: 14px; }

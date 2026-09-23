@@ -126,7 +126,22 @@ export function HomeScreen({ onNavigate, onShop, onProfile, isOffline, userName 
       <Hdr icon={<AniSenseLogo size={isBuyer ? 36 : 28} />} title="AniSense" center={isBuyer} />
       <div className="scroll screen-enter">
 
-        {/* Buyers: the brand banner opens the page, above the greeting. */}
+        {/* Buyers: search sits at the very top, under the brand and above
+            the banner — the first thing on the page, because it is the one
+            control that serves any errand. It opens the marketplace with
+            the keyboard up rather than pretending to be a field itself. */}
+        {isBuyer && (
+          <button className="hm-search" onClick={() => shop({ focusSearch: true })}>
+            <Search size={21} strokeWidth={2.4} aria-hidden="true" />
+            <span>{t("home_search_ph")}</span>
+            {/* The green key at the end: the shape people press to search. */}
+            <span className="hm-search-go" aria-hidden="true">
+              <Search size={20} strokeWidth={2.8} />
+            </span>
+          </button>
+        )}
+
+        {/* Buyers: the brand banner follows it. */}
         {isBuyer && (
           <figure className="hm-banner">
             <img src={homePoster} alt={t("home_poster_alt")} width={1000} height={500} decoding="async" />
@@ -135,7 +150,7 @@ export function HomeScreen({ onNavigate, onShop, onProfile, isOffline, userName 
 
         {/* 1 ── Greeting. The same farm as the Weather screen, by day or by
             night, and the weather itself as a chip that opens it. */}
-        <section className={`home-header${isBuyer ? " with-search" : ""}`} data-time={isNight ? "night" : "day"}>
+        <section className="home-header" data-time={isNight ? "night" : "day"}>
           <div className="home-greeting">{greeting}, {firstName}! 👋</div>
           <div className="home-date">{dateStr}</div>
           <div className="hm-hero-foot">
@@ -164,17 +179,6 @@ export function HomeScreen({ onNavigate, onShop, onProfile, isOffline, userName 
             onPost={() => shop({ post: true })}
             onOpenMarket={() => shop({})}
           />
-        )}
-
-        {/* Buyers: search first. It floats over the hero's bottom edge,
-            the one control on the page that works for any goal, and it opens
-            the marketplace with the keyboard ready rather than pretending
-            to be a field of its own. */}
-        {isBuyer && (
-          <button className="hm-search" onClick={() => shop({ focusSearch: true })}>
-            <Search size={22} strokeWidth={2.4} aria-hidden="true" />
-            <span>{t("home_search_ph")}</span>
-          </button>
         )}
 
         {/* Then every crop on one screen, as pictures. */}
