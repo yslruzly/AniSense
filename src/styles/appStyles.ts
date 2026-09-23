@@ -1505,6 +1505,102 @@ export const appCss = `
   .hm-poster:active { transform: scale(.98); transition-duration: var(--dur-press); }
   @media (prefers-reduced-motion: reduce) { .hm-poster:active { transform: none; } }
 
+  /* ── Price alerts ───────────────────────────────────────────────────────
+     A short list of targets and one button. A reached target turns the row
+     green and swaps the waiting line for the price it hit, so the state is
+     readable without opening anything. */
+  .pa {
+    margin-top: 12px; padding: 6px 14px 14px; border-radius: var(--radius); background: var(--card);
+    box-shadow: inset 0 0 0 1px var(--line), 0 14px 30px -22px rgba(22,33,27,.35);
+  }
+  .pa-empty { margin: 12px 2px; font-size: 14.5px; color: var(--text-muted); }
+  .pa-list { list-style: none; margin: 0; padding: 0; }
+  .pa-row { display: flex; align-items: center; gap: 11px; padding: 10px 0; }
+  .pa-row + .pa-row { border-top: 1px solid var(--line); }
+  .pa-photo {
+    width: 42px; height: 42px; flex: 0 0 42px; border-radius: 12px; overflow: hidden;
+    display: flex; align-items: center; justify-content: center; background: var(--tanim-sk); color: var(--tanim);
+  }
+  .pa-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .pa-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .pa-name { font-family: var(--font-display); font-size: 15.5px; font-weight: 700; color: var(--text); }
+  .pa-meta { font-size: 14px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+  .pa-row.hit .pa-meta { color: var(--tanim-deep); font-weight: 600; }
+  .pa-now { flex-shrink: 0; font-family: var(--font-display); font-size: 15.5px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
+  .pa-now small { font-size: 12.5px; font-weight: 600; color: var(--text-muted); }
+  .pa-hit {
+    flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px; padding: 5px 10px; border-radius: 99px;
+    background: var(--tanim-sk); color: var(--tanim-deep);
+    font-family: var(--font-display); font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums;
+  }
+  .pa-x {
+    flex-shrink: 0; width: 38px; height: 38px; border: none; border-radius: 50%; background: none; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; color: var(--text-faint);
+    transition: transform 190ms var(--ease-out), background-color 160ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .pa-x:active { transform: scale(.9); background: var(--paper); transition-duration: var(--dur-press); }
+  .pa-add {
+    width: 100%; margin-top: 12px; min-height: 48px; display: flex; align-items: center; justify-content: center; gap: 8px;
+    border: none; border-radius: 14px; cursor: pointer;
+    background: var(--tanim-sk); color: var(--tanim-deep);
+    font-family: var(--font-display); font-size: 15.5px; font-weight: 700;
+    transition: transform 190ms var(--ease-out), background-color 160ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .pa-add:active { transform: scale(.97); background: #CFE6D8; transition-duration: var(--dur-press); }
+
+  /* The sheet: one crop, one number, one sentence saying what happens. */
+  .pa-sheet {
+    width: 100%; background: var(--card); border-radius: 24px 24px 0 0;
+    padding: 14px 18px calc(20px + var(--safe-bottom));
+  }
+  .pa-sheet-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .pa-sheet-ico {
+    width: 38px; height: 38px; flex: 0 0 38px; border-radius: 12px; background: var(--tanim-sk); color: var(--tanim-deep);
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .pa-sheet-t { flex: 1; margin: 0; font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--text); }
+  .pa-field { margin-bottom: 14px; }
+  /* .a-lbl lives in the auth stylesheet, which Home never loads: these
+     labels carry their own. */
+  .pa-lbl {
+    display: block; margin-bottom: 8px;
+    font-family: var(--font-display); font-size: 15.5px; font-weight: 600; color: var(--text);
+  }
+  .pa-help { margin: 8px 0 0; font-size: 14px; color: var(--text-muted); }
+  /* Minus, number, plus: ₱160 to ₱170 is two taps and no keyboard. */
+  .pa-step { display: flex; align-items: center; gap: 10px; }
+  .pa-step button {
+    width: 54px; height: 54px; flex: 0 0 54px; border: none; border-radius: 16px; cursor: pointer;
+    background: var(--paper); color: var(--tanim-deep); box-shadow: inset 0 0 0 1.5px var(--line);
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: transform 190ms var(--ease-out), background-color 160ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .pa-step button:active { transform: scale(.94); background: var(--tanim-sk); transition-duration: var(--dur-press); }
+  .pa-step-val {
+    flex: 1; min-width: 0; height: 54px; display: flex; align-items: center; justify-content: center; gap: 2px;
+    border-radius: 16px; background: var(--paper); box-shadow: inset 0 0 0 1.5px var(--line);
+    font-family: var(--font-display); font-size: 24px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums;
+  }
+  .pa-step-val input {
+    width: 5ch; border: none; background: none; outline: none; padding: 0;
+    font: inherit; color: inherit; text-align: center;
+  }
+  /* Spinners would put two more tiny targets beside the big ones. */
+  .pa-step-val input::-webkit-outer-spin-button,
+  .pa-step-val input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .pa-promise {
+    margin: 0 0 14px; padding: 12px 14px; border-radius: 14px; background: var(--tanim-sk);
+    font-size: 15px; line-height: 1.45; color: var(--tanim-deep);
+  }
+  .pa-save { margin-top: 0; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pa-x:active, .pa-add:active, .pa-step button:active { transform: none; }
+  }
+
   /* Your harvest: the farmer's listings on Home. Green, because on this
      page green is what grows; the money figure here is the harvest's worth,
      not a cost. */

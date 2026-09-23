@@ -2,6 +2,7 @@ import { CROPS } from "./crops";
 import { WEATHER_FORECAST } from "./weather";
 import { LISTINGS } from "./marketplace";
 import { UserRole } from "../types";
+import { PriceAlert, alertHit } from "../lib/priceAlerts";
 
 // ─── Alerts ───────────────────────────────────────────────────────────────────
 // What the bell in the header is counting. Derived from the data already on
@@ -13,7 +14,7 @@ import { UserRole } from "../types";
 // for the one buying; rain is a harvest deadline for one and nothing for the
 // other. One list for both was always wrong for somebody.
 
-export type AlertKind = "price-up" | "price-down" | "weather" | "new-listing";
+export type AlertKind = "price-up" | "price-down" | "weather" | "new-listing" | "price-target";
 
 export interface Alert {
   id: string;
@@ -27,6 +28,8 @@ export interface Alert {
   /** For new listings: who posted it and at what price. */
   seller?: string;
   pricePerKg?: number;
+  /** For a price target that has been met: the price asked for. */
+  target?: number;
 }
 
 const WET = ["Rainy", "Stormy", "LightRain"];
@@ -74,6 +77,19 @@ function buyerAlerts(location: string): Alert[] {
   return [...out, ...moves.filter(m => m.kind === "price-down"), ...moves.filter(m => m.kind === "price-up")];
 }
 
-export function buildAlerts(role: UserRole = "farmer", location = ""): Alert[] {
-  return role === "buyer" ? buyerAlerts(location) : farmerAlerts();
+/** Targets the farmer set that today's price has met. These come first:
+ *  the farmer asked to be told, so it outranks anything the app noticed on
+ *  its own. */
+function targetAlerts(alerts: PriceAlert[]): Alert[] {
+  return alerts
+    .filter(a => {
+      const price = CROPS.find(c => c.id === a.cropId)?.pricePerKg;
+      return price !== undefined && alertHit(a, price);
+    })
+    .map(a => ({ id: "tgt-" + a.id, kind: "price-target" as const, crop: a.cropName, target: a.target }));
+}
+
+export function buildAlerts(role: UserRole = "farmer", location = "", priceAlerts: PriceAlert[] = []): Alert[] {
+  if (role === "buyer") return buyerAlerts(location);
+  return [...targetAlerts(priceAlerts), ...farmerAlerts()];
 }

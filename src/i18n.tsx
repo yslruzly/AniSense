@@ -212,6 +212,35 @@ export const translations: Dict = {
   mv_axis_pricier: { en: "Pricier", tl: "Mas mahal" },
   bm_cheaper_aria: { en: "cheaper than yesterday", tl: "mas mura kaysa kahapon" },
   bm_pricier_aria: { en: "pricier than yesterday", tl: "mas mahal kaysa kahapon" },
+  // Farmer Home: price alerts.
+  pa_title: { en: "Price alerts", tl: "Abiso sa presyo" },
+  pa_sub: {
+    en: "Pick a price. The app tells you when a crop reaches it.",
+    tl: "Pumili ng presyo. Sasabihin ng app kapag naabot ito ng pananim.",
+  },
+  pa_empty: { en: "No alerts yet.", tl: "Wala pang abiso." },
+  pa_add: { en: "Add a price alert", tl: "Magdagdag ng abiso" },
+  pa_crop: { en: "Crop", tl: "Pananim" },
+  pa_target: { en: "Tell me when the price is", tl: "Sabihin kapag ang presyo ay" },
+  pa_today: { en: "Today: {price} per kilo", tl: "Ngayon: {price} kada kilo" },
+  pa_less: { en: "Lower the price", tl: "Babaan ang presyo" },
+  pa_more: { en: "Raise the price", tl: "Itaas ang presyo" },
+  pa_save: { en: "Set the alert", tl: "Itakda ang abiso" },
+  pa_remove: { en: "Remove alert for", tl: "Alisin ang abiso para sa" },
+  pa_promise_up: {
+    en: "We will tell you when {crop} reaches {target} per kilo.",
+    tl: "Sasabihin namin kapag umabot ang {crop} sa {target} kada kilo.",
+  },
+  pa_promise_down: {
+    en: "We will tell you when {crop} falls to {target} per kilo.",
+    tl: "Sasabihin namin kapag bumaba ang {crop} sa {target} kada kilo.",
+  },
+  pa_waiting_up: { en: "Waiting for {target} · {gap} to go", tl: "Hinihintay ang {target} · {gap} na lang" },
+  pa_waiting_down: { en: "Waiting for {target} · {gap} to fall", tl: "Hinihintay ang {target} · {gap} pa ang ibababa" },
+  pa_reached: { en: "Reached {price} today", tl: "Umabot sa {price} ngayon" },
+  pa_alert_title: { en: "Your price alert", tl: "Ang abiso mo sa presyo" },
+  pa_alert_body: { en: "{crop} reached {price} per kilo", tl: "Umabot ang {crop} sa {price} kada kilo" },
+
   // Farmer Home: their own listings.
   fh_title: { en: "Your harvest", tl: "Ang ani mo" },
   fh_summary: { en: "listed across {n} · {kg} kg on sale", tl: "nakalista sa {n} · {kg} kilo ang benta" },

@@ -3,6 +3,8 @@ import { useLang } from "../i18n";
 import { Screen, UserRole, TradeIntent, Listing } from "../types";
 import { ShopByCrop, FeaturedFarmers, YourPurchases, PriceMoves } from "../components/home/BuyerHome";
 import { YourHarvest } from "../components/home/FarmerHome";
+import { PriceAlerts } from "../components/home/PriceAlerts";
+import { PriceAlert } from "../lib/priceAlerts";
 import { useViewer } from "../lib/viewer";
 import { CROPS, CROP_GROUP_BY_ID } from "../data/crops";
 import { LISTINGS } from "../data/marketplace";
@@ -43,7 +45,7 @@ function Chg({ value }: { value: number }) {
   );
 }
 
-export function HomeScreen({ onNavigate, onShop, onProfile, isOffline, userName = "Juan", userInitials = "JD", userRole, farmerCrops = ["Rice", "Corn"], listings = [] }: {
+export function HomeScreen({ onNavigate, onShop, onProfile, isOffline, userName = "Juan", userInitials = "JD", userRole, farmerCrops = ["Rice", "Corn"], listings = [], priceAlerts = [], onPriceAlerts }: {
   onNavigate: (s: Screen) => void;
   /** Open the marketplace already showing a crop, a farmer or the search. */
   onShop?: (intent: TradeIntent) => void;
@@ -54,6 +56,8 @@ export function HomeScreen({ onNavigate, onShop, onProfile, isOffline, userName 
   userInitials?: string;
   /** Live marketplace listings, so a farmer sees their own on Home. */
   listings?: Listing[];
+  priceAlerts?: PriceAlert[];
+  onPriceAlerts?: (next: PriceAlert[]) => void;
   userRole?: UserRole;
   farmerCrops?: string[];
 }) {
@@ -291,6 +295,13 @@ export function HomeScreen({ onNavigate, onShop, onProfile, isOffline, userName 
 
         {/* Predicted Price, farmer only */}
         {userRole !== "buyer" && <PredictedPriceCard farmerCrops={farmerCrops} />}
+
+        {/* The forecast above says a price is climbing; this is what a
+            farmer does about it. Directly under the two model cards, where
+            that thought happens. */}
+        {!isBuyer && onPriceAlerts && (
+          <PriceAlerts alerts={priceAlerts} onChange={onPriceAlerts} farmerCrops={farmerCrops} />
+        )}
 
         {/* 4 ── This month's spending, farmer only (the figures are farm
             expenses; a buyer's spending lives with their purchases). */}

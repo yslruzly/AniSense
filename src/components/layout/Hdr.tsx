@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ArrowLeft, Bell, TrendingUp, TrendingDown, CloudRain, X, Sprout } from "lucide-react";
+import { ArrowLeft, Bell, BellRing, TrendingUp, TrendingDown, CloudRain, X, Sprout } from "lucide-react";
 import { useLang } from "../../i18n";
 import { haptic } from "../../lib/platform";
 import { buildAlerts, Alert } from "../../data/alerts";
@@ -18,9 +18,9 @@ let bellRung = false;
 export function Hdr({ icon, title, sub, onBack, extra }: { icon?: React.ReactNode; title: string; sub?: string; onBack?: () => void; extra?: React.ReactNode }) {
   const { t, tn } = useLang();
   const [showAlerts, setShowAlerts] = useState(false);
-  const { role, location } = useViewer();
+  const { role, location, priceAlerts } = useViewer();
   const isBuyer = role === "buyer";
-  const alerts = buildAlerts(role, location);
+  const alerts = buildAlerts(role, location, priceAlerts);
 
   // The badge counts what the sheet can actually show. A hardcoded "3" over an
   // empty sheet is the kind of small lie that costs trust.
@@ -33,6 +33,14 @@ export function Hdr({ icon, title, sub, onBack, extra }: { icon?: React.ReactNod
 
   const row = (a: Alert) => {
     const pct = `${(a.change || 0) > 0 ? "+" : ""}${a.change}%`;
+    if (a.kind === "price-target") {
+      return {
+        ico: <BellRing size={20} color="var(--tanim-deep)" />,
+        bg: "var(--tanim-sk)",
+        title: t("pa_alert_title"),
+        body: t("pa_alert_body").replace("{crop}", tn(a.crop || "")).replace("{price}", `₱${a.target}`),
+      };
+    }
     if (a.kind === "new-listing") {
       return {
         ico: <Sprout size={20} color="var(--tanim)" />,
