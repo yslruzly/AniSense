@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { usePresence } from "../../hooks/usePresence";
 import { useHardwareBack } from "../../hooks/useHardwareBack";
@@ -41,6 +41,7 @@ export function Sheet({
   // has already made, and every millisecond after it is dead time.
   const exitMs = variant === "center" ? 180 : 240;
   const { mounted, visible } = usePresence(open, exitMs);
+  const [host, setHost] = useState<Element | null>(null);
 
   const panelRef = useRef<HTMLDivElement>(null);
   const restoreRef = useRef<HTMLElement | null>(null);
@@ -76,17 +77,21 @@ export function Sheet({
     };
   }, [open]);
 
-  if (!mounted) return null;
+  // Sheets render into the shell, not where they were written: one declared
+  // inside a scrolling card would otherwise be clipped by it and slide up
+  // *behind* the floating tab bar.
+  //
+  // Looked up after mounting, never during render. The shell can be built in
+  // the same commit as the sheet — finishing signup creates the app screen
+  // and opens the welcome ID together — and a lookup during that render finds
+  // no shell yet, so the sheet would vanish until some later render happened
+  // to run. A layout effect runs before paint, so nothing flickers.
+  useLayoutEffect(() => {
+    if (!mounted) return;
+    setHost(document.querySelector(".shell") ?? document.querySelector(".auth-shell") ?? document.body);
+  }, [mounted]);
 
-  // Sheets render into the shell, not where they were written. A sheet
-  // declared inside a scrolling section would otherwise be clipped by it and
-  // slide up *behind* the floating tab bar, which is what happened to the
-  // first sheet that lived inside a Home card. From the shell it covers the
-  // whole phone, above the bar, wherever the code that opened it sits.
-  const host = typeof document === "undefined"
-    ? null
-    : document.querySelector(".shell") ?? document.querySelector(".auth-shell") ?? document.body;
-  if (!host) return null;
+  if (!mounted || !host) return null;
 
   return createPortal(
     <div
