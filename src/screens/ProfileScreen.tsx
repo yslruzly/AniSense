@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ArrowLeft, Camera, Bell, IdCard, Award, Sprout, Wheat, SlidersHorizontal, LifeBuoy, ChevronRight, Globe, Lock, HelpCircle, Settings, LogOut, Phone, Mail, MapPin, Calendar } from "lucide-react";
+import { ArrowLeft, Camera, Bell, IdCard, Award, Sprout, Wheat, SlidersHorizontal, LifeBuoy, ChevronRight, Globe, Lock, HelpCircle, PlayCircle, Settings, LogOut, Phone, Mail, MapPin, Calendar } from "lucide-react";
 import { useLang, LanguageToggle } from "../i18n";
 import { Screen, UserRole, FarmerProfile } from "../types";
 import { CropEmoji } from "../components/CropEmoji";
@@ -7,7 +7,7 @@ import { AniSenseLogo } from "../components/AniSenseLogo";
 import leafMask from "../assets/anisense-leaf-mask.png";
 
 // ─── Profile Screen ───────────────────────────────────────────────────────────
-export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignOut, userInitials = "JD", userRole, userPhoto = null, onShowId }: {
+export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignOut, userInitials = "JD", userRole, userPhoto = null, onShowId, onReplayTour }: {
   onNavigate: (s: Screen) => void;
   onBack: () => void;
   profile: FarmerProfile;
@@ -17,6 +17,8 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
   userRole?: UserRole;
   userPhoto?: string | null;
   onShowId?: () => void;
+  /** Runs the guided walkthrough again, from wherever the farmer asked. */
+  onReplayTour?: () => void;
 }) {
   const { t, tn } = useLang();
 
@@ -44,11 +46,20 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
   const save = () => { setProfile({ ...draft }); setEditing(false); };
   const cancel = () => { setDraft({ ...profile }); setEditing(false); };
 
-  // A farmer's help row opens the guide. It used to be a chevron pointing at
+  // A farmer's help rows do something. They used to be chevrons pointing at
   // nothing, which is the worst kind of button: it teaches people that the
   // arrows in this app are decoration.
+  //
+  // Two doors, because they answer different questions. The tour is for "show
+  // me round again" and starts where the farmer already is; the guide is for
+  // "how do I post a harvest" and can be read at their own pace.
   const isFarmer = userRole !== "buyer";
   const supportSettings = [
+    ...(isFarmer && onReplayTour ? [{
+      ico: <PlayCircle size={16} color="var(--tanim)" />, bg: "var(--tanim-sk)",
+      label: t("gd_replay_t"), sub: t("prof_tour_sub"),
+      go: onReplayTour as (() => void) | undefined,
+    }] : []),
     { ico: <Lock size={16} color="var(--text-soft)" />, bg: "var(--paper-alt)", label: t("prof_privacy"), sub: t("prof_privacy_sub"), go: undefined as (() => void) | undefined },
     {
       ico: <HelpCircle size={16} color="var(--tanim)" />, bg: "var(--tanim-sk)",

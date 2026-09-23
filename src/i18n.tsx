@@ -599,6 +599,7 @@ export const translations: Dict = {
   prof_help: { en: "Help & Support", tl: "Tulong at Suporta" },
   prof_help_sub: { en: "FAQs, contact support", tl: "Mga FAQ at suporta" },
   prof_help_sub_farmer: { en: "How to use AniSense, step by step", tl: "Paano gamitin ang AniSense, hakbang-hakbang" },
+  prof_tour_sub: { en: "About a minute", tl: "Mga isang minuto" },
   prof_about: { en: "About", tl: "Tungkol Dito" },
   prof_version: { en: "Version 1.0.0", tl: "Bersyon 1.0.0" },
   prof_sign_out: { en: "Sign Out", tl: "Mag-sign Out" },

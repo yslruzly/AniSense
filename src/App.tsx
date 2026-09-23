@@ -106,6 +106,9 @@ export default function App() {
     return () => clearTimeout(id);
   }, [tourPending, showWelcome, active]);
   const endTour = () => { setTourOpen(false); void saveTourSeen(); };
+  // Asked for from the guide page or from Profile: go to Home first, because
+  // Home is what the tour is about, then let the effect above start it.
+  const replayTour = () => { navigate("home"); setTourPending(true); };
 
   // The marketplace listings live here, not inside the marketplace screen.
   // That screen is unmounted whenever the farmer changes tab, so a harvest
@@ -272,9 +275,9 @@ export default function App() {
       case "expenses": return <ExpensesScreen onProfile={openProfile} onBack={goHome} farmerCrops={farmerProfile.crops} userInitials={initials} isBuyer={userRole === "buyer"} buyerTransactions={BUYER_TRANSACTIONS} />;
       case "analytics": return <AnalyticsScreen onProfile={openProfile} onBack={goHome} userInitials={initials} farmerCrops={farmerProfile.crops} />;
       case "trade": return <TradeScreen onProfile={openProfile} onBack={goHome} userName={userName} userInitials={initials} userRole={userRole} intent={tradeIntent ?? undefined} listings={listings} setListings={setListings} />;
-      case "guide": return <GuideScreen onBack={goHome} onReplay={() => { navigate("home"); setTourPending(true); }} />;
+      case "guide": return <GuideScreen onBack={goHome} onReplay={replayTour} />;
       case "weather": return <WeatherScreen onProfile={openProfile} onBack={goHome} userInitials={initials} userRole={userRole} />;
-      case "profile": return <ProfileScreen onNavigate={navigate} onBack={goBack} profile={farmerProfile} setProfile={setFarmerProfile} onSignOut={handleSignOut} userInitials={initials} userRole={userRole} userPhoto={userPhoto} onShowId={() => { setIdMode("view"); setShowWelcome(true); }} />;
+      case "profile": return <ProfileScreen onNavigate={navigate} onBack={goBack} profile={farmerProfile} setProfile={setFarmerProfile} onSignOut={handleSignOut} userInitials={initials} userRole={userRole} userPhoto={userPhoto} onShowId={() => { setIdMode("view"); setShowWelcome(true); }} onReplayTour={userRole === "farmer" ? replayTour : undefined} />;
     }
   };
 
