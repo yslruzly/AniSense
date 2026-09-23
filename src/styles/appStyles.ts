@@ -2156,6 +2156,41 @@ export const appCss = `
   .sdm-crops { display:flex; gap:8px; flex-wrap:wrap; margin-top:9px; }
   .sdm-crop-tag { background:var(--tanim-sk); border:1px solid var(--line); color:var(--tanim); font-size: var(--fs-label); font-weight:700; border-radius:99px; padding:5px 12px; }
   .star-fill { color:var(--gold-text); }
+  /* A seller's own listings, inside their profile. Same row shape as the
+     rest of the app's lists, sized for a sheet: photo, what it is and how
+     much is left, then the price. */
+  .sml { background: #fff; border-radius: 14px; padding: 12px 12px 6px; border: 1px solid var(--paper-alt); }
+  .sml-head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .sml-count {
+    min-width: 22px; height: 22px; padding: 0 7px; border-radius: 99px; background: var(--tanim-sk); color: var(--tanim-deep);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: var(--font-display); font-size: 13px; font-weight: 800;
+  }
+  .sml-none { margin: 4px 0 8px; font-size: 14.5px; color: var(--text-muted); }
+  .sml-list { display: flex; flex-direction: column; }
+  .sml-row {
+    width: 100%; display: flex; align-items: center; gap: 11px; min-height: 60px; padding: 8px 6px; margin: 0 -6px;
+    border: none; border-radius: 12px; background: none; text-align: left; font: inherit; color: inherit; cursor: pointer;
+    transition: background-color 160ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .sml-row + .sml-row { border-top: 1px solid var(--line); }
+  .sml-row:active { background: var(--paper); transition-duration: var(--dur-press); }
+  .sml-photo {
+    width: 44px; height: 44px; flex: 0 0 44px; border-radius: 12px; overflow: hidden;
+    display: flex; align-items: center; justify-content: center; background: var(--tanim-sk); color: var(--tanim);
+  }
+  .sml-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .sml-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .sml-name { font-family: var(--font-display); font-size: 15.5px; font-weight: 700; line-height: 1.25; color: var(--text); }
+  .sml-meta { font-size: 14px; color: var(--text-muted); }
+  .sml-price {
+    flex-shrink: 0; font-family: var(--font-display); font-size: 16px; font-weight: 800; color: var(--text);
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .sml-price small { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+  .sml-chev { color: var(--line-strong); flex-shrink: 0; margin-left: -4px; }
+
   .seller-modal-footer { padding:18px; background:#fff; border-top:1px solid var(--line); flex-shrink:0; }
   .call-seller-btn {
     width:100%; padding:18px; background:var(--tanim); color:#fff; border:none;

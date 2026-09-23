@@ -342,6 +342,8 @@ export const translations: Dict = {
   seller_years: { en: "Years of Farming", tl: "Taon sa Pagsasaka" },
   seller_years_suffix: { en: "years", tl: "taon" },
   seller_rating: { en: "Seller Rating", tl: "Rating ng Nagbebenta" },
+  seller_listings: { en: "Selling right now", tl: "Ibinebenta ngayon" },
+  seller_listings_none: { en: "Nothing listed right now.", tl: "Wala pang nakalista ngayon." },
   seller_crops_sold: { en: "Crops Sold", tl: "Mga Pananim na Binebenta" },
   seller_experience: { en: "Experience", tl: "Karanasan" },
   seller_sales: { en: "Sales", tl: "Benta" },

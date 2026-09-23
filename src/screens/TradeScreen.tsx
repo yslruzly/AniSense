@@ -245,6 +245,18 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
   const varietyLabel = (v: string) => v.replace(/\s*\(/, " (");
 
   const openListing = listings.find(l => l.id === openId) ?? null;
+  // What the seller in the open profile is selling right now. Read from
+  // live state, not the seed data, so a listing just posted or edited
+  // appears here as well.
+  const sellerListings = shownSeller ? listings.filter(l => l.seller === shownSeller.name) : [];
+  // From a profile into one of its listings: the profile leaves first, then
+  // the listing arrives. Both sheets share a layer, so opening the second
+  // over the first would put it underneath; this reads as a hand-off
+  // instead of two panels fighting.
+  const openFromProfile = (id: string) => {
+    setSellerDetail(null);
+    setTimeout(() => setOpenId(id), 180);
+  };
   // Keeps the sheet filled while it slides away after openId is cleared.
   const shownListing = useRetained(openListing);
   const avgShown = sorted.length ? Math.round(sorted.reduce((s, l) => s + l.pricePerKg, 0) / sorted.length) : 0;
@@ -918,6 +930,37 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
 
             {/* Body */}
             <div className="seller-modal-body">
+
+              {/* What they are selling: the reason most people open a
+                  profile at all, so it comes before the contact details. */}
+              <div className="sml">
+                <div className="sml-head">
+                  <span className="sdm-lbl">{t("seller_listings")}</span>
+                  <span className="sml-count">{sellerListings.length}</span>
+                </div>
+                {sellerListings.length === 0 ? (
+                  <p className="sml-none">{t("seller_listings_none")}</p>
+                ) : (
+                  <div className="sml-list">
+                    {sellerListings.map(l => {
+                      const photo = photoOf(l);
+                      return (
+                        <button key={l.id} className="sml-row" onClick={() => openFromProfile(l.id)}>
+                          <span className="sml-photo">
+                            {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropIcon crop={l.crop} size={20} />}
+                          </span>
+                          <span className="sml-body">
+                            <span className="sml-name">{titleOf(l)}</span>
+                            <span className="sml-meta">{l.kg} {t("trade_kg_available")}</span>
+                          </span>
+                          <span className="sml-price">₱{l.pricePerKg}<small>{t("per_kg_short")}</small></span>
+                          <ChevronRight size={18} strokeWidth={2.4} className="sml-chev" aria-hidden="true" />
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
 
               {/* Phone */}
               <div className="sdm-row">
