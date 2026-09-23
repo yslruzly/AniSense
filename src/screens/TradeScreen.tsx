@@ -276,7 +276,6 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
   };
   // Keeps the sheet filled while it slides away after openId is cleared.
   const shownListing = useRetained(openListing);
-  const avgShown = sorted.length ? Math.round(sorted.reduce((s, l) => s + l.pricePerKg, 0) / sorted.length) : 0;
 
   // The seller's own photo when they added one; otherwise the stock photo of
   // that crop, so no listing is ever a blank tile.
@@ -383,40 +382,33 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
         <div className="mp-list-head">
           {/* The two facts as chips: how many, and what they go for. Green
               for the count, gold for money, the same pairing as Home. */}
-          {/* A farmer knows their own market; the count and the average were
-              facts they did not ask for. In their place, the one cut worth
-              making at a glance: what kind of thing am I looking at.
-              A buyer keeps the facts — they are shopping, and the average is
-              what tells them whether a price is fair. */}
-          {userRole === "buyer" ? (
-            <span className="mp-facts">
-              <span className="mp-fact green"><strong>{sorted.length}</strong> {sorted.length === 1 ? t("trade_listing_one") : t("trade_listings")}</span>
-              {sorted.length > 0 && <span className="mp-fact gold">{t("mp_avg")} ₱{avgShown}{t("per_kg_short")}</span>}
-            </span>
-          ) : (
-            <div className="fseg" role="tablist" aria-label={t("mp_family")}>
-              {/* The pill is one element that slides between the labels, not
-                  a highlight that blinks off one and on the next: the eye
-                  follows the move and knows where it came from. It is a CSS
-                  transition, so a second tap mid-slide simply retargets it. */}
-              <span
-                className="fseg-pill"
-                aria-hidden="true"
-                style={{ transform: `translateX(${["All", ...CROP_FAMILIES].indexOf(family) * 100}%)` }}
-              />
-              {["All", ...CROP_FAMILIES].map(f => (
-                <button
-                  key={f}
-                  role="tab"
-                  aria-selected={family === f}
-                  className={`fseg-tab ${family === f ? "on" : ""}`}
-                  onClick={() => selectFamily(f)}
-                >
-                  {t(f === "All" ? "all" : `fam_${f.toLowerCase()}`)}
-                </button>
-              ))}
-            </div>
-          )}
+          {/* Both sides get the same cut: what kind of thing am I looking
+              at. It replaced the listing count and the average price, which
+              were facts nobody asked for and which the page already shows —
+              the listings are right there, and each one carries its price. */}
+          <div className="fseg" role="tablist" aria-label={t("mp_family")}>
+            {/* The pill is one element that slides between the labels, not a
+                highlight that blinks off one and on the next: the eye follows
+                the move and knows where it came from. A CSS transition, so a
+                second tap mid-slide simply retargets it. */}
+            <span
+              className="fseg-pill"
+              aria-hidden="true"
+              style={{ transform: `translateX(${["All", ...CROP_FAMILIES].indexOf(family) * 100}%)` }}
+            />
+            {["All", ...CROP_FAMILIES].map(f => (
+              <button
+                key={f}
+                role="tab"
+                aria-selected={family === f}
+                className={`fseg-tab ${family === f ? "on" : ""}`}
+                onClick={() => selectFamily(f)}
+              >
+                {t(f === "All" ? "all" : `fam_${f.toLowerCase()}`)}
+              </button>
+            ))}
+          </div>
+
           {/* Four options, so a plain menu under the button: the sheet we use
               for long lists was a lot of machinery between a tap and an
               answer, and it misbehaved here. */}

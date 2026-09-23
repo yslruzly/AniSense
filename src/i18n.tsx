@@ -132,6 +132,8 @@ export const translations: Dict = {
   crop_mango: { en: "Mango", tl: "Mangga" },
   crop_garlic: { en: "Garlic", tl: "Bawang" },
   crop_squash: { en: "Squash", tl: "Kalabasa" },
+  crop_ampalaya: { en: "Ampalaya", tl: "Ampalaya" },
+  crop_watermelon: { en: "Watermelon", tl: "Pakwan" },
 
   // ── Bottom nav ────────────────────────────────────────────────────────────
   nav_home: { en: "Home", tl: "Home" },
@@ -956,6 +958,8 @@ const NAME_KEYS: Record<string, keyof typeof translations> = {
   Mango: "crop_mango",
   Garlic: "crop_garlic",
   Squash: "crop_squash",
+  Ampalaya: "crop_ampalaya",
+  Watermelon: "crop_watermelon",
   Vegetables: "crop_vegetables",
   Seeds: "exp_cat_seeds",
   Fertilizer: "exp_cat_fertilizer",

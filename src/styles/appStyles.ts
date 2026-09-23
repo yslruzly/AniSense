@@ -1191,7 +1191,9 @@ export const appCss = `
     transition: transform 260ms var(--ease-out);
   }
   .fseg-tab {
-    min-height: 36px; padding: 0 6px; border: none; background: none; cursor: pointer;
+    /* 44px, the smallest target a thumb hits reliably; the segments touch
+       each other, so the height is all the room a miss can use. */
+    min-height: 44px; padding: 0 6px; border: none; background: none; cursor: pointer;
     font-family: var(--font-display); font-size: 13.5px; font-weight: 700; color: var(--text-muted);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     transition: color 160ms ease, transform 190ms var(--ease-out);
@@ -1208,14 +1210,6 @@ export const appCss = `
     .fseg-tab:active { transform: none; }
   }
 
-  .mp-facts { display: flex; align-items: center; gap: 6px; min-width: 0; }
-  .mp-fact {
-    display: inline-flex; align-items: center; gap: 4px; padding: 5px 10px; border-radius: 99px;
-    font-size: 13.5px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap;
-  }
-  .mp-fact strong { font-weight: 800; }
-  .mp-fact.green { background: var(--tanim-sk); color: var(--tanim); box-shadow: inset 0 0 0 1px rgba(11,107,65,.14); }
-  .mp-fact.gold { background: var(--gold-sk); color: var(--gold-text); box-shadow: inset 0 0 0 1px rgba(138,93,12,.16); }
   /* The seller's rating: gold, and boxed, so it reads as a score rather than
      as another grey line of text. */
   .mp-rate {

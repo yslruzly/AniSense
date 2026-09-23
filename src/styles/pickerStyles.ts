@@ -38,15 +38,18 @@ export const pickerCss = `
      it and scales out of the corner nearest it. */
   .menu-pick { position: relative; flex-shrink: 0; }
   .menu-pop {
-    position: absolute; top: calc(100% + 8px); right: 0; z-index: 60; min-width: 220px; padding: 6px;
+    position: absolute; top: calc(100% + 8px); z-index: 60; min-width: 220px; padding: 6px;
     background: var(--card); border-radius: 16px;
     box-shadow:
       inset 0 0 0 1px rgba(22,33,27,.12),
       0 2px 6px rgba(22,33,27,.12),
       0 16px 32px -16px rgba(22,33,27,.5);
-    transform-origin: top right;
     animation: menu-in 160ms var(--ease-out);
   }
+  /* It scales out of the corner it is pinned to, so it reads as having come
+     from the button rather than from nowhere. */
+  .menu-pop.start { left: 0; right: auto; transform-origin: top left; }
+  .menu-pop.end { right: 0; left: auto; transform-origin: top right; }
   @keyframes menu-in { from { opacity: 0; transform: scale(.94) translateY(-4px); } to { opacity: 1; transform: none; } }
   .menu-row {
     width: 100%; min-height: 46px; padding: 8px 12px; border: none; border-radius: 11px; cursor: pointer;

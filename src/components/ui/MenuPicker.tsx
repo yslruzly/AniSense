@@ -13,12 +13,16 @@ import { haptic } from "../../lib/platform";
 
 export type MenuOption = { value: string; label: string };
 
-export function MenuPicker({ value, options, onChange, icon, label }: {
+export function MenuPicker({ value, options, onChange, icon, label, align = "start" }: {
   value: string;
   options: MenuOption[];
   onChange: (value: string) => void;
   icon?: React.ReactNode;
   label: string;
+  /** Which edge of the button the menu hangs from. Anchored to the far edge
+   *  of a button that sits at the screen edge, a menu opens off-screen —
+   *  which is what happened when this button moved to the left of its row. */
+  align?: "start" | "end";
 }) {
   const [open, setOpen] = useState(false);
   const wrap = useRef<HTMLDivElement>(null);
@@ -54,7 +58,7 @@ export function MenuPicker({ value, options, onChange, icon, label }: {
       {open && (
         // Scales out of its own top-right corner, where the button is: a menu
         // should look like it came from the thing that opened it.
-        <div className="menu-pop" role="menu" aria-label={label}>
+        <div className={`menu-pop ${align}`} role="menu" aria-label={label}>
           {options.map(o => {
             const on = o.value === value;
             return (

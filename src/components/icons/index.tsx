@@ -16,6 +16,8 @@ export function CropIcon({ crop, size = S }: { crop: string; size?: number }) {
     case "Mango": return <Leaf    {...props} color="var(--gold-text)" />;
     case "Garlic": return <Sprout  {...props} color="var(--tanim)" />;
     case "Squash": return <Leaf    {...props} color="var(--gold-text)" />;
+    case "Ampalaya": return <Leaf    {...props} color="var(--tanim)" />;
+    case "Watermelon": return <Leaf    {...props} color="var(--error)" />;
     default: return <Sprout  {...props} />;
   }
 }

@@ -53,6 +53,20 @@ export const CROP_GROUPS: CropGroup[] = [
       { id: "corn-sweet", name: "Sweet Corn", pricePerKg: 30, change: 2.5, volume: 1.5, color: "#2f9e63" },],
   },
   {
+    group: "Ampalaya",
+    varieties: [
+      { id: "ampalaya-native", name: "Native Ampalaya", pricePerKg: 60, change: 2.2, volume: 3.2, color: "#2f9e63" },
+      { id: "ampalaya-galaxy", name: "Galaxy Ampalaya", pricePerKg: 55, change: -0.8, volume: 2.1, color: "#d4553f" },
+    ],
+  },
+  {
+    group: "Watermelon",
+    varieties: [
+      { id: "melon-sweet", name: "Sweet Watermelon", pricePerKg: 28, change: 1.4, volume: 12.0, color: "#2f9e63" },
+      { id: "melon-seedless", name: "Seedless Watermelon", pricePerKg: 35, change: 0.6, volume: 6.5, color: "#2f9e63" },
+    ],
+  },
+  {
     group: "Squash",
     varieties: [
       { id: "squash-kalabasa", name: "Kalabasa", pricePerKg: 12, change: -1.3, volume: 180, color: "#d4553f" },
@@ -76,6 +90,7 @@ export const CROP_ICONS_LEGACY: Record<string, string> = {
   "Rice (All Varieties)": "Rice", "Special Rice": "Rice", "Well Milled": "Rice", "Regular Milled": "Rice",
   Corn: "Corn", Onions: "Onions", Tomatoes: "Tomatoes",
   Calamansi: "Calamansi", Mango: "Mango", Garlic: "Garlic", Squash: "Squash",
+  Ampalaya: "Ampalaya", Watermelon: "Watermelon",
 };
 export const RICE_VARIETY_LIST = ["Special Rice", "Well Milled", "Regular Milled"];
 // Map: category → varieties shown in sub-tab row
@@ -88,6 +103,8 @@ export const CROP_FILTER_MAP: Record<string, string[]> = {
   "Garlic": ["Native Garlic", "Garlic"],
   "Tomatoes": ["Diamante Max F1 Tomato", "Platunum F1 Tomato", "Assila F1 Tomato", "Tomatoes"],
   "Squash": ["Kalabasa"],
+  "Ampalaya": ["Native Ampalaya", "Galaxy Ampalaya", "Ampalaya"],
+  "Watermelon": ["Sweet Watermelon", "Seedless Watermelon", "Watermelon"],
 };
 export const CROP_CATEGORIES = ["All Crops", ...Object.keys(CROP_FILTER_MAP)];
 
@@ -97,8 +114,8 @@ export const CROP_FAMILIES = ["Crops", "Vegetables", "Fruits"] as const;
 
 const FAMILY_GROUPS: Record<string, string[]> = {
   Crops: ["Rice", "Corn"],
-  Vegetables: ["Onions", "Garlic", "Tomatoes", "Squash"],
-  Fruits: ["Calamansi", "Mango"],
+  Vegetables: ["Onions", "Garlic", "Tomatoes", "Squash", "Ampalaya"],
+  Fruits: ["Calamansi", "Mango", "Watermelon"],
 };
 
 /** Every crop name inside a family, varieties included. */
@@ -118,6 +135,7 @@ export const CROP_GROUP_BY_ID: Record<string, string> = {
 
 export const MAIN_CROPS = [
   "Rice", "Corn", "Onions", "Tomatoes", "Calamansi", "Mango", "Garlic", "Squash",
+  "Ampalaya", "Watermelon",
 ];
 
-export const FARMER_CROPS = ["Rice", "Corn", "Tomatoes", "Onions", "Garlic", "Calamansi", "Mango", "Squash"];
+export const FARMER_CROPS = ["Rice", "Corn", "Tomatoes", "Onions", "Garlic", "Calamansi", "Mango", "Squash", "Ampalaya", "Watermelon"];
