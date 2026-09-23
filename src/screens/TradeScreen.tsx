@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import { ShoppingCart, Plus, Minus, X, Check, Search, Pencil, Trash2, ChevronRight, Package, Calendar, Star, MapPin, Phone, ShoppingBag, CreditCard, AlertTriangle, Wheat, Sprout, ArrowUpDown, Camera, ImageOff, LayoutGrid } from "lucide-react";
+import { haptic } from "../lib/platform";
 import { useLang } from "../i18n";
 import { UserRole, CartItem, SellerDetail, TradeIntent, Listing } from "../types";
 import { LISTINGS, SELLER_DETAILS } from "../data/marketplace";
-import { CROP_FILTER_MAP, CROP_CATEGORIES, ALL_RICE_NAMES, RICE_VARIETY_LIST } from "../data/crops";
+import { CROP_FILTER_MAP, CROP_CATEGORIES, CROP_FAMILIES, ALL_RICE_NAMES, RICE_VARIETY_LIST, familyCropNames } from "../data/crops";
 import { Hdr } from "../components/layout/Hdr";
 import { CropIcon } from "../components/icons";
 import { cropPhotoFor } from "../data/cropPhotos";
@@ -27,6 +28,8 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
   // change shows in the sheet straight away.
   const [openId, setOpenId] = useState<string | null>(null);
   const [category, setCategory] = useState(intent?.category ?? "All Crops");
+  // The seller's coarse view of their own market: everything, or one family.
+  const [family, setFamily] = useState("All");
   const [variety, setVariety] = useState("All");
   const [sortBy, setSortBy] = useState<"default" | "price-asc" | "price-desc" | "rating">("default");
   const [showModal, setShowModal] = useState(false);
@@ -122,7 +125,11 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
   const pendingDelete = useRetained(confirmDelete);
 
   // When category changes, reset variety
-  const selectCategory = (cat: string) => { setCategory(cat); setVariety("All"); };
+  // The two controls answer each other: picking a crop widens the family
+  // back to All, and picking a family drops any single crop. Two filters
+  // silently fighting is how a page ends up empty for no visible reason.
+  const selectCategory = (cat: string) => { setCategory(cat); setVariety("All"); setFamily("All"); };
+  const selectFamily = (fam: string) => { haptic.select(); setFamily(fam); setCategory("All Crops"); setVariety("All"); };
 
   // ── Cart helpers ──
   // Once a listing is in the cart, the cart owns its quantity: the picker on
@@ -174,6 +181,10 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
     const q = search.toLowerCase();
     const matchSearch = !q || l.crop.toLowerCase().includes(q) || l.seller.toLowerCase().includes(q) || l.location.toLowerCase().includes(q);
     if (!matchSearch) return false;
+    if (family !== "All") {
+      const names = familyCropNames(family);
+      if (!names.includes(l.crop) && !names.includes(l.variety)) return false;
+    }
     if (category === "All Crops") return true;
     if (category === "Rice") {
       const isRice = ALL_RICE_NAMES.has(l.crop) || RICE_VARIETY_LIST.includes(l.crop);
@@ -372,10 +383,40 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
         <div className="mp-list-head">
           {/* The two facts as chips: how many, and what they go for. Green
               for the count, gold for money, the same pairing as Home. */}
-          <span className="mp-facts">
-            <span className="mp-fact green"><strong>{sorted.length}</strong> {sorted.length === 1 ? t("trade_listing_one") : t("trade_listings")}</span>
-            {sorted.length > 0 && <span className="mp-fact gold">{t("mp_avg")} ₱{avgShown}{t("per_kg_short")}</span>}
-          </span>
+          {/* A farmer knows their own market; the count and the average were
+              facts they did not ask for. In their place, the one cut worth
+              making at a glance: what kind of thing am I looking at.
+              A buyer keeps the facts — they are shopping, and the average is
+              what tells them whether a price is fair. */}
+          {userRole === "buyer" ? (
+            <span className="mp-facts">
+              <span className="mp-fact green"><strong>{sorted.length}</strong> {sorted.length === 1 ? t("trade_listing_one") : t("trade_listings")}</span>
+              {sorted.length > 0 && <span className="mp-fact gold">{t("mp_avg")} ₱{avgShown}{t("per_kg_short")}</span>}
+            </span>
+          ) : (
+            <div className="fseg" role="tablist" aria-label={t("mp_family")}>
+              {/* The pill is one element that slides between the labels, not
+                  a highlight that blinks off one and on the next: the eye
+                  follows the move and knows where it came from. It is a CSS
+                  transition, so a second tap mid-slide simply retargets it. */}
+              <span
+                className="fseg-pill"
+                aria-hidden="true"
+                style={{ transform: `translateX(${["All", ...CROP_FAMILIES].indexOf(family) * 100}%)` }}
+              />
+              {["All", ...CROP_FAMILIES].map(f => (
+                <button
+                  key={f}
+                  role="tab"
+                  aria-selected={family === f}
+                  className={`fseg-tab ${family === f ? "on" : ""}`}
+                  onClick={() => selectFamily(f)}
+                >
+                  {t(f === "All" ? "all" : `fam_${f.toLowerCase()}`)}
+                </button>
+              ))}
+            </div>
+          )}
           {/* Four options, so a plain menu under the button: the sheet we use
               for long lists was a lot of machinery between a tap and an
               answer, and it misbehaved here. */}

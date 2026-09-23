@@ -1167,6 +1167,47 @@ export const appCss = `
   /* Facts on the left, sort on the right, on one line: the count and the
      going rate are read together, and wrapping split them apart. */
   .mp-list-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  /* ── Family switch ──────────────────────────────────────────────────────
+     Four segments in one track, with a pill that slides to the one you
+     picked. The whole control is always visible, so the choices are a fact
+     about the page rather than something hidden behind a menu — and the
+     current one is readable without opening anything.
+     One pill that travels, not a highlight that blinks between labels: the
+     eye follows the move and keeps its place. A transition rather than an
+     animation, so a second tap mid-slide retargets from where it is. */
+  /* Its own line, full width. Sharing the row with the sort menu squeezed
+     "Vegetables" into "Veg…", and a label a reader has to decode is not a
+     label. */
+  .mp-list-head:has(.fseg) { flex-wrap: wrap; row-gap: 10px; }
+  .mp-list-head .fseg { flex: 0 0 100%; order: -1; }
+  .fseg {
+    position: relative; flex: 1; min-width: 0; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
+    padding: 3px; border-radius: 99px; background: var(--paper-alt); isolation: isolate;
+  }
+  .fseg-pill {
+    position: absolute; z-index: -1; top: 3px; bottom: 3px; left: 3px; width: calc((100% - 6px) / 4);
+    border-radius: 99px; background: var(--card);
+    box-shadow: 0 1px 3px rgba(22,33,27,.16), 0 0 0 1px rgba(22,33,27,.04);
+    transition: transform 260ms var(--ease-out);
+  }
+  .fseg-tab {
+    min-height: 36px; padding: 0 6px; border: none; background: none; cursor: pointer;
+    font-family: var(--font-display); font-size: 13.5px; font-weight: 700; color: var(--text-muted);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    transition: color 160ms ease, transform 190ms var(--ease-out);
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .fseg-tab.on { color: var(--tanim-deep); }
+  /* Press feedback on the label itself: the pill is already travelling, and
+     two things moving at once reads as a wobble. */
+  .fseg-tab:active { transform: scale(.94); transition-duration: var(--dur-press); }
+
+  @media (prefers-reduced-motion: reduce) {
+    /* The pill still marks the choice, it just stops travelling to it. */
+    .fseg-pill { transition: none; }
+    .fseg-tab:active { transform: none; }
+  }
+
   .mp-facts { display: flex; align-items: center; gap: 6px; min-width: 0; }
   .mp-fact {
     display: inline-flex; align-items: center; gap: 4px; padding: 5px 10px; border-radius: 99px;

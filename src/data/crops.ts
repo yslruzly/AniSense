@@ -91,6 +91,22 @@ export const CROP_FILTER_MAP: Record<string, string[]> = {
 };
 export const CROP_CATEGORIES = ["All Crops", ...Object.keys(CROP_FILTER_MAP)];
 
+/** The coarse groupings a seller sorts their market by. No livestock: the
+ *  app holds none, and a filter that empties the page is not a filter. */
+export const CROP_FAMILIES = ["Crops", "Vegetables", "Fruits"] as const;
+
+const FAMILY_GROUPS: Record<string, string[]> = {
+  Crops: ["Rice", "Corn"],
+  Vegetables: ["Onions", "Garlic", "Tomatoes", "Squash"],
+  Fruits: ["Calamansi", "Mango"],
+};
+
+/** Every crop name inside a family, varieties included. */
+export function familyCropNames(family: string): string[] {
+  return (FAMILY_GROUPS[family] || []).flatMap(g =>
+    g === "Rice" ? [...ALL_RICE_NAMES] : [g, ...(CROP_FILTER_MAP[g] || [])]);
+}
+
 // All rice-related crop names (for matching)
 export const ALL_RICE_NAMES = new Set(["Rice", "Rice (All Varieties)", ...RICE_VARIETY_LIST]);
 
