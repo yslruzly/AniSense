@@ -46,11 +46,9 @@ export const tourCss = `
     opacity: 1; transform: none;
     transition: opacity 220ms var(--ease-out), transform 220ms var(--ease-out);
   }
-  .tour-mark {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 46px; height: 46px; border-radius: 14px; margin-bottom: 10px;
-    background: var(--tanim-sk); color: var(--tanim);
-  }
+  /* The logo on its own, no tile: it is full-colour artwork, and a pale green
+     square behind green leaves only muddies both. */
+  .tour-mark { display: block; width: 60px; height: 60px; margin: -4px 0 8px -4px; }
   .tour-t {
     margin: 0; font-family: var(--font-display); font-size: 21px; font-weight: 700;
     letter-spacing: -.015em; line-height: 1.25; color: var(--text);

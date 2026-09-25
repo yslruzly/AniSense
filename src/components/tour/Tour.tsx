@@ -1,5 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, Check, Sprout } from "lucide-react";
+import { ChevronLeft, ChevronRight, Check } from "lucide-react";
+import { AniSenseLogo } from "../AniSenseLogo";
 import { useLang } from "../../i18n";
 import { haptic } from "../../lib/platform";
 import { useHardwareBack } from "../../hooks/useHardwareBack";
@@ -226,7 +227,10 @@ export function Tour({ open, onFinish, role }: { open: boolean; onFinish: () => 
           the inner one its entrance. Neither has to undo the other. */}
       <div className="tour-pos" style={{ transform: `translateY(${cardTop}px)` }}>
       <div className="tour-card" ref={card}>
-        {!box && <span className="tour-mark"><Sprout size={26} strokeWidth={2.2} /></span>}
+        {/* The brand on the opening and closing cards, the two that speak for
+            the app itself. Hidden from screen readers: the title under it
+            already says "AniSense". */}
+        {!box && <span className="tour-mark" aria-hidden="true"><AniSenseLogo size={60} /></span>}
         <h2 className="tour-t">{t(`tour_${step.id}_t`)}</h2>
         {/* The opening says how long this is, counted, so the number can
             never disagree with the dots underneath it. */}
