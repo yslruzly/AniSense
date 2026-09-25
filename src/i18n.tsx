@@ -623,6 +623,52 @@ export const translations: Dict = {
     en: "Password must be at least 6 characters.",
     tl: "Dapat hindi bababa sa 6 na karakter ang password.",
   },
+  // Real accounts: what can go wrong once there is a server on the other end.
+  // Said in the farmer's terms, with what to do next, never the server's words.
+  err_login_wrong: {
+    en: "That number, Gmail or password is wrong. Check them and try again.",
+    tl: "Mali ang numero, Gmail o password. Tingnan at subukan ulit.",
+  },
+  err_account_exists: {
+    en: "There is already an account with this. Sign in instead.",
+    tl: "May account na gamit ito. Mag-sign in na lang.",
+  },
+  err_email_unconfirmed: {
+    en: "Confirm your Gmail first with the code we sent you.",
+    tl: "I-confirm muna ang Gmail mo gamit ang code na ipinadala namin.",
+  },
+  err_code_wrong: {
+    en: "That code is wrong or has expired. Check it, or send a new one.",
+    tl: "Mali o expired na ang code. Tingnan ulit, o magpadala ng bago.",
+  },
+  err_code_required: { en: "Enter the 6-digit code.", tl: "Ilagay ang 6-digit na code." },
+  err_too_many: {
+    en: "Too many tries. Wait a minute, then try again.",
+    tl: "Masyadong maraming subok. Maghintay ng isang minuto, tapos subukan ulit.",
+  },
+  err_auth_offline: {
+    en: "No internet. Connect to data or Wi-Fi and try again.",
+    tl: "Walang internet. Kumonekta sa data o Wi-Fi at subukan ulit.",
+  },
+  err_auth_generic: {
+    en: "Something went wrong. Please try again.",
+    tl: "May nangyaring mali. Pakisubukan ulit.",
+  },
+  // Only a misconfigured project can show this one; it names the fix.
+  err_phone_confirm_on: {
+    en: "CP number sign-up is not available yet. Use Gmail for now.",
+    tl: "Hindi pa puwede ang pag-sign up gamit ang CP number. Gmail muna ang gamitin.",
+  },
+  verify_title: { en: "Check your Gmail", tl: "Tingnan ang Gmail mo" },
+  verify_sub: { en: "We sent a 6-digit code to {email}.", tl: "Nagpadala kami ng 6-digit na code sa {email}." },
+  verify_lbl: { en: "Verification code", tl: "Verification code" },
+  verify_help: {
+    en: "It can take a minute. Check Spam if it is not in your inbox.",
+    tl: "Puwedeng umabot ng isang minuto. Tingnan ang Spam kung wala sa inbox.",
+  },
+  verify_btn: { en: "Verify and continue", tl: "I-verify at magpatuloy" },
+  verify_resend: { en: "Send a new code", tl: "Magpadala ng bagong code" },
+  verify_resent: { en: "A new code is on its way.", tl: "Paparating na ang bagong code." },
   err_password_mismatch: { en: "Passwords do not match.", tl: "Hindi magkatugma ang mga password." },
   err_select_crop: { en: "Please select at least one crop.", tl: "Pumili ng kahit isang pananim." },
 

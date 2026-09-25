@@ -110,8 +110,8 @@ create policy "buyers can create transactions"
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- TRIGGER: auto-create a profile row when a new user signs up.
--- The name/role/crops come from the metadata passed by signUpWithEmail()
--- in src/services/auth.ts.
+-- Everything the sign-up form asked arrives as metadata from createAccount()
+-- in src/services/auth.ts, so the profile is complete from its first second.
 -- ═══════════════════════════════════════════════════════════════════════════
 create or replace function public.handle_new_user()
 returns trigger
@@ -119,11 +119,20 @@ language plpgsql
 security definer set search_path = public
 as $$
 begin
-  insert into public.profiles (id, full_name, role)
+  insert into public.profiles (id, full_name, role, location, phone, years_farming, crops)
   values (
     new.id,
     coalesce(new.raw_user_meta_data ->> 'full_name', ''),
-    coalesce(new.raw_user_meta_data ->> 'role', 'farmer')
+    coalesce(new.raw_user_meta_data ->> 'role', 'farmer'),
+    new.raw_user_meta_data ->> 'location',
+    new.raw_user_meta_data ->> 'phone',
+    nullif(new.raw_user_meta_data ->> 'years_farming', '')::int,
+    coalesce(
+      array(select jsonb_array_elements_text(
+        case when jsonb_typeof(new.raw_user_meta_data -> 'crops') = 'array'
+             then new.raw_user_meta_data -> 'crops' else '[]'::jsonb end)),
+      '{}'
+    )
   );
   return new;
 end;

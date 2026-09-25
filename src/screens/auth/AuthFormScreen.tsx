@@ -8,6 +8,9 @@ import { FARM_PROVINCE, MUNICIPALITIES, BARANGAYS_BY_MUNICIPALITY, formatFarmLoc
 import { CropEmoji } from "../../components/CropEmoji";
 import { PickerField } from "../../components/ui/PickerField";
 import { AniSenseLogo } from "../../components/AniSenseLogo";
+import type { Session } from "@supabase/supabase-js";
+import { isSupabaseConfigured } from "../../lib/supabase";
+import { createAccount, signIn, verifyEmailCode, resendEmailCode, authErrorKey } from "../../services/auth";
 
 // ─── Sign In / Sign Up Form ───────────────────────────────────────────────────
 // Validation and flow are unchanged from the original. What changed is the
@@ -42,13 +45,16 @@ const focusNext = (id: string) => (e: KeyboardEvent<HTMLInputElement>) => {
 };
 
 export function AuthFormScreen({
-  flow, role, onBack, onSuccess,
+  flow, role, onBack, onSuccess, onSession,
 }: {
   flow: "signin" | "signup";
   role: UserRole;
   onBack: () => void;
-  /** isNew: the account was just created (not signed in), so the app shows the welcome ID. */
+  /** Demo sign-in, used while no Supabase project is set up in .env.
+   *  isNew: the account was just created (not signed in), so the app shows the welcome ID. */
   onSuccess: (name: string, role: UserRole, crops: string[], farmDetails?: FarmDetails, isNew?: boolean) => void;
+  /** Real sign-in: a Supabase session, from signing in or from a new account. */
+  onSession?: (session: Session, isNew: boolean) => void;
 }) {
   const [mode, setMode] = useState<"gmail" | "phone">("phone");
   const [formFlow, setFormFlow] = useState(flow);
@@ -60,7 +66,12 @@ export function AuthFormScreen({
   const [error, setError] = useState("");
   const [errField, setErrField] = useState<Field | null>(null);
   const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState<"form" | "details" | "crops">("form");
+  const [step, setStep] = useState<"form" | "details" | "crops" | "verify">("form");
+  // Only for projects that still have email confirmation on: the address the
+  // code went to, what was typed, and a quiet "sent" line after a resend.
+  const [pendingEmail, setPendingEmail] = useState("");
+  const [code, setCode] = useState("");
+  const [notice, setNotice] = useState("");
   const [selectedCrops, setSelectedCrops] = useState<string[]>([]);
   const [farmYears, setFarmYears] = useState("");
   const [municipality, setMunicipality] = useState("");
@@ -69,6 +80,9 @@ export function AuthFormScreen({
   const { t, tn } = useLang();
 
   const signup = formFlow === "signup";
+  // A real account when the app has a database to put it in; the demo
+  // sign-in otherwise, so a build without .env still opens for respondents.
+  const live = isSupabaseConfigured && !!onSession;
   // Short on purpose: it rides the brand row, and "Account ng Magsasaka" would
   // push it off a 360px screen. The title already says it's an account.
   const roleLabel = role === "farmer" ? t("role_farmer") : t("role_buyer");
@@ -113,11 +127,54 @@ export function AuthFormScreen({
       return;
     }
     setLoading(true);
+    if (live) {
+      signIn(mode, contact, password)
+        .then(session => { setLoading(false); onSession!(session, false); })
+        .catch(err => {
+          setLoading(false);
+          const key = authErrorKey(err);
+          // A wrong password is the likeliest miss, and the password field is
+          // where the fix is typed; anything else is about the whole attempt.
+          if (key === "err_login_wrong") fail("password", t(key));
+          else { setError(t(key)); setErrField(null); }
+        });
+      return;
+    }
     setTimeout(() => {
       setLoading(false);
       const displayName = signup ? name.trim() : (role === "farmer" ? "Juan Dela Cruz" : "Maria Santos");
       onSuccess(displayName, role, selectedCrops.length > 0 ? selectedCrops : ["Rice", "Corn"], undefined, signup);
     }, 1200);
+  };
+
+  // ── Sign up, at the last step ──
+  // The account is made once, at the end, with everything the steps asked.
+  // Made at the first step, a farmer who stopped halfway would own an account
+  // with no town and no crops, and would never be asked for them again.
+  const createLive = (details: { location: string; phone?: string; years?: number; crops: string[] }) => {
+    setLoading(true);
+    setError("");
+    createAccount({ name, role, mode, contact, password, ...details })
+      .then(({ session, email }) => {
+        setLoading(false);
+        if (session) { onSession!(session, true); return; }
+        // The project still asks for email confirmation. A Gmail account can
+        // answer with the code; a CP-number account has no inbox to read it.
+        if (mode === "phone") { setError(t("err_phone_confirm_on")); return; }
+        setPendingEmail(email);
+        setCode("");
+        setNotice("");
+        setStep("verify");
+      })
+      .catch(err => {
+        setLoading(false);
+        const key = authErrorKey(err);
+        // Both of these are answered on the first step, so go back to it and
+        // put the message under the field that needs changing.
+        if (key === "err_account_exists") { setStep("form"); fail("contact", t(key)); return; }
+        if (key === "err_password_short") { setStep("form"); fail("password", t(key)); return; }
+        setError(t(key));
+      });
   };
 
   const finishDetails = () => {
@@ -136,6 +193,7 @@ export function AuthFormScreen({
   const finishBuyerLocation = () => {
     if (!municipality) { setError(t("err_municipality_required")); return; }
     setError("");
+    if (live) { createLive({ location: formatFarmLocation(barangay, municipality), crops: [] }); return; }
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
@@ -149,6 +207,15 @@ export function AuthFormScreen({
   const finishCrops = () => {
     if (selectedCrops.length === 0) { setError(t("err_select_crop")); return; }
     setError("");
+    if (live) {
+      createLive({
+        location: formatFarmLocation(barangay, municipality),
+        phone: farmPhone.trim(),
+        years: Number(farmYears),
+        crops: selectedCrops,
+      });
+      return;
+    }
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
@@ -221,6 +288,54 @@ export function AuthFormScreen({
   const busy = (label: string) => (
     <><span className="a-spin" aria-hidden="true" />{label}</>
   );
+
+  // ── Last step, only while email confirmation is on: the 6-digit code ──
+  if (step === "verify") {
+    const verify = () => {
+      if (!/^\d{6}$/.test(code)) { setError(t("err_code_required")); return; }
+      setLoading(true);
+      setError("");
+      verifyEmailCode(pendingEmail, code)
+        .then(session => { setLoading(false); if (session) onSession!(session, true); })
+        .catch(err => {
+          setLoading(false);
+          const key = authErrorKey(err);
+          setError(t(key === "err_auth_generic" ? "err_code_wrong" : key));
+        });
+    };
+    const resend = () => {
+      setError("");
+      resendEmailCode(pendingEmail)
+        .then(() => setNotice(t("verify_resent")))
+        .catch(err => setError(t(authErrorKey(err))));
+    };
+    return (
+      <form className="a-screen" noValidate onSubmit={e => { e.preventDefault(); verify(); }}>
+        {head(t("verify_title"), t("verify_sub").replace("{email}", pendingEmail))}
+        <div className="a-scroll">
+          <div className="a-field">
+            <label className="a-lbl" htmlFor="f-code">{t("verify_lbl")}</label>
+            {/* one-time-code lets Android offer the code from the email or
+                SMS notification without the app reading anyone's messages. */}
+            <input id="f-code" className="a-inp num a-code" type="text" inputMode="numeric"
+              autoComplete="one-time-code" enterKeyHint="go" maxLength={6} placeholder="000000"
+              value={code}
+              onChange={e => { setCode(e.target.value.replace(/\D/g, "").slice(0, 6)); setError(""); setNotice(""); }} />
+            <p className="a-help" role="status">{notice || t("verify_help")}</p>
+          </div>
+          <button type="button" className="a-link" onClick={resend}>{t("verify_resend")}</button>
+          {alert()}
+          <div style={{ height: 24 }} />
+        </div>
+        {dock(
+          () => { setStep(role === "buyer" ? "details" : "crops"); setError(""); },
+          <button type="submit" className="a-btn a-btn-green" disabled={loading} aria-busy={loading}>
+            {loading ? busy(t("please_wait")) : t("verify_btn")}
+          </button>,
+        )}
+      </form>
+    );
+  }
 
   // ── Step 2 (buyer): where they buy from ──
   // Deliberately the same two pickers, province row and dock as the farmer
@@ -529,6 +644,9 @@ export function AuthFormScreen({
             <button type="button" className="a-link">{t("auth_forgot")}</button>
           </div>
         )}
+        {/* Errors about one field sit under that field. This is for the rest:
+            no signal, too many tries — things no field can fix. */}
+        {!errField && alert()}
         <div style={{ height: 20 }} />
       </div>
 

@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import type { Session } from "@supabase/supabase-js";
 import { Screen, AuthScreen, UserRole, FarmDetails, TradeIntent, Listing } from "./types";
 import { useOffline } from "./hooks/useOffline";
 import { useHardwareBack } from "./hooks/useHardwareBack";
@@ -30,6 +31,12 @@ import { WelcomeID, WelcomeInfo, makeMemberId } from "./components/WelcomeID";
 import { Tour } from "./components/tour/Tour";
 import { loadTourSeen, saveTourSeen } from "./lib/tour";
 import { ViewerContext } from "./lib/viewer";
+import { isSupabaseConfigured } from "./lib/supabase";
+import {
+  getSession, onAuthChange, signOut, getMyProfile, updateMyProfile,
+  toFarmerProfile, accountFromSession, memberIdFor, toE164Phone,
+} from "./services/auth";
+import { FarmerProfile } from "./types";
 import { PriceAlert, loadAlerts, saveAlerts } from "./lib/priceAlerts";
 import { Planting, loadPlantings, savePlantings } from "./lib/plantings";
 import { Sale, loadSales, saveSales } from "./lib/sales";
@@ -53,6 +60,9 @@ export default function App() {
   const [showWelcome, setShowWelcome] = useState(false);
   const [idMode, setIdMode] = useState<"welcome" | "view">("welcome");
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
+  // True while a saved session is being looked for at launch. Without it a
+  // returning user watches the welcome board flash past on the way to Home.
+  const [booting, setBooting] = useState(isSupabaseConfigured);
 
   // ── App state ──
   const [active, setActive] = useState<Screen>("home");
@@ -203,7 +213,68 @@ export default function App() {
     setIsAuthed(true);
   };
 
+  // ── Real accounts (Supabase) ──
+  // A session opens the app on what the account says: its name, its role,
+  // its town and crops. The copy inside the session is enough to open
+  // straight away, offline included; the profile row then replaces it, since
+  // that is where edits made on another phone land.
+  const applySession = (session: Session, isNew: boolean) => {
+    const { role, profile } = accountFromSession(session);
+    setUserName(profile.name);
+    setUserRole(role);
+    setFarmerProfile(profile);
+    setWelcome(memberIdFor(session));
+    if (isNew) {
+      setActive("home");
+      setIdMode("welcome");
+      setShowWelcome(true);
+    }
+    setIsAuthed(true);
+    getMyProfile()
+      .then(row => {
+        if (!row) return;
+        setUserName(row.full_name);
+        setUserRole(row.role);
+        setFarmerProfile(toFarmerProfile(row, session.user.email ?? ""));
+      })
+      .catch(() => { /* offline or not yet reachable: the session's copy stands */ });
+  };
+
+  useEffect(() => {
+    if (!isSupabaseConfigured) return;
+    let alive = true;
+    getSession()
+      .then(s => { if (alive && s) applySession(s, false); })
+      .catch(() => {})
+      .finally(() => { if (alive) setBooting(false); });
+    // Signed out somewhere else, or the session could not be renewed: back
+    // to the welcome board rather than a Home that can no longer load.
+    const off = onAuthChange((_s, event) => { if (alive && event === "SIGNED_OUT") resetToSplash(); });
+    return () => { alive = false; off(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /** Profile edits, kept on the account so they follow it to any phone. */
+  const saveProfile = (p: FarmerProfile) => {
+    setFarmerProfile(p);
+    setUserName(p.name);
+    if (!isSupabaseConfigured) return;
+    const years = parseInt(p.experience, 10);
+    void updateMyProfile({
+      full_name: p.name,
+      location: p.location,
+      crops: p.crops,
+      ...(p.phone.replace(/\D/g, "") ? { phone: toE164Phone(p.phone) } : {}),
+      ...(Number.isFinite(years) ? { years_farming: years } : {}),
+    }).catch(() => { /* kept on this phone; saved again with the next edit */ });
+  };
+
   const handleSignOut = () => {
+    if (isSupabaseConfigured) void signOut().catch(() => {});
+    resetToSplash();
+  };
+
+  const resetToSplash = () => {
     setIsAuthed(false);
     setAuthScreen("splash");
     setSelectedRole(null);
@@ -223,6 +294,15 @@ export default function App() {
   };
 
   // ── Auth flow ──
+  if (booting) {
+    return (
+      <>
+        <style>{tokensCss}</style>
+        <style>{authCss}</style>
+        <div className="auth-outer"><div className="auth-shell" aria-busy="true" /></div>
+      </>
+    );
+  }
   if (!isAuthed) {
     return (
       <>
@@ -258,6 +338,7 @@ export default function App() {
                 role={selectedRole}
                 onBack={() => setAuthScreen("role")}
                 onSuccess={handleAuthSuccess}
+                onSession={applySession}
               />
             )}
           </div>
@@ -282,7 +363,7 @@ export default function App() {
       case "trade": return <TradeScreen onProfile={openProfile} onBack={goHome} userName={userName} userInitials={initials} userRole={userRole} intent={tradeIntent ?? undefined} listings={listings} setListings={setListings} />;
       case "guide": return <GuideScreen onBack={goHome} onReplay={replayTour} />;
       case "weather": return <WeatherScreen onProfile={openProfile} onBack={goHome} userInitials={initials} userRole={userRole} />;
-      case "profile": return <ProfileScreen onNavigate={navigate} onBack={goBack} profile={farmerProfile} setProfile={setFarmerProfile} onSignOut={handleSignOut} userInitials={initials} userRole={userRole} userPhoto={userPhoto} onShowId={() => { setIdMode("view"); setShowWelcome(true); }} onReplayTour={replayTour} />;
+      case "profile": return <ProfileScreen onNavigate={navigate} onBack={goBack} profile={farmerProfile} setProfile={saveProfile} onSignOut={handleSignOut} userInitials={initials} userRole={userRole} userPhoto={userPhoto} onShowId={() => { setIdMode("view"); setShowWelcome(true); }} onReplayTour={replayTour} />;
     }
   };
 

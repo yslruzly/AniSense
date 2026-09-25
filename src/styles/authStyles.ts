@@ -7,6 +7,9 @@
 import riceField from "../assets/rice-field.webp";
 
 export const authCss = `
+  /* A verification code: six digits read off another screen and typed back,
+     so they are spaced like the email prints them. */
+  .a-inp.a-code { font-size: 26px; letter-spacing: .45em; text-align: center; font-variant-numeric: tabular-nums; }
 
 
 

@@ -1,8 +1,14 @@
 # AniSense Database & Auth Setup Guide
 
-Everything is scaffolded and compiles already. Follow these steps in order when
-you're ready to go live. The app keeps working with mock data until Step 7,
-so you can do Steps 1–6 without breaking anything.
+**Sign-in and sign-up are already wired.** The moment a `.env` with your
+project keys is in place and you rebuild, the app creates real accounts, signs
+people in, keeps them signed in, and saves Profile edits to the database.
+Without `.env` it falls back to the old demo sign-in, so an APK built without
+keys still opens.
+
+To get real accounts working you only need **Steps 1, 2, 3, 4 and 9**.
+Everything else (listings, expenses, checkout on the database) is Step 7 and
+still runs on the built-in sample data.
 
 **What's already done for you:**
 
@@ -49,8 +55,31 @@ Packages `@supabase/supabase-js` and `@capacitor/preferences` are already instal
 4. Restart `npm run dev`. The console warning "Supabase is not configured"
    should be gone.
 
-## Step 4: Email verification with a 6-digit code
+## Step 4: Turn off email confirmation (for testing with respondents)
 
+The sign-up form lets people use a **CP number** or a **Gmail**. A CP-number
+account has no inbox to confirm, and Supabase's free mailer only sends about
+2 emails an hour, so for a study with respondents:
+
+1. Dashboard → **Authentication → Sign In / Providers → Email**.
+2. Turn **Confirm email** OFF. Save.
+3. Leave **Email** provider itself ON (CP-number accounts use it underneath).
+
+That's all. People sign up and land on Home immediately.
+
+> How CP-number accounts work: Supabase's own phone login needs a paid SMS
+> provider, so a CP number is stored as a login address nobody types,
+> `639171234567@phone.anisense.app`, with the real number kept on the profile.
+> You'll see these addresses in **Authentication → Users**; that's expected.
+> The trade-off: the number is not verified by SMS, so anyone could sign up
+> with a number that isn't theirs. Fine for a study; add Step 5 before a
+> public launch.
+
+### Optional, later: verify Gmail accounts with a 6-digit code
+
+Only if you turn **Confirm email** back ON. The app already handles it: after
+the last sign-up step it shows a code screen. CP-number sign-ups will then be
+refused with a message to use Gmail, because they can't receive the code.
 By default Supabase emails a *link*. You want a *code* (better for a mobile app:
 no browser redirect needed):
 
@@ -65,7 +94,7 @@ no browser redirect needed):
    ```
 
    `{{ .Token }}` is the 6-digit code; that's the whole trick.
-3. **Authentication → Sign In / Up → Email**: make sure "Confirm email" is ON.
+3. **Authentication → Sign In / Providers → Email**: turn "Confirm email" ON.
 
 **Sending limits:** Supabase's built-in mailer only sends ~2 emails/hour, fine
 for your own testing, useless for real users. When you need more, plug in your
@@ -110,9 +139,12 @@ trigger automatically).
 
 ## Step 7: Wire the services into the screens
 
-This is the coding part. Each service function maps to one spot in the UI:
+**Already done:** sign-in, sign-up (both roles, CP number or Gmail), the
+optional code screen, staying signed in across restarts, sign-out, and Profile
+edits (`src/screens/auth/AuthFormScreen.tsx`, `src/App.tsx`). The notes below
+for those two files are kept for reference; the rest of this step is still to do.
 
-### `src/screens/auth/AuthFormScreen.tsx`
+### `src/screens/auth/AuthFormScreen.tsx` (done)
 - `submit()`: replace the `setTimeout(...)` fake with:
   - signup flow → `await signUpWithEmail({ name, role, email: contact, password })`
     then show a **new "enter the code" step** (add `"verify"` to the `step` state,
@@ -126,7 +158,7 @@ This is the coding part. Each service function maps to one spot in the UI:
   On the code `<input>`, add `autocomplete="one-time-code"` so Android
   auto-fills the SMS code.
 
-### `src/App.tsx`
+### `src/App.tsx` (done, except auto-sync)
 - On mount: `getSession()` + `onAuthChange(...)` in a `useEffect`, replacing the
   `isAuthed` mock. If a session exists, `getMyProfile()` →
   `toFarmerProfile(row, session.user.email)` → `setFarmerProfile`, set role
@@ -185,7 +217,7 @@ The moving parts:
 The only wiring needed is what's already listed in Step 7: `initAutoSync()` in
 App.tsx and using `fromCache` for the banner.
 
-## Step 9: Ship to Android
+## Step 9: Ship to Android (rebuild after adding `.env`)
 
 Nothing Supabase-specific is needed in the Android project (it's all HTTPS),
 just the normal Capacitor cycle:
@@ -196,8 +228,23 @@ npx cap sync android
 npx cap open android   # then Run ▶ in Android Studio
 ```
 
+Or, for the APK you hand to respondents:
+
+```
+npm run build
+npx cap sync android
+cd android
+.\gradlew.bat assembleDebug
+```
+
+The APK is at `android/app/build/outputs/apk/debug/app-debug.apk`.
+
 Notes:
 - `.env` values are baked in at `npm run build` time, so rebuild after changing them.
+  **An APK built before `.env` existed still uses the demo sign-in.**
+- Free Supabase projects **pause after 7 days with no activity**. If sign-in
+  suddenly says "No internet" for everyone, open the dashboard and press
+  **Restore project**.
 - Sessions persist natively (already handled via `@capacitor/preferences` in
   `src/lib/supabase.ts`); users stay logged in across app restarts.
 - Do NOT add `READ_SMS` permission for OTP autofill; Google Play rejects it.
