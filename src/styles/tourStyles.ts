@@ -46,6 +46,38 @@ export const tourCss = `
     opacity: 1; transform: none;
     transition: opacity 220ms var(--ease-out), transform 220ms var(--ease-out);
   }
+  /* Above the mascot, so his cut-off waist is hidden by the card. */
+  .tour-card { position: relative; z-index: 1; }
+
+  /* ── The mascot on the opening card ──────────────────────────────────────
+     He rises from behind the card a beat after it lands, then waves. The
+     rise is a transition (ease-out: an entrance); the wave is a keyframe,
+     because it is a fixed gesture played once, and each swing eases in and
+     out like a pendulum, since it is movement back and forth on screen. */
+  .tour-mascot {
+    position: absolute; right: 18px; bottom: calc(100% - 38px);
+    width: 168px; aspect-ratio: 420 / 435;
+    opacity: 0; transform: translateY(28px);
+    transition: opacity 140ms ease, transform 140ms ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .tour[data-open] .tour-mascot {
+    opacity: 1; transform: none;
+    transition: opacity 260ms var(--ease-out) 120ms, transform 420ms var(--ease-out) 120ms;
+  }
+  .tm-body, .tm-hand { position: absolute; inset: 0; width: 100%; height: 100%; }
+  /* The pivot is the wrist crease, measured on the drawing. */
+  .tm-hand { transform-origin: 21.13% 53.48%; }
+  .tour[data-open] .tm-hand { animation: tm-wave 1.7s var(--ease-io) 560ms both; }
+  @keyframes tm-wave {
+    0%   { transform: rotate(0deg); }
+    16%  { transform: rotate(-16deg); }
+    32%  { transform: rotate(10deg); }
+    48%  { transform: rotate(-16deg); }
+    64%  { transform: rotate(10deg); }
+    82%  { transform: rotate(-5deg); }
+    100% { transform: rotate(0deg); }
+  }
   /* The logo on its own, no tile: it is full-colour artwork, and a pale green
      square behind green leaves only muddies both. */
   .tour-mark { display: block; width: 60px; height: 60px; margin: -4px 0 8px -4px; }
@@ -93,6 +125,10 @@ export const tourCss = `
      travel: the light and the card cut to their next position. */
   @media (prefers-reduced-motion: reduce) {
     .tour-hole, .tour-pos { transition: none; }
+    /* He still appears, and still says hello with his hand up; he just
+       does not rise or wave. */
+    .tour-mascot, .tour[data-open] .tour-mascot { transform: none; transition: opacity 200ms ease; }
+    .tour[data-open] .tm-hand { animation: none; }
     .tour-card, .tour[data-open] .tour-card { transform: none; transition: opacity 200ms ease; }
     .tour-skip:active, .tour-back:active, .tour-next:active { transform: none; }
   }

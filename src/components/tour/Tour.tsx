@@ -1,6 +1,8 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Check } from "lucide-react";
 import { AniSenseLogo } from "../AniSenseLogo";
+import mascotBody from "../../assets/mascot-wave-body.webp";
+import mascotHand from "../../assets/mascot-wave-hand.webp";
 import { useLang } from "../../i18n";
 import { haptic } from "../../lib/platform";
 import { useHardwareBack } from "../../hooks/useHardwareBack";
@@ -70,6 +72,10 @@ const PAD = 8;          // breathing room around the lit element
 const GAP = 14;         // between the hole and the card
 const EDGE = 12;        // the card never touches the screen edge
 const near = (a: number, b: number) => Math.abs(a - b) < 0.5;
+// The mascot on the opening card: how much of it stands above the card's top
+// edge. The rest - where the drawing is cut off at the waist - is tucked
+// behind the card, so he reads as leaning over it rather than floating.
+const MASCOT_ROOM = 134;
 
 /** The union of the targets' rectangles, in the shell's own coordinates. */
 function measure(targets: string[] | undefined, host: DOMRect): Box | null {
@@ -106,6 +112,9 @@ export function Tour({ open, onFinish, role }: { open: boolean; onFinish: () => 
   const [shellH, setShellH] = useState(844);
   const step = STEPS[i];
   const last = i === STEPS.length - 1;
+  const opening = i === 0;
+  // Bumped to wave again: a new key remounts the hand, which restarts it.
+  const [waves, setWaves] = useState(0);
 
   // Every run starts at the beginning, including a replay from the guide.
   useEffect(() => { if (open) setI(0); }, [open]);
@@ -194,7 +203,10 @@ export function Tour({ open, onFinish, role }: { open: boolean; onFinish: () => 
   // the lit thing is too tall for either — the card is never off-screen.
   let cardTop: number;
   if (!box) {
-    cardTop = Math.max(EDGE, (shellH - cardH) / 2);
+    // The opening card makes room above itself for the mascot, and the two
+    // are centred together.
+    const room = opening ? MASCOT_ROOM : 0;
+    cardTop = Math.max(EDGE + room, (shellH - cardH + room) / 2);
   } else if (box.top + box.height + GAP + cardH + EDGE <= shellH) {
     cardTop = box.top + box.height + GAP;
   } else if (box.top - GAP - cardH >= EDGE) {
@@ -205,7 +217,7 @@ export function Tour({ open, onFinish, role }: { open: boolean; onFinish: () => 
   // Whatever the arithmetic said, the card stays on the screen. A target that
   // has not finished scrolling into view would otherwise take the card with
   // it, and a farmer would be looking at a dimmed page with no way forward.
-  cardTop = Math.max(EDGE, Math.min(cardTop, shellH - cardH - EDGE));
+  cardTop = Math.max(EDGE + (opening && !box ? MASCOT_ROOM : 0), Math.min(cardTop, shellH - cardH - EDGE));
 
   return (
     <div className="tour" ref={host} data-open={visible || undefined} role="dialog" aria-modal="true" aria-label={t("tour_title")}>
@@ -226,6 +238,16 @@ export function Tour({ open, onFinish, role }: { open: boolean; onFinish: () => 
       {/* Two elements, two jobs: the outer one carries the step's position,
           the inner one its entrance. Neither has to undo the other. */}
       <div className="tour-pos" style={{ transform: `translateY(${cardTop}px)` }}>
+      {/* The first thing a new farmer or buyer sees: someone saying hello.
+          Two layers of one drawing, the body still and the hand rotating
+          from the wrist. Only here, once: a greeting that repeats on every
+          card stops being one. A tap waves again, for whoever tries. */}
+      {opening && (
+        <div className="tour-mascot" aria-hidden="true" onClick={() => setWaves(w => w + 1)}>
+          <img className="tm-body" src={mascotBody} alt="" width={420} height={435} decoding="async" />
+          <img key={waves} className="tm-hand" src={mascotHand} alt="" width={420} height={435} decoding="async" />
+        </div>
+      )}
       <div className="tour-card" ref={card}>
         {/* The brand on the opening and closing cards, the two that speak for
             the app itself. Hidden from screen readers: the title under it
