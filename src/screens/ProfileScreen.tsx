@@ -51,11 +51,11 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
   // arrows in this app are decoration.
   //
   // Two doors, because they answer different questions. The tour is for "show
-  // me round again" and starts where the farmer already is; the guide is for
-  // "how do I post a harvest" and can be read at their own pace.
+  // me round again", for either side of the market; the guide is the
+  // farmer's "how do I post a harvest", read at their own pace.
   const isFarmer = userRole !== "buyer";
   const supportSettings = [
-    ...(isFarmer && onReplayTour ? [{
+    ...(onReplayTour ? [{
       ico: <PlayCircle size={16} color="var(--tanim)" />, bg: "var(--tanim-sk)",
       label: t("gd_replay_t"), sub: t("prof_tour_sub"),
       go: onReplayTour as (() => void) | undefined,

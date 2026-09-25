@@ -105,6 +105,7 @@ export function Hdr({ icon, title, sub, onBack, extra, center }: { icon?: React.
           {extra}
           <button
             className="notif"
+            data-tour="bell"
             aria-label={t("alerts_open")}
             onClick={() => { haptic.select(); setShowAlerts(true); }}
           >

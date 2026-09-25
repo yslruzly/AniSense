@@ -25,7 +25,7 @@ const catPhoto = cropGroupPhoto;
 // buyer will see them at the bagsakan.
 export function ShopByCrop({ onShop }: { onShop: Shop }) {
   return (
-    <section className="hm-sec" aria-labelledby="shop-t">
+    <section className="hm-sec" aria-labelledby="shop-t" data-tour="b-crops">
       <h2 className="hm-sec-title" id="shop-t">{translations.home_shop_by_crop.en}</h2>
       <div className="shop-grid stagger-list">
         {SHOP_CATS.map(cat => {
@@ -71,7 +71,7 @@ export function PriceMoves({ onOpen }: { onOpen: () => void }) {
   const VerdictIcon = verdict === "up" ? TrendingUp : verdict === "down" ? TrendingDown : ArrowLeftRight;
 
   return (
-    <section className="mv" aria-labelledby="mv-t">
+    <section className="mv" aria-labelledby="mv-t" data-tour="b-moves">
       <div className="mv-head">
         <h2 className="mv-title" id="mv-t">{t("mkt_movers")}</h2>
         <button className="hm-link" onClick={onOpen}>
@@ -157,7 +157,7 @@ export function FeaturedProducts({ onShop }: { onShop: Shop }) {
     .slice(0, 8);
 
   return (
-    <section className="hm-sec" aria-labelledby="fp-t">
+    <section className="hm-sec" aria-labelledby="fp-t" data-tour="b-featured">
       <div className="hm-sec-row">
         <h2 className="hm-sec-title" id="fp-t">{t("fp_title")}</h2>
         <button className="hm-link" onClick={() => onShop({})}>
@@ -228,7 +228,7 @@ export function FeaturedFarmers({ onShop, buyerLocation }: { onShop: Shop; buyer
   const open = (s: { key: string; name: string }) => onShop({ seller: s.key, search: s.name });
 
   return (
-    <section className="hm-sec" aria-labelledby="ff-t">
+    <section className="hm-sec" aria-labelledby="ff-t" data-tour="b-farmers">
       <h2 className="hm-sec-title" id="ff-t">{t("ff_title")}</h2>
       <p className="hm-sec-sub">{t("ff_sub")}</p>
 
@@ -317,7 +317,7 @@ export function YourPurchases({ onShop, onHistory }: { onShop: Shop; onHistory: 
     .replace("{farmers}", `${farmers} ${farmers === 1 ? t("yp_farmer_one") : t("yp_farmers")}`);
 
   return (
-    <section className="hm-sec" aria-labelledby="yp-t">
+    <section className="hm-sec" aria-labelledby="yp-t" data-tour="b-purchases">
       <div className="hm-sec-row">
         <h2 className="hm-sec-title" id="yp-t">{t("yp_title")}</h2>
         <button className="hm-link" onClick={onHistory}>

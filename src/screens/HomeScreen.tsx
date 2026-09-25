@@ -131,7 +131,7 @@ export function HomeScreen({ onNavigate, onShop, onProfile, isOffline, userName 
             control that serves any errand. It opens the marketplace with
             the keyboard up rather than pretending to be a field itself. */}
         {isBuyer && (
-          <button className="hm-search" onClick={() => shop({ focusSearch: true })}>
+          <button className="hm-search" data-tour="b-search" onClick={() => shop({ focusSearch: true })}>
             <Search size={21} strokeWidth={2.4} aria-hidden="true" />
             <span>{t("home_search_ph")}</span>
             {/* The green key at the end: the shape people press to search. */}

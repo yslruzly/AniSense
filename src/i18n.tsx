@@ -961,8 +961,8 @@ export const translations: Dict = {
 
   tour_intro_t: { en: "Welcome to AniSense", tl: "Maligayang pagdating sa AniSense" },
   tour_intro_b: {
-    en: "A quick look at your Home screen — nine short steps, about a minute. You can skip it now and open it again any time from More tools.",
-    tl: "Mabilis na pasyal sa Home mo — siyam na maikling hakbang, mga isang minuto. Puwede mong laktawan ngayon at buksan ulit kahit kailan sa Iba pang gamit.",
+    en: "A quick look at your Home screen — {n} short steps, about a minute. You can skip it now and open it again any time from More tools or Profile.",
+    tl: "Mabilis na pasyal sa Home mo — {n} maikling hakbang, mga isang minuto. Puwede mong laktawan ngayon at buksan ulit kahit kailan sa Iba pang gamit o sa Profile.",
   },
   tour_harvest_t: { en: "What you are selling", tl: "Ang binebenta mo" },
   tour_harvest_b: {
@@ -1008,6 +1008,60 @@ export const translations: Dict = {
   tour_done_b: {
     en: "Open this again whenever you like: More tools → How to use AniSense. It has step-by-step instructions for each job as well.",
     tl: "Buksan ulit ito kahit kailan: Iba pang gamit → Paano gamitin ang AniSense. May hakbang-hakbang din doon sa bawat gawain.",
+  },
+
+  // ── Guided tour, buyer ──────────────────────────────────────────
+  // The same voice as the farmer's, for someone on the other side of the
+  // sale: where to look, how to tell a fair price, how to buy again.
+  tour_b_intro_t: { en: "Welcome to AniSense", tl: "Maligayang pagdating sa AniSense" },
+  tour_b_intro_b: {
+    en: "A quick look at how to buy straight from Nueva Ecija farmers — {n} short steps, about a minute. Skip it now and replay it any time from Profile.",
+    tl: "Mabilis na pasyal kung paano bumili nang direkta sa mga magsasaka ng Nueva Ecija — {n} maikling hakbang, mga isang minuto. Puwede mong laktawan ngayon at ulitin kahit kailan sa Profile.",
+  },
+  tour_b_search_t: { en: "Find anything", tl: "Hanapin ang kahit ano" },
+  tour_b_search_b: {
+    en: "Type a crop or a farmer's name. The Market opens with the results already waiting.",
+    tl: "I-type ang pananim o pangalan ng magsasaka. Bubukas ang Merkado na may resulta na.",
+  },
+  tour_b_crops_t: { en: "Shop by crop", tl: "Mamili ayon sa pananim" },
+  tour_b_crops_b: {
+    en: "Tap a picture to see every listing of that crop in the Market.",
+    tl: "Pindutin ang larawan para makita ang lahat ng listing ng pananim na iyon sa Merkado.",
+  },
+  tour_b_featured_t: { en: "Worth a look today", tl: "Sulit tingnan ngayon" },
+  tour_b_featured_b: {
+    en: "The best-rated harvest of each crop right now. Swipe sideways for more.",
+    tl: "Ang pinakamataas ang rating na ani ng bawat pananim ngayon. Mag-swipe pakanan para sa iba pa.",
+  },
+  tour_b_moves_t: { en: "Which prices moved", tl: "Aling presyo ang gumalaw" },
+  tour_b_moves_b: {
+    en: "What went up and what came down at the farmgate today, so you know a fair price before you pay one.",
+    tl: "Ang tumaas at bumaba sa bukid ngayon, para alam mo ang tamang presyo bago ka magbayad.",
+  },
+  tour_b_farmers_t: { en: "The people who grow it", tl: "Ang mga nagtatanim" },
+  tour_b_farmers_b: {
+    en: "Farmers near you, with their ratings. Tap one to see everything they are selling right now.",
+    tl: "Mga magsasakang malapit sa iyo at ang rating nila. Pindutin ang isa para makita ang lahat ng binebenta niya ngayon.",
+  },
+  tour_b_purchases_t: { en: "What you bought", tl: "Ang mga binili mo" },
+  tour_b_purchases_b: {
+    en: "What you have spent, and your last orders with Buy again — one tap and it is back in your cart.",
+    tl: "Ang nagastos mo, at ang mga huling order mo na may Bilhin ulit — isang pindot at nasa cart mo na ulit.",
+  },
+  tour_b_bell_t: { en: "The bell", tl: "Ang kampana" },
+  tour_b_bell_b: {
+    en: "It tells you when a farmer in your town posts a new harvest, and when a price drops.",
+    tl: "Sinasabi nito kapag may bagong ani ang magsasaka sa bayan mo, at kapag bumaba ang presyo.",
+  },
+  tour_b_nav_t: { en: "The five tabs", tl: "Ang limang tab" },
+  tour_b_nav_b: {
+    en: "Home, Prices, Market, Orders, Profile. You buy in Market — add to your cart there — and Orders keeps everything you have bought.",
+    tl: "Home, Presyo, Merkado, Mga Order, Profile. Sa Merkado ka bumibili — idagdag sa cart doon — at nasa Mga Order ang lahat ng binili mo.",
+  },
+  tour_b_done_t: { en: "You're ready to shop", tl: "Handa ka nang mamili" },
+  tour_b_done_b: {
+    en: "Open this again whenever you like: Profile → Take the tour again.",
+    tl: "Buksan ulit ito kahit kailan: Profile → Ulitin ang gabay.",
   },
 
   // ── The guide page ─────────────────────────────────────────────

@@ -27,9 +27,13 @@ type Step = {
   targets?: string[];
 };
 
-// Farmers only, and everything on one screen: Home. A tour that changes tabs
-// underneath the person taking it is a tour they cannot retrace afterwards.
-const STEPS: Step[] = [
+// Two scripts, one engine. Each stays on one screen, Home: a tour that
+// changes tabs underneath the person taking it is a tour they cannot retrace
+// afterwards.
+//
+// The farmer's is about selling and the season; the buyer's about finding,
+// judging a price, and buying again.
+const FARMER_STEPS: Step[] = [
   { id: "intro" },
   { id: "harvest", targets: ['[data-tour="harvest"]'] },
   { id: "prices", targets: ['[data-tour="prices"]'] },
@@ -42,6 +46,21 @@ const STEPS: Step[] = [
   { id: "tools", targets: ['[data-tour="tools"]'] },
   { id: "nav", targets: ['[data-tour="nav"]'] },
   { id: "done" },
+];
+
+const BUYER_STEPS: Step[] = [
+  { id: "b_intro" },
+  { id: "b_search", targets: ['[data-tour="b-search"]'] },
+  { id: "b_crops", targets: ['[data-tour="b-crops"]'] },
+  { id: "b_featured", targets: ['[data-tour="b-featured"]'] },
+  { id: "b_moves", targets: ['[data-tour="b-moves"]'] },
+  { id: "b_farmers", targets: ['[data-tour="b-farmers"]'] },
+  { id: "b_purchases", targets: ['[data-tour="b-purchases"]'] },
+  // Back up to the header for the bell. The light travels up the page the
+  // same way it came down, so the farmer never loses track of where it is.
+  { id: "b_bell", targets: ['[data-tour="bell"]'] },
+  { id: "b_nav", targets: ['[data-tour="nav"]'] },
+  { id: "b_done" },
 ];
 
 type Box = { top: number; left: number; width: number; height: number };
@@ -72,8 +91,9 @@ function measure(targets: string[] | undefined, host: DOMRect): Box | null {
   };
 }
 
-export function Tour({ open, onFinish }: { open: boolean; onFinish: () => void }) {
+export function Tour({ open, onFinish, role }: { open: boolean; onFinish: () => void; role: "farmer" | "buyer" | null }) {
   const { t } = useLang();
+  const STEPS = role === "buyer" ? BUYER_STEPS : FARMER_STEPS;
   const [i, setI] = useState(0);
   // Mounted for the length of its exit, so the tour fades out instead of
   // being deleted from under the last thing the farmer read.
@@ -116,7 +136,11 @@ export function Tour({ open, onFinish }: { open: boolean; onFinish: () => void }
 
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const el = document.querySelector(sel);
-    el?.scrollIntoView({ block: "center", behavior: reduce ? "auto" : "smooth" });
+    // Middle of the screen for most cards. A tall one — the price chart, the
+    // profit card — goes to the top instead, or it fills the middle and the
+    // caption has nowhere to sit but on top of the thing it describes.
+    const tall = el ? el.getBoundingClientRect().height > (host.current?.offsetHeight ?? 844) * 0.42 : false;
+    el?.scrollIntoView({ block: tall ? "start" : "center", behavior: reduce ? "auto" : "smooth" });
 
     const scroller = el?.closest(".scroll");
     scroller?.addEventListener("scroll", place, { passive: true });
@@ -204,7 +228,9 @@ export function Tour({ open, onFinish }: { open: boolean; onFinish: () => void }
       <div className="tour-card" ref={card}>
         {!box && <span className="tour-mark"><Sprout size={26} strokeWidth={2.2} /></span>}
         <h2 className="tour-t">{t(`tour_${step.id}_t`)}</h2>
-        <p className="tour-b">{t(`tour_${step.id}_b`)}</p>
+        {/* The opening says how long this is, counted, so the number can
+            never disagree with the dots underneath it. */}
+        <p className="tour-b">{t(`tour_${step.id}_b`).replace("{n}", String(STEPS.length))}</p>
 
         <div className="tour-foot">
           {/* Where you are, twice: dots to glance at, a count to read. */}

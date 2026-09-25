@@ -87,16 +87,16 @@ export default function App() {
   useEffect(() => { if (plantingsLoaded.current) savePlantings(plantings); }, [plantings]);
 
   // ── The guided tour ──
-  // Runs once per phone, for farmers, on the first Home they land on. It is
-  // held back until the welcome ID is out of the way, because two things
-  // introducing themselves at once is neither of them being read.
+  // Runs once per role on this phone, on the first Home the account lands
+  // on. It is held back until the welcome ID is out of the way, because two
+  // things introducing themselves at once is neither of them being read.
   const [tourOpen, setTourOpen] = useState(false);
   const [tourPending, setTourPending] = useState(false);
   const tourChecked = useRef(false);
   useEffect(() => {
-    if (!isAuthed || userRole !== "farmer" || tourChecked.current) return;
+    if (!isAuthed || !userRole || tourChecked.current) return;
     tourChecked.current = true;
-    loadTourSeen().then(seen => { if (!seen) setTourPending(true); });
+    loadTourSeen(userRole).then(seen => { if (!seen) setTourPending(true); });
   }, [isAuthed, userRole]);
   useEffect(() => {
     if (!tourPending || showWelcome || active !== "home") return;
@@ -105,7 +105,7 @@ export default function App() {
     const id = setTimeout(() => { setTourPending(false); setTourOpen(true); }, 520);
     return () => clearTimeout(id);
   }, [tourPending, showWelcome, active]);
-  const endTour = () => { setTourOpen(false); void saveTourSeen(); };
+  const endTour = () => { setTourOpen(false); if (userRole) void saveTourSeen(userRole); };
   // Asked for from the guide page or from Profile: go to Home first, because
   // Home is what the tour is about, then let the effect above start it.
   const replayTour = () => { navigate("home"); setTourPending(true); };
@@ -215,6 +215,11 @@ export default function App() {
     visited.current = new Set(["home"]);
     setRevisit(false);
     setNav("tab");
+    // The next account on this phone may be the other role, with its own
+    // tour still unseen: look again when it signs in.
+    tourChecked.current = false;
+    setTourPending(false);
+    setTourOpen(false);
   };
 
   // ── Auth flow ──
@@ -277,7 +282,7 @@ export default function App() {
       case "trade": return <TradeScreen onProfile={openProfile} onBack={goHome} userName={userName} userInitials={initials} userRole={userRole} intent={tradeIntent ?? undefined} listings={listings} setListings={setListings} />;
       case "guide": return <GuideScreen onBack={goHome} onReplay={replayTour} />;
       case "weather": return <WeatherScreen onProfile={openProfile} onBack={goHome} userInitials={initials} userRole={userRole} />;
-      case "profile": return <ProfileScreen onNavigate={navigate} onBack={goBack} profile={farmerProfile} setProfile={setFarmerProfile} onSignOut={handleSignOut} userInitials={initials} userRole={userRole} userPhoto={userPhoto} onShowId={() => { setIdMode("view"); setShowWelcome(true); }} onReplayTour={userRole === "farmer" ? replayTour : undefined} />;
+      case "profile": return <ProfileScreen onNavigate={navigate} onBack={goBack} profile={farmerProfile} setProfile={setFarmerProfile} onSignOut={handleSignOut} userInitials={initials} userRole={userRole} userPhoto={userPhoto} onShowId={() => { setIdMode("view"); setShowWelcome(true); }} onReplayTour={replayTour} />;
     }
   };
 
@@ -307,7 +312,7 @@ export default function App() {
             onPhoto={setUserPhoto}
           />
           {/* Last inside the shell, so it covers the tab bar and the ID. */}
-          <Tour open={tourOpen} onFinish={endTour} />
+          <Tour open={tourOpen} onFinish={endTour} role={userRole} />
         </div>
       </div>
       </ViewerContext.Provider>
