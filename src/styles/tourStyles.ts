@@ -65,7 +65,41 @@ export const tourCss = `
     opacity: 1; transform: none;
     transition: opacity 260ms var(--ease-out) 120ms, transform 420ms var(--ease-out) 120ms;
   }
-  .tm-body, .tm-hand { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .tm-body, .tm-eyes, .tm-mouth, .tm-hand { position: absolute; inset: 0; width: 100%; height: 100%; }
+  /* The last card arrives while the tour is already open, so there is no
+     data-open flip for a transition to ride: he rises on mount instead.
+     Played once per arrival, never interrupted - the one place here a
+     keyframe is the right tool. */
+  .tour-mascot.thumbs { aspect-ratio: 420 / 443; }
+  .tour[data-open] .tour-mascot.thumbs { animation: tm-rise 420ms var(--ease-out) 80ms both; }
+  @keyframes tm-rise {
+    from { opacity: 0; transform: translateY(28px); }
+    to   { opacity: 1; transform: none; }
+  }
+  /* Eyelids and the closed smile are overlays that switch on and off. No
+     fade between: a blink that dissolves reads as a ghost, not an eyelid. */
+  .tm-eyes, .tm-mouth { opacity: 0; }
+  /* A blink as he comes up over the card, then one every few seconds for as
+     long as he is there, which is what makes a drawing look awake. */
+  .tour[data-open] .tm-eyes { animation: tm-blink 3.8s step-end 430ms infinite; }
+  @keyframes tm-blink {
+    0%   { opacity: 1; }
+    4%   { opacity: 0; }
+    100% { opacity: 0; }
+  }
+  /* "Hi! Hello!" while the hand waves: the smile closes and opens in the
+     rhythm of two short words, then stays open. */
+  /* forwards, not both: before the first word he wears the open smile he was drawn with. */
+  .tour[data-open] .tm-mouth { animation: tm-talk 1.1s step-end 620ms forwards; }
+  @keyframes tm-talk {
+    0%   { opacity: 1; }
+    14%  { opacity: 0; }
+    30%  { opacity: 1; }
+    44%  { opacity: 0; }
+    58%  { opacity: 1; }
+    70%  { opacity: 0; }
+    100% { opacity: 0; }
+  }
   /* The pivot is the wrist crease, measured on the drawing. */
   .tm-hand { transform-origin: 21.13% 53.48%; }
   .tour[data-open] .tm-hand { animation: tm-wave 1.7s var(--ease-io) 560ms both; }
@@ -128,7 +162,8 @@ export const tourCss = `
     /* He still appears, and still says hello with his hand up; he just
        does not rise or wave. */
     .tour-mascot, .tour[data-open] .tour-mascot { transform: none; transition: opacity 200ms ease; }
-    .tour[data-open] .tm-hand { animation: none; }
+    .tour[data-open] .tour-mascot.thumbs { animation: none; opacity: 1; }
+    .tour[data-open] .tm-hand, .tour[data-open] .tm-eyes, .tour[data-open] .tm-mouth { animation: none; }
     .tour-card, .tour[data-open] .tour-card { transform: none; transition: opacity 200ms ease; }
     .tour-skip:active, .tour-back:active, .tour-next:active { transform: none; }
   }

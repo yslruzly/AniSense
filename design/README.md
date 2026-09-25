@@ -12,7 +12,8 @@ a second of loading for a picture that renders 380 pixels wide.
 | `FarmerMarketSell.png` | `src/assets/farmer-sell.webp` | Marketplace panel, farmer accounts |
 | `Peeking.png` | `src/assets/juan-peek.webp` | Signup screens (language, role) |
 | `buyersmascot.png` | `src/assets/buyer-mascot.webp` | "Fresh from local farms" card, buyer Home |
-| `mascothi.png` → `mascothi-clean.png` (extra hat lobe removed) | `src/assets/mascot-wave-body.webp` + `mascot-wave-hand.webp` | Opening card of the walkthrough; the hand layer rotates from the wrist to wave |
+| `mascothi.png` → `mascothi-clean.png` (extra hat lobe removed) | `src/assets/mascot-wave-body.webp` + `-hand` + `-eyes` + `-mouth` | Opening card of the walkthrough: the hand rotates from the wrist; `-eyes` (closed lids) and `-mouth` (closed smile) are drawn overlays that switch on to blink and talk |
+| `mascotthumbsup.png` → `mascotthumbsup-cut.png` (white background removed) | `src/assets/mascot-thumbs.webp` + `mascot-thumbs-eyes.webp` | Last card of the walkthrough; `-eyes` (closed lids) switches on to blink |
 
 The marketplace poster that is actually on screen came from a file that is no
 longer on disk; `src/assets/anisense-poster-market.webp` is the only copy of it.

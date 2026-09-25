@@ -3,6 +3,10 @@ import { ChevronLeft, ChevronRight, Check } from "lucide-react";
 import { AniSenseLogo } from "../AniSenseLogo";
 import mascotBody from "../../assets/mascot-wave-body.webp";
 import mascotHand from "../../assets/mascot-wave-hand.webp";
+import mascotEyes from "../../assets/mascot-wave-eyes.webp";
+import mascotMouth from "../../assets/mascot-wave-mouth.webp";
+import mascotThumbs from "../../assets/mascot-thumbs.webp";
+import mascotThumbsEyes from "../../assets/mascot-thumbs-eyes.webp";
 import { useLang } from "../../i18n";
 import { haptic } from "../../lib/platform";
 import { useHardwareBack } from "../../hooks/useHardwareBack";
@@ -113,6 +117,9 @@ export function Tour({ open, onFinish, role }: { open: boolean; onFinish: () => 
   const step = STEPS[i];
   const last = i === STEPS.length - 1;
   const opening = i === 0;
+  // The mascot bookends the tour: hello on the first card, a thumbs-up on
+  // the last. The cards in between belong to the screen they point at.
+  const withMascot = opening || last;
   // Bumped to wave again: a new key remounts the hand, which restarts it.
   const [waves, setWaves] = useState(0);
 
@@ -205,7 +212,7 @@ export function Tour({ open, onFinish, role }: { open: boolean; onFinish: () => 
   if (!box) {
     // The opening card makes room above itself for the mascot, and the two
     // are centred together.
-    const room = opening ? MASCOT_ROOM : 0;
+    const room = withMascot ? MASCOT_ROOM : 0;
     cardTop = Math.max(EDGE + room, (shellH - cardH + room) / 2);
   } else if (box.top + box.height + GAP + cardH + EDGE <= shellH) {
     cardTop = box.top + box.height + GAP;
@@ -217,7 +224,7 @@ export function Tour({ open, onFinish, role }: { open: boolean; onFinish: () => 
   // Whatever the arithmetic said, the card stays on the screen. A target that
   // has not finished scrolling into view would otherwise take the card with
   // it, and a farmer would be looking at a dimmed page with no way forward.
-  cardTop = Math.max(EDGE + (opening && !box ? MASCOT_ROOM : 0), Math.min(cardTop, shellH - cardH - EDGE));
+  cardTop = Math.max(EDGE + (withMascot && !box ? MASCOT_ROOM : 0), Math.min(cardTop, shellH - cardH - EDGE));
 
   return (
     <div className="tour" ref={host} data-open={visible || undefined} role="dialog" aria-modal="true" aria-label={t("tour_title")}>
@@ -239,13 +246,24 @@ export function Tour({ open, onFinish, role }: { open: boolean; onFinish: () => 
           the inner one its entrance. Neither has to undo the other. */}
       <div className="tour-pos" style={{ transform: `translateY(${cardTop}px)` }}>
       {/* The first thing a new farmer or buyer sees: someone saying hello.
-          Two layers of one drawing, the body still and the hand rotating
-          from the wrist. Only here, once: a greeting that repeats on every
-          card stops being one. A tap waves again, for whoever tries. */}
+          Layers of one drawing: the body holds still, closed eyelids and a
+          closed smile blink on over the face, and the hand rotates from the
+          wrist. Only here, once: a greeting that repeats on every card stops
+          being one. A tap waves (and says hi) again, for whoever tries. */}
       {opening && (
         <div className="tour-mascot" aria-hidden="true" onClick={() => setWaves(w => w + 1)}>
           <img className="tm-body" src={mascotBody} alt="" width={420} height={435} decoding="async" />
-          <img key={waves} className="tm-hand" src={mascotHand} alt="" width={420} height={435} decoding="async" />
+          <img className="tm-eyes" src={mascotEyes} alt="" width={420} height={435} decoding="async" />
+          <img key={`m${waves}`} className="tm-mouth" src={mascotMouth} alt="" width={420} height={435} decoding="async" />
+          <img key={`h${waves}`} className="tm-hand" src={mascotHand} alt="" width={420} height={435} decoding="async" />
+        </div>
+      )}
+      {/* The last card: done, and well done. Still blinking, so he is the
+          same someone who said hello, not a sticker. */}
+      {last && (
+        <div className="tour-mascot thumbs" aria-hidden="true">
+          <img className="tm-body" src={mascotThumbs} alt="" width={420} height={443} decoding="async" />
+          <img className="tm-eyes" src={mascotThumbsEyes} alt="" width={420} height={443} decoding="async" />
         </div>
       )}
       <div className="tour-card" ref={card}>
