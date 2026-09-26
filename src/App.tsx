@@ -58,6 +58,11 @@ export default function App() {
   // The welcome ID: set once, when an account is created, and shown over Home.
   const [welcome, setWelcome] = useState<WelcomeInfo | null>(null);
   const [showWelcome, setShowWelcome] = useState(false);
+  // Set when an account has just been made; the ID opens a beat after Home.
+  // Opened in the same render that first builds the whole app, the card's
+  // drop played out while the phone was still busy drawing Home, and on
+  // screen it simply appeared - no drop, no swing, the backdrop already dark.
+  const [welcomePending, setWelcomePending] = useState(false);
   const [idMode, setIdMode] = useState<"welcome" | "view">("welcome");
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
   // True while a saved session is being looked for at launch. Without it a
@@ -108,13 +113,22 @@ export default function App() {
     tourChecked.current = true;
     loadTourSeen(userRole).then(seen => { if (!seen) setTourPending(true); });
   }, [isAuthed, userRole]);
+  // Home first, then the ID. The wait starts after Home has painted (this is
+  // an effect), so on a slow phone the card still drops, swings and shines
+  // in full view; and it opens from closed, so the backdrop fades in too.
   useEffect(() => {
-    if (!tourPending || showWelcome || active !== "home") return;
+    if (!isAuthed || !welcomePending) return;
+    const id = setTimeout(() => { setWelcomePending(false); setShowWelcome(true); }, 380);
+    return () => clearTimeout(id);
+  }, [isAuthed, welcomePending]);
+
+  useEffect(() => {
+    if (!tourPending || showWelcome || welcomePending || active !== "home") return;
     // Home's own entrance runs first; the spotlight lands on a page that has
     // finished arriving rather than on one still sliding into place.
     const id = setTimeout(() => { setTourPending(false); setTourOpen(true); }, 520);
     return () => clearTimeout(id);
-  }, [tourPending, showWelcome, active]);
+  }, [tourPending, showWelcome, welcomePending, active]);
   const endTour = () => { setTourOpen(false); if (userRole) void saveTourSeen(userRole); };
   // Asked for from the guide page or from Profile: go to Home first, because
   // Home is what the tour is about, then let the effect above start it.
@@ -208,7 +222,7 @@ export default function App() {
     if (isNew) {
       setActive("home");
       setIdMode("welcome");
-      setShowWelcome(true);
+      setWelcomePending(true);
     }
     setIsAuthed(true);
   };
@@ -227,7 +241,7 @@ export default function App() {
     if (isNew) {
       setActive("home");
       setIdMode("welcome");
-      setShowWelcome(true);
+      setWelcomePending(true);
     }
     setIsAuthed(true);
     getMyProfile()
@@ -281,6 +295,7 @@ export default function App() {
     setUserRole(null);
     setActive("home");
     setShowWelcome(false);
+    setWelcomePending(false);
     setWelcome(null);
     setUserPhoto(null);
     visited.current = new Set(["home"]);
