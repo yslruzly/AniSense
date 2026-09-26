@@ -152,17 +152,29 @@ export const buttonCss = `
     box-shadow: inset 0 1px 2px rgba(0,0,0,.25), inset 0 0 0 1px rgba(255,255,255,.26);
   }
 
-  /* ── Sign out: quiet until it matters ───────────────────────────────────── */
+  /* ── Sign out: solid red ────────────────────────────────────────────────
+     The same layers as the green buttons - a gradient with a top and a
+     bottom, a highlight where light catches the top edge, a darker line for
+     its thickness, a contact shadow - in the app's error red, so it reads as
+     the same family of object with the one colour that means "leaving". */
   .signout-btn {
-    background-image: linear-gradient(180deg, #FFF6F5 0%, #FBEAE8 100%);
+    color: #fff; min-height: 54px;
+    font-family: var(--font-display); font-size: 16px; letter-spacing: -.005em;
+    background-image: linear-gradient(180deg, #C8392E 0%, var(--error) 55%, #861A13 100%);
     box-shadow:
-      inset 0 1px 0 rgba(255,255,255,.8),
-      inset 0 0 0 1px rgba(165,35,27,.22),
-      0 1px 2px rgba(165,35,27,.1);
+      inset 0 1px 0 rgba(255,255,255,.24),
+      inset 0 -1px 0 rgba(0,0,0,.24),
+      inset 0 0 0 1px rgba(80,10,6,.24),
+      0 1px 2px rgba(80,10,6,.30),
+      0 10px 20px -12px rgba(120,20,14,.55);
   }
   .signout-btn:active {
-    background-image: linear-gradient(180deg, #FBE5E2 0%, #F6D8D4 100%);
-    box-shadow: inset 0 1px 2px rgba(165,35,27,.18), inset 0 0 0 1px rgba(165,35,27,.26);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.12),
+      inset 0 -1px 0 rgba(0,0,0,.28),
+      inset 0 0 0 1px rgba(80,10,6,.28),
+      0 1px 1px rgba(80,10,6,.34),
+      0 4px 10px -8px rgba(120,20,14,.5);
   }
 
   /* ── Round icon buttons: the same stack, in a disc ──────────────────────── */

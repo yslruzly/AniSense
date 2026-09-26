@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ArrowLeft, Camera, Bell, IdCard, Award, Sprout, Wheat, SlidersHorizontal, LifeBuoy, ChevronRight, Globe, Lock, HelpCircle, PlayCircle, Settings, LogOut, Phone, Mail, MapPin, Calendar } from "lucide-react";
+import { ArrowLeft, Camera, Bell, IdCard, Award, Sprout, Wheat, SlidersHorizontal, Info, ChevronRight, Globe, Lock, HelpCircle, PlayCircle, Settings, LogOut, Phone, Mail, MapPin, Calendar } from "lucide-react";
 import { useLang, LanguageToggle } from "../i18n";
 import { Screen, UserRole, FarmerProfile } from "../types";
 import { CropEmoji } from "../components/CropEmoji";
@@ -265,7 +265,7 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
             </div>
 
             <div className="card">
-              {head("tint-violet", <LifeBuoy size={20} strokeWidth={2.2} />, t("prof_support"))}
+              {head("tint-violet", <Info size={20} strokeWidth={2.2} />, t("prof_support"))}
               {supportSettings.map(s => {
                 const body = (
                   <>
@@ -284,7 +284,7 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
             </div>
 
             <button className="signout-btn" onClick={onSignOut} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-              <LogOut size={16} color="var(--error)" /> {t("prof_sign_out")}
+              <LogOut size={18} strokeWidth={2.4} aria-hidden="true" /> {t("prof_sign_out")}
             </button>
 
             <div className="version-txt">AniSense v1.0.0 · Ani mo, alam mo.</div>

@@ -253,7 +253,12 @@ export function FeaturedFarmers({ onShop, buyerLocation }: { onShop: Shop; buyer
             <span className="ff-crops">
               {spot.crops.map(c => <span key={c} className="ff-chip">{tn(c)}</span>)}
             </span>
-            <span className="ff-cta">{t("ff_cta")} <ChevronRight size={18} strokeWidth={2.6} /></span>
+            {/* The card's one action, as wide as the card, with a "go" disc
+                at the end that nudges forward under the thumb. */}
+            <span className="ff-cta">
+              <span>{t("ff_cta")}</span>
+              <span className="ff-cta-go" aria-hidden="true"><ArrowRight size={18} strokeWidth={2.6} /></span>
+            </span>
           </span>
         </button>
 

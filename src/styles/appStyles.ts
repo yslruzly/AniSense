@@ -1659,12 +1659,40 @@ export const appCss = `
   }
   .ff-crops { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
   .ff-chip { padding: 5px 12px; border-radius: 99px; background: var(--tanim-sk); color: var(--tanim-deep); font-size: 13.5px; font-weight: 700; }
+  /* The spotlight's action. Full width, so it reads as what the card does
+     rather than a tag inside it, and built like every raised green button:
+     gradient, top highlight, bottom edge, contact shadow, soft cast shadow.
+     The arrow sits in its own pale disc at the far end - where the eye
+     finishes reading the label - and moves forward a step when pressed. */
   .ff-cta {
-    align-self: flex-start; display: inline-flex; align-items: center; gap: 4px; margin-top: 12px; min-height: 46px; padding: 0 14px 0 20px;
-    border-radius: 99px; background: var(--tanim); color: #fff; font-family: var(--font-display); font-size: 15.5px; font-weight: 700;
+    align-self: stretch; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    margin-top: 14px; min-height: 54px; padding: 0 7px 0 20px; border-radius: 16px; color: #fff;
+    font-family: var(--font-display); font-size: 16px; font-weight: 700; letter-spacing: -.005em;
+    background-image: linear-gradient(180deg, #14875A 0%, var(--tanim) 54%, #075232 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.26),
+      inset 0 -1px 0 rgba(0,0,0,.24),
+      inset 0 0 0 1px rgba(4,40,24,.22),
+      0 1px 2px rgba(6,38,23,.30),
+      0 12px 20px -14px rgba(6,38,23,.6);
+    transition: transform 190ms var(--ease-out), box-shadow 190ms var(--ease-out);
+  }
+  .ff-cta-go {
+    flex-shrink: 0; width: 40px; height: 40px; border-radius: 12px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,.16); box-shadow: inset 0 0 0 1px rgba(255,255,255,.22);
     transition: transform 190ms var(--ease-out);
   }
-  .ff-spot:active .ff-cta { transform: scale(.96); transition-duration: var(--dur-press); }
+  .ff-spot:active .ff-cta {
+    transform: scale(.975); transition-duration: var(--dur-press);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.12),
+      inset 0 -1px 0 rgba(0,0,0,.28),
+      inset 0 0 0 1px rgba(4,40,24,.26),
+      0 1px 1px rgba(6,38,23,.34),
+      0 4px 10px -8px rgba(6,38,23,.5);
+  }
+  .ff-spot:active .ff-cta-go { transform: translateX(3px); transition-duration: var(--dur-press); }
   .ff-list { border-top: 1px solid var(--line); }
   .ff-row { align-items: center; gap: 12px; min-height: 68px; padding: 12px 16px; }
   .ff-row + .ff-row { border-top: 1px solid var(--line); }
@@ -2057,7 +2085,7 @@ export const appCss = `
   .shell[data-revisit] .scroll .yp-bar { animation: none; }
 
   @media (prefers-reduced-motion: reduce) {
-    .hm-search:active, .shop-cat:active, .ff-spot:active .ff-cta { transform: none; }
+    .hm-search:active, .shop-cat:active, .ff-spot:active .ff-cta, .ff-spot:active .ff-cta-go { transform: none; }
   }
 
   /* ── Buyer price moves ─────────────────────────────────────────────────
