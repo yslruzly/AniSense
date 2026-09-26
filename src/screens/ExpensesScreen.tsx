@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { EmptyState } from "../components/states";
 import { PhilippinePeso, MapPin, Pencil, Trash2, X, ChevronRight, Calendar, Calculator, Receipt, Plus, CheckCircle, AlertTriangle, Sprout, Tag, Wheat, FlaskConical, User, Tractor, Waves, Package, ShoppingCart, Filter, Store } from "lucide-react";
 import { useLang } from "../i18n";
@@ -15,9 +15,12 @@ import { Segmented } from "../components/ui/Segmented";
 import { Sheet } from "../components/ui/Sheet";
 import { useRetained } from "../hooks/usePresence";
 import { DateField, localISO } from "../components/ui/DateField";
+import { ProfitCard, estimateFor, spentOn } from "../components/expenses/ProfitCard";
+import { Sale } from "../lib/sales";
+import { HarvestPlans, loadHarvestPlans, saveHarvestPlans } from "../lib/harvestPlans";
 
 // ─── Expenses Screen ──────────────────────────────────────────────────────────
-export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = "JD", isBuyer = false, buyerTransactions = [] }: { onProfile: () => void; onBack: () => void; farmerCrops: string[]; userInitials?: string; isBuyer?: boolean; buyerTransactions?: BuyerTransaction[] }) {
+export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = "JD", isBuyer = false, buyerTransactions = [], sales = [] }: { onProfile: () => void; onBack: () => void; farmerCrops: string[]; userInitials?: string; isBuyer?: boolean; buyerTransactions?: BuyerTransaction[]; sales?: Sale[] }) {
   const { t, tn, lang } = useLang();
   const ICONS: Record<string, string> = { Seeds: "Seeds", Fertilizer: "Fertilizer", Labor: "Labor", Equipment: "Equipment", Irrigation: "Irrigation", Other: "Other" };
   const cats = ["All", "Seeds", "Fertilizer", "Labor", "Equipment", "Irrigation", "Other"];
@@ -28,6 +31,12 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
   const [dateTo, setDateTo] = useState("");
   const [viewMode, setViewMode] = useState<"all" | "by-crop" | "by-date">("all");
   const [transactions, setTransactions] = useState([...EXPENSES]);
+  // Expected harvest per crop, for the estimated profit. Read once from the
+  // phone, written back on every change.
+  const [plans, setPlans] = useState<HarvestPlans>({});
+  const plansLoaded = useRef(false);
+  useEffect(() => { loadHarvestPlans().then(p => { setPlans(p); plansLoaded.current = true; }); }, []);
+  useEffect(() => { if (plansLoaded.current) void saveHarvestPlans(plans); }, [plans]);
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
@@ -286,6 +295,10 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
                 )}
               </div>
             </div>
+
+            {/* Money out is only half of it: what the crops are worth and what
+                they actually sold for sit directly under the month's spending. */}
+            <ProfitCard transactions={transactions} sales={sales} plans={plans} onPlans={setPlans} farmerCrops={farmerCrops} />
 
             {/* View mode tabs */}
             <Segmented
@@ -756,6 +769,22 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
                   onBlur={e => e.target.style.borderColor = "var(--line)"}
                 />
               </div>
+
+              {/* What this expense does to the crop's estimated profit, worked
+                  out as it is typed, so the cost is seen against the harvest
+                  it is for - not only as money going out. */}
+              {(() => {
+                const amt = Number(form.amount) || 0;
+                const base = spentOn(transactions.filter(e => e.id !== editId), form.crop);
+                const est = estimateFor(form.crop, plans, base + amt);
+                return (
+                  <p className={`pf-preview ${est === null ? "" : est < 0 ? "neg" : "pos"}`}>
+                    {est === null
+                      ? t("pf_set_hint").replace("{crop}", tn(form.crop))
+                      : t("pf_after").replace("{crop}", tn(form.crop)).replace("{amount}", `${est < 0 ? "−" : ""}₱${Math.abs(Math.round(est)).toLocaleString("en-PH")}`)}
+                  </p>
+                );
+              })()}
 
               {/* Date: its own full-width row now, since the quick picks and
                   the calendar need the room a half-width column couldn't give. */}

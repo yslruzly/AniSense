@@ -2619,6 +2619,73 @@ export const appCss = `
     .checkout-pop { animation: none; }
   }
 
+  /* ── Profit, on the Expenses page ───────────────────────────────────────
+     Estimated beside final. The estimate has a dashed edge and an "≈": a
+     guess should look like one before it is read. Green for a profit, the
+     error red for a loss - and a sign on the number, never colour alone. */
+  .pf-sub { margin: -4px 0 14px; font-size: 14px; line-height: 1.5; color: var(--text-muted); }
+  .pf-sum { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .pf-tile {
+    display: flex; flex-direction: column; gap: 3px; padding: 12px 12px 11px; border-radius: 14px; min-width: 0;
+    background: var(--paper);
+  }
+  .pf-tile.est { box-shadow: inset 0 0 0 1.5px transparent; outline: 1.5px dashed rgba(11,107,65,.45); outline-offset: -1.5px; background: #F3F8F4; }
+  .pf-tile.fin { background: linear-gradient(180deg, #EAF4EC, #E1EFE5); box-shadow: inset 0 0 0 1px rgba(11,107,65,.16); }
+  .pf-tile-l { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text-faint); }
+  .pf-tile-v {
+    font-family: var(--font-display); font-size: 22px; font-weight: 800; letter-spacing: -.02em;
+    color: var(--text); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .pf-tile.pos .pf-tile-v { color: var(--tanim-deep); }
+  .pf-tile.neg .pf-tile-v { color: var(--error); }
+  .pf-tile-s { font-size: 12.5px; line-height: 1.35; color: var(--text-muted); }
+
+  .pf-list { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; }
+  .pf-row { padding: 12px 0; }
+  .pf-row + .pf-row { border-top: 1px solid var(--line); }
+  .pf-row-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .pf-photo {
+    width: 34px; height: 34px; flex: 0 0 34px; border-radius: 10px; overflow: hidden;
+    display: inline-flex; align-items: center; justify-content: center; background: var(--tanim-sk);
+  }
+  .pf-photo img { width: 100%; height: 100%; object-fit: cover; }
+  .pf-crop { font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--text); }
+  .pf-spent { margin-left: auto; font-size: 13.5px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+  .pf-spent strong { color: var(--text); font-weight: 700; }
+  .pf-lines { display: flex; flex-direction: column; gap: 6px; }
+  .pf-line {
+    width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    min-height: 52px; padding: 8px 12px; border-radius: 12px; border: none; background: var(--paper);
+    font: inherit; color: inherit; text-align: left;
+  }
+  button.pf-line { cursor: pointer; transition: transform 190ms var(--ease-out), background-color 160ms ease; -webkit-tap-highlight-color: transparent; }
+  button.pf-line:active { transform: scale(.98); background: var(--tanim-sk); transition-duration: var(--dur-press); }
+  .pf-line.est { outline: 1.5px dashed rgba(11,107,65,.35); outline-offset: -1.5px; }
+  .pf-line-l { display: flex; flex-direction: column; min-width: 0; font-size: 14px; font-weight: 700; color: var(--text); }
+  .pf-line-l small { font-size: 12.5px; font-weight: 500; color: var(--text-faint); font-variant-numeric: tabular-nums; }
+  .pf-line-v {
+    display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0;
+    font-family: var(--font-display); font-size: 16px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums;
+  }
+  .pf-line.pos .pf-line-v { color: var(--tanim-deep); }
+  .pf-line.neg .pf-line-v { color: var(--error); }
+  .pf-edit { color: var(--text-faint); }
+  .pf-set {
+    display: inline-flex; align-items: center; gap: 5px; padding: 6px 11px; border-radius: 99px;
+    background: var(--tanim); color: #fff; font-family: var(--font-body); font-size: 13.5px; font-weight: 700;
+  }
+  .pf-foot { margin: 10px 0 0; font-size: 13px; line-height: 1.45; color: var(--text-faint); }
+  .pf-kg-in { width: 7ch !important; }
+  .pf-kg-unit { font-size: 15px; font-weight: 700; color: var(--text-faint); }
+  /* In the add-expense form: the cost against the harvest it is for. */
+  .pf-preview {
+    margin: 0; padding: 10px 12px; border-radius: 12px; background: var(--paper);
+    font-size: 14px; line-height: 1.45; font-weight: 600; color: var(--text-muted);
+  }
+  .pf-preview.pos { background: var(--tanim-sk); color: var(--tanim-deep); }
+  .pf-preview.neg { background: var(--error-sk); color: var(--error); }
+  @media (prefers-reduced-motion: reduce) { button.pf-line:active { transform: none; } }
+
   /* ── Order receipt ──────────────────────────────────────────────────────
      Paper, not a card: warm off-white, a torn zigzag foot, a dashed
      perforation between the parts, numbers set in tabular figures so the

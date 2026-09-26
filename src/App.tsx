@@ -373,7 +373,7 @@ export default function App() {
     switch (active) {
       case "home": return <HomeScreen onNavigate={navigate} onShop={openMarketplace} onReplayTour={replayTour} listings={listings} priceAlerts={priceAlerts} onPriceAlerts={setPriceAlerts} plantings={plantings} onPlantings={setPlantings} sales={sales} onSales={setSales} onProfile={openProfile} isOffline={isOffline} lastUpdated={lastUpdated} userName={userName} userInitials={initials} userRole={userRole} farmerCrops={farmerProfile.crops} />;
       case "market": return <MarketScreen onProfile={openProfile} isOffline={isOffline} lastUpdated={lastUpdated} onBack={goHome} userInitials={initials} userRole={userRole} />;
-      case "expenses": return <ExpensesScreen onProfile={openProfile} onBack={goHome} farmerCrops={farmerProfile.crops} userInitials={initials} isBuyer={userRole === "buyer"} buyerTransactions={BUYER_TRANSACTIONS} />;
+      case "expenses": return <ExpensesScreen onProfile={openProfile} onBack={goHome} farmerCrops={farmerProfile.crops} userInitials={initials} isBuyer={userRole === "buyer"} buyerTransactions={BUYER_TRANSACTIONS} sales={sales} />;
       case "analytics": return <AnalyticsScreen onProfile={openProfile} onBack={goHome} userInitials={initials} farmerCrops={farmerProfile.crops} />;
       case "trade": return <TradeScreen onProfile={openProfile} onBack={goHome} userName={userName} userInitials={initials} userRole={userRole} intent={tradeIntent ?? undefined} listings={listings} setListings={setListings} />;
       case "guide": return <GuideScreen onBack={goHome} onReplay={replayTour} />;

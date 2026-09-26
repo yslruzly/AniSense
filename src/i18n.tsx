@@ -1206,6 +1206,40 @@ export const translations: Dict = {
   home_mod_guide: { en: "How to use", tl: "Paano gamitin" },
   home_mod_guide_desc: { en: "A step-by-step guide", tl: "Gabay hakbang-hakbang" },
   home_mod_tour: { en: "How to use", tl: "Paano gamitin" },
+
+  // ── Profit on the Expenses page ────────────────────────────────────────────
+  pf_title: { en: "Your profit", tl: "Ang kita mo" },
+  pf_sub: {
+    en: "What each crop has cost you, what your harvest is worth at today's price, and what it actually sold for.",
+    tl: "Ang nagastos sa bawat pananim, ang halaga ng ani sa presyo ngayon, at ang aktuwal na naibenta.",
+  },
+  pf_est: { en: "Estimated profit", tl: "Tantiyang kita" },
+  pf_est_sub: { en: "If you sold your expected harvest at today's price", tl: "Kung ibebenta ang inaasahang ani sa presyo ngayon" },
+  pf_final: { en: "Final profit", tl: "Totoong kita" },
+  pf_final_sub: { en: "From the sales you recorded, less all expenses", tl: "Mula sa naitalang benta, bawas ang lahat ng gastos" },
+  pf_none_set: { en: "Set an expected harvest below", tl: "Ilagay ang inaasahang ani sa ibaba" },
+  pf_no_sales: { en: "No sales recorded yet", tl: "Wala pang naitalang benta" },
+  pf_spent: { en: "Spent", tl: "Gastos" },
+  pf_sold: { en: "Sold", tl: "Naibenta" },
+  pf_not_sold: { en: "Not sold yet", tl: "Hindi pa naibebenta" },
+  pf_worth: { en: "{kg} kg × ₱{price} today", tl: "{kg} kg × ₱{price} ngayon" },
+  pf_set_harvest: { en: "How much do you expect to harvest?", tl: "Gaano karami ang inaasahang ani?" },
+  pf_set: { en: "Set", tl: "Ilagay" },
+  pf_record_hint: {
+    en: "Record your sales on Home, in Earned and spent, to see your final profit.",
+    tl: "Itala ang benta sa Home, sa Kita at gastos, para makita ang totoong kita.",
+  },
+  pf_sheet_title: { en: "Expected harvest", tl: "Inaasahang ani" },
+  pf_sheet_q: { en: "About how many kilos of {crop} do you expect?", tl: "Mga ilang kilo ng {crop} ang inaasahan mo?" },
+  pf_sheet_worth: { en: "Worth about {amount} at today's price of {price}/kg.", tl: "Halagang mga {amount} sa presyo ngayon na {price}/kg." },
+  pf_save: { en: "Save expected harvest", tl: "I-save ang inaasahang ani" },
+  pf_less: { en: "Less", tl: "Bawasan" },
+  pf_more: { en: "More", tl: "Dagdagan" },
+  pf_after: { en: "After this, {crop}'s estimated profit: {amount}", tl: "Pagkatapos nito, tantiyang kita sa {crop}: {amount}" },
+  pf_set_hint: {
+    en: "Set {crop}'s expected harvest in Your profit to see what this cost does to it.",
+    tl: "Ilagay ang inaasahang ani ng {crop} sa Ang kita mo para makita ang epekto ng gastos na ito.",
+  },
   home_mod_tour_desc: { en: "A quick tour of the app", tl: "Mabilis na pasyal sa app" },
 };
 
