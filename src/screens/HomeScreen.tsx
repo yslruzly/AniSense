@@ -1,4 +1,4 @@
-import { CloudSun, CloudMoon, BarChart2, BookOpen, CheckCircle, AlertTriangle, Bot, ChevronRight, ArrowUpRight, ArrowDownRight, ArrowRight, Sprout, Wallet, Megaphone, Store, Tag, MapPin, Search } from "lucide-react";
+import { CloudSun, CloudMoon, BarChart2, BookOpen, PlayCircle, CheckCircle, AlertTriangle, Bot, ChevronRight, ArrowUpRight, ArrowDownRight, ArrowRight, Sprout, Wallet, Megaphone, Store, Tag, MapPin, Search } from "lucide-react";
 import { useLang } from "../i18n";
 import { Screen, UserRole, TradeIntent, Listing } from "../types";
 import { ShopByCrop, FeaturedProducts, FeaturedFarmers, YourPurchases, PriceMoves } from "../components/home/BuyerHome";
@@ -50,11 +50,13 @@ function Chg({ value }: { value: number }) {
   );
 }
 
-export function HomeScreen({ onNavigate, onShop, onProfile, isOffline, userName = "Juan", userInitials = "JD", userRole, farmerCrops = ["Rice", "Corn"], listings = [], priceAlerts = [], onPriceAlerts, plantings = [], onPlantings, sales = [], onSales }: {
+export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffline, userName = "Juan", userInitials = "JD", userRole, farmerCrops = ["Rice", "Corn"], listings = [], priceAlerts = [], onPriceAlerts, plantings = [], onPlantings, sales = [], onSales }: {
   onNavigate: (s: Screen) => void;
   /** Open the marketplace already showing a crop, a farmer or the search. */
   onShop?: (intent: TradeIntent) => void;
   onProfile: () => void;
+  /** Runs the walkthrough again; the buyer's tutorial tile in More tools. */
+  onReplayTour?: () => void;
   isOffline: boolean;
   lastUpdated: string;
   userName?: string;
@@ -251,13 +253,13 @@ export function HomeScreen({ onNavigate, onShop, onProfile, isOffline, userName 
 
         {/* The brand poster, as a mid-page break. Its last line, "buy
             directly from local farmers", is what the next section shows.
-            A banner looks tappable, so it is: it opens the marketplace,
-            like the poster's first line promises. The frame holds the
+            A picture, not a button: the marketplace is one tab away and
+            already has its own doors on this page. The frame holds the
             poster's shape before the image loads, so nothing below jumps. */}
         {isBuyer && (
-          <button className="hm-poster" onClick={() => shop({})} aria-label={t("poster_alt")}>
-            <img src={anisensePoster} alt="" width={1000} height={562} loading="lazy" decoding="async" />
-          </button>
+          <figure className="hm-poster">
+            <img src={anisensePoster} alt={t("poster_alt")} width={1000} height={562} loading="lazy" decoding="async" />
+          </figure>
         )}
 
         {/* Who grows it: the trust half of a marketplace, after the day's
@@ -400,6 +402,16 @@ export function HomeScreen({ onNavigate, onShop, onProfile, isOffline, userName 
                 <span className="hm-tool-ico gd"><BookOpen size={24} /></span>
                 <span className="hm-tool-t">{t("home_mod_guide")}</span>
                 <span className="hm-tool-s">{t("home_mod_guide_desc")}</span>
+              </button>
+            )}
+            {/* The buyer's counterpart. The step-by-step guide is written for
+                farmers' jobs, so a buyer's tile runs their own walkthrough
+                again instead, right here on Home. */}
+            {isBuyer && onReplayTour && (
+              <button className="hm-tool wide" onClick={onReplayTour}>
+                <span className="hm-tool-ico gd"><PlayCircle size={24} /></span>
+                <span className="hm-tool-t">{t("home_mod_tour")}</span>
+                <span className="hm-tool-s">{t("home_mod_tour_desc")}</span>
               </button>
             )}
           </div>

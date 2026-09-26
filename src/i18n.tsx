@@ -1205,6 +1205,8 @@ export const translations: Dict = {
   // The guide's own tile in More tools.
   home_mod_guide: { en: "How to use", tl: "Paano gamitin" },
   home_mod_guide_desc: { en: "A step-by-step guide", tl: "Gabay hakbang-hakbang" },
+  home_mod_tour: { en: "How to use", tl: "Paano gamitin" },
+  home_mod_tour_desc: { en: "A quick tour of the app", tl: "Mabilis na pasyal sa app" },
 };
 
 // ── Data-name labels (crop groups, expense categories) ───────────────────────

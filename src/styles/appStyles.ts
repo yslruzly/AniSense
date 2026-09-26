@@ -1715,16 +1715,13 @@ export const appCss = `
 
   /* The brand poster. aspect-ratio reserves its exact shape up front, so
      the page does not jump when the image arrives. */
+  /* A picture: no pointer, no press, nothing that promises a tap. */
   .hm-poster {
-    display: block; width: 100%; aspect-ratio: 1000 / 562; padding: 0; border: none; overflow: hidden; cursor: pointer;
+    display: block; width: 100%; margin: 0; aspect-ratio: 1000 / 562; overflow: hidden;
     border-radius: var(--radius); background: #EAF3E6;
     box-shadow: 0 14px 30px -20px rgba(22,33,27,.4);
-    transition: transform 190ms var(--ease-out);
-    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
   .hm-poster img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .hm-poster:active { transform: scale(.98); transition-duration: var(--dur-press); }
-  @media (prefers-reduced-motion: reduce) { .hm-poster:active { transform: none; } }
 
   /* ── Profit snapshot ────────────────────────────────────────────────────
      Two tiles and a net. Money in is green, money out is gold — the same
