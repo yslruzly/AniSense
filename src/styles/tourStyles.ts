@@ -195,20 +195,60 @@ export const tourCss = `
 
   /* ── The guide page ──────────────────────────────────────────────────────
      Same walkthrough, at the farmer's own pace and in their own order. */
+  /* The replay card. Light, like the guide's tile on Home, so the one green
+     thing on it is the button; the tour's mascot stands at the right. */
   .gd-intro {
-    background: var(--tanim-deep); color: #fff; border-radius: var(--radius);
-    padding: 18px; display: flex; flex-direction: column; gap: 4px;
+    position: relative; overflow: hidden; border-radius: var(--radius);
+    padding: 18px 18px 16px;
+    display: grid; grid-template-columns: 1fr 118px; grid-template-areas: "copy art" "btn btn"; column-gap: 6px;
+    background: linear-gradient(160deg, #E2F0E6 0%, #F3F9F5 58%, #FFFFFF 100%);
+    box-shadow: inset 0 0 0 1px rgba(11,107,65,.14), 0 10px 24px -20px rgba(15,53,36,.5);
   }
-  .gd-intro-t { font-family: var(--font-display); font-size: 19px; font-weight: 700; letter-spacing: -.01em; }
-  .gd-intro-s { font-size: 14.5px; line-height: 1.5; color: rgba(255,255,255,.82); }
+  .gd-intro-copy { grid-area: copy; align-self: center; padding: 2px 0 6px; }
+  .gd-intro-t {
+    margin: 0; font-family: var(--font-display); font-size: 20px; font-weight: 700;
+    letter-spacing: -.015em; line-height: 1.2; color: var(--text);
+  }
+  .gd-intro-s { margin: 6px 0 0; font-size: 14.5px; line-height: 1.5; color: var(--text-muted); }
+  /* Anchored to the card's right edge; the negative bottom margin lets the
+     button's row start over his waist, so the cut-off drawing never shows. */
+  .gd-mascot {
+    grid-area: art; position: relative; z-index: 0; align-self: end; justify-self: end;
+    width: 132px; aspect-ratio: 420 / 435; margin: -4px -20px -38px 0;
+  }
+  .gd-mascot .tm-hand { animation: tm-wave 1.7s var(--ease-io) 450ms both; }
+  .gd-mascot .tm-eyes { animation: tm-blink 3.8s step-end 2.3s infinite; }
+
+  /* The same button as Continue: a gradient with a top and a bottom, a
+     highlight where light catches the top edge, a darker line for its
+     thickness. On top of that, a soft cast shadow below it - dark and pulled
+     in, so it reads as the button standing off the card, not as a glow. */
   .gd-replay {
-    margin-top: 12px; min-height: 48px; width: 100%; border: none; border-radius: 14px; cursor: pointer;
-    background: #fff; color: var(--tanim-deep); font-family: inherit; font-size: 16px; font-weight: 700;
-    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-    transition: transform 190ms var(--ease-out);
+    grid-area: btn; position: relative; z-index: 1; margin-top: 12px;
+    min-height: 56px; width: 100%; border: none; border-radius: 16px; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+    font-family: var(--font-display); font-size: 16.5px; font-weight: 700; letter-spacing: -.01em; color: #fff;
+    background-image: linear-gradient(180deg, #14875A 0%, var(--tanim) 54%, #075232 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.26),
+      inset 0 -1px 0 rgba(0,0,0,.24),
+      inset 0 0 0 1px rgba(4,40,24,.22),
+      0 1px 2px rgba(6,38,23,.30),
+      0 12px 22px -12px rgba(6,38,23,.62);
+    transition: transform 190ms var(--ease-out), box-shadow 190ms var(--ease-out);
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
-  .gd-replay:active { transform: scale(.98); transition-duration: var(--dur-press); }
+  /* Pressed in, not just smaller: the highlight dims and the cast shadow
+     draws up under the button. */
+  .gd-replay:active {
+    transform: scale(.975); transition-duration: 90ms;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.12),
+      inset 0 -1px 0 rgba(0,0,0,.28),
+      inset 0 0 0 1px rgba(4,40,24,.26),
+      0 1px 1px rgba(6,38,23,.34),
+      0 4px 10px -8px rgba(6,38,23,.5);
+  }
 
   .gd-list { display: flex; flex-direction: column; gap: 10px; }
 
@@ -261,5 +301,6 @@ export const tourCss = `
   @media (prefers-reduced-motion: reduce) {
     .gd-chev { transition: none; }
     .gd-replay:active { transform: none; }
+    .gd-mascot .tm-hand, .gd-mascot .tm-eyes { animation: none; }
   }
 `;

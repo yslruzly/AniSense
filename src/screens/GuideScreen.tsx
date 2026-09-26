@@ -7,6 +7,9 @@ import { useLang } from "../i18n";
 import { haptic } from "../lib/platform";
 import { Hdr } from "../components/layout/Hdr";
 import { AutoHeight } from "../components/ui/AutoHeight";
+import mascotBody from "../assets/mascot-wave-body.webp";
+import mascotHand from "../assets/mascot-wave-hand.webp";
+import mascotEyes from "../assets/mascot-wave-eyes.webp";
 
 // ─── How to use AniSense ──────────────────────────────────────────────────────
 // The walkthrough runs once; this is where it lives afterwards. Eight jobs a
@@ -47,10 +50,20 @@ export function GuideScreen({ onBack, onReplay }: { onBack: () => void; onReplay
         {/* The tour, on demand. It is the same one the app ran on the first
             launch, so this is a second chance rather than a different lesson. */}
         <section className="gd-intro">
-          <span className="gd-intro-t">{t("gd_replay_t")}</span>
-          <span className="gd-intro-s">{t("gd_replay_s")}</span>
+          <div className="gd-intro-copy">
+            <h2 className="gd-intro-t">{t("gd_replay_t")}</h2>
+            <p className="gd-intro-s">{t("gd_replay_s")}</p>
+          </div>
+          {/* The one who gives the tour, offering to give it again. He waves
+              once as the page opens and blinks after; his waist is tucked
+              behind the button, the way he leans over the tour's cards. */}
+          <div className="gd-mascot" aria-hidden="true">
+            <img className="tm-body" src={mascotBody} alt="" width={420} height={435} decoding="async" />
+            <img className="tm-eyes" src={mascotEyes} alt="" width={420} height={435} decoding="async" />
+            <img className="tm-hand" src={mascotHand} alt="" width={420} height={435} decoding="async" />
+          </div>
           <button className="gd-replay" onClick={() => { haptic.select(); onReplay(); }}>
-            <PlayCircle size={20} strokeWidth={2.4} /> {t("gd_replay_btn")}
+            <PlayCircle size={21} strokeWidth={2.4} aria-hidden="true" /> {t("gd_replay_btn")}
           </button>
         </section>
 
