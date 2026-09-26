@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ArrowLeft, Bell, BellRing, TrendingUp, TrendingDown, CloudRain, X, Sprout, Scissors } from "lucide-react";
+import { ArrowLeft, Bell, BellRing, BellOff, TrendingUp, TrendingDown, CloudRain, X, Sprout, Scissors } from "lucide-react";
 import { useLang } from "../../i18n";
 import { haptic } from "../../lib/platform";
 import { buildAlerts, Alert } from "../../data/alerts";
@@ -31,58 +31,63 @@ export function Hdr({ icon, title, sub, onBack, extra, center }: { icon?: React.
     return true;
   });
 
-  const row = (a: Alert) => {
-    const pct = `${(a.change || 0) > 0 ? "+" : ""}${a.change}%`;
+  // One alert, as the sheet shows it: a filled tile in the colour of what it
+  // means, a small label naming the kind, the headline, one line of detail,
+  // and - where there is a number - the number pulled out into a chip on the
+  // right, where the eye lands last and reads first.
+  type Tone = "green" | "gold" | "red" | "blue";
+  const row = (a: Alert): { tone: Tone; kind: string; ico: React.ReactNode; title: string; body: string; chip?: string } => {
+    const c = a.change || 0;
+    const pct = `${c > 0 ? "+" : c < 0 ? "−" : ""}${Math.abs(c)}%`;
+    const I = { size: 20, strokeWidth: 2.4 };
     if (a.kind === "harvest-due") {
       return {
-        ico: <Scissors size={20} color="var(--tanim-deep)" />,
-        bg: "var(--tanim-sk)",
+        tone: "gold", kind: t("alert_kind_harvest"), ico: <Scissors {...I} />,
         title: t("ct_alert_title"),
         body: t("ct_alert_body").replace("{crop}", tn(a.crop || "")).replace("{days}", String(a.dayCount)),
       };
     }
     if (a.kind === "price-target") {
       return {
-        ico: <BellRing size={20} color="var(--tanim-deep)" />,
-        bg: "var(--tanim-sk)",
+        tone: "green", kind: t("alert_kind_target"), ico: <BellRing {...I} />,
         title: t("pa_alert_title"),
         body: t("pa_alert_body").replace("{crop}", tn(a.crop || "")).replace("{price}", `₱${a.target}`),
+        chip: `₱${a.target}`,
       };
     }
     if (a.kind === "new-listing") {
       return {
-        ico: <Sprout size={20} color="var(--tanim)" />,
-        bg: "var(--tanim-sk)",
+        tone: "green", kind: t("alert_kind_listing"), ico: <Sprout {...I} />,
         title: t("alert_new_near"),
-        body: `${tn(a.crop || "")} · ₱${a.pricePerKg}${t("per_kg_short")} · ${a.seller}`,
-      };
-    }
-    if (isBuyer) {
-      // The colours flip for a buyer: a drop is the good news, so it gets the
-      // green; a rise is the warning, so it gets the gold. Red would say
-      // "something is wrong", and nothing is — it is just time to buy.
-      const down = a.kind === "price-down";
-      return {
-        ico: down ? <TrendingDown size={20} color="var(--tanim)" /> : <TrendingUp size={20} color="var(--gold-text)" />,
-        bg: down ? "var(--tanim-sk)" : "var(--gold-sk)",
-        title: down ? t("alert_buy_cheaper") : t("alert_buy_rising"),
-        body: `${tn(a.crop || "")} · ${pct} · ${down ? t("alert_buy_cheaper_note") : t("alert_buy_rising_note")}`,
+        body: `${tn(a.crop || "")} · ${a.seller}`,
+        chip: `₱${a.pricePerKg}${t("per_kg_short")}`,
       };
     }
     if (a.kind === "weather") {
       return {
-        ico: <CloudRain size={20} color="var(--gold-text)" />,
-        bg: "var(--gold-sk)",
-        title: t("home_adv_rain"),
-        body: t("home_adv_rain_sub"),
+        tone: "blue", kind: t("alert_kind_weather"), ico: <CloudRain {...I} />,
+        title: t("home_adv_rain"), body: t("home_adv_rain_sub"),
       };
     }
-    const up = a.kind === "price-up";
+    const down = a.kind === "price-down";
+    if (isBuyer) {
+      // The colours flip for a buyer: a drop is the good news, so it gets the
+      // green; a rise is the warning, so it gets the gold. Red would say
+      // "something is wrong", and nothing is: it is just time to buy.
+      return {
+        tone: down ? "green" : "gold", kind: t("alert_kind_price"),
+        ico: down ? <TrendingDown {...I} /> : <TrendingUp {...I} />,
+        title: down ? t("alert_buy_cheaper") : t("alert_buy_rising"),
+        body: `${tn(a.crop || "")} · ${down ? t("alert_buy_cheaper_note") : t("alert_buy_rising_note")}`,
+        chip: pct,
+      };
+    }
     return {
-      ico: up ? <TrendingUp size={20} color="var(--tanim)" /> : <TrendingDown size={20} color="var(--error)" />,
-      bg: up ? "var(--tanim-sk)" : "var(--error-sk)",
-      title: up ? t("alert_price_up") : t("alert_price_down"),
-      body: `${tn(a.crop || "")} · ${pct}`,
+      tone: down ? "red" : "green", kind: t("alert_kind_price"),
+      ico: down ? <TrendingDown {...I} /> : <TrendingUp {...I} />,
+      title: down ? t("alert_price_down") : t("alert_price_up"),
+      body: tn(a.crop || ""),
+      chip: pct,
     };
   };
 
@@ -123,13 +128,20 @@ export function Hdr({ icon, title, sub, onBack, extra, center }: { icon?: React.
         className="alerts-sheet modal-sheet"
         label={t("alerts_title")}
       >
+        {/* The head: the bell in a glass tile, the title, what this sheet
+            is for, and how many there are today - the one number that says
+            whether it is worth reading now. */}
         <div className="alerts-head">
-          <div>
-            <div className="alerts-head-t">{t("alerts_title")}</div>
+          <span className="alerts-head-ico" aria-hidden="true"><Bell size={22} strokeWidth={2.4} /></span>
+          <div className="alerts-head-txt">
+            <div className="alerts-head-t">
+              {t("alerts_title")}
+              {alerts.length > 0 && <span className="alerts-count">{t("alerts_count").replace("{n}", String(alerts.length))}</span>}
+            </div>
             <div className="alerts-head-s">{t(isBuyer ? "alerts_sub_buyer" : "alerts_sub")}</div>
           </div>
           <button className="alerts-close" onClick={() => setShowAlerts(false)} aria-label={t("close")}>
-            <X size={22} color="#fff" strokeWidth={2.4} />
+            <X size={20} color="#fff" strokeWidth={2.6} />
           </button>
         </div>
 
@@ -140,18 +152,21 @@ export function Hdr({ icon, title, sub, onBack, extra, center }: { icon?: React.
         <div className="alerts-body stagger-list">
           {alerts.length === 0 ? (
             <div className="alerts-empty">
+              <span className="alerts-empty-ico" aria-hidden="true"><BellOff size={26} strokeWidth={2.2} /></span>
               <div className="alerts-empty-t">{t("alerts_none")}</div>
               <div className="alerts-empty-s">{t(isBuyer ? "alerts_none_sub_buyer" : "alerts_none_sub")}</div>
             </div>
           ) : alerts.map(a => {
             const r = row(a);
             return (
-              <div key={a.id} className="alert-row">
-                <span className="alert-ico" style={{ background: r.bg }}>{r.ico}</span>
+              <div key={a.id} className={`alert-row ${r.tone}`}>
+                <span className="alert-ico" aria-hidden="true">{r.ico}</span>
                 <span className="alert-txt">
+                  <span className="alert-kind">{r.kind}</span>
                   <span className="alert-t">{r.title}</span>
                   <span className="alert-b">{r.body}</span>
                 </span>
+                {r.chip && <span className="alert-chip">{r.chip}</span>}
               </div>
             );
           })}

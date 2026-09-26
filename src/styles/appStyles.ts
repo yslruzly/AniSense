@@ -171,39 +171,90 @@ export const appCss = `
   /* The scrim, the tap-to-dismiss and the stacking context all come from
      .shm-scrim now (components/ui/Sheet.tsx). Each sheet only describes what
      it looks like. */
+  /* ── Alerts ──────────────────────────────────────────────────────────────
+     A deep green head with light pooling in its corner, the bell in a glass
+     tile, and a count of today's alerts. Underneath, each alert is a card
+     with a filled tile in the colour of what it means (green good news, gold
+     a warning, red a loss, blue the weather), a small label naming the kind,
+     and any number pulled out into a chip of the same colour. */
   .alerts-sheet {
-    width: 100%; max-height: 82%; background: var(--paper);
-    border-radius: 24px 24px 0 0; padding-bottom: 22px;
+    width: 100%; max-height: 84%; background: var(--paper);
+    border-radius: 26px 26px 0 0; padding-bottom: calc(22px + var(--safe-bottom));
+    overflow-y: auto; scrollbar-width: none;
   }
+  .alerts-sheet::-webkit-scrollbar { display: none; }
   .alerts-head {
-    background: var(--tanim); border-radius: 24px 24px 0 0; padding: 20px 20px 18px;
-    display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+    position: sticky; top: 0; z-index: 2;
+    border-radius: 26px 26px 0 0; padding: 20px 18px 18px;
+    display: flex; align-items: center; gap: 13px;
+    background:
+      radial-gradient(120% 140% at 100% 0%, rgba(126,196,120,.32), transparent 58%),
+      linear-gradient(160deg, #13744A 0%, var(--tanim-deep) 100%);
+    box-shadow: 0 10px 22px -18px rgba(4,20,12,.9);
   }
-  .alerts-head-t { font-family: var(--font-display); font-size: var(--fs-lead); font-weight: 800; color: #fff; }
-  .alerts-head-s { font-size: var(--fs-label); color: rgba(255,255,255,.82); margin-top: 3px; line-height: 1.35; }
+  .alerts-head-ico {
+    width: 46px; height: 46px; flex-shrink: 0; border-radius: 14px; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(180deg, rgba(255,255,255,.24), rgba(255,255,255,.1));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.3), inset 0 0 0 1px rgba(255,255,255,.22);
+  }
+  .alerts-head-txt { flex: 1; min-width: 0; }
+  .alerts-head-t {
+    display: flex; align-items: center; gap: 8px;
+    font-family: var(--font-display); font-size: 21px; font-weight: 700; letter-spacing: -.015em; color: #fff;
+  }
+  .alerts-count {
+    padding: 3px 9px; border-radius: 99px; font-family: var(--font-body); font-size: 12px; font-weight: 800;
+    background: #F2B32C; color: #3A2A05; letter-spacing: .01em; font-variant-numeric: tabular-nums;
+  }
+  .alerts-head-s { font-size: 13.5px; color: rgba(255,255,255,.8); margin-top: 3px; line-height: 1.35; }
   .alerts-close {
-    background: rgba(255,255,255,.2); border: none; border-radius: 50%;
-    width: 40px; height: 40px; flex-shrink: 0; cursor: pointer;
+    background: rgba(255,255,255,.16); border: none; border-radius: 50%;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.22);
+    width: 40px; height: 40px; flex-shrink: 0; cursor: pointer; align-self: flex-start;
     display: flex; align-items: center; justify-content: center;
     transition: transform 190ms var(--ease-out), background-color 160ms ease;
   }
-  .alerts-close:active { transition-duration: 100ms; transform: scale(0.94); background: rgba(255,255,255,.32); }
-  .alerts-body { padding: 14px 16px 0; display: flex; flex-direction: column; gap: 10px; }
+  .alerts-close:active { transition-duration: 100ms; transform: scale(0.94); background: rgba(255,255,255,.3); }
+  .alerts-body { padding: 16px 14px 0; display: flex; flex-direction: column; gap: 10px; }
   .alert-row {
-    display: flex; align-items: center; gap: 13px; padding: 14px;
-    background: var(--white); border: 1px solid var(--border);
-    border-radius: var(--radius); box-shadow: var(--shadow-sm);
+    display: flex; align-items: center; gap: 12px; padding: 12px 12px 12px 12px;
+    background: var(--card); border-radius: 18px;
+    box-shadow: inset 0 0 0 1px var(--line), 0 10px 18px -16px rgba(22,33,27,.45);
   }
   .alert-ico {
-    width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
+    width: 44px; height: 44px; border-radius: 13px; flex-shrink: 0; color: #fff;
     display: flex; align-items: center; justify-content: center;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.24), inset 0 -1px 0 rgba(0,0,0,.18), 0 1px 2px rgba(0,0,0,.18);
   }
-  .alert-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-  .alert-t { font-size: var(--fs-label); font-weight: 700; color: var(--text); }
-  .alert-b { font-size: var(--fs-label); color: var(--text-muted); line-height: 1.4; }
-  .alerts-empty { padding: 26px 6px 10px; text-align: center; }
-  .alerts-empty-t { font-size: var(--fs-body); font-weight: 700; color: var(--text); }
-  .alerts-empty-s { font-size: var(--fs-label); color: var(--text-muted); margin-top: 6px; line-height: 1.5; }
+  .alert-row.green .alert-ico { background: linear-gradient(180deg, #16895B 0%, var(--tanim) 55%, #07522F 100%); }
+  .alert-row.gold  .alert-ico { background: linear-gradient(180deg, #D39B2E 0%, #B07A16 55%, #8A5D0C 100%); }
+  .alert-row.red   .alert-ico { background: linear-gradient(180deg, #D0564A 0%, #B3342A 55%, #86190F 100%); }
+  .alert-row.blue  .alert-ico { background: linear-gradient(180deg, #4A8FCC 0%, #2F6FA8 55%, #235887 100%); }
+  .alert-txt { flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .alert-kind { font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+  .alert-row.green .alert-kind { color: var(--tanim); }
+  .alert-row.gold  .alert-kind { color: var(--gold-text); }
+  .alert-row.red   .alert-kind { color: var(--error); }
+  .alert-row.blue  .alert-kind { color: #2F6FA8; }
+  .alert-t { font-family: var(--font-display); font-size: 15.5px; font-weight: 700; letter-spacing: -.005em; color: var(--text); line-height: 1.25; }
+  .alert-b { font-size: 13.5px; color: var(--text-muted); line-height: 1.4; }
+  .alert-chip {
+    flex-shrink: 0; align-self: center; padding: 5px 10px; border-radius: 99px;
+    font-family: var(--font-display); font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .alert-row.green .alert-chip { background: var(--tanim-sk); color: var(--tanim-deep); }
+  .alert-row.gold  .alert-chip { background: var(--gold-sk); color: var(--gold-text); }
+  .alert-row.red   .alert-chip { background: var(--error-sk); color: var(--error); }
+  .alert-row.blue  .alert-chip { background: #DCEAF8; color: #2F6FA8; }
+  .alerts-empty { padding: 30px 12px 12px; text-align: center; display: flex; flex-direction: column; align-items: center; }
+  .alerts-empty-ico {
+    width: 60px; height: 60px; border-radius: 50%; margin-bottom: 12px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--tanim-sk); color: var(--tanim);
+  }
+  .alerts-empty-t { font-family: var(--font-display); font-size: 17px; font-weight: 700; color: var(--text); }
+  .alerts-empty-s { font-size: 14px; color: var(--text-muted); margin-top: 6px; line-height: 1.5; max-width: 280px; }
 
   /* ── Scroll ── */
   .scroll {
@@ -1230,26 +1281,45 @@ export const appCss = `
      end of the second, where it has always been. */
   .mp-list-head:has(.fseg) { flex-wrap: wrap; row-gap: 10px; justify-content: flex-end; }
   .mp-list-head .fseg { flex: 0 0 100%; order: -1; }
+  /* The same object as the Expenses switch: a well pressed into the page,
+     and the app's raised green sliding inside it, so every "pick one of
+     these" in the app is one thing. */
   .fseg {
     position: relative; flex: 1; min-width: 0; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
-    padding: 3px; border-radius: 99px; background: var(--paper-alt); isolation: isolate;
+    padding: 5px; border-radius: 17px; isolation: isolate;
+    background: linear-gradient(180deg, #E3E7E4 0%, #ECEFEC 100%);
+    box-shadow:
+      inset 0 1px 2px rgba(22,33,27,.12),
+      inset 0 0 0 1px rgba(22,33,27,.05),
+      0 1px 0 rgba(255,255,255,.9);
   }
   .fseg-pill {
-    position: absolute; z-index: -1; top: 3px; bottom: 3px; left: 3px; width: calc((100% - 6px) / 4);
-    border-radius: 99px; background: var(--card);
-    box-shadow: 0 1px 3px rgba(22,33,27,.16), 0 0 0 1px rgba(22,33,27,.04);
-    transition: transform 260ms var(--ease-out);
+    position: absolute; z-index: -1; top: 5px; bottom: 5px; left: 5px; width: calc((100% - 10px) / 4);
+    border-radius: 13px;
+    background-image: linear-gradient(180deg, #14875A 0%, var(--tanim) 54%, #075232 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.26),
+      inset 0 -1px 0 rgba(0,0,0,.24),
+      inset 0 0 0 1px rgba(4,40,24,.22),
+      0 1px 2px rgba(6,38,23,.3),
+      0 6px 12px -6px rgba(6,38,23,.5);
+    /* Movement across the control, not an arrival: eases in and out. */
+    transition: transform 280ms var(--ease-io);
+    will-change: transform;
   }
   .fseg-tab {
     /* 44px, the smallest target a thumb hits reliably; the segments touch
        each other, so the height is all the room a miss can use. */
-    min-height: 44px; padding: 0 6px; border: none; background: none; cursor: pointer;
-    font-family: var(--font-display); font-size: 13.5px; font-weight: 700; color: var(--text-muted);
+    min-height: 46px; padding: 0 3px; border: none; background: none; cursor: pointer; border-radius: 13px;
+    font-family: var(--font-display); font-size: 13.5px; font-weight: 700; letter-spacing: -.01em; color: var(--text-muted);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     transition: color 160ms ease, transform 190ms var(--ease-out);
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
-  .fseg-tab.on { color: var(--tanim-deep); }
+  .fseg-tab.on { color: #fff; text-shadow: 0 1px 1px rgba(0,0,0,.18); }
+  /* Four words in a 360-wide phone: a step smaller, so "Vegetables" and
+     "Palay/Mais" stay whole rather than trailing off into dots. */
+  @media (max-width: 380px) { .fseg-tab { font-size: 12.5px; letter-spacing: -.015em; } }
   /* Press feedback on the label itself: the pill is already travelling, and
      two things moving at once reads as a wobble. */
   .fseg-tab:active { transform: scale(.94); transition-duration: var(--dur-press); }
@@ -1599,24 +1669,65 @@ export const appCss = `
   }
 
   /* Shop by crop: 4 × 2, pictures first. */
-  .shop-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px 8px; margin-top: 14px; }
-  .shop-cat {
-    min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 0;
-    border: none; background: none; cursor: pointer; font: inherit; color: inherit;
-    transition: transform 190ms var(--ease-out);
+
+  /* ── Shop by crop: three family cards ─────────────────────────────────
+     Tall photographs, the name set on a shade at the foot, the count in a
+     pill of the family's own colour, and a small glass arrow in the corner
+     that says "this opens something". The whole card presses as one. */
+  .fam-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+  .fam-card {
+    position: relative; overflow: hidden; aspect-ratio: 3 / 4; padding: 0; border: none; cursor: pointer;
+    border-radius: 20px; background: #1E2A22; color: #fff; text-align: left; font: inherit;
+    box-shadow: 0 16px 26px -18px rgba(12,20,15,.75), 0 2px 5px -2px rgba(12,20,15,.25);
+    transition: transform 190ms var(--ease-out), box-shadow 190ms var(--ease-out);
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
-  .shop-cat-img {
-    width: 100%; max-width: 76px; aspect-ratio: 1; border-radius: 24px; overflow: hidden;
-    display: flex; align-items: center; justify-content: center; background: var(--tanim-sk); color: var(--tanim);
-    box-shadow: 0 8px 16px -10px rgba(22,33,27,.45);
+  .fam-card img {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;
+    transition: transform 500ms var(--ease-out);
   }
-  .shop-cat-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .shop-cat-lbl {
-    max-width: 100%; font-family: var(--font-display); font-size: 14px; font-weight: 600; line-height: 1.2;
-    color: var(--text); text-align: center; overflow-wrap: anywhere;
+  /* Shade toward the foot for the words, and a hairline ring so the photo
+     edge reads as a finished edge on the pale page. */
+  .fam-card::after {
+    content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    background: linear-gradient(180deg, rgba(8,14,10,0) 38%, rgba(8,14,10,.28) 60%, rgba(8,14,10,.82) 100%);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.14);
   }
-  .shop-cat:active { transform: scale(.94); transition-duration: var(--dur-press); }
+  .fam-go {
+    position: absolute; top: 9px; right: 9px; z-index: 1; width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; color: #fff;
+    background: rgba(12,20,15,.38); box-shadow: inset 0 0 0 1px rgba(255,255,255,.35);
+    transition: transform 190ms var(--ease-out);
+  }
+  .fam-foot {
+    position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; padding: 0 10px 11px;
+    display: flex; flex-direction: column; align-items: flex-start; gap: 5px;
+  }
+  .fam-name {
+    font-family: var(--font-display); font-size: 16px; font-weight: 700; letter-spacing: -.01em; line-height: 1.1;
+    text-shadow: 0 1px 3px rgba(0,0,0,.45);
+  }
+  .fam-count {
+    padding: 3px 8px; border-radius: 99px; font-size: 11.5px; font-weight: 800; letter-spacing: .01em;
+    color: #fff; font-variant-numeric: tabular-nums; box-shadow: inset 0 1px 0 rgba(255,255,255,.25);
+  }
+  .fam-card.gold  .fam-count { background: #B07A16; }
+  .fam-card.coral .fam-count { background: #D0532F; }
+  .fam-card.green .fam-count { background: var(--tanim); }
+  /* Pressed: the card sinks, its shadow draws in, the arrow steps forward. */
+  .fam-card:active {
+    transform: scale(.97); transition-duration: var(--dur-press);
+    box-shadow: 0 8px 14px -12px rgba(12,20,15,.7), 0 1px 3px -1px rgba(12,20,15,.25);
+  }
+  .fam-card:active .fam-go { transform: translateX(2px); transition-duration: var(--dur-press); }
+  @media (hover: hover) and (pointer: fine) {
+    .fam-card:hover img { transform: scale(1.04); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .fam-card:active, .fam-card:active .fam-go, .fam-card:hover img { transform: none; }
+  }
+  /* Narrow phones: the longest name, "Vegetables", keeps to one line. */
+  @media (max-width: 370px) { .fam-name { font-size: 14.5px; } .fam-foot { padding: 0 8px 10px; } }
 
   /* Featured farmers: one spotlight, three rows, one card. */
   .ff {
@@ -2088,7 +2199,7 @@ export const appCss = `
   .shell[data-revisit] .scroll .yp-bar { animation: none; }
 
   @media (prefers-reduced-motion: reduce) {
-    .hm-search:active, .shop-cat:active, .ff-cta:active, .ff-cta:active .ff-cta-go { transform: none; }
+    .hm-search:active, .ff-cta:active, .ff-cta:active .ff-cta-go { transform: none; }
   }
 
   /* ── Buyer price moves ─────────────────────────────────────────────────

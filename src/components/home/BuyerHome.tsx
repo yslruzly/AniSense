@@ -1,6 +1,9 @@
 import { ChevronRight, MapPin, Star, Award, RotateCcw, ArrowLeft, ArrowRight, TrendingUp, TrendingDown, ArrowLeftRight } from "lucide-react";
 import { useLang, translations } from "../../i18n";
-import { CROPS, CROP_GROUP_BY_ID, CROP_FILTER_MAP } from "../../data/crops";
+import { CROPS, CROP_GROUP_BY_ID, familyCropNames } from "../../data/crops";
+import familyCrops from "../../assets/families/family-crops.webp";
+import familyFruits from "../../assets/families/family-fruits.webp";
+import familyVegetables from "../../assets/families/family-vegetables.webp";
 import { SELLER_DETAILS, LISTINGS } from "../../data/marketplace";
 import { BUYER_TRANSACTIONS } from "../../data/expenses";
 import { cropPhoto, cropPhotoFor, cropGroupPhoto } from "../../data/cropPhotos";
@@ -15,27 +18,42 @@ import { TradeIntent } from "../../types";
 type Shop = (intent: TradeIntent) => void;
 
 // ── Shop by crop ─────────────────────────────────────────────────────────────
-// Eight crops, eight tiles, a 4 × 2 grid: every category on one screen with no
-// swiping, and a picture to recognise before a word to read.
-const SHOP_CATS = Object.keys(CROP_FILTER_MAP);
-const catPhoto = cropGroupPhoto;
+// Three doors, not ten: Crops, Fruits, Vegetables. Ten small tiles asked a
+// buyer to know already which crop they wanted; three big pictures let them
+// start from the kind of thing they came for, and the marketplace opens on
+// that family with every crop in it.
+//
+// Each card is a photograph of the family at its best, the name, and how many
+// harvests are listed under it right now, so a tap is never a surprise.
+const FAMILIES: { id: string; photo: string; tone: string }[] = [
+  { id: "Crops", photo: familyCrops, tone: "gold" },
+  { id: "Fruits", photo: familyFruits, tone: "coral" },
+  { id: "Vegetables", photo: familyVegetables, tone: "green" },
+];
 
-// Always in English, whichever language the app is set to: the crop names
-// here are the ones printed on market signs and sacks, so they stay as the
-// buyer will see them at the bagsakan.
+const listedIn = (family: string) => {
+  const names = familyCropNames(family);
+  return LISTINGS.filter(l => names.includes(l.crop) || names.includes(l.variety)).length;
+};
+
+// Always in English, whichever language the app is set to, like the crop
+// names this section used to show: the words printed on market signs.
 export function ShopByCrop({ onShop }: { onShop: Shop }) {
   return (
     <section className="hm-sec" aria-labelledby="shop-t" data-tour="b-crops">
       <h2 className="hm-sec-title" id="shop-t">{translations.home_shop_by_crop.en}</h2>
-      <div className="shop-grid stagger-list">
-        {SHOP_CATS.map(cat => {
-          const photo = catPhoto(cat);
+      <div className="fam-grid stagger-list">
+        {FAMILIES.map(f => {
+          const n = listedIn(f.id);
           return (
-            <button key={cat} className="shop-cat" onClick={() => onShop({ category: cat })}>
-              <span className="shop-cat-img">
-                {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropEmoji crop={cat} size={30} />}
+            <button key={f.id} className={`fam-card ${f.tone}`} onClick={() => onShop({ family: f.id })}
+              aria-label={`${f.id}, ${n} ${n === 1 ? "listing" : "listings"}`}>
+              <img src={f.photo} alt="" width={360} height={480} loading="lazy" decoding="async" />
+              <span className="fam-go" aria-hidden="true"><ArrowRight size={16} strokeWidth={2.8} /></span>
+              <span className="fam-foot" aria-hidden="true">
+                <span className="fam-name">{f.id}</span>
+                <span className="fam-count">{n} {n === 1 ? "listing" : "listings"}</span>
               </span>
-              <span className="shop-cat-lbl">{cat}</span>
             </button>
           );
         })}

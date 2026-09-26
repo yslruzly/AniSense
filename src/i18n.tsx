@@ -737,6 +737,12 @@ export const translations: Dict = {
   home_offline_cached: { en: "Offline: cached data", tl: "Offline: naka-save na datos" },
   // ── Alerts (header bell) ──────────────────────────────────────────────────
   alerts_title: { en: "Alerts", tl: "Mga Abiso" },
+  alerts_count: { en: "{n} today", tl: "{n} ngayon" },
+  alert_kind_price: { en: "Price", tl: "Presyo" },
+  alert_kind_weather: { en: "Weather", tl: "Panahon" },
+  alert_kind_harvest: { en: "Harvest", tl: "Ani" },
+  alert_kind_target: { en: "Your price", tl: "Target mo" },
+  alert_kind_listing: { en: "New harvest", tl: "Bagong ani" },
   alerts_sub: {
     en: "Prices and weather worth knowing today",
     tl: "Presyo at panahon na dapat mong malaman ngayon",
@@ -1033,6 +1039,11 @@ export const translations: Dict = {
     en: "The farmgate price of the crops you grow, and whether it rose or fell. Tap one to see its last seven days.",
     tl: "Ang presyo sa bukid ng mga tinatanim mo, at kung tumaas o bumaba. Pindutin ang isa para makita ang huling pitong araw.",
   },
+  tour_featured_t: { en: "What's selling", tl: "Ang mabenta" },
+  tour_featured_b: {
+    en: "The best-rated harvests in the Market right now, and what they ask per kilo. Swipe to compare with your own.",
+    tl: "Ang pinakamataas ang rating na ani sa Merkado ngayon, at ang presyo kada kilo. Mag-swipe para ikumpara sa iyo.",
+  },
   tour_forecast_t: { en: "Sell, hold, or wait", tl: "Ibenta, itago, o maghintay" },
   tour_forecast_b: {
     en: "What the model expects the price to do next, and what it suggests you do about it. Treat it as advice, not a promise.",
@@ -1082,10 +1093,10 @@ export const translations: Dict = {
     en: "Type a crop or a farmer's name. The Market opens with the results already waiting.",
     tl: "I-type ang pananim o pangalan ng magsasaka. Bubukas ang Merkado na may resulta na.",
   },
-  tour_b_crops_t: { en: "Shop by crop", tl: "Mamili ayon sa pananim" },
+  tour_b_crops_t: { en: "Crops, fruits or vegetables", tl: "Palay at mais, prutas, o gulay" },
   tour_b_crops_b: {
-    en: "Tap a picture to see every listing of that crop in the Market.",
-    tl: "Pindutin ang larawan para makita ang lahat ng listing ng pananim na iyon sa Merkado.",
+    en: "Start from what you came for. Tap one and the Market opens with every harvest of that kind.",
+    tl: "Magsimula sa hinahanap mo. Pindutin ang isa at bubukas ang Merkado kasama ang lahat ng ani na ganoon.",
   },
   tour_b_featured_t: { en: "Worth a look today", tl: "Sulit tingnan ngayon" },
   tour_b_featured_b: {

@@ -44,6 +44,9 @@ const FARMER_STEPS: Step[] = [
   { id: "intro" },
   { id: "harvest", targets: ['[data-tour="harvest"]'] },
   { id: "prices", targets: ['[data-tour="prices"]'] },
+  // The marketplace's best, which a farmer's Home now shows under their own
+  // prices: the same section the buyer's tour points at.
+  { id: "featured", targets: ['[data-tour="b-featured"]'] },
   // The heading and the card under it: one light over the pair, because the
   // heading alone explains nothing and the card alone looks unannounced.
   { id: "forecast", targets: ['[data-tour="forecast"]', ".adv-card"] },

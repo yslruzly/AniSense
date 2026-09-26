@@ -37,7 +37,9 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
   const [openId, setOpenId] = useState<string | null>(null);
   const [category, setCategory] = useState(intent?.category ?? "All Crops");
   // The seller's coarse view of their own market: everything, or one family.
-  const [family, setFamily] = useState("All");
+  // Home's Crops / Fruits / Vegetables cards open the marketplace already on
+  // that family.
+  const [family, setFamily] = useState(intent?.family ?? "All");
   const [variety, setVariety] = useState("All");
   const [sortBy, setSortBy] = useState<"default" | "price-asc" | "price-desc" | "rating">("default");
   const [showModal, setShowModal] = useState(false);
