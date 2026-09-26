@@ -19,22 +19,12 @@ import { EmptyState } from "../components/states";
 import { downscaleImage } from "../lib/image";
 import { MenuPicker } from "../components/ui/MenuPicker";
 import { Receipt, ReceiptOrder } from "../components/Receipt";
+import { avatarTone as avaTone } from "../lib/avatar";
 import { PickerField } from "../components/ui/PickerField";
 import { MUNICIPALITIES } from "../data/locations";
 import { useViewer } from "../lib/viewer";
 
 // ─── Trade / Marketplace Screen ───────────────────────────────────────────────
-// Each farmer's avatar keeps one colour, taken from their name, so the same
-// person looks the same wherever they appear.
-const AVA_TONES = [
-  "linear-gradient(135deg, #1F8A5B, #0B5A37)",
-  "linear-gradient(135deg, #D19A2E, #8A5D0C)",
-  "linear-gradient(135deg, #4A8FCC, #235887)",
-  "linear-gradient(135deg, #7B64CF, #47348A)",
-  "linear-gradient(135deg, #D0564A, #86190F)",
-];
-const avaTone = (name: string) => AVA_TONES[[...name].reduce((n, ch) => n + ch.charCodeAt(0), 0) % AVA_TONES.length];
-
 export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", userInitials = "JD", userRole, intent, listings, setListings }: { onProfile: () => void; onBack: () => void; userName?: string; userInitials?: string; userRole?: UserRole; intent?: TradeIntent; listings: Listing[]; setListings: React.Dispatch<React.SetStateAction<Listing[]>> }) {
   const { t, tn, lang } = useLang();
   const locale = lang === "tl" ? "fil-PH" : "en-PH";
@@ -572,7 +562,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
 
                 {/* The seller, as one tappable row: the way to their details. */}
                 <button className="mp-seller" onClick={() => setSellerDetail(SELLER_DETAILS[l.sellerInitials] || null)}>
-                  <span className="seller-ava">{l.sellerInitials}</span>
+                  <span className="seller-ava" style={{ background: avaTone(l.seller) }}>{l.sellerInitials}</span>
                   <span className="mp-seller-who">
                     <span className="mp-seller-name">{l.seller}</span>
                     <span className="mp-seller-meta">

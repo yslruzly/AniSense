@@ -1744,34 +1744,26 @@ export const appCss = `
      is the button at its foot. */
   .ff-spot { flex-direction: column; cursor: default; }
   .ff-row:active { background: var(--paper); transition-duration: var(--dur-press); }
-  .ff-cover { position: relative; display: block; height: 132px; background: linear-gradient(135deg, #1F5E3B, #0B3D26); }
-  .ff-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .ff-cover::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10,14,12,0) 45%, rgba(10,14,12,.42)); }
+  /* The spotlight borrows the profile sheet's pieces (.spf-*): only the
+     corners and spacing differ, because here it sits inside a card. */
+  .ff .ff-hero { border-radius: 0; height: 196px; }
+  .ff-hero .spf-id { right: 20px; }
+  .ff .spf-stats { margin: -30px 14px 0; }
   .ff-badge {
-    position: absolute; z-index: 1; left: 12px; top: 12px; display: inline-flex; align-items: center; gap: 6px;
+    position: absolute; z-index: 2; left: 12px; top: 12px; display: inline-flex; align-items: center; gap: 6px;
     padding: 6px 12px 6px 9px; border-radius: 99px; background: #F2B32C; color: var(--ink);
     font-family: var(--font-display); font-size: 13.5px; font-weight: 800; box-shadow: 0 4px 12px rgba(0,0,0,.22);
   }
-  .ff-spot-body { position: relative; display: flex; flex-direction: column; gap: 5px; padding: 42px 16px 16px; }
+  .ff-spot-body { position: relative; display: flex; flex-direction: column; gap: 12px; padding: 16px 16px 16px; }
+  /* The list's avatars: the profile's colours and ring, at list size. */
   .ff-ava {
     width: 46px; height: 46px; flex: 0 0 46px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
     color: #fff; font-family: var(--font-display); font-size: 15px; font-weight: 800; letter-spacing: .02em;
+    box-shadow: 0 0 0 2.5px #fff, 0 0 0 3.5px var(--line), 0 8px 14px -8px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.3);
   }
-  .ff-ava.lg {
-    position: absolute; left: 16px; top: -34px; width: 66px; height: 66px; font-size: 21px;
-    box-shadow: 0 0 0 4px var(--card), 0 10px 20px -8px rgba(0,0,0,.4);
-  }
-  .ff-name { font-family: var(--font-display); font-size: 20px; font-weight: 700; letter-spacing: -.015em; line-height: 1.2; color: var(--text); }
-  .ff-meta { display: flex; flex-wrap: wrap; gap: 0 6px; font-size: 14.5px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
   .ff-star { display: inline-flex; align-items: center; gap: 3px; color: #A0661A; font-weight: 800; }
-  .ff-loc { display: inline-flex; align-items: center; gap: 5px; font-size: 14.5px; color: var(--text-muted); }
-  .ff-loc svg { color: var(--tanim); flex-shrink: 0; }
-  .ff-bio {
-    margin-top: 4px; font-size: 15px; line-height: 1.5; color: var(--text);
-    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden;
-  }
-  .ff-crops { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
-  .ff-chip { padding: 5px 12px; border-radius: 99px; background: var(--tanim-sk); color: var(--tanim-deep); font-size: 13.5px; font-weight: 700; }
+  /* A spotlight is a teaser: three lines of the bio, the rest in the profile. */
+  .ff-bio { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
   /* The spotlight's action. Full width, so it reads as what the card does
      rather than a tag inside it, and built like every raised green button:
      gradient, top highlight, bottom edge, contact shadow, soft cast shadow.
@@ -2486,7 +2478,9 @@ export const appCss = `
   .listing-desc { font-size: var(--fs-label); color:var(--text-muted); line-height:1.65; margin-bottom:11px; }
   .listing-meta { display:flex; justify-content:space-between; font-size: var(--fs-label); color:var(--text-muted); font-weight:600; margin-bottom:13px; background:var(--paper); padding:10px 13px; border-radius:11px; }
   .seller-row   { display:flex; align-items:center; gap:11px; margin-bottom:15px; padding:11px 13px; background:var(--paper); border-radius:13px; }
-  .seller-ava   { width:44px; height:44px; border-radius:50%; background:var(--tanim); display:flex; align-items:center; justify-content:center; font-size: var(--fs-label); font-weight:800; color:#fff; flex-shrink:0; }
+  /* Each seller in their own colour (src/lib/avatar.ts), the same as on
+     Home and in their profile; green until one is given. */
+  .seller-ava   { width:44px; height:44px; border-radius:50%; background:var(--tanim); display:flex; align-items:center; justify-content:center; font-size: var(--fs-label); font-weight:800; color:#fff; flex-shrink:0; box-shadow: inset 0 1px 0 rgba(255,255,255,.3); }
   .seller-name  { font-size: var(--fs-label); font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .seller-stars { font-size: var(--fs-label); color:var(--gold-text); font-weight:700; display:flex; align-items:center; gap:3px; white-space:nowrap; }
   /* Name over town on the left, rating on the right: the town gets a full line

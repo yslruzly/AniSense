@@ -9,6 +9,7 @@ import { BUYER_TRANSACTIONS } from "../../data/expenses";
 import { cropPhoto, cropPhotoFor, cropGroupPhoto } from "../../data/cropPhotos";
 import { CropEmoji } from "../CropEmoji";
 import { TradeIntent } from "../../types";
+import { avatarTone } from "../../lib/avatar";
 
 // ─── Buyer Home sections ──────────────────────────────────────────────────────
 // The pieces of the buyer's Home that the farmer never sees. Each one opens
@@ -220,8 +221,8 @@ export function FeaturedProducts({ onShop }: { onShop: Shop }) {
 // back up. The spotlight rotates weekly through the four best-rated growers,
 // which is what makes "Farmer of the week" true rather than decorative.
 
-const AVA_TONES = ["#0B6B41", "#9A5B13", "#B4462B", "#2F6FA8", "#6B4FA0"];
-const tone = (s: string) => AVA_TONES[[...s].reduce((n, ch) => n + ch.charCodeAt(0), 0) % AVA_TONES.length];
+// The same colour a farmer has in their profile sheet.
+const tone = avatarTone;
 const townOf = (loc: string) => loc.split(",")[0].trim();
 
 const RANKED = Object.entries(SELLER_DETAILS)
@@ -254,25 +255,38 @@ export function FeaturedFarmers({ onShop, buyerLocation }: { onShop: Shop; buyer
         {/* The spotlight is a profile to read, not a button: only "See their
             harvest" acts, so a thumb resting on the bio or scrolling past the
             photo doesn't jump the buyer into the marketplace. */}
+        {/* Drawn like the farmer's own profile sheet, so tapping through
+            from here lands on something that already looks familiar: their
+            harvest blurred into light, the ringed avatar, the three numbers
+            on a card over the photo's edge. */}
         <article className="ff-spot">
-          <span className="ff-cover">
-            {cover && <img src={cover} alt="" loading="lazy" decoding="async" />}
+          <div className="spf-hero ff-hero">
+            {cover && <img className="spf-cover" src={cover} alt="" loading="lazy" decoding="async" />}
             <span className="ff-badge"><Award size={15} strokeWidth={2.6} /> {t("ff_week")}</span>
-          </span>
+            <div className="spf-id">
+              <span className="spf-ava" style={{ background: tone(spot.name) }} aria-hidden="true">{spot.initials}</span>
+              <div className="spf-name">{spot.name}</div>
+              <div className="spf-loc"><MapPin size={14} strokeWidth={2.4} /> {spot.location}</div>
+            </div>
+          </div>
+          <div className="spf-stats">
+            <div className="spf-stat">
+              <span className="spf-stat-v"><Star size={16} strokeWidth={0} fill="#C98A1B" /> {spot.rating.toFixed(1)}</span>
+              <span className="spf-stat-l">{t("seller_rating")}</span>
+            </div>
+            <div className="spf-stat">
+              <span className="spf-stat-v">{spot.yearsfarming}<small> {t("seller_years_suffix")}</small></span>
+              <span className="spf-stat-l">{t("seller_experience")}</span>
+            </div>
+            <div className="spf-stat">
+              <span className="spf-stat-v">{spot.totalSales}+</span>
+              <span className="spf-stat-l">{t("seller_sales")}</span>
+            </div>
+          </div>
           <span className="ff-spot-body">
-            {/* The avatar straddles the photo's edge: the person stands in
-                front of what they grow. */}
-            <span className="ff-ava lg" style={{ background: tone(spot.name) }} aria-hidden="true">{spot.initials}</span>
-            <span className="ff-name">{spot.name}</span>
-            <span className="ff-meta">
-              <span className="ff-star"><Star size={15} fill="currentColor" strokeWidth={0} /> {spot.rating}</span>
-              <span>· {spot.totalSales} {t("ff_sales")}</span>
-              <span>· {spot.yearsfarming} {t("ff_years")}</span>
-            </span>
-            <span className="ff-loc"><MapPin size={14} strokeWidth={2.4} /> {spot.location}</span>
-            <span className="ff-bio">{spot.bio}</span>
-            <span className="ff-crops">
-              {spot.crops.map(c => <span key={c} className="ff-chip">{tn(c)}</span>)}
+            <span className="spf-bio ff-bio">{spot.bio}</span>
+            <span className="spf-crops">
+              {spot.crops.map(c => <span key={c} className="spf-crop">{tn(c)}</span>)}
             </span>
             {/* The card's one action, as wide as the card, with a "go" disc
                 at the end that nudges forward under the thumb. */}
