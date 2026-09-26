@@ -526,10 +526,6 @@ export const appCss = `
   .exp-total-lbl { font-size: var(--fs-label); opacity:.94; margin-bottom:6px; font-weight:500; text-shadow: 0 1px 3px rgba(11,15,12,.6); }
   .exp-total { font-family: var(--font-display); font-size: var(--fs-display); font-weight:700; text-shadow: 0 1px 4px rgba(11,15,12,.55); }
 
-  .frow { display:flex; gap:8px; overflow-x:auto; padding-bottom:2px; flex-shrink:0; }
-  .frow::-webkit-scrollbar { display:none; }
-  .fchip { flex-shrink:0; background:var(--white); border:1.5px solid var(--border); border-radius:99px; padding:7px 14px; font-size: var(--fs-label); font-weight:600; color:var(--text-muted); cursor:pointer; font-family:inherit; }
-  .fchip.on { background:var(--green); border-color:var(--green); color:#fff; }
 
   .exp-row { display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--border); }
   .exp-row:last-child { border-bottom:none; }
@@ -1099,34 +1095,71 @@ export const appCss = `
     min-height: 2.4em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
   }
   .pr-mover-price { font-family: var(--font-display); font-size: 17px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
-  .pr-mover-price small, .pr-row-price small, .pr-big small { font-size: .7em; font-weight: 600; color: var(--text-faint); margin-left: 1px; }
+  .pr-mover-price small, .pr-big small { font-size: .7em; font-weight: 600; color: var(--text-faint); margin-left: 1px; }
 
-  /* 3 · The list: one card holding the rows, like a settings group. */
+  /* 3 · All prices, organised: a family label, then one card per crop with
+     its photo, how many varieties and the range they sell in, then the
+     varieties themselves as compact rows. The family carries the same colour
+     as its card on Home: gold crops, green vegetables, coral fruits. */
+  .pr-fseg { flex: none; margin-top: 2px; }
+  .pr-fams { display: flex; flex-direction: column; gap: 18px; }
+  .pr-fam { display: flex; flex-direction: column; gap: 10px; }
+  .pr-fam-t {
+    display: flex; align-items: center; gap: 8px; margin: 0 2px;
+    font-family: var(--font-body); font-size: 12.5px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .pr-fam-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--tanim); }
+  .pr-fam.crops .pr-fam-dot { background: #B07A16; }
+  .pr-fam.fruits .pr-fam-dot { background: #D0532F; }
+  .pr-fam-n {
+    margin-left: 2px; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 99px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--paper-alt); color: var(--text-muted); font-size: 11.5px; letter-spacing: 0;
+  }
+  .pr-grp {
+    background: var(--card); border-radius: 18px; overflow: hidden;
+    box-shadow: inset 0 0 0 1px var(--line), 0 10px 20px -18px rgba(22,33,27,.45);
+  }
+  .pr-grp-head {
+    display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+    background: linear-gradient(180deg, #F5F8F5, #FFFFFF);
+    border-bottom: 1px solid var(--line);
+  }
+  .pr-grp-photo {
+    width: 46px; height: 46px; flex: 0 0 46px; border-radius: 13px; overflow: hidden;
+    display: flex; align-items: center; justify-content: center; background: var(--tanim-sk); color: var(--tanim);
+    box-shadow: 0 6px 12px -8px rgba(22,33,27,.5);
+  }
+  .pr-grp-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .pr-grp-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .pr-grp-name { font-family: var(--font-display); font-size: 17px; font-weight: 700; letter-spacing: -.01em; color: var(--text); }
+  .pr-grp-sub { font-size: 13px; color: var(--text-faint); font-variant-numeric: tabular-nums; }
+  .pr-grp-rows { display: flex; flex-direction: column; padding: 2px 0; }
+  .pr-vrow {
+    position: relative; width: 100%; min-height: 54px; display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px 8px 14px; border: none; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer;
+    transition: background-color 160ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .pr-vrow + .pr-vrow::before { content: ""; position: absolute; top: 0; left: 14px; right: 14px; height: 1px; background: var(--line); }
+  .pr-vrow:active { background: var(--paper); transition-duration: var(--dur-press); }
+  .pr-vrow-name {
+    flex: 1; min-width: 0; font-family: var(--font-display); font-size: 15px; font-weight: 600; color: var(--text);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .pr-vrow-price {
+    flex-shrink: 0; font-family: var(--font-display); font-size: 16px; font-weight: 800; color: var(--text);
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .pr-vrow-price small { font-size: 12px; font-weight: 600; color: var(--text-faint); margin-left: 1px; }
+  .pr-vrow .pr-chg { flex-shrink: 0; min-width: 64px; justify-content: center; }
+
   .pr-clear {
     width: 32px; height: 32px; margin: -6px -6px -6px auto; border: none; border-radius: 50%; cursor: pointer;
     background: var(--paper-alt); color: var(--text-soft); display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
   .search-box input { flex: 1; min-width: 0; }
-  .pr-list { background: var(--card); border-radius: var(--radius); box-shadow: inset 0 0 0 1px var(--line); padding: 4px 0; }
-  .pr-row {
-    position: relative; width: 100%; display: flex; align-items: center; gap: 12px;
-    padding: 10px 12px 10px 14px; border: none; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer;
-    transition: background-color 180ms ease;
-    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-  }
-  .pr-row:active { background: var(--paper); transition-duration: 0ms; }
-  .pr-row + .pr-row::before { content: ""; position: absolute; top: 0; left: 76px; right: 12px; height: 1px; background: var(--line); }
-  .pr-row:active::before, .pr-row:active + .pr-row::before { opacity: 0; }
-  .pr-row-photo {
-    width: 50px; height: 50px; flex: 0 0 50px; border-radius: 13px; overflow: hidden;
-    background: var(--tanim-sk); display: flex; align-items: center; justify-content: center;
-  }
-  .pr-row-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .pr-row-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-  .pr-row-name { font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--text); line-height: 1.25; }
-  .pr-row-group { font-size: 14px; color: var(--text-faint); margin-top: 1px; }
-  .pr-row-end { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
-  .pr-row-price { font-family: var(--font-display); font-size: 16.5px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; white-space: nowrap; }
   .pr-row-chev { color: var(--line-strong); flex-shrink: 0; margin-left: -4px; }
 
   /* ── Crop sheet ── */
@@ -3727,7 +3760,7 @@ export const appCss = `
      tap that did nothing, and, because :active applies to every ancestor,
      pressing Add to Cart shrank the whole listing around it as well. */
   .pcard, .module-btn,
-  .fchip, .lstm-tab, .add-btn, .post-btn,
+  .lstm-tab, .add-btn, .post-btn,
   .ntab, .signout-btn,
   .cat-tab, .var-tab, .crop-pick,
   .hdr-back, .alerts-close, .prof-edit-btn,
@@ -3738,7 +3771,7 @@ export const appCss = `
     touch-action: manipulation;
   }
   .pcard:active, .module-btn:active,
-  .fchip:active, .lstm-tab:active, .add-btn:active, .post-btn:active,
+  .lstm-tab:active, .add-btn:active, .post-btn:active,
   .ntab:active, .signout-btn:active,
   .cat-tab:active, .var-tab:active, .crop-pick:active,
   .hdr-back:active, .alerts-close:active,
@@ -3751,7 +3784,7 @@ export const appCss = `
      the element gets. Big surfaces take less; a 40px disc takes the most. */
   .pcard:active, .module-btn:active,
   .cat-tab:active, .crop-pick:active { transform: scale(0.975); }
-  .fchip:active, .lstm-tab:active, .var-tab:active,
+  .lstm-tab:active, .var-tab:active,
   .add-btn:active, .post-btn:active, .signout-btn:active,
   .btn-call:active, .btn-details:active, .add-cart-btn:active, .buy-now-btn:active,
   .cart-checkout-btn:active, .call-seller-btn:active { transform: scale(0.97); }
@@ -3765,7 +3798,7 @@ export const appCss = `
   /* Selected states cross-fade rather than cut. These are the controls that
      re-render a list under them, so the colour change is the only signal the
      tap registered before the content swaps. */
-  .cat-tab, .var-tab, .fchip, .lstm-tab {
+  .cat-tab, .var-tab, .lstm-tab {
     transition: transform 190ms var(--ease-out),
                 background-color var(--dur-fast) ease,
                 border-color var(--dur-fast) ease,

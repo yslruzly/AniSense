@@ -6,11 +6,11 @@ import { ArrowDownRight, ArrowUpRight, ArrowRight, Search, ChevronRight, X } fro
 import { haptic } from "../lib/platform";
 import { useLang } from "../i18n";
 import { UserRole } from "../types";
-import { CROP_GROUPS } from "../data/crops";
+import { CROP_FAMILIES, FAMILY_GROUPS } from "../data/crops";
 import { LSTM_DATA } from "../data/forecast";
 import { Hdr } from "../components/layout/Hdr";
 import { CropIcon } from "../components/icons";
-import { cropPhoto } from "../data/cropPhotos";
+import { cropPhoto, cropGroupPhoto } from "../data/cropPhotos";
 import { Sheet } from "../components/ui/Sheet";
 import { useRetained } from "../hooks/usePresence";
 import mascotBody from "../assets/mascot-wave-body.webp";
@@ -127,8 +127,10 @@ export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userIn
   // a real failure path, and a real offline path.
   const prices = useResource(fetchPrices, []);
   const ALL_ITEMS = prices.data ?? [];
-  const categories = ["All", "Rice", ...CROP_GROUPS.map(g => g.group)];
-  const [activeCat, setActiveCat] = useState("All");
+  // Crops, vegetables or fruits: the same three families as the marketplace
+  // and Home, so a buyer or farmer sorts prices the way they sort harvests.
+  const FAMS = ["All", ...CROP_FAMILIES];
+  const [fam, setFam] = useState("All");
   const [search, setSearch] = useState("");
   /* The green key at the end of the bar puts this keyboard away. */
   const searchRef = useRef<HTMLInputElement>(null);
@@ -154,9 +156,11 @@ export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userIn
   const shown = useRetained(open);
 
   const filtered = ALL_ITEMS.filter(c => {
-    const matchCat = activeCat === "All" || c.group === activeCat;
-    const matchSearch = !search || c.name.toLowerCase().includes(search.toLowerCase());
-    return matchCat && matchSearch;
+    const matchFam = fam === "All" || (FAMILY_GROUPS[fam] ?? []).includes(c.group);
+    // A search for "rice" or "sibuyas" finds the crop as well as its varieties.
+    const q = search.toLowerCase();
+    const matchSearch = !q || c.name.toLowerCase().includes(q) || c.group.toLowerCase().includes(q) || tn(c.group).toLowerCase().includes(q);
+    return matchFam && matchSearch;
   });
 
   const up = ALL_ITEMS.filter(c => c.change > 0).length;
@@ -268,16 +272,20 @@ export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userIn
             </button>
           </div>
 
-          <div className="frow">
-            {categories.map(cat => (
-              <button key={cat} className={`fchip ${activeCat === cat ? "on" : ""}`} onClick={() => setActiveCat(cat)}>
-                {cat === "All" ? t("all") : tn(cat)}
+          {/* The same switch as the marketplace's: one pill sliding in a
+              well, four choices instead of eleven chips. */}
+          <div className="fseg pr-fseg" role="tablist" aria-label={t("mp_family")}>
+            <span className="fseg-pill" aria-hidden="true" style={{ transform: `translateX(${FAMS.indexOf(fam) * 100}%)` }} />
+            {FAMS.map(f => (
+              <button key={f} role="tab" aria-selected={fam === f} className={`fseg-tab ${fam === f ? "on" : ""}`}
+                onClick={() => { haptic.select(); setFam(f); }}>
+                {t(f === "All" ? "all" : `fam_${f.toLowerCase()}`)}
               </button>
             ))}
           </div>
 
           <div className="mkt-list-hdr" ref={resultsRef}>
-            {filtered.length} {filtered.length === 1 ? t("market_crop_count_one") : t("market_crops_count")}{activeCat !== "All" ? ` ${t("market_in")} ${tn(activeCat)}` : ""}
+            {t("mkt_prices_count").replace("{n}", String(filtered.length)).replace("{g}", String(new Set(filtered.map(c => c.group)).size))}
           </div>
 
           {prices.showSkeleton && <SkeletonList rows={6} label={t("state_loading_prices")} />}
@@ -296,25 +304,61 @@ export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userIn
             />
           )}
 
-          {/* Keyed on the category, not the search text: switching category
-              replaces the whole list and gets a fade; typing narrows it a row
-              at a time and must not flash on every keystroke. */}
+          {/* Organised the way the prices are: family, then crop, then its
+              varieties. Each crop is one card with its photo and price range
+              on top, so "what is rice at?" is answered by one card, not by
+              three rows with the same picture. Keyed on the family, not the
+              search: switching families replaces the list with a fade; typing
+              narrows it and must not flash on every keystroke. */}
           {prices.status === "ready" && filtered.length > 0 && (
-            <div className="pr-list content-in" key={activeCat}>
-              {filtered.map(c => (
-                <button className="pr-row" key={c.id} onClick={() => setOpen(c)}>
-                  <Thumb item={c} className="pr-row-photo" />
-                  <span className="pr-row-body">
-                    <span className="pr-row-name">{c.name}</span>
-                    <span className="pr-row-group">{tn(c.group)}</span>
-                  </span>
-                  <span className="pr-row-end">
-                    <span className="pr-row-price">{peso(c.pricePerKg)}<small>{t("per_kg_short")}</small></span>
-                    <Change value={c.change} />
-                  </span>
-                  <ChevronRight size={18} className="pr-row-chev" aria-hidden="true" />
-                </button>
-              ))}
+            <div className="pr-fams content-in" key={fam}>
+              {CROP_FAMILIES.map(family => {
+                const groups = (FAMILY_GROUPS[family] ?? [])
+                  .map(g => ({ name: g, items: filtered.filter(c => c.group === g) }))
+                  .filter(g => g.items.length > 0);
+                if (groups.length === 0) return null;
+                return (
+                  <section className={`pr-fam ${family.toLowerCase()}`} key={family}>
+                    <h3 className="pr-fam-t">
+                      <span className="pr-fam-dot" aria-hidden="true" />
+                      {t(`fam_${family.toLowerCase()}`)}
+                      <span className="pr-fam-n">{groups.length}</span>
+                    </h3>
+                    {groups.map(g => {
+                      const kgs = g.items.map(c => c.pricePerKg);
+                      const lo = Math.min(...kgs), hi = Math.max(...kgs);
+                      const photo = cropGroupPhoto(g.name);
+                      return (
+                        <div className="pr-grp" key={g.name}>
+                          <div className="pr-grp-head">
+                            <span className="pr-grp-photo">
+                              {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropIcon crop={g.name} size={22} />}
+                            </span>
+                            <span className="pr-grp-body">
+                              <span className="pr-grp-name">{tn(g.name)}</span>
+                              <span className="pr-grp-sub">
+                                {g.items.length === 1 ? t("mkt_variety_one") : t("mkt_varieties").replace("{n}", String(g.items.length))}
+                                {" · "}
+                                {lo === hi ? peso(lo, 0) : `${peso(lo, 0)}–${peso(hi, 0).replace("₱", "")}`}{t("per_kg_short")}
+                              </span>
+                            </span>
+                          </div>
+                          <div className="pr-grp-rows">
+                            {g.items.map(c => (
+                              <button className="pr-vrow" key={c.id} onClick={() => setOpen(c)}>
+                                <span className="pr-vrow-name">{c.name}</span>
+                                <span className="pr-vrow-price">{peso(c.pricePerKg)}<small>{t("per_kg_short")}</small></span>
+                                <Change value={c.change} />
+                                <ChevronRight size={18} className="pr-row-chev" aria-hidden="true" />
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </section>
+                );
+              })}
             </div>
           )}
         </section>
