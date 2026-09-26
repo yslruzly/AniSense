@@ -14,6 +14,9 @@ export type Figure = {
   /** A figure that can wave: the same drawing as two layers, the body and the
    *  hand, on one canvas. The hand turns from the wrist. */
   wave?: { body: string; hand: string };
+  /** A figure that talks and blinks: closed eyelids and a closed smile drawn
+   *  to sit exactly over the face, switched on and off. */
+  face?: { eyes: string; mouth: string };
 };
 export type Line = { key: string; title: string; sub?: string; emoji?: string };
 
@@ -59,7 +62,14 @@ export function MascotStage({ figures, active, say }: { figures: Figure[]; activ
           </span>
           {say.sub && <span className="a-say-s">{say.sub}</span>}
         </span>
-        {figures.map(f => f.wave ? (
+        {figures.map(f => f.face ? (
+          <span key={f.id} className={`a-fig a-fig-layers fig-${f.id} ${f.id === active ? "on" : ""}`}>
+            <img src={f.src} alt="" />
+            <img className="a-fig-eyes" src={f.face.eyes} alt="" />
+            {/* Remounted with every new line, so he says each one. */}
+            <img key={`m${waves}`} className={`a-fig-mouth ${waves === 0 ? "is-first" : ""}`} src={f.face.mouth} alt="" />
+          </span>
+        ) : f.wave ? (
           <span key={f.id} className={`a-fig a-fig-layers fig-${f.id} ${f.id === active ? "on" : ""}`}>
             <img src={f.wave.body} alt="" />
             <img key={waves} className={`a-fig-hand ${waves === 0 ? "is-first" : ""}`} src={f.wave.hand} alt="" />

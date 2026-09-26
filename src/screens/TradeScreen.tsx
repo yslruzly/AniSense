@@ -18,6 +18,8 @@ import { localISO } from "../components/ui/DateField";
 import { EmptyState } from "../components/states";
 import { downscaleImage } from "../lib/image";
 import { MenuPicker } from "../components/ui/MenuPicker";
+import { Receipt, ReceiptOrder, newOrderNo } from "../components/Receipt";
+import { useViewer } from "../lib/viewer";
 
 // ─── Trade / Marketplace Screen ───────────────────────────────────────────────
 export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", userInitials = "JD", userRole, intent, listings, setListings }: { onProfile: () => void; onBack: () => void; userName?: string; userInitials?: string; userRole?: UserRole; intent?: TradeIntent; listings: Listing[]; setListings: React.Dispatch<React.SetStateAction<Listing[]>> }) {
@@ -59,6 +61,9 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
   const [showCart, setShowCart] = useState(false);
   const [qtyMap, setQtyMap] = useState<Record<string, number>>({});
   const [checkoutDone, setCheckoutDone] = useState(false);
+  // What was ordered, kept after the cart empties, so the receipt can show it.
+  const [order, setOrder] = useState<ReceiptOrder | null>(null);
+  const { location: buyerLocation } = useViewer();
   // Removing is forgiving, and it happens in place. The line turns into a
   // slim "Removed · Undo" strip in the same slot for a few seconds; Undo grows
   // the card back right there, and otherwise the strip folds shut. Nothing
@@ -168,6 +173,9 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
 
 
   const handleCheckout = () => {
+    // The receipt is written from the cart as it stands at the tap, before
+    // the cart is emptied; lines waiting on Undo are not part of the order.
+    setOrder({ no: newOrderNo(), placed: new Date(), buyer: userName, location: buyerLocation ?? "", lines: [...activeCart] });
     tombTimers.current.forEach(t => window.clearTimeout(t));
     tombTimers.current.clear();
     setTomb([]);
@@ -175,7 +183,6 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
     setCart([]);
     setShowCart(false);
     setCheckoutDone(true);
-    setTimeout(() => setCheckoutDone(false), 3000);
   };
 
   // Determine which listings to show
@@ -917,22 +924,11 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
         </>
       </Sheet>
 
-      {/* ── Checkout Success ──
-          The one place in the app that gets a celebration. It is seen once per
-          order, it is the end of a long flow, and the scale-in is what makes
-          it read as an arrival rather than a screen that was always there. */}
-      <Sheet
-        open={checkoutDone}
-        onClose={() => setCheckoutDone(false)}
-        variant="center"
-        className="checkout-card"
-        label={t("cart_order_placed")}
-      >
-        <div className="checkout-pop" style={{ fontSize: 56, marginBottom: 12 }}>🎉</div>
-        <div style={{ fontSize: "var(--fs-lead)", fontWeight: 900, color: "var(--text)", marginBottom: 6 }}>{t("cart_order_placed")}</div>
-        <div style={{ fontSize: "var(--fs-label)", color: "var(--text-muted)", lineHeight: 1.6 }}>{t("cart_order_sent")}</div>
-        <div style={{ marginTop: 20, padding: "10px 0", background: "var(--tanim-sk)", borderRadius: 10, fontSize: "var(--fs-label)", fontWeight: 700, color: "var(--tanim)" }}>✓ {t("cart_txn_recorded")}</div>
-      </Sheet>
+      {/* ── Checkout: the receipt ──
+          The one place in the app that gets a celebration: seen once per
+          order, at the end of a long flow. It prints out, the check draws
+          itself, and it stays until the buyer puts it away. */}
+      <Receipt order={order} open={checkoutDone} onClose={() => setCheckoutDone(false)} />
 
       {/* ── Seller Details Modal ── */}
       <Sheet

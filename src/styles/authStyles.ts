@@ -351,8 +351,36 @@ export const authCss = `
     84%  { transform: rotate(-4deg); }
     100% { transform: rotate(0deg); }
   }
+  /* The buyer: his own proportions, and a face that talks and blinks. */
+  .a-fig-layers.fig-buyer { aspect-ratio: 456 / 520; }
+  /* Overlays switch on and off with no fade: a blink or a word that
+     dissolves reads as a ghost, not as a face moving. */
+  .a-fig-eyes, .a-fig-mouth { opacity: 0; }
+  .a-fig.on .a-fig-eyes { animation: a-blink 3.6s step-end 900ms infinite; }
+  @keyframes a-blink {
+    0%   { opacity: 1; }
+    4%   { opacity: 0; }
+    100% { opacity: 0; }
+  }
+  /* His line, said in the rhythm of a short sentence as the bubble pops
+     in; then the smile stays open. forwards, not both: before he speaks he
+     wears the open smile he was drawn with. */
+  .a-fig.on .a-fig-mouth { animation: a-talk 1.3s step-end 240ms forwards; }
+  .a-fig.on .a-fig-mouth.is-first { animation-delay: 740ms; }
+  @keyframes a-talk {
+    0%   { opacity: 1; }
+    12%  { opacity: 0; }
+    25%  { opacity: 1; }
+    38%  { opacity: 0; }
+    52%  { opacity: 1; }
+    64%  { opacity: 0; }
+    78%  { opacity: 1; }
+    88%  { opacity: 0; }
+    100% { opacity: 0; }
+  }
   @media (prefers-reduced-motion: reduce) {
-    .a-fig.on .a-fig-hand, .a-fig.on .a-fig-hand.is-first { animation: none; }
+    .a-fig.on .a-fig-hand, .a-fig.on .a-fig-hand.is-first,
+    .a-fig.on .a-fig-eyes, .a-fig.on .a-fig-mouth, .a-fig.on .a-fig-mouth.is-first { animation: none; }
   }
   /* Only the figure on stage takes up room. The other waits behind it, faded,
      sunk and a touch blurred, so the swap reads as one figure changing. */

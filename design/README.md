@@ -11,7 +11,7 @@ a second of loading for a picture that renders 380 pixels wide.
 | `AnisensePosterMarket.png` | *(unused — identical to `AnisensePosterLS.png`)* | — |
 | `FarmerMarketSell.png` | `src/assets/farmer-sell.webp` | Marketplace panel, farmer accounts |
 | `Peeking.png` | `src/assets/juan-peek.webp`, split into `juan-peek-body.webp` + `juan-peek-hand.webp` | Signup screens (language, role); the hand layer waves from the wrist |
-| `buyersmascot.png` | `src/assets/buyer-mascot.webp` | "Fresh from local farms" card, buyer Home |
+| `buyersmascot.png` | `src/assets/buyer-mascot.webp` (+ `buyer-mascot-eyes.webp`, `buyer-mascot-mouth.webp`: drawn closed lids and closed smile) | "Fresh from local farms" card, buyer Home; on the role screen he blinks and talks |
 | `mascothi.png` → `mascothi-clean.png` (extra hat lobe removed) | `src/assets/mascot-wave-body.webp` + `-hand` + `-eyes` + `-mouth` | Opening card of the walkthrough: the hand rotates from the wrist; `-eyes` (closed lids) and `-mouth` (closed smile) are drawn overlays that switch on to blink and talk |
 | `mascotthumbsup.png` → `mascotthumbsup-cut.png` (white background removed) | `src/assets/mascot-thumbs.webp` + `mascot-thumbs-eyes.webp` | Last card of the walkthrough; `-eyes` (closed lids) switches on to blink |
 

@@ -2591,6 +2591,130 @@ export const appCss = `
     .checkout-pop { animation: none; }
   }
 
+  /* ── Order receipt ──────────────────────────────────────────────────────
+     Paper, not a card: warm off-white, a torn zigzag foot, a dashed
+     perforation between the parts, numbers set in tabular figures so the
+     amounts line up the way a till prints them. */
+  .rc-panel {
+    width: 100%; max-width: 340px; max-height: calc(100% - 32px); overflow-y: auto;
+    background: none; box-shadow: none; padding: 6px 2px 4px;
+    display: flex; flex-direction: column; align-items: stretch; gap: 14px;
+    scrollbar-width: none;
+  }
+  .rc-panel::-webkit-scrollbar { display: none; }
+  .rc-lift { filter: drop-shadow(0 22px 26px rgba(4,14,9,.45)) drop-shadow(0 2px 3px rgba(4,14,9,.25)); }
+  .rc-paper {
+    --zz: 11px;
+    position: relative; padding: 22px 22px calc(18px + var(--zz)); border-radius: 20px 20px 0 0;
+    color: var(--text); text-align: left;
+    background:
+      radial-gradient(120% 60% at 50% 0%, rgba(11,107,65,.06), transparent 70%),
+      #FFFDF6;
+    /* The torn foot: a row of triangles cut out of the bottom edge. */
+    -webkit-mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / calc(var(--zz) * 2) 100%;
+            mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / calc(var(--zz) * 2) 100%;
+    /* It prints: fed out downward from the top edge, the way a till pushes
+       a receipt out. Explanatory motion, so it may take its time. */
+    animation: rc-print 760ms cubic-bezier(.22,1,.36,1) 80ms both;
+  }
+  @keyframes rc-print {
+    from { clip-path: inset(0 0 100% 0); transform: translateY(-14px); }
+    to   { clip-path: inset(0 0 0 0);    transform: none; }
+  }
+
+  .rc-head { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .rc-brand {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--font-display); font-size: 21px; font-weight: 700; letter-spacing: -.015em; color: var(--tanim-deep);
+  }
+  .rc-kicker { font-size: 11.5px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--text-faint); }
+
+  .rc-ok { display: flex; justify-content: center; margin-top: 14px; }
+  .rc-ok-ring { fill: var(--tanim-sk); stroke: var(--tanim); stroke-width: 2.5; }
+  .rc-ok-tick {
+    fill: none; stroke: var(--tanim); stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: 34; stroke-dashoffset: 34;
+    animation: rc-tick 420ms var(--ease-out) 720ms forwards;
+  }
+  @keyframes rc-tick { to { stroke-dashoffset: 0; } }
+  .rc-title {
+    margin: 8px 0 0; text-align: center; font-family: var(--font-display); font-size: 22px; font-weight: 700;
+    letter-spacing: -.015em; color: var(--text);
+  }
+
+  .rc-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; margin: 16px 0 0; }
+  .rc-meta > div { min-width: 0; }
+  .rc-meta .wide { grid-column: 1 / -1; }
+  .rc-meta dt { font-size: 10.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--text-faint); }
+  .rc-meta dd { margin: 2px 0 0; font-size: 14px; font-weight: 600; color: var(--text); overflow-wrap: anywhere; }
+  .rc-meta dd.num { font-family: var(--font-display); font-variant-numeric: tabular-nums; letter-spacing: .02em; }
+
+  /* The perforation: a dashed rule the width of the paper. */
+  .rc-perf {
+    height: 0; margin: 16px -22px; border-top: 2px dashed #DDD6C4;
+  }
+
+  .rc-group + .rc-group { margin-top: 14px; }
+  .rc-seller { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .rc-ava {
+    width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--tanim-sk); color: var(--tanim-deep); font-size: 11.5px; font-weight: 800;
+  }
+  .rc-seller-txt { display: flex; flex-direction: column; min-width: 0; }
+  .rc-seller-n { font-size: 14.5px; font-weight: 700; color: var(--text); }
+  .rc-seller-l { font-size: 12.5px; color: var(--text-faint); }
+  .rc-line { display: flex; align-items: baseline; gap: 12px; padding: 4px 0 4px 40px; }
+  .rc-item { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .rc-item-n { font-size: 14.5px; font-weight: 600; color: var(--text); }
+  .rc-item-q { font-size: 12.5px; color: var(--text-faint); font-variant-numeric: tabular-nums; }
+  .rc-amt { font-size: 14.5px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  .rc-total { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+  .rc-total-l {
+    display: flex; flex-direction: column; font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--text);
+  }
+  .rc-total-l small { font-family: var(--font-body); font-size: 12.5px; font-weight: 500; color: var(--text-faint); margin-top: 2px; }
+  .rc-total-v {
+    font-family: var(--font-display); font-size: 28px; font-weight: 800; letter-spacing: -.02em;
+    color: var(--tanim-deep); font-variant-numeric: tabular-nums;
+  }
+  .rc-note {
+    margin: 14px 0 0; padding: 10px 12px; border-radius: 12px;
+    background: var(--gold-sk); box-shadow: inset 0 0 0 1px var(--gold-line);
+    font-size: 13px; line-height: 1.5; color: var(--text-muted);
+  }
+  .rc-code { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 18px; }
+  .rc-barcode {
+    width: 100%; max-width: 230px; height: 38px; opacity: .88;
+    background: repeating-linear-gradient(90deg,
+      var(--ink) 0 2px, transparent 2px 4px, var(--ink) 4px 5px, transparent 5px 8px,
+      var(--ink) 8px 11px, transparent 11px 12px, var(--ink) 12px 13px, transparent 13px 17px,
+      var(--ink) 17px 18px, transparent 18px 21px);
+  }
+  .rc-code-n { font-size: 12px; font-weight: 600; letter-spacing: .28em; color: var(--text-faint); font-variant-numeric: tabular-nums; }
+  .rc-thanks { margin: 12px 0 0; text-align: center; font-size: 13.5px; font-weight: 600; color: var(--tanim); }
+
+  /* Done: the same raised green as Continue, on the dark scrim under the
+     paper. It arrives after the receipt has printed. */
+  .rc-done {
+    min-height: 54px; border: none; border-radius: 16px; cursor: pointer; color: #fff;
+    font-family: var(--font-display); font-size: 16.5px; font-weight: 700;
+    background-image: linear-gradient(180deg, #14875A 0%, var(--tanim) 54%, #075232 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.26), inset 0 -1px 0 rgba(0,0,0,.24),
+      inset 0 0 0 1px rgba(4,40,24,.22), 0 1px 2px rgba(6,38,23,.30), 0 12px 22px -12px rgba(0,0,0,.6);
+    transition: transform 190ms var(--ease-out);
+    animation: wid-rise 360ms var(--ease-out) 820ms both;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .rc-done:active { transform: scale(.975); transition-duration: 90ms; }
+  @media (prefers-reduced-motion: reduce) {
+    .rc-paper { animation: a-fade-in 240ms ease both; }
+    .rc-ok-tick { animation: none; stroke-dashoffset: 0; }
+    .rc-done { animation: a-fade-in 240ms ease both; }
+    .rc-done:active { transform: none; }
+  }
+
   /* ── Seller Details Modal ── */
   .seller-modal-sheet {
     background:var(--paper); border-radius:30px 30px 0 0;
