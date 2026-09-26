@@ -1152,11 +1152,14 @@ export const appCss = `
     width: 38px; height: 38px; flex: 0 0 38px; border-radius: 11px;
     display: flex; align-items: center; justify-content: center;
   }
-  .card-ico.tint-green { background: var(--tanim-sk); color: var(--tanim); box-shadow: inset 0 0 0 1px rgba(11,107,65,.14); }
-  .card-ico.tint-gold { background: var(--gold-sk); color: var(--gold-text); box-shadow: inset 0 0 0 1px rgba(138,93,12,.16); }
-  .card-ico.tint-blue { background: #DCEAF8; color: #2F6FA8; box-shadow: inset 0 0 0 1px rgba(47,111,168,.16); }
-  .card-ico.tint-violet { background: #EDE7FA; color: #5C45A8; box-shadow: inset 0 0 0 1px rgba(92,69,168,.16); }
-  .card-ico.tint-slate { background: var(--paper-alt); color: var(--text-soft); box-shadow: inset 0 0 0 1px var(--line); }
+  /* Filled tiles, white icon: the accent at full strength in one small,
+     solid shape, so the card's colour reads at a glance and the icon reads
+     as a symbol on it rather than as a line drawing floating in a tint. */
+  .card-ico.tint-green { background: linear-gradient(180deg, #16895B 0%, var(--tanim) 55%, #07522F 100%); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.24), inset 0 -1px 0 rgba(0,0,0,.18), 0 1px 2px rgba(0,0,0,.18), 0 6px 12px -8px rgba(11,107,65,.6); }
+  .card-ico.tint-gold { background: linear-gradient(180deg, #D39B2E 0%, #B07A16 55%, #8A5D0C 100%); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.24), inset 0 -1px 0 rgba(0,0,0,.18), 0 1px 2px rgba(0,0,0,.18), 0 6px 12px -8px rgba(138,93,12,.55); }
+  .card-ico.tint-blue { background: linear-gradient(180deg, #4A8FCC 0%, #2F6FA8 55%, #235887 100%); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.24), inset 0 -1px 0 rgba(0,0,0,.18), 0 1px 2px rgba(0,0,0,.18), 0 6px 12px -8px rgba(47,111,168,.55); }
+  .card-ico.tint-violet { background: linear-gradient(180deg, #7B64CF 0%, #5C45A8 55%, #47348A 100%); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.24), inset 0 -1px 0 rgba(0,0,0,.18), 0 1px 2px rgba(0,0,0,.18), 0 6px 12px -8px rgba(92,69,168,.55); }
+  .card-ico.tint-slate { background: linear-gradient(180deg, #737980 0%, #575C62 55%, #45494E 100%); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.24), inset 0 -1px 0 rgba(0,0,0,.18), 0 1px 2px rgba(0,0,0,.18), 0 6px 12px -8px rgba(40,44,48,.45); }
   .card.tint-gold {
     background-image: linear-gradient(180deg, #FCF3DF 0%, #FFFFFF 58%);
     box-shadow: inset 0 0 0 1px rgba(138,93,12,.18);
@@ -1430,10 +1433,10 @@ export const appCss = `
     width: 40px; height: 40px; flex: 0 0 40px; border-radius: 12px;
     display: flex; align-items: center; justify-content: center;
   }
-  .tint-green .hm-ico { background: var(--tanim-sk); color: var(--tanim); box-shadow: inset 0 0 0 1px rgba(11,107,65,.14); }
-  .tint-gold .hm-ico { background: var(--gold-sk); color: var(--gold-text); box-shadow: inset 0 0 0 1px rgba(138,93,12,.16); }
-  .tint-blue .hm-ico { background: #DCEAF8; color: #2F6FA8; box-shadow: inset 0 0 0 1px rgba(47,111,168,.16); }
-  .tint-violet .hm-ico, .tint-violet .hm-tool-ico { background: #EDE7FA; color: #5C45A8; box-shadow: inset 0 0 0 1px rgba(92,69,168,.16); }
+  .tint-green .hm-ico { background: linear-gradient(180deg, #16895B 0%, var(--tanim) 55%, #07522F 100%); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.24), inset 0 -1px 0 rgba(0,0,0,.18), 0 1px 2px rgba(0,0,0,.18), 0 6px 12px -8px rgba(11,107,65,.6); }
+  .tint-gold .hm-ico { background: linear-gradient(180deg, #D39B2E 0%, #B07A16 55%, #8A5D0C 100%); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.24), inset 0 -1px 0 rgba(0,0,0,.18), 0 1px 2px rgba(0,0,0,.18), 0 6px 12px -8px rgba(138,93,12,.55); }
+  .tint-blue .hm-ico { background: linear-gradient(180deg, #4A8FCC 0%, #2F6FA8 55%, #235887 100%); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.24), inset 0 -1px 0 rgba(0,0,0,.18), 0 1px 2px rgba(0,0,0,.18), 0 6px 12px -8px rgba(47,111,168,.55); }
+  .tint-violet .hm-ico, .tint-violet .hm-tool-ico { background: linear-gradient(180deg, #7B64CF 0%, #5C45A8 55%, #47348A 100%); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.24), inset 0 -1px 0 rgba(0,0,0,.18), 0 1px 2px rgba(0,0,0,.18), 0 6px 12px -8px rgba(92,69,168,.55); }
   .hm-card-head { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 6px; }
   .hm-card-head > div { flex: 1; min-width: 0; }
   .hm-title { margin: 0; font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -.01em; display: block; }
@@ -2220,8 +2223,8 @@ export const appCss = `
   }
   .hm-tool:active { transform: scale(.97); background: var(--paper); transition-duration: 90ms; }
   .hm-tool-ico { width: 46px; height: 46px; border-radius: 13px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; }
-  .hm-tool-ico.wx { background: #DCEAF8; color: #2F6FA8; box-shadow: inset 0 0 0 1px rgba(47,111,168,.16); }
-  .hm-tool-ico.an { background: #EDE7FA; color: #5C45A8; box-shadow: inset 0 0 0 1px rgba(92,69,168,.16); }
+  .hm-tool-ico.wx { background: linear-gradient(180deg, #4A8FCC 0%, #2F6FA8 55%, #235887 100%); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.24), inset 0 -1px 0 rgba(0,0,0,.18), 0 1px 2px rgba(0,0,0,.18), 0 6px 12px -8px rgba(47,111,168,.55); }
+  .hm-tool-ico.an { background: linear-gradient(180deg, #7B64CF 0%, #5C45A8 55%, #47348A 100%); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.24), inset 0 -1px 0 rgba(0,0,0,.18), 0 1px 2px rgba(0,0,0,.18), 0 6px 12px -8px rgba(92,69,168,.55); }
   .hm-tool.tint-blue {
     background-image: linear-gradient(180deg, #E9F1FA 0%, #FFFFFF 64%);
     box-shadow: inset 0 0 0 1px rgba(47,111,168,.16);

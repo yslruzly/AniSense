@@ -178,7 +178,7 @@ export const tourCss = `
   .hm-tool.wide .hm-tool-ico { grid-row: 1 / span 2; margin-bottom: 0; }
   .hm-tool.wide .hm-tool-t { align-self: end; }
   .hm-tool.wide .hm-tool-s { align-self: start; }
-  .hm-tool-ico.gd { background: var(--tanim-sk); color: var(--tanim); box-shadow: inset 0 0 0 1px rgba(11,107,65,.16); }
+  .hm-tool-ico.gd { background: linear-gradient(180deg, #16895B 0%, var(--tanim) 55%, #07522F 100%); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.24), inset 0 -1px 0 rgba(0,0,0,.18), 0 1px 2px rgba(0,0,0,.18), 0 6px 12px -8px rgba(11,107,65,.6); }
   .hm-tool.wide {
     background-image: linear-gradient(180deg, #E4F1E8 0%, #FFFFFF 64%);
     box-shadow: inset 0 0 0 1px rgba(11,107,65,.16);
@@ -266,7 +266,7 @@ export const tourCss = `
   .gd-ico {
     flex-shrink: 0; width: 42px; height: 42px; border-radius: 13px;
     display: inline-flex; align-items: center; justify-content: center;
-    background: var(--tanim-sk); color: var(--tanim);
+    background: linear-gradient(180deg, #16895B 0%, var(--tanim) 55%, #07522F 100%); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.24), inset 0 -1px 0 rgba(0,0,0,.18), 0 1px 2px rgba(0,0,0,.18), 0 6px 12px -8px rgba(11,107,65,.6);
   }
   .gd-head-body { flex: 1; min-width: 0; }
   .gd-head-t { display: block; font-size: 16px; font-weight: 700; color: var(--text); line-height: 1.3; }
