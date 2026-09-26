@@ -24,6 +24,17 @@ import { MUNICIPALITIES } from "../data/locations";
 import { useViewer } from "../lib/viewer";
 
 // ─── Trade / Marketplace Screen ───────────────────────────────────────────────
+// Each farmer's avatar keeps one colour, taken from their name, so the same
+// person looks the same wherever they appear.
+const AVA_TONES = [
+  "linear-gradient(135deg, #1F8A5B, #0B5A37)",
+  "linear-gradient(135deg, #D19A2E, #8A5D0C)",
+  "linear-gradient(135deg, #4A8FCC, #235887)",
+  "linear-gradient(135deg, #7B64CF, #47348A)",
+  "linear-gradient(135deg, #D0564A, #86190F)",
+];
+const avaTone = (name: string) => AVA_TONES[[...name].reduce((n, ch) => n + ch.charCodeAt(0), 0) % AVA_TONES.length];
+
 export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", userInitials = "JD", userRole, intent, listings, setListings }: { onProfile: () => void; onBack: () => void; userName?: string; userInitials?: string; userRole?: UserRole; intent?: TradeIntent; listings: Listing[]; setListings: React.Dispatch<React.SetStateAction<Listing[]>> }) {
   const { t, tn, lang } = useLang();
   const locale = lang === "tl" ? "fil-PH" : "en-PH";
@@ -984,134 +995,125 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
       >
         {shownSeller && <>
 
-            {/* Hero header */}
-            <div className="seller-modal-hero">
-              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
-                <div>
-                  <div className="seller-modal-ava">{shownSeller.initials}</div>
-                  <div className="seller-modal-name">{shownSeller.name}</div>
-                  <div className="seller-modal-sub" style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                    <MapPin size={13} color="rgba(255,255,255,0.7)" />{shownSeller.location}
+            {(() => {
+              // The backdrop is the farmer's own harvest - their first listing,
+              // or the first crop they grow - blurred into colour, so every
+              // profile has its own light without a photo of the person.
+              const cover = (sellerListings[0] && photoOf(sellerListings[0])) || cropPhotoFor(shownSeller.crops[0] ?? "", shownSeller.crops[0]);
+              const tel = shownSeller.phone.replace(/[^\d+]/g, "");
+              return (<>
+                <div className="spf-hero">
+                  {cover && <img className="spf-cover" src={cover} alt="" aria-hidden="true" />}
+                  <button className="spf-x" onClick={() => setSellerDetail(null)} aria-label={t("close")}>
+                    <X size={20} strokeWidth={2.6} />
+                  </button>
+                  <div className="spf-id">
+                    <span className="spf-ava" style={{ background: avaTone(shownSeller.name) }} aria-hidden="true">{shownSeller.initials}</span>
+                    <div className="spf-name">{shownSeller.name}</div>
+                    <div className="spf-loc"><MapPin size={14} strokeWidth={2.4} /> {shownSeller.location}</div>
                   </div>
                 </div>
-                <button className="sheet-x" onClick={() => setSellerDetail(null)} aria-label={t("close")}>✕</button>
-              </div>
-            </div>
 
-            {/* Quick stats */}
-            <div className="seller-modal-stats">
-              {[
-                { val: shownSeller.rating.toFixed(1), lbl: t("seller_rating"), ico: <Star size={14} color="var(--gold-text)" fill="var(--gold-text)" /> },
-                { val: `${shownSeller.yearsfarming} yrs`, lbl: t("seller_experience"), ico: <Wheat size={14} color="var(--tanim)" /> },
-                { val: `${shownSeller.totalSales}+`, lbl: t("seller_sales"), ico: <Package size={14} color="var(--tanim)" /> },
-              ].map(s => (
-                <div className="sms-item" key={s.lbl}>
-                  <div className="sms-val">{s.val}</div>
-                  <div className="sms-lbl" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>{s.ico}{s.lbl}</div>
-                </div>
-              ))}
-            </div>
-
-            {/* Body */}
-            <div className="seller-modal-body">
-
-              {/* What they are selling: the reason most people open a
-                  profile at all, so it comes before the contact details. */}
-              <div className="sml">
-                <div className="sml-head">
-                  <span className="sdm-lbl">{t("seller_listings")}</span>
-                  <span className="sml-count">{sellerListings.length}</span>
-                </div>
-                {sellerListings.length === 0 ? (
-                  <p className="sml-none">{t("seller_listings_none")}</p>
-                ) : (
-                  <div className="sml-list">
-                    {sellerListings.map(l => {
-                      const photo = photoOf(l);
-                      return (
-                        <button key={l.id} className="sml-row" onClick={() => openFromProfile(l.id)}>
-                          <span className="sml-photo">
-                            {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropEmoji crop={l.crop} size={24} />}
-                          </span>
-                          <span className="sml-body">
-                            <span className="sml-name">{titleOf(l)}</span>
-                            <span className="sml-meta">{l.kg} {t("trade_kg_available")}</span>
-                          </span>
-                          <span className="sml-price">₱{l.pricePerKg}<small>{t("per_kg_short")}</small></span>
-                          <ChevronRight size={18} strokeWidth={2.4} className="sml-chev" aria-hidden="true" />
-                        </button>
-                      );
-                    })}
+                {/* The three numbers a buyer weighs a farmer by, on one card
+                    that rides up over the photo's edge. */}
+                <div className="spf-stats">
+                  <div className="spf-stat">
+                    <span className="spf-stat-v"><Star size={16} strokeWidth={0} fill="#C98A1B" /> {shownSeller.rating.toFixed(1)}</span>
+                    <span className="spf-stat-l">{t("seller_rating")}</span>
                   </div>
-                )}
-              </div>
-
-              {/* Phone */}
-              <div className="sdm-row">
-                <div className="sdm-ico"><Phone size={20} color="var(--tanim)" /></div>
-                <div>
-                  <div className="sdm-lbl">{t("seller_phone")}</div>
-                  <div className="sdm-val">{shownSeller.phone}</div>
-                </div>
-              </div>
-
-              {/* Location */}
-              <div className="sdm-row">
-                <div className="sdm-ico"><MapPin size={20} color="var(--tanim)" /></div>
-                <div>
-                  <div className="sdm-lbl">{t("seller_location")}</div>
-                  <div className="sdm-val">{shownSeller.location}</div>
-                </div>
-              </div>
-
-              {/* Years of farming */}
-              <div className="sdm-row">
-                <div className="sdm-ico"><Sprout size={20} color="var(--tanim)" /></div>
-                <div>
-                  <div className="sdm-lbl">{t("seller_years")}</div>
-                  <div className="sdm-val">{shownSeller.yearsfarming} {t("seller_years_suffix")}</div>
-                </div>
-              </div>
-
-              {/* Seller rating */}
-              <div className="sdm-row">
-                <div className="sdm-ico"><Star size={20} color="var(--gold-text)" fill="var(--gold-text)" /></div>
-                <div>
-                  <div className="sdm-lbl">{t("seller_rating")}</div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
-                    {[1, 2, 3, 4, 5].map(i => (
-                      <Star key={i} size={16} color="var(--gold-text)" fill={i <= Math.round(shownSeller.rating) ? "var(--gold-text)" : "none"} />
-                    ))}
-                    <span className="sdm-val">{shownSeller.rating.toFixed(1)}</span>
-                    <span style={{ fontSize: "var(--fs-label)", color: "var(--text-muted)" }}>/ 5.0</span>
+                  <div className="spf-stat">
+                    <span className="spf-stat-v">{shownSeller.yearsfarming}<small> {t("seller_years_suffix")}</small></span>
+                    <span className="spf-stat-l">{t("seller_experience")}</span>
+                  </div>
+                  <div className="spf-stat">
+                    <span className="spf-stat-v">{shownSeller.totalSales}+</span>
+                    <span className="spf-stat-l">{t("seller_sales")}</span>
                   </div>
                 </div>
-              </div>
 
-              {/* Crops */}
-              <div style={{ background: "#fff", borderRadius: 14, padding: 14, border: "1px solid var(--paper-alt)" }}>
-                <div className="sdm-lbl" style={{ marginBottom: 8 }}>{t("seller_crops_sold")}</div>
-                <div className="sdm-crops">
-                  {shownSeller.crops.map(c => (
-                    <span key={c} className="sdm-crop-tag">{c}</span>
-                  ))}
+                <div className="seller-modal-body spf-body">
+                  {/* What they are selling: the reason most people open a
+                      profile at all, so it comes first. */}
+                  <section className="spf-card">
+                    <div className="spf-h">
+                      {t("seller_listings")}
+                      <span className="spf-count">{sellerListings.length}</span>
+                    </div>
+                    {sellerListings.length === 0 ? (
+                      <p className="sml-none">{t("seller_listings_none")}</p>
+                    ) : (
+                      <div className="sml-list">
+                        {sellerListings.map(l => {
+                          const photo = photoOf(l);
+                          return (
+                            <button key={l.id} className="sml-row" onClick={() => openFromProfile(l.id)}>
+                              <span className="sml-photo">
+                                {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropEmoji crop={l.crop} size={24} />}
+                              </span>
+                              <span className="sml-body">
+                                <span className="sml-name">{titleOf(l)}</span>
+                                <span className="sml-meta">{l.kg} {t("trade_kg_available")}</span>
+                              </span>
+                              <span className="sml-price">₱{l.pricePerKg}<small>{t("per_kg_short")}</small></span>
+                              <ChevronRight size={18} strokeWidth={2.4} className="sml-chev" aria-hidden="true" />
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </section>
+
+                  <section className="spf-card">
+                    <div className="spf-h">{t("seller_crops_sold")}</div>
+                    <div className="spf-crops">
+                      {shownSeller.crops.map(c => <span key={c} className="spf-crop">{c}</span>)}
+                    </div>
+                  </section>
+
+                  {/* In their own words: set as a quote, not as a form field. */}
+                  <section className="spf-card">
+                    <div className="spf-h">{t("seller_about")}</div>
+                    <p className="spf-bio">{shownSeller.bio}</p>
+                  </section>
+
+                  {/* The practical facts, as one grouped list rather than a
+                      card each: they are read together, once. */}
+                  <section className="spf-card spf-facts">
+                    <div className="spf-h">{t("seller_details")}</div>
+                    <a className="spf-fact" href={`tel:${tel}`}>
+                      <span className="spf-fact-ico green"><Phone size={18} strokeWidth={2.4} /></span>
+                      <span className="spf-fact-txt">
+                        <span className="spf-fact-l">{t("seller_phone")}</span>
+                        <span className="spf-fact-v">{shownSeller.phone}</span>
+                      </span>
+                      <ChevronRight size={18} strokeWidth={2.4} className="sml-chev" aria-hidden="true" />
+                    </a>
+                    <div className="spf-fact">
+                      <span className="spf-fact-ico blue"><MapPin size={18} strokeWidth={2.4} /></span>
+                      <span className="spf-fact-txt">
+                        <span className="spf-fact-l">{t("seller_location")}</span>
+                        <span className="spf-fact-v">{shownSeller.location}</span>
+                      </span>
+                    </div>
+                    <div className="spf-fact">
+                      <span className="spf-fact-ico gold"><Sprout size={18} strokeWidth={2.4} /></span>
+                      <span className="spf-fact-txt">
+                        <span className="spf-fact-l">{t("seller_years")}</span>
+                        <span className="spf-fact-v">{shownSeller.yearsfarming} {t("seller_years_suffix")}</span>
+                      </span>
+                    </div>
+                  </section>
                 </div>
-              </div>
 
-              {/* Bio */}
-              <div className="sdm-bio">
-                <div className="sdm-lbl" style={{ marginBottom: 6 }}>{t("seller_about")}</div>
-                {shownSeller.bio}
-              </div>
-
-            </div>
-
-            {/* Footer: call button */}
-            <div className="seller-modal-footer">
-              <button className="call-seller-btn">
-                <Phone size={20} color="#fff" /> {t("seller_call")} {shownSeller.name.split(" ")[0]}
-              </button>
-            </div>
+                {/* Call: it used to be a button that did nothing. It opens the
+                    phone's dialer with the number already in. */}
+                <div className="seller-modal-footer spf-foot">
+                  <a className="call-seller-btn" href={`tel:${tel}`}>
+                    <Phone size={20} strokeWidth={2.4} /> {t("seller_call")} {shownSeller.name.split(" ")[0]}
+                  </a>
+                </div>
+              </>);
+            })()}
 
         </>}
       </Sheet>

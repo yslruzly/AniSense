@@ -2940,44 +2940,12 @@ export const appCss = `
     width:100%; max-height:90%; display:flex; flex-direction:column;
     overflow:hidden; padding-bottom: var(--safe-bottom);
   }
-  .seller-modal-hero {
-    background: var(--tanim);
-    padding:26px 22px 22px; flex-shrink:0;
-  }
-  .seller-modal-ava {
-    width:70px; height:70px; border-radius:50%;
-    background:rgba(255,255,255,0.25); border:3px solid rgba(255,255,255,0.6);
-    display:flex; align-items:center; justify-content:center;
-    font-size: var(--fs-title); font-weight:900; color:#fff; margin-bottom:13px;
-  }
-  .seller-modal-name { font-family: var(--font-display); font-size: var(--fs-title); font-weight:700; color:#fff; margin-bottom:4px; }
-  .seller-modal-sub  { font-size: var(--fs-label); color:rgba(255,255,255,0.85); }
-  .seller-modal-stats {
-    display:grid; grid-template-columns:repeat(3,1fr); gap:11px;
-    padding:18px 18px; background:#fff; border-bottom:1px solid var(--paper-alt); flex-shrink:0;
-  }
-  .sms-item { text-align:center; }
-  .sms-val  { font-size: var(--fs-lead); font-weight:900; color:var(--text); }
-  .sms-lbl  { font-size: var(--fs-label); color:var(--text-muted); margin-top:3px; font-weight:600; }
   .seller-modal-body { flex:1; overflow-y:auto; padding:18px; display:flex; flex-direction:column; gap:15px; }
-  .sdm-row { display:flex; align-items:center; gap:15px; padding:14px 15px; background:#fff; border-radius:15px; border:1px solid var(--paper-alt); }
-  .sdm-ico { width:44px; height:44px; border-radius:13px; background:var(--tanim-sk); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-  .sdm-lbl { font-size: var(--fs-label); color:var(--text-muted); font-weight:600; margin-bottom:2px; }
-  .sdm-val { font-size: var(--fs-label); font-weight:700; color:var(--text); }
-  .sdm-bio { background:#fff; border-radius:15px; padding:15px; border:1px solid var(--paper-alt); font-size: var(--fs-label); color:var(--text-soft); line-height:1.75; }
-  .sdm-crops { display:flex; gap:8px; flex-wrap:wrap; margin-top:9px; }
-  .sdm-crop-tag { background:var(--tanim-sk); border:1px solid var(--line); color:var(--tanim); font-size: var(--fs-label); font-weight:700; border-radius:99px; padding:5px 12px; }
   .star-fill { color:var(--gold-text); }
   /* A seller's own listings, inside their profile. Same row shape as the
      rest of the app's lists, sized for a sheet: photo, what it is and how
      much is left, then the price. */
   .sml { background: #fff; border-radius: 14px; padding: 12px 12px 6px; border: 1px solid var(--paper-alt); }
-  .sml-head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
-  .sml-count {
-    min-width: 22px; height: 22px; padding: 0 7px; border-radius: 99px; background: var(--tanim-sk); color: var(--tanim-deep);
-    display: inline-flex; align-items: center; justify-content: center;
-    font-family: var(--font-display); font-size: 13px; font-weight: 800;
-  }
   .sml-none { margin: 4px 0 8px; font-size: 14.5px; color: var(--text-muted); }
   .sml-list { display: flex; flex-direction: column; }
   .sml-row {
@@ -3004,6 +2972,114 @@ export const appCss = `
   .sml-chev { color: var(--line-strong); flex-shrink: 0; margin-left: -4px; }
 
   .seller-modal-footer { padding:18px; background:#fff; border-top:1px solid var(--line); flex-shrink:0; }
+
+  /* ── Farmer profile (premium) ────────────────────────────────────────────
+     The farmer's harvest, blurred into light behind a deep green shade; the
+     avatar in a white ring; three numbers on a card riding over the photo's
+     edge; then grouped cards. One call to action, raised green, at the foot. */
+  .seller-modal-sheet { border-radius: 28px 28px 0 0; }
+  .spf-hero {
+    position: relative; flex-shrink: 0; height: 200px; overflow: hidden; border-radius: 28px 28px 0 0;
+    background: linear-gradient(160deg, #13744A, var(--tanim-deep));
+  }
+  .spf-cover {
+    position: absolute; inset: -40px; width: calc(100% + 80px); height: calc(100% + 80px);
+    object-fit: cover; filter: blur(16px) saturate(1.25); opacity: .85;
+  }
+  .spf-hero::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background:
+      radial-gradient(110% 90% at 100% 0%, rgba(126,196,120,.3), transparent 60%),
+      linear-gradient(180deg, rgba(8,34,21,.3) 0%, rgba(7,30,19,.7) 55%, rgba(5,22,14,.92) 100%);
+  }
+  .spf-x {
+    position: absolute; top: 14px; right: 14px; z-index: 2; width: 40px; height: 40px; border-radius: 50%; border: none;
+    display: flex; align-items: center; justify-content: center; color: #fff; cursor: pointer;
+    background: rgba(255,255,255,.16); box-shadow: inset 0 0 0 1px rgba(255,255,255,.26);
+    transition: transform 190ms var(--ease-out), background-color 160ms ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .spf-x:active { transform: scale(.92); background: rgba(255,255,255,.28); transition-duration: var(--dur-press); }
+  .spf-id { position: absolute; left: 20px; right: 64px; bottom: 44px; z-index: 1; display: flex; flex-direction: column; align-items: flex-start; }
+  .spf-ava {
+    width: 66px; height: 66px; border-radius: 50%; margin-bottom: 10px;
+    display: flex; align-items: center; justify-content: center; color: #fff;
+    font-family: var(--font-display); font-size: 23px; font-weight: 800; letter-spacing: .02em;
+    box-shadow: 0 0 0 3px rgba(255,255,255,.92), 0 12px 22px -8px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.3);
+  }
+  .spf-name {
+    font-family: var(--font-display); font-size: 23px; font-weight: 700; letter-spacing: -.015em; line-height: 1.15;
+    color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.35);
+  }
+  .spf-loc { display: inline-flex; align-items: center; gap: 5px; margin-top: 4px; font-size: 14px; color: rgba(255,255,255,.86); }
+
+  .spf-stats {
+    position: relative; z-index: 2; flex-shrink: 0; margin: -30px 16px 0;
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 13px 4px;
+    background: var(--card); border-radius: 18px;
+    box-shadow: 0 16px 28px -18px rgba(12,20,15,.55), 0 2px 4px -2px rgba(12,20,15,.12), inset 0 0 0 1px var(--line);
+  }
+  .spf-stat { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; }
+  .spf-stat + .spf-stat::before { content: ""; position: absolute; left: 0; top: 6px; bottom: 6px; width: 1px; background: var(--line); }
+  .spf-stat-v {
+    display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;
+    font-family: var(--font-display); font-size: 20px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums;
+  }
+  .spf-stat-v small { font-size: 12.5px; font-weight: 700; color: var(--text-muted); }
+  .spf-stat-l { font-size: 12.5px; font-weight: 600; color: var(--text-faint); }
+
+  .spf-body { padding: 16px; gap: 12px; }
+  .spf-card {
+    background: var(--card); border-radius: 18px; padding: 14px 14px 12px;
+    box-shadow: inset 0 0 0 1px var(--line), 0 10px 20px -18px rgba(22,33,27,.45);
+  }
+  .spf-h {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+    font-family: var(--font-display); font-size: 15.5px; font-weight: 700; letter-spacing: -.005em; color: var(--text);
+  }
+  .spf-count {
+    min-width: 22px; height: 22px; padding: 0 7px; border-radius: 99px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--tanim); color: #fff; font-size: 12.5px; font-weight: 800;
+  }
+  .spf-card .sml-photo { width: 52px; height: 52px; flex-basis: 52px; border-radius: 14px; }
+  .spf-card .sml-price {
+    padding: 5px 10px; border-radius: 99px; background: var(--tanim-sk); color: var(--tanim-deep); font-size: 15px;
+  }
+  .spf-card .sml-price small { color: var(--tanim); }
+  .spf-crops { display: flex; flex-wrap: wrap; gap: 8px; }
+  .spf-crop {
+    display: inline-flex; align-items: center; gap: 7px; padding: 7px 12px; border-radius: 99px;
+    background: var(--paper); box-shadow: inset 0 0 0 1px var(--line);
+    font-size: 14px; font-weight: 700; color: var(--text);
+  }
+  .spf-crop::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--tanim); }
+  .spf-bio {
+    margin: 0; padding: 2px 0 2px 12px; border-left: 3px solid var(--tanim-sk);
+    font-size: 15px; line-height: 1.6; color: var(--text-soft);
+  }
+  .spf-facts { padding-bottom: 4px; }
+  .spf-fact {
+    display: flex; align-items: center; gap: 12px; min-height: 58px; padding: 8px 0;
+    color: inherit; text-decoration: none; -webkit-tap-highlight-color: transparent;
+  }
+  .spf-fact + .spf-fact { border-top: 1px solid var(--line); }
+  a.spf-fact { border-radius: 12px; transition: background-color 160ms ease; }
+  a.spf-fact:active { background: var(--paper); transition-duration: var(--dur-press); }
+  .spf-fact-ico {
+    width: 40px; height: 40px; flex-shrink: 0; border-radius: 12px; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.24), inset 0 -1px 0 rgba(0,0,0,.18), 0 1px 2px rgba(0,0,0,.16);
+  }
+  .spf-fact-ico.green { background: linear-gradient(180deg, #16895B 0%, var(--tanim) 55%, #07522F 100%); }
+  .spf-fact-ico.blue  { background: linear-gradient(180deg, #4A8FCC 0%, #2F6FA8 55%, #235887 100%); }
+  .spf-fact-ico.gold  { background: linear-gradient(180deg, #D39B2E 0%, #B07A16 55%, #8A5D0C 100%); }
+  .spf-fact-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .spf-fact-l { font-size: 12.5px; font-weight: 600; color: var(--text-faint); }
+  .spf-fact-v { font-size: 15.5px; font-weight: 700; color: var(--text); }
+  .spf-foot { padding: 12px 16px; background: rgba(255,255,255,.96); box-shadow: 0 -10px 24px -20px rgba(12,20,15,.5); border-top: 1px solid var(--line); }
+  .spf-foot .call-seller-btn { min-height: 56px; padding: 0 18px; text-decoration: none; font-family: var(--font-display); font-size: 16.5px; font-weight: 700; }
+  @media (prefers-reduced-motion: reduce) { .spf-x:active { transform: none; } }
   .call-seller-btn {
     width:100%; padding:18px; background:var(--tanim); color:#fff; border:none;
     border-radius:16px; font-family:inherit; font-size: var(--fs-body); font-weight:800;
