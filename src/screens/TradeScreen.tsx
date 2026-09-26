@@ -4,10 +4,10 @@ import { haptic } from "../lib/platform";
 import { useLang } from "../i18n";
 import { UserRole, CartItem, SellerDetail, TradeIntent, Listing } from "../types";
 import { LISTINGS, SELLER_DETAILS } from "../data/marketplace";
-import { CROP_FILTER_MAP, CROP_CATEGORIES, CROP_FAMILIES, ALL_RICE_NAMES, RICE_VARIETY_LIST, familyCropNames } from "../data/crops";
+import { CROP_FILTER_MAP, CROP_CATEGORIES, CROP_FAMILIES, ALL_RICE_NAMES, RICE_VARIETY_LIST, familyCropNames, FAMILY_GROUPS, CROP_GROUPS, RICE_VARIETIES } from "../data/crops";
 import { Hdr } from "../components/layout/Hdr";
 import { CropIcon } from "../components/icons";
-import { cropPhotoFor } from "../data/cropPhotos";
+import { cropPhotoFor, cropGroupPhoto } from "../data/cropPhotos";
 import marketPoster from "../assets/anisense-poster-market.webp";
 import sellPoster from "../assets/sell-your-ani.webp";
 import { CropEmoji } from "../components/CropEmoji";
@@ -19,6 +19,9 @@ import { EmptyState } from "../components/states";
 import { downscaleImage } from "../lib/image";
 import { MenuPicker } from "../components/ui/MenuPicker";
 import { Receipt, ReceiptOrder } from "../components/Receipt";
+import { PickerField } from "../components/ui/PickerField";
+import { MUNICIPALITIES } from "../data/locations";
+import { useViewer } from "../lib/viewer";
 
 // ─── Trade / Marketplace Screen ───────────────────────────────────────────────
 export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", userInitials = "JD", userRole, intent, listings, setListings }: { onProfile: () => void; onBack: () => void; userName?: string; userInitials?: string; userRole?: UserRole; intent?: TradeIntent; listings: Listing[]; setListings: React.Dispatch<React.SetStateAction<Listing[]>> }) {
@@ -64,6 +67,10 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
   const [checkoutDone, setCheckoutDone] = useState(false);
   // What was ordered, kept after the cart empties, so the receipt can show it.
   const [order, setOrder] = useState<ReceiptOrder | null>(null);
+  // The farmer's own town, read from their profile ("San Ricardo, Talavera,
+  // Nueva Ecija" → "Talavera"), so a new listing starts already placed.
+  const { location: profileLocation } = useViewer();
+  const homeTown = MUNICIPALITIES.find(m => (profileLocation ?? "").includes(m)) ?? "";
   // Removing is forgiving, and it happens in place. The line turns into a
   // slim "Removed · Undo" strip in the same slot for a few seconds; Undo grows
   // the card back right there, and otherwise the strip folds shut. Nothing
@@ -231,7 +238,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
 
   const openPost = () => {
     setEditId(null);
-    setForm({ crop: "Special Rice", variety: "", desc: "", pricePerKg: "", kg: "", location: "", photo: null });
+    setForm({ crop: "Special Rice", variety: "", desc: "", pricePerKg: "", kg: "", location: homeTown, photo: null });
     setPhotoState("idle");
     setFormError("");
     setShowModal(true);
@@ -633,18 +640,22 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
 
       {/* Post / Edit listing modal, senior-friendly */}
       {(() => {
-        // Crop groups for visual picker
-        const CROP_GROUPS_PICKER = [
-          { emoji: "🌾", label: "Rice", varieties: ["Special Rice", "Well Milled", "Regular Milled"] },
-          { emoji: "🧅", label: "Onions", varieties: ["Red Onion", "Yellow/White Onion", "Shallots(Sibuyas Tagalog", "Spring Onion"] },
-          { emoji: "🍋", label: "Calamansi", varieties: ["Regular Calamansi"] },
-          { emoji: "🌽", label: "Corn", varieties: ["Yellow Corn", "White Corn", "Sweet Corn"] },
-          { emoji: "🥭", label: "Mango", varieties: ["Carabao Mango", "Indian Mango", "Horse Mango", "Pahutan"] },
-          { emoji: "🧄", label: "Garlic", varieties: ["Native Garlic"] },
-          { emoji: "🍅", label: "Tomatoes", varieties: ["Diamante Max F1 Tomato", "Platunum F1 Tomato", "Assila F1 Tomato"] },
-          { emoji: "🎃", label: "Squash", varieties: ["Kalabasa"] },
-        ];
-        const selectedGroup = CROP_GROUPS_PICKER.find(g => g.varieties.includes(form.crop)) || CROP_GROUPS_PICKER[0];
+        // Crop types and their varieties, straight from the price list. The
+        // form kept its own copy, which never learnt about ampalaya or
+        // watermelon and spelt two varieties differently from the prices, so
+        // those listings found no photo and no market price. Grouped the way
+        // the marketplace filters them: crops, vegetables, fruits.
+        const varietiesOf = (group: string) => group === "Rice"
+          ? RICE_VARIETIES.map(v => v.name)
+          : (CROP_GROUPS.find(g => g.group === group)?.varieties ?? []).map(v => v.name);
+        const POST_FAMILIES = CROP_FAMILIES.map(family => ({
+          family,
+          groups: (FAMILY_GROUPS[family] ?? []).map(label => ({ label, varieties: varietiesOf(label) })),
+        }));
+        const CROP_GROUPS_PICKER = POST_FAMILIES.flatMap(f => f.groups);
+        // An existing listing may name its type ("Onions") rather than a
+        // variety, so match either before falling back to the first.
+        const selectedGroup = CROP_GROUPS_PICKER.find(g => g.varieties.includes(form.crop) || g.label === form.crop) || CROP_GROUPS_PICKER[0];
         const fieldStyle: React.CSSProperties = { width: "100%", border: "2px solid var(--line-strong)", borderRadius: 12, padding: "16px 14px", fontFamily: "inherit", fontSize: "var(--fs-body)", outline: "none", background: "#fff", color: "var(--text)", boxSizing: "border-box" };
         const labelStyle: React.CSSProperties = { fontSize: "var(--fs-body)", fontWeight: 800, color: "var(--text-soft)", marginBottom: 8, display: "block" };
         const hintStyle: React.CSSProperties = { fontSize: "var(--fs-label)", color: "var(--text-muted)", marginBottom: 10, fontWeight: 500 };
@@ -681,15 +692,27 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                     <span style={{ fontSize: "var(--fs-body)", fontWeight: 800, color: "var(--text)" }}>{t("trade_step_type")}</span>
                   </div>
                   <div style={{ fontSize: "var(--fs-label)", color: "var(--text-muted)", marginBottom: 14 }}>{t("trade_step_type_sub")}</div>
-                  <div className="crop-pick-grid">
-                    {CROP_GROUPS_PICKER.map(g => (
-                      <button key={g.label} className={`crop-pick ${selectedGroup.label === g.label ? "on" : ""}`}
-                        onClick={() => setForm(d => ({ ...d, crop: g.varieties[0] }))}>
-                        <span className="crop-pick-emoji">{g.emoji}</span>
-                        <span className="crop-pick-lbl">{tn(g.label)}</span>
-                      </button>
-                    ))}
-                  </div>
+                  {POST_FAMILIES.map(f => (
+                    <div className="crop-pick-fam" key={f.family}>
+                      <div className="crop-pick-fam-t">{t(`fam_${f.family.toLowerCase()}`)}</div>
+                      <div className="crop-pick-grid">
+                        {f.groups.map(g => {
+                          const on = selectedGroup.label === g.label;
+                          const photo = cropGroupPhoto(g.label);
+                          return (
+                            <button key={g.label} type="button" className={`crop-pick ${on ? "on" : ""}`} aria-pressed={on}
+                              onClick={() => { haptic.select(); setForm(d => ({ ...d, crop: g.varieties[0] })); }}>
+                              <span className="crop-pick-photo">
+                                {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropEmoji crop={g.label} size={26} />}
+                                {on && <span className="crop-pick-tick" aria-hidden="true"><Check size={13} strokeWidth={3.4} /></span>}
+                              </span>
+                              <span className="crop-pick-lbl">{tn(g.label)}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
                 {/* ── Step 2: Variety ── */}
@@ -801,13 +824,17 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                     <span style={{ fontSize: "var(--fs-body)", fontWeight: 800, color: "var(--text)" }}>{t("trade_step_loc")}</span>
                   </div>
                   <div style={hintStyle}>{t("trade_step_loc_sub")}</div>
-                  <div style={{ position: "relative" }}>
-                    <MapPin size={20} color="var(--text-muted)" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }} />
-                    <input type="text" placeholder={t("trade_ph_loc")}
-                      value={form.location}
-                      onChange={e => setForm(d => ({ ...d, location: e.target.value }))}
-                      style={{ ...fieldStyle, paddingLeft: 40 }} />
-                  </div>
+                  {/* Picked, not typed: free text gave "Talavera", "talavera
+                      n.e." and "Brgy. San Ricardo" for one place, and buyers'
+                      "Near you" and new-harvest alerts match on the town's
+                      exact name. The same searchable list as sign-up. */}
+                  <PickerField
+                    title={t("farm_municipality_lbl")}
+                    placeholder={t("farm_pick_municipality")}
+                    value={form.location}
+                    options={MUNICIPALITIES}
+                    onChange={v => { setForm(d => ({ ...d, location: v })); setFormError(""); }}
+                  />
                 </div>
 
                 {/* ── Action Buttons ── */}

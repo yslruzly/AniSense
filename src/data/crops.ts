@@ -42,7 +42,7 @@ export const CROP_GROUPS: CropGroup[] = [
     group: "Tomatoes",
     varieties: [
       { id: "tom-cherry", name: "Diamante Max F1 Tomato", pricePerKg: 25, change: 3.2, volume: 0.8, color: "#2f9e63" },
-      { id: "tom-roma", name: "Platunum F1 Tomato", pricePerKg: 15, change: 2.0, volume: 1.2, color: "#2f9e63" },
+      { id: "tom-roma", name: "Platinum F1 Tomato", pricePerKg: 15, change: 2.0, volume: 1.2, color: "#2f9e63" },
       { id: "tom-beef", name: "Assila F1 Tomato", pricePerKg: 20, change: -0.5, volume: 0.6, color: "#d4553f" },],
   },
   {
@@ -101,7 +101,7 @@ export const CROP_FILTER_MAP: Record<string, string[]> = {
   "Corn": ["Yellow Corn", "White Corn", "Sweet Corn", "Corn"],
   "Mango": ["Carabao Mango", "Indian Mango", "Horse Mango", "Pahutan", "Mango"],
   "Garlic": ["Native Garlic", "Garlic"],
-  "Tomatoes": ["Diamante Max F1 Tomato", "Platunum F1 Tomato", "Assila F1 Tomato", "Tomatoes"],
+  "Tomatoes": ["Diamante Max F1 Tomato", "Platinum F1 Tomato", "Assila F1 Tomato", "Tomatoes"],
   "Squash": ["Kalabasa"],
   "Ampalaya": ["Native Ampalaya", "Galaxy Ampalaya", "Ampalaya"],
   "Watermelon": ["Sweet Watermelon", "Seedless Watermelon", "Watermelon"],
@@ -112,7 +112,7 @@ export const CROP_CATEGORIES = ["All Crops", ...Object.keys(CROP_FILTER_MAP)];
  *  app holds none, and a filter that empties the page is not a filter. */
 export const CROP_FAMILIES = ["Crops", "Vegetables", "Fruits"] as const;
 
-const FAMILY_GROUPS: Record<string, string[]> = {
+export const FAMILY_GROUPS: Record<string, string[]> = {
   Crops: ["Rice", "Corn"],
   Vegetables: ["Onions", "Garlic", "Tomatoes", "Squash", "Ampalaya"],
   Fruits: ["Calamansi", "Mango", "Watermelon"],

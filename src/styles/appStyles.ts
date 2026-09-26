@@ -3223,6 +3223,30 @@ export const appCss = `
   }
   .crop-pick.on { background: var(--tanim-sk); border-color: var(--tanim); }
   .crop-pick-emoji { font-size: var(--fs-title); line-height: 1; }
+  /* Post a harvest, step 1: the crop as a picture, the way buyers will see
+     it, grouped under the same three families the marketplace filters by. */
+  .crop-pick-fam + .crop-pick-fam { margin-top: 14px; }
+  .crop-pick-fam-t {
+    margin: 0 2px 8px; font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--text-faint);
+  }
+  .crop-pick { padding: 10px 6px 11px; gap: 7px; }
+  .crop-pick:active { transform: scale(.96); transition-duration: var(--dur-press); }
+  .crop-pick-photo {
+    position: relative; width: 56px; height: 56px; border-radius: 14px; overflow: visible;
+    display: inline-flex; align-items: center; justify-content: center; background: var(--tanim-sk);
+  }
+  .crop-pick-photo img { width: 100%; height: 100%; object-fit: cover; border-radius: 14px; display: block; }
+  /* The chosen one carries a tick, so it is never told by colour alone. */
+  .crop-pick-tick {
+    position: absolute; right: -6px; top: -6px; width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--tanim); color: #fff; box-shadow: 0 0 0 2.5px var(--tanim-sk);
+  }
+  /* The app's type, a size that holds "Watermelon" on one line in a third
+     of the sheet, and no breaking inside a word. */
+  .crop-pick-lbl { font-family: var(--font-display); font-size: 14.5px; overflow-wrap: normal; word-break: keep-all; }
+  @media (prefers-reduced-motion: reduce) { .crop-pick:active { transform: none; } }
   .crop-pick-lbl {
     font-size: var(--fs-label); font-weight: 700; color: var(--text-soft);
     text-align: center; line-height: 1.2; overflow-wrap: anywhere;

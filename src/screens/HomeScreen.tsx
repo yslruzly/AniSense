@@ -251,16 +251,19 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
         </section>
         )}
 
-        {/* The brand poster, as a mid-page break. Its last line, "buy
-            directly from local farmers", is what the next section shows.
-            A picture, not a button: the marketplace is one tab away and
-            already has its own doors on this page. The frame holds the
-            poster's shape before the image loads, so nothing below jumps. */}
-        {isBuyer && (
-          <figure className="hm-poster">
-            <img src={anisensePoster} alt={t("poster_alt")} width={1000} height={562} loading="lazy" decoding="async" />
-          </figure>
-        )}
+        {/* Farmers see the marketplace's best harvests too: what is selling,
+            from whom and for how much, right under their own prices. */}
+        {!isBuyer && <FeaturedProducts onShop={shop} />}
+
+        {/* The brand poster, as a mid-page break, for both sides of the
+            market: for a buyer after the day's prices, for a farmer after the
+            marketplace's best. A picture, not a button: the marketplace is one
+            tab away and already has its own doors on this page. The frame
+            holds the poster's shape before the image loads, so nothing below
+            jumps. */}
+        <figure className="hm-poster">
+          <img src={anisensePoster} alt={t("poster_alt")} width={1000} height={562} loading="lazy" decoding="async" />
+        </figure>
 
         {/* Who grows it: the trust half of a marketplace, after the day's
             prices. */}

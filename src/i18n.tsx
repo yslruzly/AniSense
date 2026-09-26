@@ -797,7 +797,10 @@ export const translations: Dict = {
   trade_step_desc: { en: "Describe your product", tl: "Ilarawan ang produkto mo" },
   trade_step_desc_sub: { en: "State if fresh, clean, etc.", tl: "Sabihin kung sariwa, malinis, atbp." },
   trade_step_loc: { en: "Where are you located?", tl: "Saan ka matatagpuan?" },
-  trade_step_loc_sub: { en: "Your city or barangay", tl: "Ang lungsod o barangay mo" },
+  trade_step_loc_sub: {
+    en: "Pick your town, so buyers near you can find this harvest.",
+    tl: "Piliin ang bayan mo, para mahanap ng mga bumibiling malapit ang ani mo.",
+  },
   trade_ph_price: { en: "Example: 48", tl: "Halimbawa: 48" },
   trade_ph_qty: { en: "Example: 500", tl: "Halimbawa: 500" },
   trade_ph_desc: {
