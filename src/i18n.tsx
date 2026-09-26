@@ -334,7 +334,7 @@ export const translations: Dict = {
   home_shop_by_crop: { en: "Shop by crop", tl: "Mamili ayon sa pananim" },
   ff_title: { en: "Featured farmers", tl: "Mga tampok na magsasaka" },
   ff_sub: { en: "Top-rated growers selling on AniSense", tl: "Mga pinakamataas ang rating na nagbebenta sa AniSense" },
-  ff_week: { en: "Farmer of the week", tl: "Magsasaka ng linggo" },
+  ff_week: { en: "AniSense Farmer of the Week", tl: "AniSense Magsasaka ng Linggo" },
   ff_sales: { en: "sales", tl: "benta" },
   ff_years: { en: "yrs farming", tl: "taon sa bukid" },
   ff_cta: { en: "See their harvest", tl: "Tingnan ang ani nila" },

@@ -27,6 +27,8 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
   const [search, setSearch] = useState(intent?.search ?? "");
   /* The green key at the end of the bar puts this keyboard away. */
   const searchRef = useRef<HTMLInputElement>(null);
+  // Where "search" takes the eye: the head of the results.
+  const resultsRef = useRef<HTMLDivElement>(null);
   // The listing open in the detail sheet. Held by id, so an edit or a cart
   // change shows in the sheet straight away.
   const [openId, setOpenId] = useState<string | null>(null);
@@ -169,6 +171,21 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
       : [...prev, { listingId: l.id, crop: l.crop, variety: l.variety, pricePerKg: l.pricePerKg, qty, seller: l.seller, sellerInitials: l.sellerInitials, location: l.location, maxKg: l.kg, photo: l.photo }]);
   };
 
+
+  // The green search key, and the keyboard's own Search key. With nothing
+  // typed, it opens the keyboard in the field. With a search typed, the list
+  // has already filtered, so it puts the keyboard away and brings the
+  // results up to the top of the screen, where they can be seen. It used to
+  // only close the keyboard, which from the outside looked like nothing.
+  const runSearch = () => {
+    haptic.select();
+    const field = searchRef.current;
+    if (!field) return;
+    if (!search.trim()) { field.focus(); return; }
+    field.blur();
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    resultsRef.current?.scrollIntoView({ block: "start", behavior: reduce ? "auto" : "smooth" });
+  };
 
   const handleCheckout = () => {
     // The receipt is written from the cart as it stands at the tap, before
@@ -345,7 +362,8 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
 
         <div className="search-box">
           <Search size={21} strokeWidth={2.4} aria-hidden="true" />
-          <input ref={searchRef} placeholder={t("trade_search_ph")} value={search} onChange={e => setSearch(e.target.value)} enterKeyHint="search" autoFocus={!!intent?.focusSearch} />
+          <input ref={searchRef} placeholder={t("trade_search_ph")} value={search} onChange={e => setSearch(e.target.value)} enterKeyHint="search" autoFocus={!!intent?.focusSearch}
+            onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); runSearch(); } }} />
           {search && (
             <button className="pr-clear" onClick={() => setSearch("")} aria-label={t("state_clear_search")}>
               <X size={16} strokeWidth={2.6} />
@@ -358,7 +376,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
             className="search-go"
             aria-label={t("search")}
             onMouseDown={e => e.preventDefault()}
-            onClick={() => { haptic.select(); searchRef.current?.blur(); }}
+            onClick={runSearch}
           >
             <Search size={20} strokeWidth={2.8} />
           </button>
@@ -397,7 +415,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
 
         {/* The count, the going rate for what's shown, and how it's sorted,
             on one line: what the old four-box stat strip was trying to say. */}
-        <div className="mp-list-head">
+        <div className="mp-list-head" ref={resultsRef}>
           {/* The two facts as chips: how many, and what they go for. Green
               for the count, gold for money, the same pairing as Home. */}
           {/* Both sides get the same cut: what kind of thing am I looking

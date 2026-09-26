@@ -132,7 +132,24 @@ export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userIn
   const [search, setSearch] = useState("");
   /* The green key at the end of the bar puts this keyboard away. */
   const searchRef = useRef<HTMLInputElement>(null);
+  // Where "search" takes the eye: the count above the list.
+  const resultsRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState<PriceItem | null>(null);
+  // The green search key, and the keyboard's own Search key. With nothing
+  // typed, it opens the keyboard in the field. With a search typed, the list
+  // has already filtered, so it puts the keyboard away and brings the
+  // results up to the top of the screen, where they can be seen. It used to
+  // only close the keyboard, which from the outside looked like nothing.
+  const runSearch = () => {
+    haptic.select();
+    const field = searchRef.current;
+    if (!field) return;
+    if (!search.trim()) { field.focus(); return; }
+    field.blur();
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    resultsRef.current?.scrollIntoView({ block: "start", behavior: reduce ? "auto" : "smooth" });
+  };
+
   // Keeps the sheet filled while it slides away after `open` is cleared.
   const shown = useRetained(open);
 
@@ -231,7 +248,8 @@ export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userIn
           <h2 className="pr-sec">{t("mkt_all")}</h2>
           <div className="search-box">
             <Search size={21} strokeWidth={2.4} aria-hidden="true" />
-            <input ref={searchRef} placeholder={t("market_search_ph")} value={search} onChange={e => setSearch(e.target.value)} enterKeyHint="search" />
+            <input ref={searchRef} placeholder={t("market_search_ph")} value={search} onChange={e => setSearch(e.target.value)} enterKeyHint="search"
+              onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); runSearch(); } }} />
             {search && (
               <button className="pr-clear" onClick={() => setSearch("")} aria-label={t("state_clear_search")}>
                 <X size={16} strokeWidth={2.6} />
@@ -244,7 +262,7 @@ export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userIn
               className="search-go"
               aria-label={t("search")}
               onMouseDown={e => e.preventDefault()}
-              onClick={() => { haptic.select(); searchRef.current?.blur(); }}
+              onClick={runSearch}
             >
               <Search size={20} strokeWidth={2.8} />
             </button>
@@ -258,7 +276,7 @@ export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userIn
             ))}
           </div>
 
-          <div className="mkt-list-hdr">
+          <div className="mkt-list-hdr" ref={resultsRef}>
             {filtered.length} {filtered.length === 1 ? t("market_crop_count_one") : t("market_crops_count")}{activeCat !== "All" ? ` ${t("market_in")} ${tn(activeCat)}` : ""}
           </div>
 
