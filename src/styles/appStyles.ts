@@ -1746,7 +1746,7 @@ export const appCss = `
   .ff-row:active { background: var(--paper); transition-duration: var(--dur-press); }
   /* The spotlight borrows the profile sheet's pieces (.spf-*): only the
      corners and spacing differ, because here it sits inside a card. */
-  .ff .ff-hero { border-radius: 0; height: 196px; }
+  .ff .ff-hero { border-radius: 0; height: 230px; }
   .ff-hero .spf-id { right: 20px; }
   .ff .spf-stats { margin: -30px 14px 0; }
   .ff-badge {
@@ -2972,20 +2972,27 @@ export const appCss = `
      avatar in a white ring; three numbers on a card riding over the photo's
      edge; then grouped cards. One call to action, raised green, at the foot. */
   .seller-modal-sheet { border-radius: 28px 28px 0 0; }
+  /* The AniSense ground: brand green deepening toward the foot, light from
+     the top corner, a warm palay glow low on the left, and a fine diagonal
+     weave like the security print on the member ID. */
   .spf-hero {
     position: relative; flex-shrink: 0; height: 200px; overflow: hidden; border-radius: 28px 28px 0 0;
-    background: linear-gradient(160deg, #13744A, var(--tanim-deep));
+    background:
+      repeating-linear-gradient(135deg, rgba(255,255,255,.035) 0 1px, transparent 1px 11px),
+      radial-gradient(90% 120% at 100% 0%, rgba(126,196,120,.38), transparent 60%),
+      radial-gradient(70% 90% at 0% 100%, rgba(242,179,44,.14), transparent 62%),
+      linear-gradient(155deg, #17804F 0%, #0E5A37 48%, #0A3924 100%);
   }
-  .spf-cover {
-    position: absolute; inset: -40px; width: calc(100% + 80px); height: calc(100% + 80px);
-    object-fit: cover; filter: blur(16px) saturate(1.25); opacity: .85;
+  /* The leaf mark, large and faint, leaning off the right edge. */
+  .spf-mark {
+    position: absolute; right: -38px; top: -22px; width: 220px; height: auto;
+    opacity: .14; transform: rotate(-14deg); pointer-events: none; user-select: none;
   }
   .spf-hero::after {
     content: ""; position: absolute; inset: 0; pointer-events: none;
-    background:
-      radial-gradient(110% 90% at 100% 0%, rgba(126,196,120,.3), transparent 60%),
-      linear-gradient(180deg, rgba(8,34,21,.3) 0%, rgba(7,30,19,.7) 55%, rgba(5,22,14,.92) 100%);
+    background: linear-gradient(180deg, rgba(5,22,14,0) 35%, rgba(5,22,14,.5) 100%);
   }
+
   .spf-x {
     position: absolute; top: 14px; right: 14px; z-index: 2; width: 40px; height: 40px; border-radius: 50%; border: none;
     display: flex; align-items: center; justify-content: center; color: #fff; cursor: pointer;

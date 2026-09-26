@@ -10,6 +10,7 @@ import { cropPhoto, cropPhotoFor, cropGroupPhoto } from "../../data/cropPhotos";
 import { CropEmoji } from "../CropEmoji";
 import { TradeIntent } from "../../types";
 import { avatarTone } from "../../lib/avatar";
+import leafMask from "../../assets/anisense-leaf-mask.png";
 
 // ─── Buyer Home sections ──────────────────────────────────────────────────────
 // The pieces of the buyer's Home that the farmer never sees. Each one opens
@@ -243,7 +244,6 @@ export function FeaturedFarmers({ onShop, buyerLocation }: { onShop: Shop; buyer
     .sort((a, b) => Number(isNear(b.location)) - Number(isNear(a.location)))
     .slice(0, 3);
 
-  const cover = cropPhotoFor(spot.crops[0] || "", spot.crops[0]);
   const open = (s: { key: string; name: string }) => onShop({ seller: s.key, search: s.name });
 
   return (
@@ -261,7 +261,7 @@ export function FeaturedFarmers({ onShop, buyerLocation }: { onShop: Shop; buyer
             on a card over the photo's edge. */}
         <article className="ff-spot">
           <div className="spf-hero ff-hero">
-            {cover && <img className="spf-cover" src={cover} alt="" loading="lazy" decoding="async" />}
+            <img className="spf-mark" src={leafMask} alt="" aria-hidden="true" />
             <span className="ff-badge"><Award size={15} strokeWidth={2.6} /> {t("ff_week")}</span>
             <div className="spf-id">
               <span className="spf-ava" style={{ background: tone(spot.name) }} aria-hidden="true">{spot.initials}</span>

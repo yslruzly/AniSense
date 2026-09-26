@@ -20,6 +20,8 @@ import { downscaleImage } from "../lib/image";
 import { MenuPicker } from "../components/ui/MenuPicker";
 import { Receipt, ReceiptOrder } from "../components/Receipt";
 import { avatarTone as avaTone } from "../lib/avatar";
+import leafMask from "../assets/anisense-leaf-mask.png";
+import { AniSenseLogo } from "../components/AniSenseLogo";
 import { PickerField } from "../components/ui/PickerField";
 import { MUNICIPALITIES } from "../data/locations";
 import { useViewer } from "../lib/viewer";
@@ -986,14 +988,12 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
         {shownSeller && <>
 
             {(() => {
-              // The backdrop is the farmer's own harvest - their first listing,
-              // or the first crop they grow - blurred into colour, so every
-              // profile has its own light without a photo of the person.
-              const cover = (sellerListings[0] && photoOf(sellerListings[0])) || cropPhotoFor(shownSeller.crops[0] ?? "", shownSeller.crops[0]);
               const tel = shownSeller.phone.replace(/[^\d+]/g, "");
               return (<>
+                {/* AniSense's own ground: the brand green with the leaf mark
+                    as a large watermark. */}
                 <div className="spf-hero">
-                  {cover && <img className="spf-cover" src={cover} alt="" aria-hidden="true" />}
+                  <img className="spf-mark" src={leafMask} alt="" aria-hidden="true" />
                   <button className="spf-x" onClick={() => setSellerDetail(null)} aria-label={t("close")}>
                     <X size={20} strokeWidth={2.6} />
                   </button>
