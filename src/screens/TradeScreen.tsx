@@ -18,8 +18,7 @@ import { localISO } from "../components/ui/DateField";
 import { EmptyState } from "../components/states";
 import { downscaleImage } from "../lib/image";
 import { MenuPicker } from "../components/ui/MenuPicker";
-import { Receipt, ReceiptOrder, newOrderNo } from "../components/Receipt";
-import { useViewer } from "../lib/viewer";
+import { Receipt, ReceiptOrder } from "../components/Receipt";
 
 // ─── Trade / Marketplace Screen ───────────────────────────────────────────────
 export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", userInitials = "JD", userRole, intent, listings, setListings }: { onProfile: () => void; onBack: () => void; userName?: string; userInitials?: string; userRole?: UserRole; intent?: TradeIntent; listings: Listing[]; setListings: React.Dispatch<React.SetStateAction<Listing[]>> }) {
@@ -63,7 +62,6 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
   const [checkoutDone, setCheckoutDone] = useState(false);
   // What was ordered, kept after the cart empties, so the receipt can show it.
   const [order, setOrder] = useState<ReceiptOrder | null>(null);
-  const { location: buyerLocation } = useViewer();
   // Removing is forgiving, and it happens in place. The line turns into a
   // slim "Removed · Undo" strip in the same slot for a few seconds; Undo grows
   // the card back right there, and otherwise the strip folds shut. Nothing
@@ -175,7 +173,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
   const handleCheckout = () => {
     // The receipt is written from the cart as it stands at the tap, before
     // the cart is emptied; lines waiting on Undo are not part of the order.
-    setOrder({ no: newOrderNo(), placed: new Date(), buyer: userName, location: buyerLocation ?? "", lines: [...activeCart] });
+    setOrder({ placed: new Date(), buyer: userName, lines: [...activeCart] });
     tombTimers.current.forEach(t => window.clearTimeout(t));
     tombTimers.current.clear();
     setTomb([]);

@@ -1,5 +1,8 @@
+import { useState } from "react";
+import { Download, Check, AlertCircle } from "lucide-react";
 import { useLang } from "../i18n";
-import { haptic } from "../lib/platform";
+import { haptic, saveImage } from "../lib/platform";
+import { renderReceipt } from "../lib/receiptImage";
 import { CartItem } from "../types";
 import { Sheet } from "./ui/Sheet";
 import { AniSenseLogo } from "./AniSenseLogo";
@@ -16,23 +19,18 @@ import { AniSenseLogo } from "./AniSenseLogo";
 // has been paid; it says so, and says what happens instead.
 
 export interface ReceiptOrder {
-  no: string;
   placed: Date;
   buyer: string;
-  location: string;
   lines: CartItem[];
-}
-
-/** "AS-260926-4821": the day it was placed, then four digits to tell orders apart. */
-export function newOrderNo(d = new Date()): string {
-  const ymd = `${String(d.getFullYear()).slice(2)}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`;
-  return `AS-${ymd}-${String(Math.floor(Math.random() * 10000)).padStart(4, "0")}`;
 }
 
 const peso = (n: number) => `₱${n.toLocaleString("en-PH", { maximumFractionDigits: 2 })}`;
 
 export function Receipt({ order, open, onClose }: { order: ReceiptOrder | null; open: boolean; onClose: () => void }) {
   const { t, lang } = useLang();
+  // idle → busy → done (or failed), then back to idle: the button says each
+  // step in place, the way the member ID's download does.
+  const [save, setSave] = useState<"idle" | "busy" | "done" | "failed">("idle");
   if (!order) return null;
 
   // One block per farmer, in the order they were added to the cart.
@@ -46,6 +44,37 @@ export function Receipt({ order, open, onClose }: { order: ReceiptOrder | null; 
   const kg = order.lines.reduce((s, l) => s + l.qty, 0);
   const locale = lang === "tl" ? "fil-PH" : "en-PH";
   const when = order.placed.toLocaleString(locale, { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+  const itemName = (l: CartItem) => (l.variety && l.variety !== l.crop ? l.variety : l.crop);
+  const totalSub = `${kg} kg · ${groups.length} ${groups.length !== 1 ? t("cart_sellers") : t("cart_seller")}`;
+
+  const saveReceipt = async () => {
+    if (save === "busy") return;
+    setSave("busy");
+    try {
+      const blob = await renderReceipt({
+        brandKicker: t("rc_kicker"), title: t("rc_title"),
+        placedLabel: t("rc_date"), placed: when,
+        buyerLabel: t("rc_buyer"), buyer: order.buyer,
+        groups: groups.map(g => ({
+          seller: g.seller, initials: g.initials, location: g.location,
+          lines: g.lines.map(l => ({ name: itemName(l), qtyLine: `${l.qty} kg × ${peso(l.pricePerKg)}`, amount: peso(l.qty * l.pricePerKg) })),
+        })),
+        totalLabel: t("rc_total"), totalSub, total: peso(total),
+        note: t("cart_pay_note"), thanks: t("rc_thanks"),
+      });
+      const p = order.placed;
+      const stamp = `${p.getFullYear()}-${String(p.getMonth() + 1).padStart(2, "0")}-${String(p.getDate()).padStart(2, "0")}-${String(p.getHours()).padStart(2, "0")}${String(p.getMinutes()).padStart(2, "0")}`;
+      const result = await saveImage(blob, `AniSense-receipt-${stamp}.png`, t("rc_kicker"));
+      if (result === "failed") { haptic.warn(); setSave("failed"); }
+      else if (result === "downloaded") { haptic.success(); setSave("done"); }
+      // On the phone the share sheet was the confirmation; nothing to add.
+      else { setSave("idle"); return; }
+    } catch {
+      haptic.warn();
+      setSave("failed");
+    }
+    window.setTimeout(() => setSave("idle"), 2400);
+  };
 
   return (
     <Sheet open={open} onClose={onClose} variant="center" className="rc-panel" label={t("rc_title")}>
@@ -71,9 +100,8 @@ export function Receipt({ order, open, onClose }: { order: ReceiptOrder | null; 
           <h2 className="rc-title">{t("rc_title")}</h2>
 
           <dl className="rc-meta">
-            <div><dt>{t("rc_no")}</dt><dd className="num">{order.no}</dd></div>
             <div><dt>{t("rc_date")}</dt><dd>{when}</dd></div>
-            <div className="wide"><dt>{t("rc_buyer")}</dt><dd>{order.buyer}{order.location ? ` · ${order.location}` : ""}</dd></div>
+            <div><dt>{t("rc_buyer")}</dt><dd>{order.buyer}</dd></div>
           </dl>
 
           <div className="rc-perf" aria-hidden="true" />
@@ -90,7 +118,7 @@ export function Receipt({ order, open, onClose }: { order: ReceiptOrder | null; 
               {g.lines.map(l => (
                 <div className="rc-line" key={l.listingId}>
                   <span className="rc-item">
-                    <span className="rc-item-n">{l.variety && l.variety !== l.crop ? l.variety : l.crop}</span>
+                    <span className="rc-item-n">{itemName(l)}</span>
                     <span className="rc-item-q">{l.qty} kg × {peso(l.pricePerKg)}</span>
                   </span>
                   <span className="rc-amt">{peso(l.qty * l.pricePerKg)}</span>
@@ -104,23 +132,30 @@ export function Receipt({ order, open, onClose }: { order: ReceiptOrder | null; 
           <div className="rc-total">
             <span className="rc-total-l">
               {t("rc_total")}
-              <small>{kg} kg · {groups.length} {groups.length !== 1 ? t("cart_sellers") : t("cart_seller")}</small>
+              <small>{totalSub}</small>
             </span>
             <strong className="rc-total-v">{peso(total)}</strong>
           </div>
 
           {/* The one thing a buyer must not misunderstand: nothing is paid. */}
           <p className="rc-note">{t("cart_pay_note")}</p>
-
-          <div className="rc-code" aria-hidden="true">
-            <span className="rc-barcode" />
-            <span className="rc-code-n">{order.no}</span>
-          </div>
           <p className="rc-thanks">{t("rc_thanks")}</p>
         </article>
       </div>
 
-      <button className="rc-done" onClick={() => { haptic.select(); onClose(); }}>{t("rc_done")}</button>
+      <div className="rc-actions">
+        <button className={`rc-save ${save === "done" ? "is-done" : ""} ${save === "failed" ? "is-failed" : ""}`}
+          onClick={saveReceipt} aria-busy={save === "busy"}>
+          {/* Keyed on the state, so each label arrives rather than cutting. */}
+          <span className="rc-save-lbl" key={save}>
+            {save === "busy" && <><span className="wid-spin" aria-hidden="true" /> {t("rc_saving")}</>}
+            {save === "done" && <><Check size={18} strokeWidth={2.6} /> {t("rc_saved")}</>}
+            {save === "failed" && <><AlertCircle size={18} strokeWidth={2.4} /> {t("id_save_failed")}</>}
+            {save === "idle" && <><Download size={18} strokeWidth={2.4} /> {t("rc_save")}</>}
+          </span>
+        </button>
+        <button className="rc-done" onClick={() => { haptic.select(); onClose(); }}>{t("rc_done")}</button>
+      </div>
     </Sheet>
   );
 }

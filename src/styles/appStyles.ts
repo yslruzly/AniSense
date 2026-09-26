@@ -2675,10 +2675,8 @@ export const appCss = `
 
   .rc-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; margin: 16px 0 0; }
   .rc-meta > div { min-width: 0; }
-  .rc-meta .wide { grid-column: 1 / -1; }
   .rc-meta dt { font-size: 10.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--text-faint); }
   .rc-meta dd { margin: 2px 0 0; font-size: 14px; font-weight: 600; color: var(--text); overflow-wrap: anywhere; }
-  .rc-meta dd.num { font-family: var(--font-display); font-variant-numeric: tabular-nums; letter-spacing: .02em; }
 
   /* The perforation: a dashed rule the width of the paper. */
   .rc-perf {
@@ -2715,19 +2713,31 @@ export const appCss = `
     background: var(--gold-sk); box-shadow: inset 0 0 0 1px var(--gold-line);
     font-size: 13px; line-height: 1.5; color: var(--text-muted);
   }
-  .rc-code { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 18px; }
-  .rc-barcode {
-    width: 100%; max-width: 230px; height: 38px; opacity: .88;
-    background: repeating-linear-gradient(90deg,
-      var(--ink) 0 2px, transparent 2px 4px, var(--ink) 4px 5px, transparent 5px 8px,
-      var(--ink) 8px 11px, transparent 11px 12px, var(--ink) 12px 13px, transparent 13px 17px,
-      var(--ink) 17px 18px, transparent 18px 21px);
-  }
-  .rc-code-n { font-size: 12px; font-weight: 600; letter-spacing: .28em; color: var(--text-faint); font-variant-numeric: tabular-nums; }
-  .rc-thanks { margin: 12px 0 0; text-align: center; font-size: 13.5px; font-weight: 600; color: var(--tanim); }
+  .rc-thanks { margin: 14px 0 0; text-align: center; font-size: 13.5px; font-weight: 600; color: var(--tanim); }
 
-  /* Done: the same raised green as Continue, on the dark scrim under the
-     paper. It arrives after the receipt has printed. */
+  /* Under the paper: keep a copy, then put it away. They arrive together
+     after the receipt has printed. */
+  .rc-actions { display: flex; flex-direction: column; gap: 10px; animation: wid-rise 360ms var(--ease-out) 820ms both; }
+  /* Save: the quieter of the two, in the receipt's own paper colour with
+     green words, so it reads as belonging to the paper above it. Solid, not
+     glass: the scrim under a centred sheet is mid-grey, and white-on-glass
+     there washes out. */
+  .rc-save {
+    min-height: 54px; border: none; border-radius: 16px; cursor: pointer; color: var(--tanim-deep);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-display); font-size: 16px; font-weight: 700;
+    background-image: linear-gradient(180deg, #FFFFFF 0%, #FFFDF6 55%, #F3EFE2 100%);
+    box-shadow: inset 0 1px 0 #fff, inset 0 -1px 0 rgba(0,0,0,.08), inset 0 0 0 1px rgba(15,53,36,.12),
+      0 1px 2px rgba(4,14,9,.2), 0 12px 22px -12px rgba(0,0,0,.5);
+    transition: transform 190ms var(--ease-out), box-shadow 190ms var(--ease-out);
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .rc-save:active { transform: scale(.975); transition-duration: 90ms; }
+  .rc-save-lbl { display: inline-flex; align-items: center; gap: 8px; animation: wid-lbl-in 200ms var(--ease-out); }
+  .rc-save .wid-spin { border-color: rgba(15,53,36,.2); border-top-color: var(--tanim); }
+  .rc-save.is-done { color: var(--tanim); }
+  .rc-save.is-failed { color: var(--error); }
+  /* Done: the same raised green as Continue. */
   .rc-done {
     min-height: 54px; border: none; border-radius: 16px; cursor: pointer; color: #fff;
     font-family: var(--font-display); font-size: 16.5px; font-weight: 700;
@@ -2735,15 +2745,15 @@ export const appCss = `
     box-shadow: inset 0 1px 0 rgba(255,255,255,.26), inset 0 -1px 0 rgba(0,0,0,.24),
       inset 0 0 0 1px rgba(4,40,24,.22), 0 1px 2px rgba(6,38,23,.30), 0 12px 22px -12px rgba(0,0,0,.6);
     transition: transform 190ms var(--ease-out);
-    animation: wid-rise 360ms var(--ease-out) 820ms both;
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
   .rc-done:active { transform: scale(.975); transition-duration: 90ms; }
   @media (prefers-reduced-motion: reduce) {
     .rc-paper { animation: a-fade-in 240ms ease both; }
     .rc-ok-tick { animation: none; stroke-dashoffset: 0; }
-    .rc-done { animation: a-fade-in 240ms ease both; }
-    .rc-done:active { transform: none; }
+    .rc-actions { animation: a-fade-in 240ms ease both; }
+    .rc-save-lbl { animation: none; }
+    .rc-done:active, .rc-save:active { transform: none; }
   }
 
   /* ── Seller Details Modal ── */
