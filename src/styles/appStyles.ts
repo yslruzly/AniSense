@@ -3591,29 +3591,58 @@ export const appCss = `
      with a position — and the movement itself tells you which way you went.
      translate3d on a thumb, not background on three buttons: one composited
      layer moving instead of three repaints. */
+  /* The track is a well pressed into the page: a darker top edge inside it,
+     a highlight on its lower lip. The thumb is the app's raised green, the
+     same material as Continue, so the choice sits up out of the well. */
   .seg {
-    position: relative; display: flex; isolation: isolate;
-    background: var(--paper-alt); border-radius: 12px; padding: 4px;
+    position: relative; display: flex; isolation: isolate; padding: 5px;
+    border-radius: 17px;
+    background: linear-gradient(180deg, #E3E7E4 0%, #ECEFEC 100%);
+    box-shadow:
+      inset 0 1px 2px rgba(22,33,27,.12),
+      inset 0 0 0 1px rgba(22,33,27,.05),
+      0 1px 0 rgba(255,255,255,.9);
   }
   .seg-thumb {
-    position: absolute; z-index: -1; top: 4px; bottom: 4px; left: 4px;
-    border-radius: 9px; background: var(--tanim);
-    box-shadow: 0 1px 3px rgba(22,33,27,.18);
-    transition: transform 260ms var(--ease-io), width 260ms var(--ease-io);
+    position: absolute; z-index: -1; top: 5px; bottom: 5px; left: 5px;
+    border-radius: 13px;
+    background-image: linear-gradient(180deg, #14875A 0%, var(--tanim) 54%, #075232 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.26),
+      inset 0 -1px 0 rgba(0,0,0,.24),
+      inset 0 0 0 1px rgba(4,40,24,.22),
+      0 1px 2px rgba(6,38,23,.3),
+      0 6px 12px -6px rgba(6,38,23,.5);
+    /* Movement across the control, not an arrival: eases in and out. */
+    transition: transform 280ms var(--ease-io), width 280ms var(--ease-io);
     will-change: transform;
   }
   .seg-btn {
-    flex: 1; min-width: 0; padding: 9px 4px; border: none; background: none;
-    border-radius: 9px; font-family: inherit; font-size: var(--fs-label);
-    font-weight: 700; color: var(--text-muted); cursor: pointer;
-    transition: color 200ms ease, transform 190ms var(--ease-out);
+    flex: 1; min-width: 0; min-height: 46px; padding: 0 6px; border: none; background: none; border-radius: 13px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    font-family: var(--font-display); font-size: 15px; font-weight: 700; letter-spacing: -.005em;
+    color: var(--text-muted); cursor: pointer;
+    transition: color 220ms ease, transform 190ms var(--ease-out);
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
-  .seg-btn[aria-selected="true"] { color: #fff; }
+  .seg-ico { display: inline-flex; opacity: .75; transition: opacity 220ms ease; }
+  .seg-lbl { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .seg-btn[aria-selected="true"] { color: #fff; text-shadow: 0 1px 1px rgba(0,0,0,.18); }
+  .seg-btn[aria-selected="true"] .seg-ico { opacity: 1; }
+  /* The label presses, not the thumb: the thumb is already travelling, and
+     two things moving at once reads as a wobble. */
   .seg-btn:active { transition-duration: var(--dur-press); transform: scale(0.96); }
   @media (prefers-reduced-motion: reduce) {
     .seg-thumb { transition: none; }
+    .seg-btn:active { transform: none; }
   }
+  /* 360-wide phones: a little tighter, so every word fits whole beside its
+     icon; the very narrowest drop the icons before any word is cut. */
+  @media (max-width: 380px) {
+    .seg-btn { font-size: 14px; gap: 5px; padding: 0 3px; }
+    .seg-ico svg { width: 15px; height: 15px; }
+  }
+  @media (max-width: 339px) { .seg-ico { display: none; } }
 
   /* ── Bottom nav ──────────────────────────────────────────────────────────
      Deliberately NOT animated beyond press feedback. Tab switching runs into

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { haptic } from "../../lib/platform";
 
 // ─── Segmented control ────────────────────────────────────────────────────────
@@ -14,7 +15,8 @@ export function Segmented<T extends string>({
   value, options, onChange, label,
 }: {
   value: T;
-  options: { id: T; label: string }[];
+  /** An icon beside a label makes each choice findable at a glance. */
+  options: { id: T; label: string; icon?: ReactNode }[];
   onChange: (v: T) => void;
   label: string;
 }) {
@@ -26,7 +28,7 @@ export function Segmented<T extends string>({
         className="seg-thumb"
         aria-hidden="true"
         style={{
-          width: `calc((100% - 8px) / ${options.length})`,
+          width: `calc((100% - 10px) / ${options.length})`,
           transform: `translate3d(${index * 100}%, 0, 0)`,
         }}
       />
@@ -39,7 +41,8 @@ export function Segmented<T extends string>({
           className="seg-btn"
           onClick={() => { haptic.select(); onChange(o.id); }}
         >
-          {o.label}
+          {o.icon && <span className="seg-ico" aria-hidden="true">{o.icon}</span>}
+          <span className="seg-lbl">{o.label}</span>
         </button>
       ))}
     </div>

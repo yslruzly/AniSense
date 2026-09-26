@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { EmptyState } from "../components/states";
-import { PhilippinePeso, MapPin, Pencil, Trash2, X, ChevronRight, Calendar, Calculator, Receipt, Plus, CheckCircle, AlertTriangle, Sprout, Tag, Wheat, FlaskConical, User, Tractor, Waves, Package, ShoppingCart, Filter, Store } from "lucide-react";
+import { PhilippinePeso, PieChart as PieIcon, CalendarDays, MapPin, Pencil, Trash2, X, ChevronRight, Calendar, Calculator, Receipt, Plus, CheckCircle, AlertTriangle, Sprout, Tag, Wheat, FlaskConical, User, Tractor, Waves, Package, ShoppingCart, Filter, Store } from "lucide-react";
 import { useLang } from "../i18n";
 import { Expense, BuyerTransaction } from "../types";
 import { EXPENSES } from "../data/expenses";
@@ -306,9 +306,9 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
               value={viewMode}
               onChange={setViewMode}
               options={[
-                { id: "all" as const, label: t("exp_overview") },
-                { id: "by-crop" as const, label: t("exp_by_crop") },
-                { id: "by-date" as const, label: t("exp_by_month") },
+                { id: "all" as const, label: t("exp_overview"), icon: <PieIcon size={17} strokeWidth={2.4} /> },
+                { id: "by-crop" as const, label: t("exp_by_crop"), icon: <Sprout size={17} strokeWidth={2.4} /> },
+                { id: "by-date" as const, label: t("exp_by_month"), icon: <CalendarDays size={17} strokeWidth={2.4} /> },
               ]}
             />
 

@@ -490,8 +490,8 @@ export const translations: Dict = {
   },
   exp_vs_last_month: { en: "vs last month", tl: "kumpara noong nakaraang buwan" },
   exp_overview: { en: "Overview", tl: "Buod" },
-  exp_by_crop: { en: "By Crop", tl: "Ayon sa Pananim" },
-  exp_by_month: { en: "By Month", tl: "Ayon sa Buwan" },
+  exp_by_crop: { en: "By Crop", tl: "Pananim" },
+  exp_by_month: { en: "By Month", tl: "Buwan" },
   exp_breakdown: { en: "Expense Breakdown", tl: "Hati-hati ng Gastos" },
   exp_none_yet: {
     en: "No expenses this month yet. Add an expense to see the breakdown.",
