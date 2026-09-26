@@ -3,6 +3,8 @@ import { haptic } from "../../lib/platform";
 import { Wheat, ShoppingCart, ArrowLeft, Check } from "lucide-react";
 import { AniSenseLogo } from "../../components/AniSenseLogo";
 import juanPeek from "../../assets/juan-peek.webp";
+import juanPeekBody from "../../assets/juan-peek-body.webp";
+import juanPeekHand from "../../assets/juan-peek-hand.webp";
 import buyerMascot from "../../assets/buyer-mascot.webp";
 import { MascotStage } from "./MascotStage";
 import { useLang } from "../../i18n";
@@ -40,7 +42,7 @@ export function RoleScreen({ onBack, onSelect, flow }: { onBack: () => void; onS
             swaps in the buyer mascot, so the header answers the tap. Both stay
             mounted and crossfade, so switching never reloads an image. */}
         <MascotStage
-          figures={[{ id: "farmer", src: juanPeek }, { id: "buyer", src: buyerMascot }]}
+          figures={[{ id: "farmer", src: juanPeek, wave: { body: juanPeekBody, hand: juanPeekHand } }, { id: "buyer", src: buyerMascot }]}
           active={role === "buyer" ? "buyer" : "farmer"}
           say={role === "buyer"
             ? { key: "buyer", title: t("role_say_buyer"), emoji: "🥬", sub: t("role_say_buyer_sub") }

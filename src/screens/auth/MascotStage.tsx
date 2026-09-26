@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // ─── Mascot stage ─────────────────────────────────────────────────────────────
 // The figure and speech bubble in the ink header of the language and role
@@ -8,7 +8,13 @@ import { useEffect, useState } from "react";
 // Decorative: the screen's title already says everything the bubble does, so
 // the whole stage is hidden from screen readers.
 
-export type Figure = { id: string; src: string };
+export type Figure = {
+  id: string;
+  src: string;
+  /** A figure that can wave: the same drawing as two layers, the body and the
+   *  hand, on one canvas. The hand turns from the wrist. */
+  wave?: { body: string; hand: string };
+};
 export type Line = { key: string; title: string; sub?: string; emoji?: string };
 
 export function MascotStage({ figures, active, say }: { figures: Figure[]; active: string; say: Line }) {
@@ -19,6 +25,18 @@ export function MascotStage({ figures, active, say }: { figures: Figure[]; activ
     const id = setTimeout(() => setArrived(true), 700);
     return () => clearTimeout(id);
   }, []);
+
+  // Every new line is a new greeting, so he waves again with it: on the
+  // language step when the language changes, on the role step when the
+  // farmer comes back on stage. A new key remounts the hand, which restarts
+  // the wave; the first one waits for him to finish rising into place.
+  const [waves, setWaves] = useState(0);
+  const lastKey = useRef(say.key);
+  useEffect(() => {
+    if (lastKey.current === say.key) return;
+    lastKey.current = say.key;
+    setWaves(w => w + 1);
+  }, [say.key]);
 
   const cut = say.title.lastIndexOf(" ") + 1;
   const head = say.title.slice(0, cut);
@@ -41,7 +59,12 @@ export function MascotStage({ figures, active, say }: { figures: Figure[]; activ
           </span>
           {say.sub && <span className="a-say-s">{say.sub}</span>}
         </span>
-        {figures.map(f => (
+        {figures.map(f => f.wave ? (
+          <span key={f.id} className={`a-fig a-fig-layers fig-${f.id} ${f.id === active ? "on" : ""}`}>
+            <img src={f.wave.body} alt="" />
+            <img key={waves} className={`a-fig-hand ${waves === 0 ? "is-first" : ""}`} src={f.wave.hand} alt="" />
+          </span>
+        ) : (
           <img key={f.id} className={`a-fig fig-${f.id} ${f.id === active ? "on" : ""}`} src={f.src} alt="" />
         ))}
       </div>

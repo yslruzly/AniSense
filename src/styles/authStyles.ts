@@ -329,6 +329,31 @@ export const authCss = `
      screen edge. The buyer leans a little past it too, elbow off-screen, which
      frees the room on his left for his bubble. */
   .a-fig.fig-buyer { margin-right: -14px; }
+
+  /* Juan in two layers, so his hand can wave. The wrapper is sized like the
+     single image it replaces (the drawing's own proportions), and the two
+     layers fill it exactly, one over the other. */
+  .a-fig-layers { position: relative; aspect-ratio: 400 / 633; }
+  .a-fig-layers > img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  /* The pivot is his wrist crease, measured on the drawing. Each swing eases
+     in and out like a pendulum: it is movement back and forth, not an
+     entrance. Only while he is the one on stage. */
+  .a-fig-hand { transform-origin: 30.5% 74.41%; }
+  .a-fig.on .a-fig-hand { animation: a-wave 1.6s var(--ease-io) 140ms both; }
+  /* The first wave waits for the stage to rise into place. */
+  .a-fig.on .a-fig-hand.is-first { animation-delay: 680ms; }
+  @keyframes a-wave {
+    0%   { transform: rotate(0deg); }
+    17%  { transform: rotate(-14deg); }
+    34%  { transform: rotate(9deg); }
+    51%  { transform: rotate(-14deg); }
+    68%  { transform: rotate(9deg); }
+    84%  { transform: rotate(-4deg); }
+    100% { transform: rotate(0deg); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .a-fig.on .a-fig-hand, .a-fig.on .a-fig-hand.is-first { animation: none; }
+  }
   /* Only the figure on stage takes up room. The other waits behind it, faded,
      sunk and a touch blurred, so the swap reads as one figure changing. */
   .a-fig:not(.on) {

@@ -3,6 +3,8 @@ import { haptic } from "../../lib/platform";
 import { ArrowLeft, Check } from "lucide-react";
 import { AniSenseLogo } from "../../components/AniSenseLogo";
 import juanPeek from "../../assets/juan-peek.webp";
+import juanPeekBody from "../../assets/juan-peek-body.webp";
+import juanPeekHand from "../../assets/juan-peek-hand.webp";
 import { MascotStage } from "./MascotStage";
 import { FlagPH, FlagUS } from "../../components/Flags";
 import { useLang, Lang } from "../../i18n";
@@ -46,7 +48,7 @@ export function LanguageScreen({ onDone, onBack }: { onDone: () => void; onBack?
         {/* Written in the language it greets in, not through t(): the line is
             a preview of the choice, so it has to be in that language. */}
         <MascotStage
-          figures={[{ id: "farmer", src: juanPeek }]}
+          figures={[{ id: "farmer", src: juanPeek, wave: { body: juanPeekBody, hand: juanPeekHand } }]}
           active="farmer"
           say={choice === "tl"
             ? { key: "tl", title: "Kumusta!", emoji: "👋", sub: "Ako si Juan, ang gabay mo." }
