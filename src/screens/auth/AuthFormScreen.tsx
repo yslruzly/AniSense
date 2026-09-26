@@ -10,6 +10,7 @@ import { PickerField } from "../../components/ui/PickerField";
 import { AniSenseLogo } from "../../components/AniSenseLogo";
 import type { Session } from "@supabase/supabase-js";
 import { isSupabaseConfigured } from "../../lib/supabase";
+import { formatName } from "../../lib/names";
 import { createAccount, signIn, verifyEmailCode, resendEmailCode, authErrorKey } from "../../services/auth";
 
 // ─── Sign In / Sign Up Form ───────────────────────────────────────────────────
@@ -142,7 +143,7 @@ export function AuthFormScreen({
     }
     setTimeout(() => {
       setLoading(false);
-      const displayName = signup ? name.trim() : (role === "farmer" ? "Juan Dela Cruz" : "Maria Santos");
+      const displayName = signup ? formatName(name) : (role === "farmer" ? "Juan Dela Cruz" : "Maria Santos");
       onSuccess(displayName, role, selectedCrops.length > 0 ? selectedCrops : ["Rice", "Corn"], undefined, signup);
     }, 1200);
   };
@@ -154,7 +155,7 @@ export function AuthFormScreen({
   const createLive = (details: { location: string; phone?: string; years?: number; crops: string[] }) => {
     setLoading(true);
     setError("");
-    createAccount({ name, role, mode, contact, password, ...details })
+    createAccount({ name: formatName(name), role, mode, contact, password, ...details })
       .then(({ session, email }) => {
         setLoading(false);
         if (session) { onSession!(session, true); return; }
@@ -197,7 +198,7 @@ export function AuthFormScreen({
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      onSuccess(name.trim(), role, [], {
+      onSuccess(formatName(name), role, [], {
         location: formatFarmLocation(barangay, municipality),
         phone: contact.trim(),
       }, true);
@@ -219,7 +220,7 @@ export function AuthFormScreen({
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      onSuccess(name.trim(), role, selectedCrops, {
+      onSuccess(formatName(name), role, selectedCrops, {
         years: farmYears.trim(),
         location: formatFarmLocation(barangay, municipality),
         phone: farmPhone.trim(),
@@ -547,6 +548,7 @@ export function AuthFormScreen({
               autoComplete="name" autoCapitalize="words" enterKeyHint="next"
               onKeyDown={focusNext("f-contact")}
               {...errProps("name")}
+              onBlur={() => setName(n => formatName(n))}
               value={name} onChange={e => { setName(e.target.value); clear(); }} />
             {fieldErr("name")}
           </div>

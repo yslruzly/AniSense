@@ -3,6 +3,7 @@ import { ArrowLeft, Camera, Bell, IdCard, Award, Sprout, Wheat, SlidersHorizonta
 import { useLang, LanguageToggle } from "../i18n";
 import { Screen, UserRole, FarmerProfile } from "../types";
 import { CropEmoji } from "../components/CropEmoji";
+import { formatName } from "../lib/names";
 import { AniSenseLogo } from "../components/AniSenseLogo";
 import leafMask from "../assets/anisense-leaf-mask.png";
 
@@ -43,7 +44,7 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
     }));
   };
 
-  const save = () => { setProfile({ ...draft }); setEditing(false); };
+  const save = () => { setProfile({ ...draft, name: formatName(draft.name) || profile.name }); setEditing(false); };
   const cancel = () => { setDraft({ ...profile }); setEditing(false); };
 
   // A farmer's help rows do something. They used to be chevrons pointing at
@@ -125,6 +126,7 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
           </div>
           {editing
             ? <input value={draft.name} onChange={e => setDraft(d => ({ ...d, name: e.target.value }))}
+                onBlur={() => setDraft(d => ({ ...d, name: formatName(d.name) }))}
               style={{ background: "rgba(255,255,255,0.2)", border: "1px solid rgba(255,255,255,0.5)", borderRadius: 8, padding: "6px 12px", color: "#fff", fontFamily: "inherit", fontSize: "var(--fs-body)", fontWeight: 700, textAlign: "center", width: "100%", marginBottom: 4, outline: "none" }} />
             : <div className="prof-name">{profile.name}</div>
           }

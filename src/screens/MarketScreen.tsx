@@ -13,6 +13,11 @@ import { CropIcon } from "../components/icons";
 import { cropPhoto } from "../data/cropPhotos";
 import { Sheet } from "../components/ui/Sheet";
 import { useRetained } from "../hooks/usePresence";
+import mascotBody from "../assets/mascot-wave-body.webp";
+import mascotHand from "../assets/mascot-wave-hand.webp";
+import mascotEyes from "../assets/mascot-wave-eyes.webp";
+import mascotThumbs from "../assets/mascot-thumbs.webp";
+import mascotThumbsEyes from "../assets/mascot-thumbs-eyes.webp";
 
 // ─── Prices ───────────────────────────────────────────────────────────────────
 // Reads top to bottom as three questions:
@@ -116,7 +121,7 @@ function PriceStory({ item }: { item: PriceItem }) {
 }
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
-export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userInitials = "JD" }: { onProfile: () => void; isOffline: boolean; lastUpdated: string; onBack: () => void; userInitials?: string; userRole?: UserRole }) {
+export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userInitials = "JD", userRole }: { onProfile: () => void; isOffline: boolean; lastUpdated: string; onBack: () => void; userInitials?: string; userRole?: UserRole }) {
   const { t, tn } = useLang();
   // Prices arrive through a resource, so this screen has a real loading path,
   // a real failure path, and a real offline path.
@@ -141,6 +146,11 @@ export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userIn
   const down = ALL_ITEMS.filter(c => c.change < 0).length;
   const flat = ALL_ITEMS.length - up - down;
   const movers = [...ALL_ITEMS].sort((a, b) => Math.abs(b.change) - Math.abs(a.change)).slice(0, 6);
+  // Whether today's market is good news for the person reading it: rising
+  // prices are a good day to sell, falling ones a good day to buy. The
+  // mascot's gesture says which, so the same numbers read right for both.
+  const goodDay = userRole === "buyer" ? down > up : up > down;
+  const [headA, headB = ""] = t("mkt_pulse_head").split("{up}");
 
   return (
     <div className="screen">
@@ -148,12 +158,14 @@ export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userIn
       <div className="scroll screen-enter">
 
         {/* 1 ── Today's market ── */}
-        <section className="pr-pulse" aria-label={t("mkt_pulse_label")}>
+        <section className={`pr-pulse ${prices.status === "ready" ? "has-mascot" : ""}`} aria-label={t("mkt_pulse_label")}>
           <div className="pr-pulse-lbl">{t("mkt_pulse_label")} · Nueva Ecija</div>
           {prices.status === "ready" ? (
             <>
+              {/* The count that answers the question, in the colour of its
+                  bar below, so the headline and the proof read as one. */}
               <div className="pr-pulse-head">
-                {t("mkt_pulse_head").replace("{up}", String(up)).replace("{n}", String(ALL_ITEMS.length))}
+                {headA}<span className="pr-num">{up}</span>{headB.replace("{n}", String(ALL_ITEMS.length))}
               </div>
               {/* Breadth bar: the share that rose, held, and fell. Colour plus
                   a counted legend underneath, never colour alone. */}
@@ -177,6 +189,22 @@ export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userIn
             <span className="pr-fresh-dot" />
             {isOffline ? t("market_offline_cached") : `${t("market_up_to_date")} · ${lastUpdated}`}
           </div>
+          {/* The mascot from the tour, standing in the corner of the card.
+              A good day for you: thumbs up, and he hops. Otherwise he leans
+              in and waves. Decoration with a meaning, so hidden from screen
+              readers: the headline already says it. */}
+          {prices.status === "ready" && (goodDay ? (
+            <div className="pr-mascot thumbs" aria-hidden="true">
+              <img className="tm-body" src={mascotThumbs} alt="" width={420} height={443} decoding="async" />
+              <img className="tm-eyes" src={mascotThumbsEyes} alt="" width={420} height={443} decoding="async" />
+            </div>
+          ) : (
+            <div className="pr-mascot wave" aria-hidden="true">
+              <img className="tm-body" src={mascotBody} alt="" width={420} height={435} decoding="async" />
+              <img className="tm-eyes" src={mascotEyes} alt="" width={420} height={435} decoding="async" />
+              <img className="tm-hand" src={mascotHand} alt="" width={420} height={435} decoding="async" />
+            </div>
+          ))}
         </section>
 
         {/* 2 ── Biggest moves ── */}

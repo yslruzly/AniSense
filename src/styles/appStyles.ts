@@ -968,6 +968,51 @@ export const appCss = `
   }
   .pr-fresh-dot { width: 8px; height: 8px; border-radius: 50%; background: #7EC478; box-shadow: 0 0 0 3px rgba(126,196,120,.25); }
   .pr-fresh.off .pr-fresh-dot { background: #F08A7E; box-shadow: 0 0 0 3px rgba(240,138,126,.25); animation: pulse 1.6s ease-in-out infinite; }
+  .pr-num { color: #9BD796; font-variant-numeric: tabular-nums; }
+
+  /* The mascot stands in the lower right, cut off by the card's own bottom
+     edge, so he reads as standing behind it. The numbers keep a column
+     clear of him and sit above him in the stack. */
+  .pr-pulse.has-mascot { min-height: 196px; }
+  .pr-pulse.has-mascot > :not(.pr-mascot) { position: relative; z-index: 1; }
+  .pr-pulse.has-mascot .pr-pulse-head,
+  .pr-pulse.has-mascot .pr-breadth,
+  .pr-pulse.has-mascot .pr-breadth-key { margin-right: 112px; }
+  /* The freshness pill keeps out of his way too: in Filipino on a narrow
+     phone it is long enough to reach him, so it may wrap to two lines, and
+     a squarer corner keeps a two-line pill from looking like a lozenge. */
+  .pr-pulse.has-mascot .pr-fresh { max-width: calc(100% - 112px); border-radius: 12px; line-height: 1.3; }
+  .pr-pulse.has-mascot .pr-fresh-dot { flex-shrink: 0; }
+  .pr-mascot {
+    position: absolute; right: -14px; bottom: -40px; z-index: 0; width: 138px;
+    pointer-events: none;
+  }
+  .pr-mascot.thumbs { aspect-ratio: 420 / 443; }
+  .pr-mascot.wave { aspect-ratio: 420 / 435; transform-origin: 70% 100%; }
+  /* Once per visit to the app, not on every tab switch: Prices is opened
+     again and again, and a greeting on the twentieth visit is a delay.
+     After the first, he is simply there, blinking. */
+  .shell:not([data-revisit]) .pr-mascot.thumbs { animation: pr-hop 900ms var(--ease-out) 300ms both; }
+  @keyframes pr-hop {
+    0%   { opacity: 0; transform: translateY(46px); }
+    45%  { opacity: 1; transform: translateY(-8px); }
+    62%  { transform: translateY(0); }
+    78%  { transform: translateY(-3px); }
+    100% { transform: none; }
+  }
+  .shell:not([data-revisit]) .pr-mascot.wave { animation: pr-lean 560ms var(--ease-out) 300ms both; }
+  @keyframes pr-lean {
+    from { opacity: 0; transform: translateX(34px) rotate(8deg); }
+    to   { opacity: 1; transform: none; }
+  }
+  .shell:not([data-revisit]) .pr-mascot.wave .tm-hand { animation: tm-wave 1.7s var(--ease-io) 780ms both; }
+  .pr-mascot .tm-eyes { animation: tm-blink 4.4s step-end 1.7s infinite; }
+  @media (prefers-reduced-motion: reduce) {
+    .shell:not([data-revisit]) .pr-mascot.thumbs,
+    .shell:not([data-revisit]) .pr-mascot.wave,
+    .shell:not([data-revisit]) .pr-mascot.wave .tm-hand,
+    .pr-mascot .tm-eyes { animation: none; }
+  }
 
   /* Change chip: arrow, sign and colour, so direction never rests on colour. */
   .pr-chg {
