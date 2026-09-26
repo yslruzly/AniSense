@@ -2985,6 +2985,37 @@ export const appCss = `
     opacity: 0;
   }
   .wx-hero[data-time="night"] .wx-bg-night { opacity: 1; }
+
+  /* More tools: the Weather tile, on the same photograph. Nearly clear at
+     the top so the sky reads as sky, and darkened toward the foot, where the
+     white words sit. The filled blue icon tile holds on its own. */
+  .hm-tool.wx-photo {
+    position: relative; overflow: hidden; color: #fff;
+    background-color: #1B3A4B; background-size: cover; background-position: 30% 64%;
+    background-image:
+      linear-gradient(180deg, rgba(10,24,34,.04) 0%, rgba(10,24,34,.24) 42%, rgba(10,24,34,.76) 100%),
+      url(${wxDay});
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.1), 0 10px 20px -14px rgba(10,24,34,.7);
+  }
+  .hm-tool.wx-photo[data-time="night"] {
+    background-image:
+      linear-gradient(180deg, rgba(6,9,20,.02) 0%, rgba(6,9,20,.22) 45%, rgba(6,9,20,.7) 100%),
+      url(${wxNight});
+  }
+  .hm-tool.wx-photo .hm-tool-t { color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.45); }
+  .hm-tool.wx-photo .hm-tool-s { color: rgba(255,255,255,.9); text-shadow: 0 1px 2px rgba(0,0,0,.4); }
+  /* The shared press state paints the tile paper-white, which would wipe
+     the photo; here the picture stays and only the shade deepens. */
+  .hm-tool.wx-photo:active {
+    background-image:
+      linear-gradient(180deg, rgba(10,24,34,.18) 0%, rgba(10,24,34,.36) 42%, rgba(10,24,34,.82) 100%),
+      url(${wxDay});
+  }
+  .hm-tool.wx-photo[data-time="night"]:active {
+    background-image:
+      linear-gradient(180deg, rgba(6,9,20,.16) 0%, rgba(6,9,20,.34) 45%, rgba(6,9,20,.78) 100%),
+      url(${wxNight});
+  }
   .wx-hero[data-time="night"] .wx-bg-day { opacity: 0; }
   .wx-hero .wx-ico, .wx-hero .wx-temp, .wx-hero .wx-cond, .wx-hero .wx-loc { text-shadow: 0 1px 4px rgba(0,0,0,.45); }
   .wx-hero .wx-ico svg { filter: drop-shadow(0 1px 3px rgba(0,0,0,.35)); }

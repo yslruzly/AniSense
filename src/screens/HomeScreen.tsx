@@ -381,7 +381,9 @@ export function HomeScreen({ onNavigate, onShop, onProfile, isOffline, userName 
         <section data-tour="tools">
           <h2 className="hm-title hm-out">{t("home_tools")}</h2>
           <div className={`hm-tools${isBuyer ? " one" : ""}`}>
-            <button className="hm-tool tint-blue" onClick={() => onNavigate("weather")}>
+            {/* The weather tile shows the weather: the same field as the
+                greeting card, by day or by night as it is outside. */}
+            <button className="hm-tool wx-photo" data-time={isNight ? "night" : "day"} onClick={() => onNavigate("weather")}>
               <span className="hm-tool-ico wx">{isNight ? <CloudMoon size={24} /> : <CloudSun size={24} />}</span>
               <span className="hm-tool-t">{t("home_mod_weather")}</span>
               <span className="hm-tool-s">{t(isBuyer ? "home_mod_weather_buyer" : "home_mod_weather_desc")}</span>
