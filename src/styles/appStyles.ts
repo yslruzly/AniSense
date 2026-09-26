@@ -1629,11 +1629,10 @@ export const appCss = `
     transition: background-color 160ms ease;
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
-  .ff-spot { flex-direction: column; }
-  /* A large surface takes a tint, not a scale: shrinking a whole spotlight
-     inside its card reads as the card breaking. The button inside it is
-     what scales. */
-  .ff-spot:active, .ff-row:active { background: var(--paper); transition-duration: var(--dur-press); }
+  /* The spotlight is read, not pressed: no pointer, no tint. Its one action
+     is the button at its foot. */
+  .ff-spot { flex-direction: column; cursor: default; }
+  .ff-row:active { background: var(--paper); transition-duration: var(--dur-press); }
   .ff-cover { position: relative; display: block; height: 132px; background: linear-gradient(135deg, #1F5E3B, #0B3D26); }
   .ff-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .ff-cover::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10,14,12,0) 45%, rgba(10,14,12,.42)); }
@@ -1686,7 +1685,11 @@ export const appCss = `
     background: rgba(255,255,255,.16); box-shadow: inset 0 0 0 1px rgba(255,255,255,.22);
     transition: transform 190ms var(--ease-out);
   }
-  .ff-spot:active .ff-cta {
+  .ff-cta {
+    border: none; cursor: pointer; width: 100%; text-align: left;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .ff-cta:active {
     transform: scale(.975); transition-duration: var(--dur-press);
     box-shadow:
       inset 0 1px 0 rgba(255,255,255,.12),
@@ -1695,7 +1698,7 @@ export const appCss = `
       0 1px 1px rgba(6,38,23,.34),
       0 4px 10px -8px rgba(6,38,23,.5);
   }
-  .ff-spot:active .ff-cta-go { transform: translateX(3px); transition-duration: var(--dur-press); }
+  .ff-cta:active .ff-cta-go { transform: translateX(3px); transition-duration: var(--dur-press); }
   .ff-list { border-top: 1px solid var(--line); }
   .ff-row { align-items: center; gap: 12px; min-height: 68px; padding: 12px 16px; }
   .ff-row + .ff-row { border-top: 1px solid var(--line); }
@@ -2085,7 +2088,7 @@ export const appCss = `
   .shell[data-revisit] .scroll .yp-bar { animation: none; }
 
   @media (prefers-reduced-motion: reduce) {
-    .hm-search:active, .shop-cat:active, .ff-spot:active .ff-cta, .ff-spot:active .ff-cta-go { transform: none; }
+    .hm-search:active, .shop-cat:active, .ff-cta:active, .ff-cta:active .ff-cta-go { transform: none; }
   }
 
   /* ── Buyer price moves ─────────────────────────────────────────────────

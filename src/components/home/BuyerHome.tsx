@@ -233,7 +233,10 @@ export function FeaturedFarmers({ onShop, buyerLocation }: { onShop: Shop; buyer
       <p className="hm-sec-sub">{t("ff_sub")}</p>
 
       <div className="ff">
-        <button className="ff-spot" onClick={() => open(spot)}>
+        {/* The spotlight is a profile to read, not a button: only "See their
+            harvest" acts, so a thumb resting on the bio or scrolling past the
+            photo doesn't jump the buyer into the marketplace. */}
+        <article className="ff-spot">
           <span className="ff-cover">
             {cover && <img src={cover} alt="" loading="lazy" decoding="async" />}
             <span className="ff-badge"><Award size={15} strokeWidth={2.6} /> {t("ff_week")}</span>
@@ -255,12 +258,12 @@ export function FeaturedFarmers({ onShop, buyerLocation }: { onShop: Shop; buyer
             </span>
             {/* The card's one action, as wide as the card, with a "go" disc
                 at the end that nudges forward under the thumb. */}
-            <span className="ff-cta">
+            <button type="button" className="ff-cta" onClick={() => open(spot)}>
               <span>{t("ff_cta")}</span>
               <span className="ff-cta-go" aria-hidden="true"><ArrowRight size={18} strokeWidth={2.6} /></span>
-            </span>
+            </button>
           </span>
-        </button>
+        </article>
 
         <div className="ff-list stagger-list">
           {rest.map(s => (
