@@ -891,7 +891,14 @@ export const appCss = `
     color: var(--ink); letter-spacing: -.015em; text-wrap: balance; overflow-wrap: anywhere;
   }
   .wid-role { margin-top: 5px; font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--tanim); }
-  .wid-loc { display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 6px; font-size: 13.5px; color: var(--text-faint); }
+  /* Inline, not flex: when a long barangay does wrap, the lines stay centred
+     and even, and the pin sits with the first word instead of floating beside
+     a two-line block. */
+  .wid-loc {
+    margin-top: 6px; padding: 0 14px; text-align: center; text-wrap: balance;
+    font-size: 13.5px; line-height: 1.35; color: var(--text-faint);
+  }
+  .wid-loc svg { display: inline-block; vertical-align: -2px; margin-right: 4px; color: var(--tanim); }
 
   .wid-foot {
     display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; margin: 0 16px; padding: 12px 0 14px;

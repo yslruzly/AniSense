@@ -63,8 +63,8 @@ const BUYER_STEPS: Step[] = [
   { id: "b_search", targets: ['[data-tour="b-search"]'] },
   { id: "b_crops", targets: ['[data-tour="b-crops"]'] },
   { id: "b_featured", targets: ['[data-tour="b-featured"]'] },
-  { id: "b_moves", targets: ['[data-tour="b-moves"]'] },
   { id: "b_farmers", targets: ['[data-tour="b-farmers"]'] },
+  { id: "b_moves", targets: ['[data-tour="b-moves"]'] },
   { id: "b_purchases", targets: ['[data-tour="b-purchases"]'] },
   // Back up to the header for the bell. The light travels up the page the
   // same way it came down, so the farmer never loses track of where it is.

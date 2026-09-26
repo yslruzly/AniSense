@@ -192,23 +192,49 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
         {/* What is worth looking at today, as products rather than rows. */}
         {isBuyer && <FeaturedProducts onShop={shop} />}
 
-        {/* "Browse the marketplace" as the see-everything step after the
-            eight crops: every way to start shopping sits in one place. */}
+        {/* The cheapest kilos on the marketplace right now, straight after
+            the featured harvests: the two "what to buy today" blocks together,
+            before the invitation to browse everything. */}
         {isBuyer && (
-          <button className="hm-shop" onClick={() => onNavigate("trade")}>
-            <span className="hm-shop-copy">
-              <span className="hm-shop-t">{t("home_buyer_cta_t")}</span>
-              <span className="hm-shop-s">
-                {t("home_market_chip").replace("{n}", String(LISTINGS.length)).replace("{s}", String(sellerCount))}
-              </span>
-              <span className="hm-shop-btn">{t("cart_browse")} <ChevronRight size={16} strokeWidth={2.6} /></span>
-            </span>
-            <img className="hm-shop-img" src={buyerMascot} alt="" aria-hidden="true" />
-          </button>
+          <section className="hm-card tint-green">
+            <div className="hm-card-head">
+              <span className="hm-ico"><Tag size={20} strokeWidth={2.2} /></span>
+              <div>
+                <h2 className="hm-title">{t("home_deals")}</h2>
+                <div className="hm-sub">{t("home_deals_sub")}</div>
+              </div>
+            </div>
+            {deals.length === 0 ? (
+              <p className="hm-empty">{t("home_no_deals")}</p>
+            ) : (
+              <div className="stagger-list">
+                {deals.map(({ l, save }) => {
+                  const photo = cropPhotoFor(l.crop, l.variety);
+                  return (
+                    <button key={l.id} className="hm-crop" onClick={() => shop({ search: l.variety || l.crop })}>
+                      <span className="hm-crop-photo">
+                        {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropIcon crop={l.crop} size={22} />}
+                      </span>
+                      <span className="hm-crop-body">
+                        <span className="hm-crop-name">{l.variety && l.variety !== l.crop ? l.variety : l.crop}</span>
+                        <span className="hm-crop-var"><MapPin size={12} strokeWidth={2.4} /> {l.location} · {l.seller}</span>
+                      </span>
+                      <span className="hm-crop-end">
+                        <span className="hm-crop-price">₱{l.pricePerKg}<small>{t("per_kg_short")}</small></span>
+                        {/* The saving, not just the price: a number means more
+                            beside the one it beats. */}
+                        {/* Only when there is something to say. A chip on
+                            every row reading "at market price" is noise, and
+                            it was squeezing the seller's name off the line. */}
+                        {save > 0 && <span className="pr-chg up">−₱{save} {t("home_below")}</span>}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </section>
         )}
-
-        {/* 2 ── Buyers: the day's price moves, as one light chart. */}
-        {isBuyer && <PriceMoves onOpen={() => onNavigate("market")} />}
 
         {/* 2 ── Your crops today, farmer only. A short vertical list: no
             swiping to find your own crop among twenty. */}
@@ -256,8 +282,8 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
         {!isBuyer && <FeaturedProducts onShop={shop} />}
 
         {/* The brand poster, as a mid-page break, for both sides of the
-            market: for a buyer after the day's prices, for a farmer after the
-            marketplace's best. A picture, not a button: the marketplace is one
+            market: for a buyer after the day's cheapest, for a farmer after
+            the marketplace's best. A picture, not a button: the marketplace is one
             tab away and already has its own doors on this page. The frame
             holds the poster's shape before the image loads, so nothing below
             jumps. */}
@@ -265,51 +291,27 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
           <img src={anisensePoster} alt={t("poster_alt")} width={1000} height={562} loading="lazy" decoding="async" />
         </figure>
 
-        {/* Who grows it: the trust half of a marketplace, after the day's
-            prices. */}
+        {/* Who grows it: the trust half of a marketplace. */}
         {isBuyer && <FeaturedFarmers onShop={shop} buyerLocation={buyerLocation} />}
 
-        {/* The cheapest kilos on the marketplace right now. */}
+        {/* The way back into the marketplace and the day's price moves, as
+            the last stop before "my buying": having seen the picks and the
+            farmers, browse everything, check what moved, then buy again. */}
         {isBuyer && (
-          <section className="hm-card tint-green">
-            <div className="hm-card-head">
-              <span className="hm-ico"><Tag size={20} strokeWidth={2.2} /></span>
-              <div>
-                <h2 className="hm-title">{t("home_deals")}</h2>
-                <div className="hm-sub">{t("home_deals_sub")}</div>
-              </div>
-            </div>
-            {deals.length === 0 ? (
-              <p className="hm-empty">{t("home_no_deals")}</p>
-            ) : (
-              <div className="stagger-list">
-                {deals.map(({ l, save }) => {
-                  const photo = cropPhotoFor(l.crop, l.variety);
-                  return (
-                    <button key={l.id} className="hm-crop" onClick={() => shop({ search: l.variety || l.crop })}>
-                      <span className="hm-crop-photo">
-                        {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropIcon crop={l.crop} size={22} />}
-                      </span>
-                      <span className="hm-crop-body">
-                        <span className="hm-crop-name">{l.variety && l.variety !== l.crop ? l.variety : l.crop}</span>
-                        <span className="hm-crop-var"><MapPin size={12} strokeWidth={2.4} /> {l.location} · {l.seller}</span>
-                      </span>
-                      <span className="hm-crop-end">
-                        <span className="hm-crop-price">₱{l.pricePerKg}<small>{t("per_kg_short")}</small></span>
-                        {/* The saving, not just the price: a number means more
-                            beside the one it beats. */}
-                        {/* Only when there is something to say. A chip on
-                            every row reading "at market price" is noise, and
-                            it was squeezing the seller's name off the line. */}
-                        {save > 0 && <span className="pr-chg up">−₱{save} {t("home_below")}</span>}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </section>
+          <button className="hm-shop" onClick={() => onNavigate("trade")}>
+            <span className="hm-shop-copy">
+              <span className="hm-shop-t">{t("home_buyer_cta_t")}</span>
+              <span className="hm-shop-s">
+                {t("home_market_chip").replace("{n}", String(LISTINGS.length)).replace("{s}", String(sellerCount))}
+              </span>
+              <span className="hm-shop-btn">{t("cart_browse")} <ChevronRight size={16} strokeWidth={2.6} /></span>
+            </span>
+            <img className="hm-shop-img" src={buyerMascot} alt="" aria-hidden="true" />
+          </button>
         )}
+
+        {/* The day's price moves, as one light chart. */}
+        {isBuyer && <PriceMoves onOpen={() => onNavigate("market")} />}
 
         {/* Buy again and the running total, as one card about "my buying". */}
         {isBuyer && <YourPurchases onShop={shop} onHistory={() => onNavigate("expenses")} />}

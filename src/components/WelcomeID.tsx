@@ -23,6 +23,11 @@ import { AniSenseLogo } from "./AniSenseLogo";
 
 export type WelcomeInfo = { id: string; since: Date };
 
+/** "Bagong Sikat, Cabanatuan City, Nueva Ecija" → "…, Cabanatuan City, N.E.":
+ *  everyone on AniSense is in Nueva Ecija, so on a card this narrow the
+ *  province is the part to shorten, and the barangay and town keep room. */
+export const shortPlace = (place: string) => place.replace(/\bNueva\s+Ecija\b\.?/i, "N.E.");
+
 /** AS-2026-04817: "AS" for AniSense, the year joined, five digits. */
 export function makeMemberId(d = new Date()) {
   return `AS-${d.getFullYear()}-${String(Math.floor(Math.random() * 100000)).padStart(5, "0")}`;
@@ -43,6 +48,7 @@ export function WelcomeID({ open, onClose, mode = "welcome", name, initials, rol
   onPhoto: (dataUrl: string) => void;
 }) {
   const { t } = useLang();
+  const place = location ? shortPlace(location) : undefined;
   const fileRef = useRef<HTMLInputElement>(null);
   const first = name.split(" ")[0];
   // idle → busy → done (or failed), then back to idle after a moment. The
@@ -62,7 +68,7 @@ export function WelcomeID({ open, onClose, mode = "welcome", name, initials, rol
     try {
       const blob = await renderMemberId({
         name, initials, role: role === "buyer" ? "Buyer" : "Farmer",
-        location, id: info.id, since: info.since, photo,
+        location: place, id: info.id, since: info.since, photo,
       });
       const result = await saveImage(blob, `AniSense-ID-${info.id}.png`, "AniSense Member ID");
       if (result === "failed") { haptic.warn(); setDl("failed"); }
@@ -111,8 +117,8 @@ export function WelcomeID({ open, onClose, mode = "welcome", name, initials, rol
 
             <div className="wid-name">{name}</div>
             <div className="wid-role">{roleLabel}</div>
-            {location && (
-              <div className="wid-loc"><MapPin size={13} strokeWidth={2.4} /> {location}</div>
+            {place && (
+              <div className="wid-loc"><MapPin size={13} strokeWidth={2.4} aria-hidden="true" />{place}</div>
             )}
           </div>
 
