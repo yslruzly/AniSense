@@ -12,6 +12,7 @@ import { PriceAlert } from "../lib/priceAlerts";
 import { useViewer } from "../lib/viewer";
 import { CROPS, CROP_GROUP_BY_ID } from "../data/crops";
 import { cropPhotoFor } from "../data/cropPhotos";
+import { WEATHER_NOW } from "../data/weather";
 import { Sparkline } from "../components/charts/Micro";
 import { cropPhoto } from "../data/cropPhotos";
 import { CropIcon } from "../components/icons";
@@ -163,8 +164,8 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
                   still farmer-only — that one is about planting. */}
               <button className="hm-wx" onClick={() => onNavigate("weather")}>
                 {isNight ? <CloudMoon size={22} strokeWidth={2} /> : <CloudSun size={22} strokeWidth={2} />}
-                <span className="hm-wx-temp">28°</span>
-                <span className="hm-wx-cond">{t("wx_partly_cloudy")}</span>
+                <span className="hm-wx-temp">{WEATHER_NOW.temp}°</span>
+                <span className="hm-wx-cond">{t(isNight && WEATHER_NOW.icon === "Sunny" ? "wx_cond_clear_night" : `wx_cond_${WEATHER_NOW.icon}`)}</span>
                 <ChevronRight size={18} strokeWidth={2.4} aria-hidden="true" />
               </button>
               {isOffline && (

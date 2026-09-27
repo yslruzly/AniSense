@@ -1,4 +1,4 @@
-import { Wheat, Sprout, Leaf, FlaskConical, User, Tractor, Waves, Package, CloudSun, Droplets, AlertTriangle } from "lucide-react";
+import { Wheat, Sprout, Leaf, FlaskConical, User, Tractor, Waves, Package, CloudSun, Sun, Cloud, CloudRain, CloudDrizzle, CloudLightning, Moon, CloudMoon } from "lucide-react";
 
 // ─── Lucide Icon Maps ─────────────────────────────────────────────────────────
 export const S = 16; // default icon size
@@ -34,14 +34,17 @@ export function ExpenseIcon({ cat, size = S, color = "var(--tanim)" }: { cat: st
   }
 }
 
-export function WeatherIcon({ icon, size = 22 }: { icon: string; size?: number }) {
-  const props = { size };
+// One picture per condition, in the colour of what it means: gold sun,
+// slate cloud, blue rain, violet storm. After dark, the sun becomes the moon.
+export function WeatherIcon({ icon, size = 22, night = false }: { icon: string; size?: number; night?: boolean }) {
+  const props = { size, strokeWidth: 2 };
   switch (icon) {
-    case "Sunny": return <CloudSun      {...props} color="var(--gold-text)" />;
-    case "PartlyCloudy": return <CloudSun      {...props} color="var(--text-muted)" />;
-    case "Rainy": return <Droplets      {...props} color="var(--tanim)" />;
-    case "Stormy": return <AlertTriangle {...props} color="var(--ink-2)" />;
-    case "LightRain": return <Droplets      {...props} color="var(--tanim-sk)" />;
-    default: return <CloudSun      {...props} color="var(--text-muted)" />;
+    case "Sunny": return night ? <Moon {...props} color="#8C9BC9" /> : <Sun {...props} color="#D9941A" />;
+    case "PartlyCloudy": return night ? <CloudMoon {...props} color="#7F8BB0" /> : <CloudSun {...props} color="#C98A1B" />;
+    case "Cloudy": return <Cloud {...props} color="#7D8B86" />;
+    case "LightRain": return <CloudDrizzle {...props} color="#3F83C4" />;
+    case "Rainy": return <CloudRain {...props} color="#2F6FA8" />;
+    case "Stormy": return <CloudLightning {...props} color="#5C45A8" />;
+    default: return <CloudSun {...props} color="#C98A1B" />;
   }
 }

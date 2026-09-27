@@ -3292,27 +3292,167 @@ export const appCss = `
   }
 
   /* ── Weather ── */
-  /* Photo hero that follows the clock: a sunny field by day, the same field
-     under the moon from 5 PM. Ink underneath, so a slow image load shows
-     dark rather than a flash of colour. */
+  /* The hero: the field photographed by day and by night, crossfading at
+     6 PM. Ink underneath, so a slow image load shows dark rather than a
+     flash of colour. Numbers on the left, the sky on the right, the four
+     readings on frosted glass along the foot. */
   .wx-hero {
-    position: relative; isolation: isolate; overflow: hidden;
-    background: var(--ink); border-radius: var(--radius); padding: 28px 18px; color: #fff; text-align: center;
+    position: relative; isolation: isolate; overflow: hidden; flex-shrink: 0;
+    display: flex; flex-direction: column; gap: 10px;
+    padding: 16px 18px 14px; border-radius: 26px; color: #fff; background: var(--ink);
+    box-shadow: 0 22px 40px -26px rgba(8,20,28,.85), inset 0 0 0 1px rgba(255,255,255,.06);
   }
   .wx-bg {
-    position: absolute; inset: 0; z-index: -1; background-size: cover; background-position: center 60%;
+    position: absolute; inset: 0; z-index: -2; background-size: cover; background-position: center 60%;
     transition: opacity 700ms ease;
   }
   /* A light wash top to bottom: enough to hold white type over a bright sky,
      not so much that the day stops looking like day. */
   .wx-bg-day {
-    background-image: linear-gradient(180deg, rgba(12,18,14,.18) 0%, rgba(12,18,14,.30) 45%, rgba(12,18,14,.58) 100%), url(${wxDay});
+    background-image: linear-gradient(180deg, rgba(12,18,14,.14) 0%, rgba(12,18,14,.26) 45%, rgba(12,18,14,.6) 100%), url(${wxDay});
   }
   .wx-bg-night {
-    background-image: linear-gradient(180deg, rgba(6,9,20,.05) 0%, rgba(6,9,20,.25) 55%, rgba(6,9,20,.55) 100%), url(${wxNight});
+    background-image: linear-gradient(180deg, rgba(6,9,20,.05) 0%, rgba(6,9,20,.25) 55%, rgba(6,9,20,.6) 100%), url(${wxNight});
     opacity: 0;
   }
   .wx-hero[data-time="night"] .wx-bg-night { opacity: 1; }
+  .wx-hero[data-time="night"] .wx-bg-day { opacity: 0; }
+  /* A second wash from the left, under the numbers only. */
+  .wx-hero::before {
+    content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+    background: linear-gradient(100deg, rgba(6,14,10,.4) 0%, rgba(6,14,10,.1) 55%, rgba(6,14,10,0) 80%);
+  }
+  .wx-place {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 13.5px; font-weight: 600; color: rgba(255,255,255,.86); font-variant-numeric: tabular-nums;
+    text-shadow: 0 1px 8px rgba(0,0,0,.35);
+  }
+  .wx-main { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+  .wx-read { min-width: 0; text-shadow: 0 1px 14px rgba(0,0,0,.35); }
+  .wx-temp {
+    font-family: var(--font-display); font-size: 72px; font-weight: 700; line-height: .95;
+    letter-spacing: -.05em; font-variant-numeric: tabular-nums;
+  }
+  .wx-deg { position: relative; top: -.02em; margin-left: 2px; font-size: .56em; font-weight: 600; vertical-align: top; opacity: .9; }
+  .wx-cond { margin-top: 4px; font-family: var(--font-display); font-size: 18px; font-weight: 600; letter-spacing: -.01em; }
+  .wx-range {
+    display: flex; gap: 10px; margin-top: 4px;
+    font-size: 14px; font-weight: 600; color: rgba(255,255,255,.82); font-variant-numeric: tabular-nums;
+  }
+  .wx-range > span { display: inline-flex; align-items: center; gap: 2px; }
+
+  /* The sky, in layers. */
+  .wx-art { position: relative; flex: 0 0 112px; width: 112px; height: 100px; }
+  .wx-sun, .wx-moon { position: absolute; right: 2px; top: 0; }
+  .wx-sun { filter: drop-shadow(0 0 18px rgba(255,196,64,.6)); }
+  .wx-moon { top: 6px; right: 8px; filter: drop-shadow(0 0 16px rgba(243,230,181,.5)); }
+  .wx-art:not(.has-cloud) .wx-sun, .wx-art:not(.has-cloud) .wx-moon { right: 24px; top: 18px; }
+  .wx-cloud { position: absolute; left: 0; bottom: 2px; filter: drop-shadow(0 8px 12px rgba(0,0,0,.28)); }
+  .wx-cloud.back { left: 44px; bottom: 36px; }
+  .wx-art:not(.has-sky) .wx-cloud:not(.back) { left: 12px; }
+  .wx-bolt { position: absolute; left: 34px; bottom: -12px; filter: drop-shadow(0 0 10px rgba(255,209,74,.75)); }
+  .wx-rain { position: absolute; left: 16px; bottom: -16px; width: 62px; height: 24px; }
+  .wx-rain i { position: absolute; top: 0; width: 2px; height: 9px; border-radius: 2px; background: rgba(196,228,255,.92); }
+  .wx-rain i:nth-child(1) { left: 6px; }
+  .wx-rain i:nth-child(2) { left: 22px; animation-delay: .35s; }
+  .wx-rain i:nth-child(3) { left: 38px; animation-delay: .7s; }
+  .wx-rain i:nth-child(4) { left: 54px; animation-delay: .2s; }
+  /* Ambient, slow and small, so the picture reads as weather and not as a
+     logo: the sun turns once a minute, the cloud drifts 7px and back, rain
+     falls. Nothing here asks to be watched. */
+  .wx-sun { animation: wx-spin 60s linear infinite; }
+  @keyframes wx-spin { to { transform: rotate(360deg); } }
+  .wx-moon { animation: wx-float 6s ease-in-out infinite alternate; }
+  @keyframes wx-float { to { transform: translateY(-3px); } }
+  .wx-cloud { animation: wx-drift 7s ease-in-out infinite alternate; }
+  .wx-cloud.back { animation-duration: 9s; animation-direction: alternate-reverse; }
+  @keyframes wx-drift { to { transform: translateX(-7px); } }
+  .wx-rain i { animation: wx-drop 1.1s linear infinite; }
+  @keyframes wx-drop { from { opacity: 0; transform: translateY(-6px); } 25% { opacity: 1; } to { opacity: 0; transform: translateY(15px); } }
+  .wx-bolt { animation: wx-flicker 5s step-end infinite; }
+  @keyframes wx-flicker { 0% { opacity: 1; } 90% { opacity: .35; } 92% { opacity: 1; } 95% { opacity: .45; } 97% { opacity: 1; } }
+  /* The entrance, once per visit: the temperature settles out of a soft blur
+     (the one number that matters, arriving rather than cutting in), the sky
+     rises a few pixels behind it. The page's own slide is already moving, so
+     these stay short and small. */
+  .shell:not([data-revisit]) .wx-temp { animation: wx-settle 420ms var(--ease-out) 90ms both; }
+  @keyframes wx-settle { from { opacity: 0; filter: blur(6px); transform: translateY(6px); } }
+  .shell:not([data-revisit]) .wx-art { animation: wx-rise 520ms var(--ease-out) 150ms both; }
+  @keyframes wx-rise { from { opacity: 0; transform: translateY(10px) scale(.95); } }
+
+  /* The four readings: one row, a hairline above, no box. */
+  .wx-stats { display: grid; grid-template-columns: repeat(4, 1fr); padding-top: 12px; border-top: 1px solid rgba(255,255,255,.2); }
+  .wx-stat { min-width: 0; display: flex; flex-direction: column; gap: 2px; padding: 0 2px; text-shadow: 0 1px 8px rgba(0,0,0,.35); }
+  .wx-stat-v { font-family: var(--font-display); font-size: 16px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .wx-stat-v small { font-size: 11px; font-weight: 600; opacity: .8; }
+  /* Wraps rather than truncates: "Tsansa ng Ulan" is longer than a quarter
+     of a phone, and a label cut to "Tsansa n…" answers nothing. */
+  .wx-stat-l { font-size: 11.5px; line-height: 1.2; color: rgba(255,255,255,.74); text-wrap: balance; }
+
+  /* Under the hero: white cards, the same shape as the rest of the app. */
+  .wx-stack { display: flex; flex-direction: column; gap: 14px; }
+  .wx-card {
+    padding: 16px; border-radius: 22px; background: var(--card);
+    box-shadow: inset 0 0 0 1px var(--line), 0 12px 24px -20px rgba(22,33,27,.45);
+  }
+  .wx-card-t { margin: 0 0 12px; font-family: var(--font-display); font-size: 17px; font-weight: 700; letter-spacing: -.01em; color: var(--text); }
+
+  /* Hour by hour: a row to swipe; "Now" in green, nothing boxed. */
+  .wx-hours {
+    display: flex; margin: 0 -16px; padding: 0 8px; overflow-x: auto;
+    scroll-snap-type: x proximity; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  }
+  .wx-hours::-webkit-scrollbar { display: none; }
+  .wx-hr { flex: 0 0 58px; scroll-snap-align: start; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 2px 0; }
+  .wx-hr-t { font-size: 12.5px; font-weight: 600; color: var(--text-faint); white-space: nowrap; }
+  .wx-hr.now .wx-hr-t { color: var(--tanim); font-weight: 800; }
+  .wx-hr-temp { font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+
+  /* The week: day, sky, a word for it, high then low. */
+  .wx-days { display: flex; flex-direction: column; }
+  .wx-day { display: grid; grid-template-columns: 44px 26px 1fr auto; align-items: center; gap: 10px; min-height: 48px; }
+  .wx-day + .wx-day { border-top: 1px solid var(--line); }
+  .wx-day-n { font-family: var(--font-display); font-size: 15.5px; font-weight: 700; color: var(--text); }
+  .wx-day-c { min-width: 0; font-size: 14px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .wx-day-t { font-size: 15px; color: var(--text-faint); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .wx-day-t b { font-weight: 800; color: var(--text); margin-right: 4px; }
+
+  /* What it means: one decision, big, on the brand green (the farmer's
+     field window) or sky blue (the buyer's pick-up day). */
+  .wx-best {
+    position: relative; overflow: hidden; display: flex; align-items: flex-start; gap: 14px;
+    padding: 16px; border-radius: 22px; color: #fff;
+    background:
+      repeating-linear-gradient(135deg, rgba(255,255,255,.035) 0 1px, transparent 1px 11px),
+      radial-gradient(90% 120% at 100% 0%, rgba(126,196,120,.38), transparent 60%),
+      linear-gradient(155deg, #17804F 0%, #0E5A37 55%, #0A3924 100%);
+    box-shadow: 0 16px 30px -22px rgba(7,52,32,.9), inset 0 1px 0 rgba(255,255,255,.12);
+  }
+  .wx-best.buyer {
+    background:
+      repeating-linear-gradient(135deg, rgba(255,255,255,.035) 0 1px, transparent 1px 11px),
+      radial-gradient(90% 120% at 100% 0%, rgba(160,210,255,.34), transparent 60%),
+      linear-gradient(155deg, #3F83C4 0%, #2A6199 55%, #1C4570 100%);
+    box-shadow: 0 16px 30px -22px rgba(28,69,112,.9), inset 0 1px 0 rgba(255,255,255,.12);
+  }
+  .wx-best-ico {
+    flex: 0 0 44px; width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,.16); box-shadow: inset 0 0 0 1px rgba(255,255,255,.22);
+  }
+  .wx-best-k { font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.75); }
+  .wx-best-v { margin-top: 2px; font-family: var(--font-display); font-size: 26px; font-weight: 700; letter-spacing: -.02em; }
+  .wx-best-s { margin-top: 4px; font-size: 14px; line-height: 1.45; color: rgba(255,255,255,.88); }
+
+  /* Farming advisory: a filled tile in the colour of what it means. */
+  .wx-adv { display: flex; align-items: center; gap: 12px; padding: 10px 0; }
+  .wx-adv + .wx-adv { border-top: 1px solid var(--line); }
+  .wx-adv-t { flex: 1; font-size: 15px; font-weight: 500; line-height: 1.45; color: var(--text); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .wx-sun, .wx-moon, .wx-cloud, .wx-rain i, .wx-bolt { animation: none; }
+    .shell:not([data-revisit]) .wx-temp, .shell:not([data-revisit]) .wx-art { animation: wx-fade 200ms ease both; }
+    @keyframes wx-fade { from { opacity: 0; } }
+  }
 
   /* More tools: the Weather tile, on the same photograph. Nearly clear at
      the top so the sky reads as sky, and darkened toward the foot, where the
@@ -3344,26 +3484,6 @@ export const appCss = `
       linear-gradient(180deg, rgba(6,9,20,.16) 0%, rgba(6,9,20,.34) 45%, rgba(6,9,20,.78) 100%),
       url(${wxNight});
   }
-  .wx-hero[data-time="night"] .wx-bg-day { opacity: 0; }
-  .wx-hero .wx-ico, .wx-hero .wx-temp, .wx-hero .wx-cond, .wx-hero .wx-loc { text-shadow: 0 1px 4px rgba(0,0,0,.45); }
-  .wx-hero .wx-ico svg { filter: drop-shadow(0 1px 3px rgba(0,0,0,.35)); }
-  .wx-ico  { font-size:50px; margin-bottom:7px; }
-  .wx-temp { font-family: var(--font-display); font-size: var(--fs-num); font-weight:700; }
-  .wx-cond { font-size: var(--fs-body); opacity:.92; margin-top:4px; font-weight:500; }
-  .wx-loc  { font-size: var(--fs-label); opacity:.75; margin-top:7px; }
-
-  .fc-row  { display:flex; justify-content:space-between; }
-  .fc-item { text-align:center; flex:1; }
-  .fc-day  { font-size: var(--fs-label); font-weight:700; color:var(--text-muted); margin-bottom:6px; }
-  .fc-ico  { font-size:21px; margin-bottom:4px; }
-  .fc-hi   { font-size: var(--fs-label); font-weight:700; color:var(--text); }
-  .fc-lo   { font-size: var(--fs-label); color:var(--text-muted); }
-
-  .adv-item { display:flex; gap:9px; align-items:flex-start; padding:11px 13px; border-radius:12px; font-size: var(--fs-label); font-weight:500; line-height:1.55; margin-bottom:9px; }
-  .adv-item:last-child { margin-bottom:0; }
-  .adv-good { background:var(--green-bg); color:var(--tanim-deep); }
-  .adv-warn { background:var(--gold-sk); color:var(--gold-text); }
-  .adv-info { background:var(--paper-alt); color:var(--tanim-deep); }
 
   /* ── LSTM Forecast ── */
   .lstm-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:13px; }
@@ -3687,9 +3807,6 @@ export const appCss = `
   .home-sec-sub { font-size: var(--fs-label); color:var(--text-muted); margin-bottom:11px; }
 
   /* Advisory banner */
-  .adv-banner { border-radius:14px; padding:15px; display:flex; gap:11px; align-items:flex-start; }
-  .adv-banner-txt { font-size: var(--fs-label); font-weight:600; line-height:1.55; }
-  .adv-banner-sub { font-size: var(--fs-label); opacity:.78; margin-top:3px; }
 
 
   /* ══════════════════════════════════════════════════════════════════════════
