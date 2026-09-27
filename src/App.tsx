@@ -39,6 +39,9 @@ import { PriceAlert, loadAlerts, saveAlerts } from "./lib/priceAlerts";
 import { Planting, loadPlantings, savePlantings } from "./lib/plantings";
 import { Sale, loadSales, saveSales } from "./lib/sales";
 import { MarketContext, useMarketStore } from "./lib/market";
+import { AchievementId, earnedAchievements, loadSeenAchievements, saveSeenAchievements } from "./lib/achievements";
+import { AchievementUnlocked } from "./components/profile/AchievementUnlocked";
+import { useRetained } from "./hooks/usePresence";
 
 // The bottom-nav destinations. Anything else is a page opened from one of them.
 const TABS: Screen[] = ["home", "market", "trade", "expenses", "profile"];
@@ -131,6 +134,14 @@ export default function App() {
     return () => clearTimeout(id);
   }, [tourPending, showWelcome, welcomePending, active]);
   const endTour = () => { setTourOpen(false); if (userRole) void saveTourSeen(userRole); };
+
+  // ── Achievements unlocked ──
+  // A new account's badges are news (Newbie, at least); an account opened
+  // here for the first time after this feature existed has its current ones
+  // filed quietly, so nobody is greeted by a pile of old celebrations.
+  const justJoined = useRef(false);
+  const [achQueue, setAchQueue] = useState<AchievementId[]>([]);
+  const [achOpen, setAchOpen] = useState(false);
   // Asked for from the guide page or from Profile: go to Home first, because
   // Home is what the tour is about, then let the effect above start it.
   const replayTour = () => { navigate("home"); setTourPending(true); };
@@ -147,6 +158,61 @@ export default function App() {
   // through the marketplace. Only the typed ones are theirs to edit and save.
   const allSales = market.marketSales.length ? [...sales, ...market.marketSales] : sales;
   const setTypedSales = (next: Sale[]) => setSales(next.filter(s => !s.id.startsWith("tx-")));
+
+  // Whose badges these are: the database account, or this phone's demo one.
+  const achOwner = isAuthed && userRole === "farmer" ? (accountId ?? "demo") : null;
+  // Compare what the farmer has earned with what they have been shown, every
+  // time their listings, sales or the week's spotlight change: a harvest
+  // posted is a badge unlocked, right then.
+  useEffect(() => {
+    if (!achOwner || market.loading) return;
+    const earned = [...earnedAchievements({
+      listings: market.listings, isMine: market.isMine, sellers: market.sellers,
+      sellerKeyOf: market.sellerKeyOf, sales: allSales,
+    })];
+    let alive = true;
+    (async () => {
+      let seen = await loadSeenAchievements(achOwner);
+      if (justJoined.current) {
+        // A brand-new account starts with nothing shown, whatever an earlier
+        // account on this phone had seen.
+        justJoined.current = false;
+        seen = [];
+        await saveSeenAchievements(achOwner, []);
+      }
+      if (!alive) return;
+      if (seen === null) { await saveSeenAchievements(achOwner, earned); return; }
+      const fresh = earned.filter(x => !seen!.includes(x));
+      if (fresh.length) setAchQueue(q => [...q, ...fresh.filter(x => !q.includes(x))]);
+    })();
+    return () => { alive = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [achOwner, market.loading, market.listings, market.sellers, allSales.length]);
+
+  // Shown when nothing else is: never over the welcome ID or the walkthrough,
+  // and a beat after the screen underneath has settled.
+  const achBlocked = showWelcome || welcomePending || tourOpen || tourPending;
+  useEffect(() => {
+    if (achOpen || achQueue.length === 0 || achBlocked || !isAuthed) return;
+    const id = window.setTimeout(() => setAchOpen(true), 650);
+    return () => window.clearTimeout(id);
+  }, [achQueue.length, achBlocked, achOpen, isAuthed]);
+  // Held while the sheet closes, so it fades out still showing its badge.
+  const shownAch = useRetained(achQueue[0] ?? null);
+  // Every save carries everything marked this session, so two quick taps of
+  // "Next" can't have the second save overwrite the first.
+  const achMarked = useRef<AchievementId[]>([]);
+  const markAchSeen = (ids: AchievementId[]) => {
+    if (!achOwner || ids.length === 0) return;
+    achMarked.current = [...achMarked.current, ...ids];
+    void loadSeenAchievements(achOwner).then(seen => saveSeenAchievements(achOwner, [...(seen ?? []), ...achMarked.current]));
+  };
+  const nextAch = () => {
+    const [cur, ...rest] = achQueue;
+    if (cur) markAchSeen([cur]);
+    setAchQueue(rest);
+    if (rest.length === 0) setAchOpen(false);
+  };
 
   // Set only by openMarketplace, and cleared by every other navigation, so a
   // later tap on the Market tab opens the plain marketplace, not the last
@@ -228,6 +294,7 @@ export default function App() {
     // Until the database is wired, a signed-in account's ID and "since" are
     // made at sign-in; they should come from the user's record.
     setWelcome({ id: makeMemberId(), since: new Date() });
+    justJoined.current = isNew;
     if (isNew) {
       setActive("home");
       setIdMode("welcome");
@@ -248,6 +315,7 @@ export default function App() {
     setUserRole(role);
     setFarmerProfile(profile);
     setWelcome(memberIdFor(session));
+    justJoined.current = isNew;
     if (isNew) {
       setActive("home");
       setIdMode("welcome");
@@ -317,6 +385,10 @@ export default function App() {
     tourChecked.current = false;
     setTourPending(false);
     setTourOpen(false);
+    justJoined.current = false;
+    achMarked.current = [];
+    setAchQueue([]);
+    setAchOpen(false);
   };
 
   // ── Auth flow ──
@@ -418,6 +490,14 @@ export default function App() {
             onPhoto={setUserPhoto}
           />
           {/* Last inside the shell, so it covers the tab bar and the ID. */}
+          <AchievementUnlocked
+            id={shownAch}
+            open={achOpen}
+            remaining={Math.max(0, achQueue.length - 1)}
+            memberSince={welcome?.since}
+            onNext={nextAch}
+            onSeeAll={() => { markAchSeen(achQueue); setAchQueue([]); setAchOpen(false); navigate("profile"); }}
+          />
           <Tour open={tourOpen} onFinish={endTour} role={userRole} />
         </div>
       </div>

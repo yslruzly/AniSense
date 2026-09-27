@@ -1448,6 +1448,70 @@ export const appCss = `
     display: flex; align-items: center; justify-content: center;
     background: #fff; color: var(--text-muted); box-shadow: 0 0 0 1px var(--line), 0 2px 6px -2px rgba(0,0,0,.25);
   }
+  /* ── Achievement unlocked ──────────────────────────────────────────────
+     The welcome ID's dimmed stage: the kicker, Juan rising from behind the
+     plate with his thumbs up, the badge landing on brushed metal, then the
+     buttons. Rare by nature, so it earns its ceremony. */
+  .shm-scrim:has(> .au-panel) { background: rgba(8,12,10,.84); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+  .au-panel { width: 100%; max-width: 330px; background: transparent; }
+  .au { display: flex; flex-direction: column; align-items: center; text-align: center; color: #fff; }
+  .au-kicker {
+    font-size: 13px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: var(--palay);
+    animation: wid-rise 360ms var(--ease-out) both;
+  }
+  .au-stage { position: relative; width: 268px; margin-top: 6px; padding-top: 118px; }
+  /* Juan stands behind the plate, cut off at the waist by its top edge. */
+  .au-mascot {
+    position: absolute; top: 0; left: 50%; z-index: 0; width: 150px; margin-left: -75px; aspect-ratio: 420 / 443;
+    animation: au-rise 520ms var(--ease-out) 380ms both;
+  }
+  .au-mascot img { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .au-m-eyes { opacity: 0; animation: tm-blink 3.8s step-end 1.1s infinite; }
+  @keyframes au-rise { from { opacity: 0; transform: translateY(46px); } }
+  .au-plate {
+    position: relative; z-index: 1; overflow: hidden;
+    display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 22px 18px 20px; border-radius: 22px;
+    background:
+      repeating-linear-gradient(0deg, rgba(255,255,255,.07) 0 1px, rgba(0,0,0,.022) 1px 2px),
+      linear-gradient(155deg, #F7F8F9 0%, #DDE0E4 30%, #F1F2F4 48%, #CFD3D8 72%, #E6E8EB 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.95), inset 0 -1px 0 rgba(60,66,74,.14),
+      inset 0 0 0 1px rgba(120,127,136,.32), 0 30px 54px -22px rgba(0,0,0,.8);
+    /* Lands from a little above with one soft overshoot, like the ID card. */
+    animation: au-land 640ms cubic-bezier(.22,1,.36,1) 120ms both;
+  }
+  @keyframes au-land {
+    0% { opacity: 0; transform: translateY(-26px) scale(.96); }
+    60% { opacity: 1; transform: translateY(3px) scale(1.005); }
+    100% { transform: none; }
+  }
+  /* The medal stamps onto the plate once it has landed. */
+  .au-medal { width: 84px; height: 84px; margin-bottom: 6px; animation: au-stamp 460ms cubic-bezier(.22,1,.36,1) 560ms both; }
+  @keyframes au-stamp {
+    0% { opacity: 0; transform: scale(1.35) rotate(-10deg); }
+    65% { opacity: 1; transform: scale(.96) rotate(1deg); }
+    100% { transform: none; }
+  }
+  .au-name {
+    margin: 0; font-family: var(--font-display); font-size: 21px; font-weight: 700; line-height: 1.2;
+    letter-spacing: -.01em; color: var(--text); text-wrap: balance;
+  }
+  .au-note { margin: 0; font-size: 14.5px; line-height: 1.4; color: var(--text-muted); text-wrap: balance; }
+  /* One pass of light across the metal once it has settled. */
+  .au-shine {
+    position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(105deg, transparent 38%, rgba(255,255,255,.75) 50%, transparent 62%);
+    transform: translateX(-130%);
+    animation: wid-shine 1000ms ease-in-out 1050ms 1 forwards;
+  }
+  .au-actions { width: 268px; margin-top: 20px; display: flex; flex-direction: column; gap: 10px; animation: wid-rise 360ms var(--ease-out) 820ms both; }
+  @media (prefers-reduced-motion: reduce) {
+    .au-kicker, .au-mascot, .au-plate, .au-medal, .au-actions { animation: au-fade 220ms ease both; }
+    @keyframes au-fade { from { opacity: 0; } }
+    .au-shine { display: none; }
+    .au-m-eyes { animation: none; }
+  }
+
   .ach-name { font-family: var(--font-display); font-size: 14.5px; font-weight: 700; line-height: 1.25; color: var(--text); text-wrap: balance; }
   .ach-badge.off .ach-name { color: var(--text-muted); }
   .ach-note { font-size: 12.5px; line-height: 1.35; color: var(--text-faint); text-wrap: balance; }

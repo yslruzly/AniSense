@@ -2,68 +2,68 @@ import type { ReactNode } from "react";
 import { Sprout, Wheat, HandCoins, Award, Medal, Trophy, Lock } from "lucide-react";
 import { useLang } from "../../i18n";
 import { useMarket } from "../../lib/market";
-import { farmerOfTheWeek } from "../../lib/featured";
 import { Sale } from "../../lib/sales";
+import { ACHIEVEMENTS, AchievementId, earnedAchievements } from "../../lib/achievements";
 
 // ─── Achievements ─────────────────────────────────────────────────────────────
 // What a farmer has earned on AniSense, in the order they earn it: joining,
 // a first harvest posted, a first sale, then the three awards. Every badge is
-// worked out from what the app already knows, never typed in, so a badge
-// means the thing happened.
+// worked out from what the app already knows (src/lib/achievements.ts), never
+// typed in, so a badge means the thing happened.
 //
-// Earned badges are in colour. The rest are grey with a lock and say how to
-// earn them: a goal to aim for, not a blank. Farmer of the Week is the same
-// pick Home's Featured farmers shows buyers (src/lib/featured.ts); Farmer of
-// the Month and of the Year are named goals until those awards are run.
+// Earned badges sit on a brushed-metal plate. The rest are grey with a lock
+// and say how to earn them: a goal to aim for, not a blank.
 
-type Badge = { id: string; ico: ReactNode; tone: string; earned: boolean; note: string };
+export const ACH_ICON: Record<AchievementId, (size: number) => ReactNode> = {
+  newbie: s => <Sprout size={s} strokeWidth={2.2} />,
+  harvest: s => <Wheat size={s} strokeWidth={2.2} />,
+  sale: s => <HandCoins size={s} strokeWidth={2.2} />,
+  week: s => <Award size={s} strokeWidth={2.2} />,
+  month: s => <Medal size={s} strokeWidth={2.2} />,
+  year: s => <Trophy size={s} strokeWidth={2.2} />,
+};
+
+/** The line under a badge: what they did, or how to earn it. */
+export function achNote(id: AchievementId, earned: boolean, t: (k: string) => string, locale: string, memberSince?: Date) {
+  if (id === "newbie") {
+    return memberSince
+      ? t("ach_newbie_on").replace("{date}", memberSince.toLocaleDateString(locale, { month: "long", year: "numeric" }))
+      : t("ach_newbie_welcome");
+  }
+  if (id === "month" || id === "year") return t(`ach_${id}_how`);
+  return t(`ach_${id}_${earned ? "done" : "how"}`);
+}
 
 export function Achievements({ sales = [], memberSince }: { sales?: Sale[]; memberSince?: Date }) {
   const { t, lang } = useLang();
   const { listings, isMine, sellers, sellerKeyOf } = useMarket();
   const locale = lang === "tl" ? "fil-PH" : "en-PH";
-
-  const mine = listings.filter(isMine);
-  const spot = farmerOfTheWeek(sellers);
-  const isWeek = !!spot && mine.some(l => sellerKeyOf(l) === spot.key);
-  const joined = memberSince
-    ? t("ach_newbie_on").replace("{date}", memberSince.toLocaleDateString(locale, { month: "long", year: "numeric" }))
-    : t("ach_newbie_welcome");
-
-  const badges: Badge[] = [
-    { id: "newbie", ico: <Sprout size={24} strokeWidth={2.2} />, tone: "blue", earned: true, note: joined },
-    { id: "harvest", ico: <Wheat size={24} strokeWidth={2.2} />, tone: "green", earned: mine.length > 0,
-      note: t(mine.length > 0 ? "ach_harvest_done" : "ach_harvest_how") },
-    { id: "sale", ico: <HandCoins size={24} strokeWidth={2.2} />, tone: "orange", earned: sales.length > 0,
-      note: t(sales.length > 0 ? "ach_sale_done" : "ach_sale_how") },
-    { id: "week", ico: <Award size={24} strokeWidth={2.2} />, tone: "gold", earned: isWeek,
-      note: t(isWeek ? "ach_week_done" : "ach_week_how") },
-    { id: "month", ico: <Medal size={24} strokeWidth={2.2} />, tone: "violet", earned: false, note: t("ach_month_how") },
-    { id: "year", ico: <Trophy size={24} strokeWidth={2.2} />, tone: "trophy", earned: false, note: t("ach_year_how") },
-  ];
-  const earned = badges.filter(b => b.earned).length;
+  const have = earnedAchievements({ listings, isMine, sellers, sellerKeyOf, sales });
 
   return (
     <div className="card ach">
       <div className="card-head">
         <span className="card-ico tint-gold"><Trophy size={20} strokeWidth={2.2} /></span>
         <div className="card-title" style={{ margin: 0 }}>{t("ach_title")}</div>
-        <span className="ach-count">{t("ach_count").replace("{n}", String(earned)).replace("{total}", String(badges.length))}</span>
+        <span className="ach-count">{t("ach_count").replace("{n}", String(have.size)).replace("{total}", String(ACHIEVEMENTS.length))}</span>
       </div>
       <div className="ach-grid stagger-list">
-        {badges.map(b => (
-          <div key={b.id} className={`ach-badge ${b.earned ? "on" : "off"}`}>
-            <span className={`ach-medal ${b.tone}`} aria-hidden="true">
-              {b.ico}
-              {!b.earned && <span className="ach-lock"><Lock size={11} strokeWidth={2.8} /></span>}
-            </span>
-            <span className="ach-name">
-              {t(`ach_${b.id}_t`)}
-              {!b.earned && <span className="sr-only">, {t("ach_locked")}</span>}
-            </span>
-            <span className="ach-note">{b.note}</span>
-          </div>
-        ))}
+        {ACHIEVEMENTS.map(({ id, tone }) => {
+          const earned = have.has(id);
+          return (
+            <div key={id} className={`ach-badge ${earned ? "on" : "off"}`}>
+              <span className={`ach-medal ${tone}`} aria-hidden="true">
+                {ACH_ICON[id](24)}
+                {!earned && <span className="ach-lock"><Lock size={11} strokeWidth={2.8} /></span>}
+              </span>
+              <span className="ach-name">
+                {t(`ach_${id}_t`)}
+                {!earned && <span className="sr-only">, {t("ach_locked")}</span>}
+              </span>
+              <span className="ach-note">{achNote(id, earned, t, locale, memberSince)}</span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
