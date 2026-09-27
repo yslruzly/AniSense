@@ -14,6 +14,9 @@ import { cropPhoto, cropGroupPhoto } from "../data/cropPhotos";
 import { Sheet } from "../components/ui/Sheet";
 import { useRetained } from "../hooks/usePresence";
 import mascotBasket from "../assets/mascot-basket.webp";
+import basketBlink from "../assets/mascot-basket-blink.webp";
+import basketMouthHalf from "../assets/mascot-basket-mouth-half.webp";
+import basketMouthShut from "../assets/mascot-basket-mouth-shut.webp";
 
 // ─── Prices ───────────────────────────────────────────────────────────────────
 // Reads top to bottom as three questions:
@@ -208,11 +211,19 @@ export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userIn
           </div>
           {/* A farmer with the day's basket, standing behind the card's
               bottom edge. A good day for you: he lifts it up with a little
-              bounce. Otherwise he simply rises into view. Decoration with a
-              meaning, so hidden from screen readers: the headline says it. */}
+              bounce. Otherwise he simply rises into view. Then he blinks and
+              chats, on a loop: the lids and two mouth shapes are layers
+              drawn on the same canvas as the picture, shown in turn.
+              Decoration with a meaning, so hidden from screen readers: the
+              headline says it. */}
           {prices.status === "ready" && (
             <div className={`pr-mascot basket ${goodDay ? "good" : ""}`} aria-hidden="true">
-              <img src={mascotBasket} alt="" width={420} height={474} decoding="async" />
+              <div className="pb-fig">
+                <img src={mascotBasket} alt="" width={420} height={474} decoding="async" />
+                <img className="pb-blink" src={basketBlink} alt="" width={420} height={474} decoding="async" />
+                <img className="pb-mouth half" src={basketMouthHalf} alt="" width={420} height={474} decoding="async" />
+                <img className="pb-mouth shut" src={basketMouthShut} alt="" width={420} height={474} decoding="async" />
+              </div>
             </div>
           )}
         </section>

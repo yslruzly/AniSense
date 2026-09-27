@@ -1042,8 +1042,8 @@ export const appCss = `
     position: absolute; right: -16px; bottom: -10px; z-index: 0; width: 146px;
     aspect-ratio: 420 / 474; pointer-events: none;
   }
-  .pr-mascot img {
-    display: block; width: 100%; height: 100%;
+  .pb-fig {
+    position: relative; width: 100%; height: 100%;
     /* Lifts him off the dark card without a hard edge. */
     filter: drop-shadow(0 8px 14px rgba(0,0,0,.35));
     /* Breathing: three pixels, slow, so he is alive at the edge of the eye
@@ -1051,6 +1051,26 @@ export const appCss = `
     animation: pr-bob 3.8s ease-in-out 1.4s infinite alternate;
   }
   @keyframes pr-bob { to { transform: translateY(-3px); } }
+  .pb-fig img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+  /* Face layers: shown in turn, never faded. A blink or a mouth shape that
+     dissolves reads as a ghost; one that snaps reads as a face moving. */
+  .pb-blink, .pb-mouth { opacity: 0; }
+  /* A blink every 4.6 s, shut for about 140 ms, the length of a real one. */
+  .pb-blink { animation: pb-blink 4.6s step-end 1.2s infinite; }
+  @keyframes pb-blink { 0% { opacity: 0; } 94% { opacity: 1; } 97% { opacity: 0; } }
+  /* Talking: open, half, shut, half, open… in quick 130 ms beats, the
+     pace of lively chatter, for about a second and a half, then a short
+     smiling pause with his mouth open, and again. Two layers share one
+     clock, so their beats never drift apart. */
+  .pb-mouth.half { animation: pb-talk-half 2.2s step-end .9s infinite; }
+  .pb-mouth.shut { animation: pb-talk-shut 2.2s step-end .9s infinite; }
+  @keyframes pb-talk-half {
+    0% { opacity: 0; } 6% { opacity: 1; } 12% { opacity: 0; } 18% { opacity: 1; } 24% { opacity: 0; }
+    30% { opacity: 1; } 36% { opacity: 0; } 48% { opacity: 1; } 54% { opacity: 0; } 60% { opacity: 1; } 66% { opacity: 0; }
+  }
+  @keyframes pb-talk-shut {
+    0% { opacity: 0; } 12% { opacity: 1; } 18% { opacity: 0; } 36% { opacity: 1; } 42% { opacity: 0; } 54% { opacity: 1; } 60% { opacity: 0; }
+  }
   /* Once per visit to the app, not on every tab switch: Prices is opened
      again and again, and a greeting on the twentieth visit is a delay.
      After the first, he is simply there. */
@@ -1069,7 +1089,7 @@ export const appCss = `
   }
   @media (prefers-reduced-motion: reduce) {
     .shell:not([data-revisit]) .pr-mascot.basket,
-    .pr-mascot img { animation: none; }
+    .pb-fig, .pb-blink, .pb-mouth { animation: none; }
   }
 
   /* Change chip: arrow, sign and colour, so direction never rests on colour. */
