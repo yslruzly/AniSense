@@ -496,6 +496,12 @@ export const authCss = `
     transition: color 160ms ease; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
   .a-seg button.on { color: var(--tanim); }
+  /* Three options (Luzon, Visayas, Mindanao): the same well and sliding
+     thumb, a third of the width, moved by index. */
+  .a-seg.three { grid-template-columns: repeat(3, 1fr); }
+  .a-seg.three .a-seg-thumb { width: calc((100% - 8px) / 3); }
+  .a-seg.three[data-i="1"] .a-seg-thumb { transform: translateX(100%); }
+  .a-seg.three[data-i="2"] .a-seg-thumb { transform: translateX(200%); }
 
   /* ── Inline feedback ───────────────────────────────────────────────────── */
   /* Errors sit under their field and slide in a few pixels from it, so they

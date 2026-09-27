@@ -24,8 +24,9 @@ import { AniSenseLogo } from "./AniSenseLogo";
 export type WelcomeInfo = { id: string; since: Date };
 
 /** "Bagong Sikat, Cabanatuan City, Nueva Ecija" → "…, Cabanatuan City, N.E.":
- *  everyone on AniSense is in Nueva Ecija, so on a card this narrow the
- *  province is the part to shorten, and the barangay and town keep room. */
+ *  every farmer on AniSense is in Nueva Ecija, so on a card this narrow the
+ *  province is the part to shorten, and the barangay and town keep room.
+ *  A buyer elsewhere keeps their province as written. */
 export const shortPlace = (place: string) => place.replace(/\bNueva\s+Ecija\b\.?/i, "N.E.");
 
 /** AS-2026-04817: "AS" for AniSense, the year joined, five digits. */

@@ -1,10 +1,11 @@
-import { useState, type KeyboardEvent, type ReactNode } from "react";
+import { useEffect, useState, type KeyboardEvent, type ReactNode } from "react";
 import { haptic } from "../../lib/platform";
 import { Wheat, ShoppingCart, ArrowLeft, Check, AlertCircle, MapPin, Smartphone, Mail } from "lucide-react";
 import { useLang } from "../../i18n";
 import { UserRole, FarmDetails } from "../../types";
 import { MAIN_CROPS } from "../../data/crops";
 import { FARM_PROVINCE, MUNICIPALITIES, BARANGAYS_BY_MUNICIPALITY, formatFarmLocation } from "../../data/locations";
+import { ISLAND_GROUPS, IslandGroup, PH_PROVINCES } from "../../data/phPlaces";
 import { CropEmoji } from "../../components/CropEmoji";
 import { PickerField } from "../../components/ui/PickerField";
 import { AniSenseLogo } from "../../components/AniSenseLogo";
@@ -77,6 +78,21 @@ export function AuthFormScreen({
   const [farmYears, setFarmYears] = useState("");
   const [municipality, setMunicipality] = useState("");
   const [barangay, setBarangay] = useState("");
+  // A buyer can be anywhere in the country: island group, then province,
+  // then their city or town. Farmers stay in Nueva Ecija.
+  const [island, setIsland] = useState<IslandGroup>("Luzon");
+  const [province, setProvince] = useState("");
+  // Every barangay in the country is half a megabyte, so it is fetched only
+  // for a buyer, once they reach the step that asks, and only once.
+  const [phBarangays, setPhBarangays] = useState<Record<string, Record<string, string[]>> | null>(null);
+  useEffect(() => {
+    if (role !== "buyer" || step !== "details" || phBarangays) return;
+    let alive = true;
+    import("../../data/phBarangays.json")
+      .then(m => { if (alive) setPhBarangays(m.default as Record<string, Record<string, string[]>>); })
+      .catch(() => { /* barangay is optional; the field simply stays closed */ });
+    return () => { alive = false; };
+  }, [role, step, phBarangays]);
   const [farmPhone, setFarmPhone] = useState("");
   const { t, tn } = useLang();
 
@@ -189,17 +205,20 @@ export function AuthFormScreen({
     setStep("crops");
   };
 
-  // Municipality is the unit the marketplace filters on, so that one is
-  // required; barangay only sharpens a delivery estimate, so it is not.
+  // Province and city are what a farmer needs to plan a delivery, so those
+  // are required; barangay only sharpens it, so it is not.
+  // "Bagong Sikat, Cabanatuan City, Nueva Ecija" / "Quezon City, Metro Manila".
+  const buyerLocation = () => [barangay, municipality, province].filter(Boolean).join(", ");
   const finishBuyerLocation = () => {
+    if (!province) { setError(t("err_province_required")); return; }
     if (!municipality) { setError(t("err_municipality_required")); return; }
     setError("");
-    if (live) { createLive({ location: formatFarmLocation(barangay, municipality), crops: [] }); return; }
+    if (live) { createLive({ location: buyerLocation(), crops: [] }); return; }
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
       onSuccess(formatName(name), role, [], {
-        location: formatFarmLocation(barangay, municipality),
+        location: buyerLocation(),
         phone: contact.trim(),
       }, true);
     }, 1200);
@@ -338,21 +357,50 @@ export function AuthFormScreen({
     );
   }
 
-  // ── Step 2 (buyer): where they buy from ──
-  // Deliberately the same two pickers, province row and dock as the farmer
-  // step: one setup flow with two endings, not two flows.
+  // ── Step 2 (buyer): where they are ──
+  // Anywhere in the Philippines, narrowed the way people say it: Luzon,
+  // Visayas or Mindanao, then the province, then the city or town. The same
+  // pickers and dock as the farmer step: one setup flow with two endings.
   if (step === "details" && role === "buyer") {
+    const provinces = PH_PROVINCES.filter(p => p.island === island);
+    const places = PH_PROVINCES.find(p => p.name === province)?.places ?? [];
+    const barangays = phBarangays?.[province]?.[municipality] ?? [];
+    const pickIsland = (g: IslandGroup) => {
+      if (g === island) return;
+      haptic.select();
+      setIsland(g); setProvince(""); setMunicipality(""); setBarangay(""); setError("");
+    };
     return (
       <div className="a-screen">
         {head(t("buyer_loc_title"), t("buyer_loc_sub"))}
         <div className="a-scroll">
           <div className="a-field">
-            <label className="a-lbl">{t("buyer_loc_lbl")}</label>
-            <div className="a-locked">
-              <MapPin size={20} color="var(--tanim)" />
-              <span>{FARM_PROVINCE}</span>
-              <span className="a-locked-note">{t("farm_province_lbl")}</span>
+            <label className="a-lbl" id="f-island">{t("buyer_island_lbl")}</label>
+            {/* Three, all visible: it is the one question everyone in the
+                country answers without thinking, and it cuts 82 provinces
+                to a list short enough to scan. */}
+            <div className="a-seg three" role="radiogroup" aria-labelledby="f-island" data-i={ISLAND_GROUPS.indexOf(island)}>
+              <span className="a-seg-thumb" aria-hidden="true" />
+              {ISLAND_GROUPS.map(g => (
+                <button key={g} type="button" role="radio" aria-checked={island === g}
+                  className={island === g ? "on" : ""} onClick={() => pickIsland(g)}>
+                  {g}
+                </button>
+              ))}
             </div>
+          </div>
+
+          <div className="a-field">
+            <label className="a-lbl">{t("farm_province_lbl")}</label>
+            <PickerField
+              title={t("farm_province_lbl")}
+              placeholder={t("farm_pick_province")}
+              value={province}
+              // The region under each name tells look-alikes apart and
+              // confirms the choice for anyone unsure of a province's name.
+              options={provinces.map(p => ({ value: p.name, label: p.name, sub: p.region }))}
+              onChange={v => { if (v !== province) { setProvince(v); setMunicipality(""); setBarangay(""); } setError(""); }}
+            />
           </div>
 
           <div className="a-field">
@@ -360,8 +408,10 @@ export function AuthFormScreen({
             <PickerField
               title={t("farm_municipality_lbl")}
               placeholder={t("farm_pick_municipality")}
+              disabledHint={t("farm_pick_province_first")}
+              disabled={!province}
               value={municipality}
-              options={MUNICIPALITIES}
+              options={places}
               onChange={v => { setMunicipality(v); setBarangay(""); setError(""); }}
             />
             <p className="a-help">{t("buyer_municipality_help")}</p>
@@ -374,10 +424,10 @@ export function AuthFormScreen({
             <PickerField
               title={t("farm_barangay_lbl")}
               placeholder={t("farm_pick_barangay")}
-              disabledHint={t("farm_pick_municipality_first")}
-              disabled={!municipality}
+              disabledHint={t(!municipality ? "farm_pick_municipality_first" : "list_loading")}
+              disabled={!municipality || !phBarangays}
               value={barangay}
-              options={BARANGAYS_BY_MUNICIPALITY[municipality] ?? []}
+              options={barangays}
               onChange={v => { setBarangay(v); setError(""); }}
             />
             <p className="a-help">{t("buyer_barangay_help")}</p>

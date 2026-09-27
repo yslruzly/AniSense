@@ -703,12 +703,16 @@ export const translations: Dict = {
 
   // ── Extra: farm details step (farmer signup) ─────────────────────────────
   // ── Buyer location ────────────────────────────────────────────────────────
-  buyer_loc_title: { en: "Where do you buy?", tl: "Saan ka bumibili?" },
+  buyer_loc_title: { en: "Where are you?", tl: "Nasaan ka?" },
   buyer_loc_sub: {
-    en: "So the listings you see are ones you can actually reach.",
-    tl: "Para ang mga listing na makikita mo ay yung kaya mong puntahan.",
+    en: "Anywhere in the Philippines. Farmers use it to plan your delivery.",
+    tl: "Kahit saan sa Pilipinas. Ginagamit ito ng magsasaka para sa hatid mo.",
   },
-  buyer_loc_lbl: { en: "Your area", tl: "Lugar mo" },
+  buyer_island_lbl: { en: "Luzon, Visayas or Mindanao?", tl: "Luzon, Visayas o Mindanao?" },
+  farm_pick_province: { en: "Choose your province", tl: "Piliin ang probinsya mo" },
+  farm_pick_province_first: { en: "Choose a province first", tl: "Piliin muna ang probinsya" },
+  err_province_required: { en: "Choose your province.", tl: "Piliin ang iyong probinsya." },
+  list_loading: { en: "Loading the list…", tl: "Kinukuha ang listahan…" },
   buyer_municipality_help: {
     en: "We put the nearest farmers first.",
     tl: "Ipapakita muna ang pinakamalapit na magsasaka.",
