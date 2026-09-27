@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Download, Check, AlertCircle } from "lucide-react";
-import { useLang } from "../i18n";
+import { useLang, translations } from "../i18n";
 import { haptic, saveImage } from "../lib/platform";
 import { renderReceipt } from "../lib/receiptImage";
 import { CartItem } from "../types";
@@ -26,8 +26,14 @@ export interface ReceiptOrder {
 
 const peso = (n: number) => `₱${n.toLocaleString("en-PH", { maximumFractionDigits: 2 })}`;
 
+// The paper itself is a document, so it is always in English, whatever
+// language the app is set to, like the member ID: the same receipt reads the
+// same to the buyer, the farmer and anyone it is shown to. Its sign-off keeps
+// its "Salamat, suki!". The buttons around it still follow the app.
+const en = (key: keyof typeof translations) => translations[key].en;
+
 export function Receipt({ order, open, onClose }: { order: ReceiptOrder | null; open: boolean; onClose: () => void }) {
-  const { t, lang } = useLang();
+  const { t } = useLang();
   // idle → busy → done (or failed), then back to idle: the button says each
   // step in place, the way the member ID's download does.
   const [save, setSave] = useState<"idle" | "busy" | "done" | "failed">("idle");
@@ -42,29 +48,28 @@ export function Receipt({ order, open, onClose }: { order: ReceiptOrder | null; 
   }
   const total = order.lines.reduce((s, l) => s + l.qty * l.pricePerKg, 0);
   const kg = order.lines.reduce((s, l) => s + l.qty, 0);
-  const locale = lang === "tl" ? "fil-PH" : "en-PH";
-  const when = order.placed.toLocaleString(locale, { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+  const when = order.placed.toLocaleString("en-PH", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
   const itemName = (l: CartItem) => (l.variety && l.variety !== l.crop ? l.variety : l.crop);
-  const totalSub = `${kg} kg · ${groups.length} ${groups.length !== 1 ? t("cart_sellers") : t("cart_seller")}`;
+  const totalSub = `${kg} kg · ${groups.length} ${groups.length !== 1 ? en("cart_sellers") : en("cart_seller")}`;
 
   const saveReceipt = async () => {
     if (save === "busy") return;
     setSave("busy");
     try {
       const blob = await renderReceipt({
-        brandKicker: t("rc_kicker"), title: t("rc_title"),
-        placedLabel: t("rc_date"), placed: when,
-        buyerLabel: t("rc_buyer"), buyer: order.buyer,
+        brandKicker: en("rc_kicker"), title: en("rc_title"),
+        placedLabel: en("rc_date"), placed: when,
+        buyerLabel: en("rc_buyer"), buyer: order.buyer,
         groups: groups.map(g => ({
           seller: g.seller, initials: g.initials, location: g.location,
           lines: g.lines.map(l => ({ name: itemName(l), qtyLine: `${l.qty} kg × ${peso(l.pricePerKg)}`, amount: peso(l.qty * l.pricePerKg) })),
         })),
-        totalLabel: t("rc_total"), totalSub, total: peso(total),
-        note: t("cart_pay_note"), thanks: t("rc_thanks"),
+        totalLabel: en("rc_total"), totalSub, total: peso(total),
+        note: en("cart_pay_note"), thanks: en("rc_thanks"),
       });
       const p = order.placed;
       const stamp = `${p.getFullYear()}-${String(p.getMonth() + 1).padStart(2, "0")}-${String(p.getDate()).padStart(2, "0")}-${String(p.getHours()).padStart(2, "0")}${String(p.getMinutes()).padStart(2, "0")}`;
-      const result = await saveImage(blob, `AniSense-receipt-${stamp}.png`, t("rc_kicker"));
+      const result = await saveImage(blob, `AniSense-receipt-${stamp}.png`, en("rc_kicker"));
       if (result === "failed") { haptic.warn(); setSave("failed"); }
       else if (result === "downloaded") { haptic.success(); setSave("done"); }
       // On the phone the share sheet was the confirmation; nothing to add.
@@ -77,7 +82,7 @@ export function Receipt({ order, open, onClose }: { order: ReceiptOrder | null; 
   };
 
   return (
-    <Sheet open={open} onClose={onClose} variant="center" className="rc-panel" label={t("rc_title")}>
+    <Sheet open={open} onClose={onClose} variant="center" className="rc-panel" label={en("rc_title")}>
       {/* The shadow lives on a wrapper: the paper's torn edge is a mask, and a
           mask would cut a box-shadow off with it. A drop-shadow filter on the
           parent follows the torn shape instead. */}
@@ -85,7 +90,7 @@ export function Receipt({ order, open, onClose }: { order: ReceiptOrder | null; 
         <article className="rc-paper">
           <header className="rc-head">
             <span className="rc-brand"><AniSenseLogo size={34} /> AniSense</span>
-            <span className="rc-kicker">{t("rc_kicker")}</span>
+            <span className="rc-kicker">{en("rc_kicker")}</span>
           </header>
 
           {/* The check draws itself once the paper is out: the order is done. */}
@@ -97,11 +102,11 @@ export function Receipt({ order, open, onClose }: { order: ReceiptOrder | null; 
           </div>
           {/* No subtitle: what happens next is said once, in the note under
               the total, where it sits beside the amount it is about. */}
-          <h2 className="rc-title">{t("rc_title")}</h2>
+          <h2 className="rc-title">{en("rc_title")}</h2>
 
           <dl className="rc-meta">
-            <div><dt>{t("rc_date")}</dt><dd>{when}</dd></div>
-            <div><dt>{t("rc_buyer")}</dt><dd>{order.buyer}</dd></div>
+            <div><dt>{en("rc_date")}</dt><dd>{when}</dd></div>
+            <div><dt>{en("rc_buyer")}</dt><dd>{order.buyer}</dd></div>
           </dl>
 
           <div className="rc-perf" aria-hidden="true" />
@@ -131,15 +136,15 @@ export function Receipt({ order, open, onClose }: { order: ReceiptOrder | null; 
 
           <div className="rc-total">
             <span className="rc-total-l">
-              {t("rc_total")}
+              {en("rc_total")}
               <small>{totalSub}</small>
             </span>
             <strong className="rc-total-v">{peso(total)}</strong>
           </div>
 
           {/* The one thing a buyer must not misunderstand: nothing is paid. */}
-          <p className="rc-note">{t("cart_pay_note")}</p>
-          <p className="rc-thanks">{t("rc_thanks")}</p>
+          <p className="rc-note">{en("cart_pay_note")}</p>
+          <p className="rc-thanks">{en("rc_thanks")}</p>
         </article>
       </div>
 
