@@ -14,6 +14,10 @@ export type Figure = {
   /** A figure that can wave: the same drawing as two layers, the body and the
    *  hand, on one canvas. The hand turns from the wrist. */
   wave?: { body: string; hand: string };
+  /** A waving figure that also talks: a half-open mouth and a closed smile
+   *  drawn over the face, shown in turn on a loop, so he chats the whole
+   *  time he is on stage. */
+  talk?: { half: string; shut: string };
   /** A figure that talks and blinks: closed eyelids and a closed smile drawn
    *  to sit exactly over the face, switched on and off. */
   face?: { eyes: string; mouth: string };
@@ -72,6 +76,8 @@ export function MascotStage({ figures, active, say }: { figures: Figure[]; activ
         ) : f.wave ? (
           <span key={f.id} className={`a-fig a-fig-layers fig-${f.id} ${f.id === active ? "on" : ""}`}>
             <img src={f.wave.body} alt="" />
+            {f.talk && <img className="a-fig-talk half" src={f.talk.half} alt="" />}
+            {f.talk && <img className="a-fig-talk shut" src={f.talk.shut} alt="" />}
             <img key={waves} className={`a-fig-hand ${waves === 0 ? "is-first" : ""}`} src={f.wave.hand} alt="" />
           </span>
         ) : (

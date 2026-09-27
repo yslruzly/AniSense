@@ -378,9 +378,25 @@ export const authCss = `
     88%  { opacity: 0; }
     100% { opacity: 0; }
   }
+  /* Juan chats and never stops: open, half, shut in 130 ms beats, in an
+     uneven order so it reads as words, not a metronome. Twelve beats to a
+     loop, no pause; the two layers share one clock, so they never drift.
+     Starts once he has risen into place, and only while he is on stage. */
+  .a-fig-talk { opacity: 0; }
+  .a-fig.on .a-fig-talk.half { animation: a-chat-half 1.56s step-end 700ms infinite; }
+  .a-fig.on .a-fig-talk.shut { animation: a-chat-shut 1.56s step-end 700ms infinite; }
+  @keyframes a-chat-half {
+    0% { opacity: 1; } 8.33% { opacity: 0; } 16.67% { opacity: 1; } 25% { opacity: 0; } 33.33% { opacity: 1; }
+    41.67% { opacity: 0; } 58.33% { opacity: 1; } 66.67% { opacity: 0; } 75% { opacity: 1; } 83.33% { opacity: 0; }
+  }
+  @keyframes a-chat-shut {
+    0% { opacity: 0; } 8.33% { opacity: 1; } 16.67% { opacity: 0; } 41.67% { opacity: 1; } 50% { opacity: 0; }
+    66.67% { opacity: 1; } 75% { opacity: 0; } 83.33% { opacity: 1; } 91.67% { opacity: 0; }
+  }
   @media (prefers-reduced-motion: reduce) {
     .a-fig.on .a-fig-hand, .a-fig.on .a-fig-hand.is-first,
-    .a-fig.on .a-fig-eyes, .a-fig.on .a-fig-mouth, .a-fig.on .a-fig-mouth.is-first { animation: none; }
+    .a-fig.on .a-fig-eyes, .a-fig.on .a-fig-mouth, .a-fig.on .a-fig-mouth.is-first,
+    .a-fig.on .a-fig-talk { animation: none; }
   }
   /* Only the figure on stage takes up room. The other waits behind it, faded,
      sunk and a touch blurred, so the swap reads as one figure changing. */

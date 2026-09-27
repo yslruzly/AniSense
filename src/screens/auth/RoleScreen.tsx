@@ -5,6 +5,8 @@ import { AniSenseLogo } from "../../components/AniSenseLogo";
 import juanPeek from "../../assets/juan-peek.webp";
 import juanPeekBody from "../../assets/juan-peek-body.webp";
 import juanPeekHand from "../../assets/juan-peek-hand.webp";
+import juanMouthHalf from "../../assets/juan-peek-mouth-half.webp";
+import juanMouthShut from "../../assets/juan-peek-mouth-shut.webp";
 import buyerMascot from "../../assets/buyer-mascot.webp";
 import buyerEyes from "../../assets/buyer-mascot-eyes.webp";
 import buyerMouth from "../../assets/buyer-mascot-mouth.webp";
@@ -44,7 +46,7 @@ export function RoleScreen({ onBack, onSelect, flow }: { onBack: () => void; onS
             swaps in the buyer mascot, so the header answers the tap. Both stay
             mounted and crossfade, so switching never reloads an image. */}
         <MascotStage
-          figures={[{ id: "farmer", src: juanPeek, wave: { body: juanPeekBody, hand: juanPeekHand } }, { id: "buyer", src: buyerMascot, face: { eyes: buyerEyes, mouth: buyerMouth } }]}
+          figures={[{ id: "farmer", src: juanPeek, wave: { body: juanPeekBody, hand: juanPeekHand }, talk: { half: juanMouthHalf, shut: juanMouthShut } }, { id: "buyer", src: buyerMascot, face: { eyes: buyerEyes, mouth: buyerMouth } }]}
           active={role === "buyer" ? "buyer" : "farmer"}
           say={role === "buyer"
             ? { key: "buyer", title: t("role_say_buyer"), emoji: "🥬", sub: t("role_say_buyer_sub") }
