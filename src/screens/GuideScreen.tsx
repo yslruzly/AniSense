@@ -2,27 +2,29 @@ import React, { useState } from "react";
 import {
   BookOpen, PlayCircle, ChevronRight, Sprout, BellPlus, CalendarPlus,
   HandCoins, TrendingUp, CloudSun, PhilippinePeso, IdCard, Lightbulb,
+  Search, ShoppingCart, ReceiptText, UserRound, Package,
 } from "lucide-react";
 import { useLang } from "../i18n";
 import { haptic } from "../lib/platform";
 import { Hdr } from "../components/layout/Hdr";
 import { AutoHeight } from "../components/ui/AutoHeight";
+import { useViewer } from "../lib/viewer";
 import mascotBody from "../assets/mascot-wave-body.webp";
 import mascotHand from "../assets/mascot-wave-hand.webp";
 import mascotEyes from "../assets/mascot-wave-eyes.webp";
 
 // ─── How to use AniSense ──────────────────────────────────────────────────────
-// The walkthrough runs once; this is where it lives afterwards. Eight jobs a
-// farmer actually does in the app, each as numbered steps that name the real
-// buttons — "Post a harvest", "Post Now!" — so the page can be followed with
-// a thumb rather than interpreted.
+// The walkthrough runs once; this is where it lives afterwards. Eight jobs
+// the reader actually does in the app — a farmer's, or a buyer's — each as
+// numbered steps that name the real buttons ("Post a harvest", "Confirm
+// Order"), so the page can be followed with a thumb rather than interpreted.
 //
 // One topic open at a time. A farmer arrives with one question, and a page
 // that answers eight at once is a page they have to read to use.
 
 type Topic = { id: string; ico: React.ReactNode; steps: number; note?: boolean };
 
-const TOPICS: Topic[] = [
+const FARMER_TOPICS: Topic[] = [
   { id: "post",     ico: <Sprout size={21} strokeWidth={2.2} />,         steps: 5, note: true },
   { id: "alerts",   ico: <BellPlus size={21} strokeWidth={2.2} />,       steps: 4 },
   { id: "tracker",  ico: <CalendarPlus size={21} strokeWidth={2.2} />,   steps: 4 },
@@ -33,8 +35,25 @@ const TOPICS: Topic[] = [
   { id: "profile",  ico: <IdCard size={21} strokeWidth={2.2} />,         steps: 4 },
 ];
 
+// A buyer's eight, in the order they meet them: find it, order it, keep the
+// receipt, know the farmer, check the price, look back, plan the pick-up.
+const BUYER_TOPICS: Topic[] = [
+  { id: "find",    ico: <Search size={21} strokeWidth={2.2} />,       steps: 3 },
+  { id: "order",   ico: <ShoppingCart size={21} strokeWidth={2.2} />, steps: 4, note: true },
+  { id: "receipt", ico: <ReceiptText size={21} strokeWidth={2.2} />,  steps: 3 },
+  { id: "farmer",  ico: <UserRound size={21} strokeWidth={2.2} />,    steps: 4 },
+  { id: "prices",  ico: <TrendingUp size={21} strokeWidth={2.2} />,   steps: 4, note: true },
+  { id: "history", ico: <Package size={21} strokeWidth={2.2} />,      steps: 3 },
+  { id: "weather", ico: <CloudSun size={21} strokeWidth={2.2} />,     steps: 2 },
+  { id: "profile", ico: <IdCard size={21} strokeWidth={2.2} />,       steps: 4 },
+];
+
 export function GuideScreen({ onBack, onReplay }: { onBack: () => void; onReplay: () => void }) {
   const { t } = useLang();
+  const buyer = useViewer().role === "buyer";
+  const TOPICS = buyer ? BUYER_TOPICS : FARMER_TOPICS;
+  // gd_post_t for a farmer, gdb_order_t for a buyer.
+  const k = buyer ? "gdb_" : "gd_";
   const [open, setOpen] = useState<string | null>(null);
 
   const toggle = (id: string) => {
@@ -77,8 +96,8 @@ export function GuideScreen({ onBack, onReplay }: { onBack: () => void; onReplay
                 <button className="gd-head" onClick={() => toggle(topic.id)} aria-expanded={on}>
                   <span className="gd-ico">{topic.ico}</span>
                   <span className="gd-head-body">
-                    <span className="gd-head-t">{t(`gd_${topic.id}_t`)}</span>
-                    <span className="gd-head-s">{t(`gd_${topic.id}_s`)}</span>
+                    <span className="gd-head-t">{t(`${k}${topic.id}_t`)}</span>
+                    <span className="gd-head-s">{t(`${k}${topic.id}_s`)}</span>
                   </span>
                   <ChevronRight className="gd-chev" size={20} strokeWidth={2.4} aria-hidden="true" />
                 </button>
@@ -88,13 +107,13 @@ export function GuideScreen({ onBack, onReplay }: { onBack: () => void; onReplay
                       {Array.from({ length: topic.steps }, (_, n) => (
                         <div className="gd-step" key={n}>
                           <span className="gd-n">{n + 1}</span>
-                          <span className="gd-step-b">{t(`gd_${topic.id}_${n + 1}`)}</span>
+                          <span className="gd-step-b">{t(`${k}${topic.id}_${n + 1}`)}</span>
                         </div>
                       ))}
                       {topic.note && (
                         <p className="gd-note">
                           <Lightbulb size={18} strokeWidth={2.2} aria-hidden="true" />
-                          <span>{t(`gd_${topic.id}_note`)}</span>
+                          <span>{t(`${k}${topic.id}_note`)}</span>
                         </p>
                       )}
                     </div>

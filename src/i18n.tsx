@@ -627,8 +627,7 @@ export const translations: Dict = {
   prof_privacy: { en: "Privacy & Security", tl: "Privacy at Seguridad" },
   prof_privacy_sub: { en: "Password, data settings", tl: "Password at datos" },
   prof_help: { en: "Help & Support", tl: "Tulong at Suporta" },
-  prof_help_sub: { en: "FAQs, contact support", tl: "Mga FAQ at suporta" },
-  prof_help_sub_farmer: { en: "How to use AniSense, step by step", tl: "Paano gamitin ang AniSense, hakbang-hakbang" },
+  prof_help_sub: { en: "How to use AniSense, step by step", tl: "Paano gamitin ang AniSense, hakbang-hakbang" },
   prof_tour_sub: { en: "About a minute", tl: "Mga isang minuto" },
   prof_about: { en: "About", tl: "Tungkol Dito" },
   prof_version: { en: "Version 1.0.0", tl: "Bersyon 1.0.0" },
@@ -1237,6 +1236,67 @@ export const translations: Dict = {
   gd_profile_2: { en: "Tap Edit to correct your phone number — that is the number a buyer calls when they want your harvest.", tl: "Pindutin ang I-edit para itama ang numero mo — iyan ang tinatawagan ng bumibili kapag gusto nila ang ani mo." },
   gd_profile_3: { en: "Show Member ID opens your AniSense card. You can save it to your phone.", tl: "Binubuksan ng Ipakita ang Member ID ang card mo sa AniSense. Puwede mo itong i-save sa telepono." },
   gd_profile_4: { en: "Language switches the whole app between English and Tagalog. Nothing is lost when you switch.", tl: "Pinapalitan ng Wika ang buong app sa Ingles o Tagalog. Walang mawawala kapag nagpalit ka." },
+
+  // The buyer's topics on the same page: gdb_ keys, in the order a buyer
+  // meets them: find, order, keep the receipt, the farmer, prices, history.
+  gdb_find_t: { en: "Find a harvest", tl: "Maghanap ng ani" },
+  gdb_find_s: { en: "Search, or start from a kind of crop", tl: "Maghanap, o magsimula sa uri ng pananim" },
+  gdb_find_1: { en: "On Home, type in the search bar at the top — a crop like rice, or a farmer's name — and tap the green search key.", tl: "Sa Home, mag-type sa search bar sa itaas — pananim tulad ng bigas, o pangalan ng magsasaka — at pindutin ang berdeng search key." },
+  gdb_find_2: { en: "Or tap Crops, Fruits or Vegetables under Browse marketplace. The Market opens showing only that kind.", tl: "O pindutin ang Crops, Fruits o Vegetables sa ilalim ng Browse marketplace. Bubukas ang Merkado na iyon lang ang ipinapakita." },
+  gdb_find_3: { en: "In the Market, the All / Crops / Vegetables / Fruits switch and the crop tiles narrow the list; the sort button beside them puts the cheapest or the best-rated first.", tl: "Sa Merkado, pinapakitid ng All / Crops / Vegetables / Fruits at ng mga tile ng pananim ang listahan; inuuna naman ng pang-ayos sa tabi nila ang pinakamura o ang may pinakamataas na rating." },
+
+  gdb_order_t: { en: "Order a harvest", tl: "Mag-order ng ani" },
+  gdb_order_s: { en: "From a listing to your cart", tl: "Mula sa listing papunta sa cart mo" },
+  gdb_order_1: { en: "Tap a listing to see its photo, the price per kilo and how much the farmer has.", tl: "Pindutin ang isang listing para makita ang litrato, presyo kada kilo, at kung ilan ang meron ang magsasaka." },
+  gdb_order_2: { en: "Set the kilos with − and +, then tap Add to Cart. Buy Now adds it and opens your cart straight away.", tl: "Itakda ang kilo gamit ang − at +, tapos pindutin ang Idagdag sa Cart. Ang Bilhin Ngayon ay idinadagdag ito at binubuksan agad ang cart mo." },
+  gdb_order_3: { en: "Tap the cart at the top of the Market to see everything you picked, from every farmer.", tl: "Pindutin ang cart sa itaas ng Merkado para makita ang lahat ng napili mo, mula sa bawat magsasaka." },
+  gdb_order_4: { en: "Tap Confirm Order. Your receipt appears.", tl: "Pindutin ang Kumpirmahin ang Order. Lalabas ang resibo mo." },
+  gdb_order_note: {
+    en: "Nothing is paid in the app. Each farmer calls you to arrange delivery and payment, so keep your phone number up to date.",
+    tl: "Walang binabayaran sa app. Tatawagan ka ng bawat magsasaka para sa delivery at bayad, kaya panatilihing tama ang numero mo.",
+  },
+
+  gdb_receipt_t: { en: "Keep your receipt", tl: "Itabi ang resibo mo" },
+  gdb_receipt_s: { en: "Proof of what you ordered", tl: "Patunay ng in-order mo" },
+  gdb_receipt_1: { en: "After Confirm Order, the receipt lists each farmer, what you ordered from them, and the total.", tl: "Pagkatapos ng Kumpirmahin ang Order, nakalista sa resibo ang bawat magsasaka, ang in-order mo sa kanila, at ang kabuuan." },
+  gdb_receipt_2: { en: "Tap Save this receipt to keep a picture of it on your phone.", tl: "Pindutin ang I-save ang resibo para magtabi ng litrato nito sa telepono mo." },
+  gdb_receipt_3: { en: "Tap Done to go back to the Market.", tl: "Pindutin ang Tapos na para bumalik sa Merkado." },
+
+  gdb_farmer_t: { en: "Get to know a farmer", tl: "Kilalanin ang magsasaka" },
+  gdb_farmer_s: { en: "Who grows it, and how to call them", tl: "Sino ang nagtanim, at paano sila tatawagan" },
+  gdb_farmer_1: { en: "On Home, Featured farmers shows the AniSense Farmer of the Week and three more.", tl: "Sa Home, ipinapakita ng Mga tampok na magsasaka ang AniSense Magsasaka ng Linggo at tatlo pa." },
+  gdb_farmer_2: { en: "Tap See their harvest to open their profile and everything they are selling.", tl: "Pindutin ang Tingnan ang ani nila para buksan ang profile nila at lahat ng binebenta nila." },
+  gdb_farmer_3: { en: "Inside a listing, tap the farmer's name to open the same profile.", tl: "Sa loob ng isang listing, pindutin ang pangalan ng magsasaka para buksan ang parehong profile." },
+  gdb_farmer_4: { en: "Tap Call at the bottom of their profile to phone them directly.", tl: "Pindutin ang Tawagan sa ibaba ng profile nila para direktang tawagan sila." },
+
+  gdb_prices_t: { en: "Check a fair price", tl: "Alamin ang tamang presyo" },
+  gdb_prices_s: { en: "Before you pay", tl: "Bago ka magbayad" },
+  gdb_prices_1: { en: "Tap Prices in the bar at the bottom.", tl: "Pindutin ang Presyo sa bar sa ibaba." },
+  gdb_prices_2: { en: "The dark card at the top says how many crops went up or down today.", tl: "Sinasabi ng maitim na card sa itaas kung ilang pananim ang tumaas o bumaba ngayon." },
+  gdb_prices_3: { en: "Biggest moves today shows what changed the most; All prices lists every crop, grouped by kind.", tl: "Ipinapakita ng Pinakamalaking galaw ngayon ang pinakamalaking pagbabago; nakalista sa Lahat ng presyo ang bawat pananim, ayon sa uri." },
+  gdb_prices_4: { en: "Tap a crop to see its last seven days and the next three.", tl: "Pindutin ang isang pananim para makita ang huling pitong araw at ang susunod na tatlo." },
+  gdb_prices_note: {
+    en: "Cheapest today on Home shows the listings asking less than today's market price.",
+    tl: "Ipinapakita ng Pinakamura ngayon sa Home ang mga listing na mas mababa sa presyo ng merkado ngayon.",
+  },
+
+  gdb_history_t: { en: "Your orders, and buying again", tl: "Ang mga order mo, at bumili ulit" },
+  gdb_history_s: { en: "Everything you bought, in one place", tl: "Lahat ng binili mo, nasa isang lugar" },
+  gdb_history_1: { en: "Tap Orders in the bar at the bottom to see every purchase, newest first.", tl: "Pindutin ang Mga Order sa bar sa ibaba para makita ang bawat binili, pinakabago muna." },
+  gdb_history_2: { en: "On Home, Your purchases shows what you have spent and on which crops.", tl: "Sa Home, ipinapakita ng Mga binili mo kung magkano ang nagastos mo at sa aling pananim." },
+  gdb_history_3: { en: "Tap Buy again on a past order to find the same harvest in the Market.", tl: "Pindutin ang Bilhin ulit sa isang lumang order para mahanap ang parehong ani sa Merkado." },
+
+  gdb_weather_t: { en: "Check the weather", tl: "Tingnan ang panahon" },
+  gdb_weather_s: { en: "Before you travel to collect", tl: "Bago ka bumiyahe para kumuha" },
+  gdb_weather_1: { en: "On Home, open More tools, then Weather.", tl: "Sa Home, buksan ang Iba pang gamit, tapos Panahon." },
+  gdb_weather_2: { en: "You get the next hours and the rest of the week, so you can pick a dry day to pick up your order.", tl: "Makikita mo ang susunod na oras at ang natitirang linggo, para makapili ka ng araw na walang ulan sa pagkuha ng order mo." },
+
+  gdb_profile_t: { en: "Your profile and ID", tl: "Ang profile at ID mo" },
+  gdb_profile_s: { en: "How farmers reach you", tl: "Paano ka maaabot ng mga magsasaka" },
+  gdb_profile_1: { en: "Tap Profile in the bar at the bottom.", tl: "Pindutin ang Profile sa bar sa ibaba." },
+  gdb_profile_2: { en: "Tap Edit to correct your phone number — that is the number a farmer calls to arrange your order.", tl: "Pindutin ang I-edit para itama ang numero mo — iyan ang tinatawagan ng magsasaka para ayusin ang order mo." },
+  gdb_profile_3: { en: "Show Member ID opens your AniSense card. You can save it to your phone.", tl: "Binubuksan ng Ipakita ang Member ID ang card mo sa AniSense. Puwede mo itong i-save sa telepono." },
+  gdb_profile_4: { en: "Language switches the whole app between English and Tagalog. Nothing is lost when you switch.", tl: "Pinapalitan ng Wika ang buong app sa Ingles o Tagalog. Walang mawawala kapag nagpalit ka." },
 
   // The guide's own tile in More tools.
   home_mod_guide: { en: "How to use", tl: "Paano gamitin" },

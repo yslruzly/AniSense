@@ -47,14 +47,13 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
   const save = () => { setProfile({ ...draft, name: formatName(draft.name) || profile.name }); setEditing(false); };
   const cancel = () => { setDraft({ ...profile }); setEditing(false); };
 
-  // A farmer's help rows do something. They used to be chevrons pointing at
+  // The help rows do something. They used to be chevrons pointing at
   // nothing, which is the worst kind of button: it teaches people that the
   // arrows in this app are decoration.
   //
   // Two doors, because they answer different questions. The tour is for "show
-  // me round again", for either side of the market; the guide is the
-  // farmer's "how do I post a harvest", read at their own pace.
-  const isFarmer = userRole !== "buyer";
+  // me round again"; the guide is "how do I post a harvest" for a farmer and
+  // "how do I order" for a buyer, read at their own pace.
   const supportSettings = [
     ...(onReplayTour ? [{
       ico: <PlayCircle size={16} color="var(--tanim)" />, bg: "var(--tanim-sk)",
@@ -64,8 +63,8 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
     { ico: <Lock size={16} color="var(--text-soft)" />, bg: "var(--paper-alt)", label: t("prof_privacy"), sub: t("prof_privacy_sub"), go: undefined as (() => void) | undefined },
     {
       ico: <HelpCircle size={16} color="var(--tanim)" />, bg: "var(--tanim-sk)",
-      label: t("prof_help"), sub: t(isFarmer ? "prof_help_sub_farmer" : "prof_help_sub"),
-      go: isFarmer ? () => onNavigate("guide") : undefined,
+      label: t("prof_help"), sub: t("prof_help_sub"),
+      go: (() => onNavigate("guide")) as (() => void) | undefined,
     },
     { ico: <Settings size={16} color="var(--ink-2)" />, bg: "var(--paper-alt)", label: t("prof_about"), sub: t("prof_version"), go: undefined as (() => void) | undefined },
   ];
