@@ -175,11 +175,11 @@ export async function verifyPhoneCode(phRaw: string, code: string) {
   const phone = toE164Phone(phRaw);
   const { data, error } = await supabase.auth.verifyOtp({ phone, token: code, type: "sms" });
   if (error) throw error;
-  // Mark it on the profile so the UI can show a "verified" badge.
+  // Keep the verified number on the profile. The "verified" flag itself is
+  // not the phone's to set (schema.sql only lets users edit their own
+  // details); set it from a server hook when SMS verification goes live.
   if (data.user) {
-    await supabase.from("profiles")
-      .update({ phone, phone_verified: true })
-      .eq("id", data.user.id);
+    await supabase.from("profiles").update({ phone }).eq("id", data.user.id);
   }
   return data.session;
 }

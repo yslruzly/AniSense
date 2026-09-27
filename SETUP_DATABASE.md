@@ -1,234 +1,99 @@
-# AniSense Database & Auth Setup Guide
+# AniSense: Supabase setup
 
-**Sign-in and sign-up are already wired.** The moment a `.env` with your
-project keys is in place and you rebuild, the app creates real accounts, signs
-people in, keeps them signed in, and saves Profile edits to the database.
-Without `.env` it falls back to the old demo sign-in, so an APK built without
-keys still opens.
+The app side is finished. Once a `.env` with your project's keys is in place
+and the APK is rebuilt, AniSense runs on the database:
 
-To get real accounts working you only need **Steps 1, 2, 3, 4 and 9**.
-Everything else (listings, expenses, checkout on the database) is Step 7 and
-still runs on the built-in sample data.
-
-**What's already done for you:**
-
-| File | What it is |
+| What | On the database |
 |---|---|
-| `supabase/schema.sql` | All tables, security rules, and the signup trigger |
-| `src/lib/supabase.ts` | The Supabase client (with Android-safe session storage) |
-| `src/services/auth.ts` | Signup, email code, SMS code, sign-in, profile |
-| `src/services/listings.ts` | Marketplace CRUD (reads cached for offline) |
-| `src/services/expenses.ts` | Expense tracker CRUD, works FULLY offline |
-| `src/services/transactions.ts` | Checkout + purchase history (history cached) |
-| `src/lib/cache.ts` | Offline read cache (network-first, cache-fallback) |
-| `src/lib/outbox.ts` | Offline write queue (changes made offline sync later) |
-| `src/services/sync.ts` | Auto-sync: drains the outbox when back online |
-| `src/hooks/useOutboxCount.ts` | Live "N changes waiting to sync" count for a badge |
-| `.env.example` | Template for your project keys |
+| Sign up, sign in, stay signed in, sign out | Yes, CP number or Gmail, farmer or buyer |
+| Profile edits | Yes, saved to the account, so they follow it to any phone |
+| Marketplace listings | Yes: post, edit and remove, with the farmer's photo uploaded to Storage |
+| Seller profiles and Featured farmers | Yes, built from the farmers who have something for sale |
+| Checkout | Yes, all or nothing: stock is checked and lowered, the price comes from the listing |
+| Buyer's purchases (Home and history) | Yes |
+| Farmer's expenses | Yes, and they also work offline, syncing when the signal returns |
+| Farmer's marketplace sales | Yes, counted in the profit figures automatically |
 
-Packages `@supabase/supabase-js` and `@capacitor/preferences` are already installed.
+Without `.env` the app runs exactly as before on the built-in sample data, so
+an APK built without keys still works for demos.
+
+**Still kept on the phone only:** price alerts, the crop tracker, expected
+harvests, sales typed in by hand, and the ID photo. **Still built in:** market
+prices and forecasts.
+
+It takes about 15 minutes. You need Steps 1 to 6.
 
 ---
 
-## Step 1: Create the Supabase project (~5 min)
+## Step 1: Create the project
 
-1. Go to https://supabase.com → sign in with GitHub or Google (free, no card).
-2. **New project** → name it `anisense`, set a strong database password
-   (save it somewhere; you rarely need it but losing it is a pain).
-3. Region: pick **Southeast Asia (Singapore)**, closest to the Philippines.
-4. Wait ~2 minutes while it provisions.
+1. Go to https://supabase.com and sign in with GitHub or Google (free, no card).
+2. **New project**. Name: `anisense`. Set a strong database password and keep
+   it somewhere safe.
+3. Region: **Southeast Asia (Singapore)**, the closest to the Philippines.
+4. Wait about 2 minutes while it sets up.
 
 ## Step 2: Create the tables
 
-1. In the dashboard sidebar: **SQL Editor → New query**.
-2. Open `supabase/schema.sql` from this repo, copy ALL of it, paste, **Run**.
-3. You should see "Success. No rows returned". Check **Table Editor**:
-   you should now have `profiles`, `listings`, `expenses`, `transactions`.
+1. Sidebar: **SQL Editor → New query**.
+2. Open `supabase/schema.sql` from this project, copy **all** of it, paste, **Run**.
+3. You should see "Success. No rows returned".
 
-## Step 3: Connect the app to your project
+This creates the four tables (`profiles`, `listings`, `expenses`,
+`transactions`), the security rules, the checkout function `place_order`,
+the sign-up trigger and the `listing-photos` storage bucket.
 
-1. Dashboard → **Project Settings → API**.
-2. Copy the **Project URL** and the **anon / public** key
-   (⚠️ NOT the `service_role` key; that one bypasses all security and must
-   never be in the app).
-3. In this repo: copy `.env.example` → rename the copy to `.env` → paste both values.
-4. Restart `npm run dev`. The console warning "Supabase is not configured"
-   should be gone.
+It is safe to run again. If anything went wrong, or `schema.sql` changes
+later, just paste and run it again.
 
-## Step 4: Turn off email confirmation (for testing with respondents)
+## Step 3: Turn off "Confirm email"
 
-The sign-up form lets people use a **CP number** or a **Gmail**. A CP-number
-account has no inbox to confirm, and Supabase's free mailer only sends about
-2 emails an hour, so for a study with respondents:
+CP-number accounts have no inbox to confirm, and Supabase's free mailer only
+sends a couple of emails an hour.
 
-1. Dashboard → **Authentication → Sign In / Providers → Email**.
-2. Turn **Confirm email** OFF. Save.
-3. Leave **Email** provider itself ON (CP-number accounts use it underneath).
+1. **Authentication → Sign In / Providers → Email**.
+2. Turn **Confirm email** OFF and save. Leave the Email provider itself ON,
+   because CP-number accounts use it underneath.
 
-That's all. People sign up and land on Home immediately.
+> A CP number is stored as a login address nobody types, such as
+> `639171234567@phone.anisense.app`, with the real number on the profile.
+> You'll see these under **Authentication → Users**; that's expected. The
+> number isn't verified by SMS, which is fine for a study. See "Later" below.
 
-> How CP-number accounts work: Supabase's own phone login needs a paid SMS
-> provider, so a CP number is stored as a login address nobody types,
-> `639171234567@phone.anisense.app`, with the real number kept on the profile.
-> You'll see these addresses in **Authentication → Users**; that's expected.
-> The trade-off: the number is not verified by SMS, so anyone could sign up
-> with a number that isn't theirs. Fine for a study; add Step 5 before a
-> public launch.
+## Step 4: Put the keys in the app
 
-### Optional, later: verify Gmail accounts with a 6-digit code
-
-Only if you turn **Confirm email** back ON. The app already handles it: after
-the last sign-up step it shows a code screen. CP-number sign-ups will then be
-refused with a message to use Gmail, because they can't receive the code.
-By default Supabase emails a *link*. You want a *code* (better for a mobile app:
-no browser redirect needed):
-
-1. Dashboard → **Authentication → Email Templates → Confirm signup**.
-2. Replace the template body with something like:
-
-   ```html
-   <h2>Welcome to AniSense! 🌾</h2>
-   <p>Your verification code is:</p>
-   <h1 style="letter-spacing: 6px;">{{ .Token }}</h1>
-   <p>This code expires in 1 hour. Ani mo, alam mo.</p>
+1. **Project Settings → API Keys**.
+2. Copy the **Project URL** and the **publishable** key (`sb_publishable_…`).
+   On older dashboards this is the key labelled **anon / public**.
+   ⚠️ Never the **secret** / `service_role` key. It bypasses every security
+   rule and must never be in the app.
+3. In this project, copy `.env.example` to a new file named `.env` and paste
+   both values:
    ```
+   VITE_SUPABASE_URL=https://xxxxxxxx.supabase.co
+   VITE_SUPABASE_ANON_KEY=sb_publishable_xxxxxxxx
+   ```
+   `.env` is gitignored; it never goes to GitHub.
 
-   `{{ .Token }}` is the 6-digit code; that's the whole trick.
-3. **Authentication → Sign In / Providers → Email**: turn "Confirm email" ON.
-
-**Sending limits:** Supabase's built-in mailer only sends ~2 emails/hour, fine
-for your own testing, useless for real users. When you need more, plug in your
-own SMTP under **Project Settings → Auth → SMTP Settings**:
-
-- **Gmail (quick, free, demo-grade):** Google Account → Security → 2-Step
-  Verification → App passwords → generate one. SMTP host `smtp.gmail.com`,
-  port `465`, username = your Gmail, password = the app password.
-  Limit ~100–150 emails/day, and Google may throttle you. OK for a defense/demo.
-- **Resend or Brevo (recommended for launch):** free tiers (~100–300 emails/day),
-  built for exactly this, 10-minute setup, much better deliverability.
-
-## Step 5: Phone number verification (SMS)
-
-SMS always costs money (carriers charge per text), so this is the only step
-with a bill attached. Two options:
-
-**Option A, Twilio (easiest):**
-1. Create a account at https://twilio.com → get a trial number.
-2. Supabase dashboard → **Authentication → Sign In / Up → Phone** → enable,
-   choose Twilio, paste your Account SID, Auth Token, and Twilio phone number.
-3. ⚠️ Trial accounts can ONLY text numbers you verify in the Twilio console
-   first, which is perfect for development; add your own number there.
-4. Going live: ~₱2–3 per SMS to PH numbers.
-
-**Option B, Semaphore (Philippine provider, ~₱0.50/SMS):**
-Cheaper for PH but not a built-in Supabase integration; you connect it via a
-"Send SMS hook" (Supabase dashboard → Authentication → Hooks) pointing at a
-small Edge Function that calls Semaphore's API. Do this later if SMS volume
-gets expensive; start with Twilio.
-
-**Or defer it:** skip this step entirely for now; the code in
-`src/services/auth.ts` is ready, and email verification alone is enough to
-launch. The phone number just stays as unverified profile info.
-
-## Step 6: Try it from the SQL editor
-
-Before touching the app, sanity-check in **Authentication → Users**: nothing
-there yet. Then after your first real signup (Step 7) you should see the user
-appear here AND a matching row in **Table Editor → profiles** (created by the
-trigger automatically).
-
-## Step 7: Wire the services into the screens
-
-**Already done:** sign-in, sign-up (both roles, CP number or Gmail), the
-optional code screen, staying signed in across restarts, sign-out, and Profile
-edits (`src/screens/auth/AuthFormScreen.tsx`, `src/App.tsx`). The notes below
-for those two files are kept for reference; the rest of this step is still to do.
-
-### `src/screens/auth/AuthFormScreen.tsx` (done)
-- `submit()`: replace the `setTimeout(...)` fake with:
-  - signup flow → `await signUpWithEmail({ name, role, email: contact, password })`
-    then show a **new "enter the code" step** (add `"verify"` to the `step` state,
-    render 6 inputs or one input, then `await verifyEmailCode(contact, code)`).
-  - signin flow → `await signInWithPassword` via `signInWithEmail(contact, password)`.
-  - wrap in try/catch and put `err.message` into the existing `setError(...)`.
-- `finishCrops()`: after verification succeeds, save the extra steps:
-  `await updateMyProfile({ years_farming: Number(farmYears), location: farmLocation, phone: farmPhone, crops: selectedCrops })`.
-- Phone verification (optional): after they enter the CP number, call
-  `sendPhoneCode(farmPhone)` → new code input → `verifyPhoneCode(farmPhone, code)`.
-  On the code `<input>`, add `autocomplete="one-time-code"` so Android
-  auto-fills the SMS code.
-
-### `src/App.tsx` (done, except auto-sync)
-- On mount: `getSession()` + `onAuthChange(...)` in a `useEffect`, replacing the
-  `isAuthed` mock. If a session exists, `getMyProfile()` →
-  `toFarmerProfile(row, session.user.email)` → `setFarmerProfile`, set role
-  from `row.role`, skip the auth screens.
-- Same `useEffect`: start offline auto-sync → `useEffect(() => initAutoSync(), [])`
-  (from `src/services/sync.ts`).
-- `handleSignOut` → also `await signOut()`.
-
-### `src/screens/ExpensesScreen.tsx`
-- `useState([...EXPENSES])` → start empty, then in a `useEffect`:
-  ```ts
-  const { data, fromCache } = await fetchExpenses();
-  setTransactions(data);   // fromCache === true → you're offline, banner time
-  ```
-- `saveForm()` → `addExpense(...)` / `updateExpense(editId, ...)`: these work
-  even offline (queued + synced automatically), so no special handling needed.
-- `deleteEntry()` → `deleteExpense(id)`: also offline-safe.
-- Optional badge: `const pending = useOutboxCount();` → show
-  "⏳ {pending} waiting to sync" when `pending > 0`.
-
-### `src/screens/TradeScreen.tsx`
-- `useState([...LISTINGS])` → `useEffect` → `const { data, fromCache } = await fetchListings()`.
-  Offline buyers can still browse the cached listings (read-only).
-- `saveForm()` → `createListing(...)` / `updateListing(editId, ...)`: these
-  are online-only and throw a friendly message when offline; show it via the
-  existing `setFormError(err.message)`.
-- `deleteListing()` → `removeListing(id)` (online-only, same handling).
-- `handleCheckout()` → `try { await checkout(cart) } catch (err) { /* show message */ }`
-  before clearing the cart; checkout requires a connection by design.
-- Buyer purchase history (passed to ExpensesScreen) → `fetchMyPurchases()`.
-
-### `src/screens/ProfileScreen.tsx`
-- `save()` → also `updateMyProfile({ full_name: draft.name, location: draft.location, crops: draft.crops, ... })`.
-
-## Step 8: Offline support (ALREADY BUILT, just know how it works)
-
-The offline layer is implemented; you don't need to write it. How it behaves:
-
-| Feature | Offline behavior |
-|---|---|
-| Listings, purchase history | Cached automatically; `fromCache: true` tells the UI to show the "as of {time}" banner |
-| Expenses | Full add/edit/delete offline; changes queue in the outbox and sync when back online |
-| Posting/editing listings, checkout | Online-only; throws a friendly message to display |
-| Login (existing session) | Works offline (session lives in native storage) |
-
-The moving parts:
-- `src/lib/cache.ts`: every successful fetch is saved to native storage;
-  failed fetches fall back to the saved copy.
-- `src/lib/outbox.ts`: offline writes are queued in order. Expenses created
-  offline get temporary `local-...` ids; when synced, the real database ids
-  replace them everywhere (even in queued edits/deletes of that same row).
-- `src/services/sync.ts`: `initAutoSync()` (you wire this in App.tsx, Step 7)
-  drains the queue on app start and whenever the device comes back online.
-- `src/hooks/useOutboxCount.ts`: live pending-changes count for a sync badge.
-
-The only wiring needed is what's already listed in Step 7: `initAutoSync()` in
-App.tsx and using `fromCache` for the banner.
-
-## Step 9: Ship to Android (rebuild after adding `.env`)
-
-Nothing Supabase-specific is needed in the Android project (it's all HTTPS),
-just the normal Capacitor cycle:
+## Step 5: Check it
 
 ```
-npm run build
-npx cap sync android
-npx cap open android   # then Run ▶ in Android Studio
+npm run check:db
 ```
 
-Or, for the APK you hand to respondents:
+This reads your project with the public key, without creating anything, and
+checks that:
+
+- the key is the public one
+- the project answers
+- Confirm email is off
+- the tables, the checkout function and the photo bucket exist
+
+Anything wrong is listed with its fix.
+
+## Step 6: Build the APK
+
+The keys are baked in when the app is built, so rebuild after adding `.env`:
 
 ```
 npm run build
@@ -238,30 +103,60 @@ cd android
 ```
 
 The APK is at `android/app/build/outputs/apk/debug/app-debug.apk`.
+**An APK built before `.env` existed still uses the sample data.**
 
-Notes:
-- `.env` values are baked in at `npm run build` time, so rebuild after changing them.
-  **An APK built before `.env` existed still uses the demo sign-in.**
-- Free Supabase projects **pause after 7 days with no activity**. If sign-in
-  suddenly says "No internet" for everyone, open the dashboard and press
-  **Restore project**.
-- Sessions persist natively (already handled via `@capacitor/preferences` in
-  `src/lib/supabase.ts`); users stay logged in across app restarts.
-- Do NOT add `READ_SMS` permission for OTP autofill; Google Play rejects it.
-  The `autocomplete="one-time-code"` attribute is the safe route.
+---
 
-## Step 10: Test checklist
+## Test checklist
 
-- [ ] Sign up as a farmer → code arrives in Gmail → correct code logs you in
-- [ ] Wrong code shows an error, "resend" sends a fresh one
-- [ ] Profile row auto-appears in Supabase Table Editor with name + role
-- [ ] Farm details + crops from signup show on the Profile screen after re-login
-- [ ] Farmer posts a listing → visible when logged in as a buyer account
-- [ ] Farmer A cannot edit farmer B's listing (RLS working)
-- [ ] Buyer checkout → rows in `transactions` → appear in buyer's history
-- [ ] Expenses are private: two farmer accounts see only their own
-- [ ] Kill the app, reopen → still logged in
-- [ ] Airplane mode → app opens with cached data, no crash
-- [ ] Airplane mode → add/edit an expense → appears in the list instantly →
-      turn internet back on → row shows up in Supabase Table Editor by itself
-- [ ] Airplane mode → try to post a listing / checkout → friendly error, no crash
+- [ ] Sign up as a farmer with a CP number: you land on Home, and a row appears in **Table Editor → profiles**
+- [ ] Close and reopen the app: still signed in
+- [ ] Farmer posts a harvest with a photo: it appears in **listings**, and the photo appears in **Storage → listing-photos**
+- [ ] Sign up as a buyer on another phone: the farmer's harvest is in the marketplace, and the farmer is under Featured farmers
+- [ ] Buyer orders 5 kg: the receipt shows, the listing drops by 5 kg, and a row appears in **transactions**
+- [ ] Buyer asks for more kilos than are left: "A farmer has less left than you asked for"
+- [ ] Buyer's Home shows the order under Your purchases
+- [ ] Farmer's Profit snapshot counts the sale
+- [ ] Farmer adds an expense in airplane mode: it shows at once; turn the internet back on and it appears in **expenses**
+- [ ] Two farmer accounts each see only their own expenses
+- [ ] Airplane mode, posting a listing or checking out: a clear "No internet" message, and the cart is kept
+
+## How the security works
+
+The public key in the app is safe because every rule is enforced by the
+database itself (Row Level Security in `schema.sql`), not by the app:
+
+- Nothing is readable by someone who is not signed in.
+- A farmer can only change their own listings and see their own expenses.
+- A buyer's phone number is visible only to farmers they have ordered from.
+- Nobody can edit their own rating or sales count.
+- Orders can only be created through `place_order()`, which takes the price
+  from the listing and refuses to sell more than is left.
+- Photos can only be uploaded into the uploader's own folder.
+
+## Good to know
+
+- Free projects **pause after 7 days with no activity**. If sign-in suddenly
+  fails for everyone, open the dashboard and press **Restore project**.
+- Two accounts on one phone never see each other's saved data. Offline
+  changes wait for the account that made them.
+- Do NOT add the `READ_SMS` permission for code autofill; Google Play rejects it.
+
+## Later (optional)
+
+**Verify Gmail sign-ups with a 6-digit code.** The app already has the code
+screen.
+
+1. **Authentication → Email Templates → Confirm signup**: put `{{ .Token }}`
+   in the body.
+2. Turn **Confirm email** back ON.
+
+CP-number sign-ups are then asked to use Gmail instead. For more than a few
+emails an hour, add SMTP (Resend, Brevo, or a Gmail app password) under
+**Project Settings → Auth → SMTP Settings**.
+
+**Verify CP numbers by SMS.** This costs per text. The easiest route is
+Twilio: **Authentication → Sign In / Providers → Phone**, then paste the
+Twilio details. Semaphore is cheaper in the Philippines, but needs a small
+Edge Function as a "Send SMS hook". `sendPhoneCode` and `verifyPhoneCode` in
+`src/services/auth.ts` are ready for it.

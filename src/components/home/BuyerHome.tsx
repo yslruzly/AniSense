@@ -4,11 +4,10 @@ import { CROPS, CROP_GROUP_BY_ID, familyCropNames } from "../../data/crops";
 import familyCrops from "../../assets/families/family-crops.webp";
 import familyFruits from "../../assets/families/family-fruits.webp";
 import familyVegetables from "../../assets/families/family-vegetables.webp";
-import { SELLER_DETAILS, LISTINGS } from "../../data/marketplace";
-import { BUYER_TRANSACTIONS } from "../../data/expenses";
+import { useMarket } from "../../lib/market";
 import { cropPhoto, cropPhotoFor, cropGroupPhoto } from "../../data/cropPhotos";
 import { CropEmoji } from "../CropEmoji";
-import { TradeIntent } from "../../types";
+import { Listing, TradeIntent } from "../../types";
 import { avatarTone } from "../../lib/avatar";
 import leafMask from "../../assets/anisense-leaf-mask.png";
 
@@ -33,20 +32,21 @@ const FAMILIES: { id: string; photo: string; tone: string }[] = [
   { id: "Vegetables", photo: familyVegetables, tone: "green" },
 ];
 
-const listedIn = (family: string) => {
+const listedIn = (listings: Listing[], family: string) => {
   const names = familyCropNames(family);
-  return LISTINGS.filter(l => names.includes(l.crop) || names.includes(l.variety)).length;
+  return listings.filter(l => names.includes(l.crop) || names.includes(l.variety)).length;
 };
 
 // Always in English, whichever language the app is set to, like the crop
 // names this section used to show: the words printed on market signs.
 export function ShopByCrop({ onShop }: { onShop: Shop }) {
+  const { listings } = useMarket();
   return (
     <section className="hm-sec" aria-labelledby="shop-t" data-tour="b-crops">
       <h2 className="hm-sec-title" id="shop-t">{translations.home_shop_by_crop.en}</h2>
       <div className="fam-grid stagger-list">
         {FAMILIES.map(f => {
-          const n = listedIn(f.id);
+          const n = listedIn(listings, f.id);
           return (
             <button key={f.id} className={`fam-card ${f.tone}`} onClick={() => onShop({ family: f.id })}
               aria-label={`${f.id}, ${n} ${n === 1 ? "listing" : "listings"}`}>
@@ -160,13 +160,14 @@ export function PriceMoves({ onOpen }: { onOpen: () => void }) {
 
 export function FeaturedProducts({ onShop }: { onShop: Shop }) {
   const { t, tn } = useLang();
+  const { listings } = useMarket();
   // Best-rated first, but one per crop: ranking alone filled the shelf with
   // four sacks of rice, because the top-rated sellers here all grow rice.
   // A featured shelf that shows the same thing four times is a shelf of one.
   const seen = new Set<string>();
   // A row holds more than a grid of four did, and the ones past the edge are
   // the reason to push it along.
-  const picks = [...LISTINGS]
+  const picks = [...listings]
     .sort((a, b) => b.rating - a.rating || new Date(b.date).getTime() - new Date(a.date).getTime())
     .filter(l => {
       const group = CROP_GROUP_BY_ID[CROPS.find(c => c.name === l.crop)?.id ?? ""] || l.crop;
@@ -175,6 +176,9 @@ export function FeaturedProducts({ onShop }: { onShop: Shop }) {
       return true;
     })
     .slice(0, 8);
+  // A new marketplace has nothing to feature yet: no shelf rather than an
+  // empty one.
+  if (picks.length === 0) return null;
 
   return (
     <section className="hm-sec" aria-labelledby="fp-t" data-tour="b-featured">
@@ -226,20 +230,21 @@ export function FeaturedProducts({ onShop }: { onShop: Shop }) {
 const tone = avatarTone;
 const townOf = (loc: string) => loc.split(",")[0].trim();
 
-const RANKED = Object.entries(SELLER_DETAILS)
-  .map(([key, s]) => ({ key, ...s }))
-  .sort((a, b) => b.rating - a.rating || b.totalSales - a.totalSales);
-
 export function FeaturedFarmers({ onShop, buyerLocation }: { onShop: Shop; buyerLocation: string }) {
   const { t, tn } = useLang();
+  // Everyone with something on sale, best-rated first. Keyed the way the
+  // marketplace finds a seller again: account id, or initials in the demo.
+  const ranked = Object.entries(useMarket().sellers)
+    .map(([key, s]) => ({ key, ...s }))
+    .sort((a, b) => b.rating - a.rating || b.totalSales - a.totalSales);
   const week = Math.floor(Date.now() / (7 * 864e5));
-  const spot = RANKED[week % Math.min(4, RANKED.length)];
+  const spot = ranked[week % Math.min(4, ranked.length)];
   if (!spot) return null;
 
   // Then three more: anyone growing in the buyer's own town first (tagged, so
   // the reason for the order is visible), then by rating.
   const isNear = (loc: string) => !!buyerLocation && buyerLocation.includes(townOf(loc));
-  const rest = RANKED
+  const rest = ranked
     .filter(s => s.key !== spot.key)
     .sort((a, b) => Number(isNear(b.location)) - Number(isNear(a.location)))
     .slice(0, 3);
@@ -333,17 +338,18 @@ export function FeaturedFarmers({ onShop, buyerLocation }: { onShop: Shop; buyer
 
 export function YourPurchases({ onShop, onHistory }: { onShop: Shop; onHistory: () => void }) {
   const { t, tn, lang } = useLang();
-  if (BUYER_TRANSACTIONS.length === 0) return null;
+  const { purchases } = useMarket();
+  if (purchases.length === 0) return null;
   const locale = lang === "tl" ? "fil-PH" : "en-PH";
 
-  const spent = BUYER_TRANSACTIONS.reduce((sum, tx) => sum + tx.amount, 0);
-  const orders = BUYER_TRANSACTIONS.length;
-  const farmers = new Set(BUYER_TRANSACTIONS.map(tx => tx.seller)).size;
+  const spent = purchases.reduce((sum, tx) => sum + tx.amount, 0);
+  const orders = purchases.length;
+  const farmers = new Set(purchases.map(tx => tx.seller)).size;
 
   // Spend per crop, biggest first. Past four, the tail folds into "Other"
   // rather than becoming a fifth, sixth, seventh bar.
   const byCrop = new Map<string, number>();
-  BUYER_TRANSACTIONS.forEach(tx => byCrop.set(tx.crop, (byCrop.get(tx.crop) || 0) + tx.amount));
+  purchases.forEach(tx => byCrop.set(tx.crop, (byCrop.get(tx.crop) || 0) + tx.amount));
   let parts = [...byCrop.entries()].map(([crop, amount]) => ({ crop, amount })).sort((a, b) => b.amount - a.amount);
   if (parts.length > 4) {
     const other = parts.slice(3).reduce((sum, p) => sum + p.amount, 0);
@@ -351,7 +357,7 @@ export function YourPurchases({ onShop, onHistory }: { onShop: Shop; onHistory: 
   }
   const top = parts[0]?.amount || 1;
 
-  const recent = [...BUYER_TRANSACTIONS].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 2);
+  const recent = [...purchases].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 2);
   const summary = t("yp_summary")
     .replace("{orders}", `${orders} ${orders === 1 ? t("yp_order_one") : t("yp_orders_n")}`)
     .replace("{farmers}", `${farmers} ${farmers === 1 ? t("yp_farmer_one") : t("yp_farmers")}`);

@@ -17,9 +17,12 @@ export interface Expense { id: string; category: string; description: string; am
 export interface BuyerTransaction { id: string; crop: string; variety: string; kg: number; amount: number; date: string; seller: string; sellerInitials: string; location: string; }
 export interface Listing {
   id: string; crop: string; variety: string; desc: string;
+  /** The seller's account id; only on listings from the database. */
+  sellerId?: string;
   pricePerKg: number; kg: number; date: string;
   seller: string; sellerInitials: string; rating: number; location: string;
-  /** The seller's own photo of this harvest (a data URL until uploads exist). */
+  /** The seller's own photo of this harvest: its Storage URL, or a data URL
+   *  on a demo listing. */
   photo?: string;
 }
 export interface CartItem {
@@ -28,6 +31,8 @@ export interface CartItem {
   photo?: string;
 }
 export interface SellerDetail {
+  /** The seller's account id; only for sellers from the database. */
+  id?: string;
   name: string; initials: string; phone: string; location: string;
   yearsfarming: number; rating: number; totalSales: number; crops: string[]; bio: string;
 }

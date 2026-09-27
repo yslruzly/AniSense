@@ -3,7 +3,6 @@ import { ShoppingCart, Plus, Minus, X, Check, Search, Pencil, Trash2, ChevronRig
 import { haptic } from "../lib/platform";
 import { useLang } from "../i18n";
 import { UserRole, CartItem, SellerDetail, TradeIntent, Listing } from "../types";
-import { LISTINGS, SELLER_DETAILS } from "../data/marketplace";
 import { CROP_FILTER_MAP, CROP_CATEGORIES, CROP_FAMILIES, ALL_RICE_NAMES, RICE_VARIETY_LIST, familyCropNames, FAMILY_GROUPS, CROP_GROUPS, RICE_VARIETIES } from "../data/crops";
 import { Hdr } from "../components/layout/Hdr";
 import { CropIcon } from "../components/icons";
@@ -14,7 +13,6 @@ import { CropEmoji } from "../components/CropEmoji";
 import { Sheet } from "../components/ui/Sheet";
 import { useRetained } from "../hooks/usePresence";
 import { AutoHeight } from "../components/ui/AutoHeight";
-import { localISO } from "../components/ui/DateField";
 import { EmptyState } from "../components/states";
 import { downscaleImage } from "../lib/image";
 import { MenuPicker } from "../components/ui/MenuPicker";
@@ -25,10 +23,18 @@ import { AniSenseLogo } from "../components/AniSenseLogo";
 import { PickerField } from "../components/ui/PickerField";
 import { MUNICIPALITIES } from "../data/locations";
 import { useViewer } from "../lib/viewer";
+import { useMarket, sellerKeyOfDetail } from "../lib/market";
+import { orderErrorOf } from "../services/transactions";
 
 // ─── Trade / Marketplace Screen ───────────────────────────────────────────────
-export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", userInitials = "JD", userRole, intent, listings, setListings }: { onProfile: () => void; onBack: () => void; userName?: string; userInitials?: string; userRole?: UserRole; intent?: TradeIntent; listings: Listing[]; setListings: React.Dispatch<React.SetStateAction<Listing[]>> }) {
+export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", userInitials = "JD", userRole, intent }: { onProfile: () => void; onBack: () => void; userName?: string; userInitials?: string; userRole?: UserRole; intent?: TradeIntent }) {
   const { t, tn, lang } = useLang();
+  // Listings, sellers and every change to them go through the market store:
+  // the database for a real account, the sample market otherwise.
+  const market = useMarket();
+  const listings = market.listings;
+  // Opening the marketplace is when a buyer wants it current.
+  useEffect(() => { void market.refresh(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const locale = lang === "tl" ? "fil-PH" : "en-PH";
   const [search, setSearch] = useState(intent?.search ?? "");
   /* The green key at the end of the bar puts this keyboard away. */
@@ -49,6 +55,10 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
   const [editId, setEditId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [formError, setFormError] = useState("");
+  // A post or an edit on its way to the server: the button says so and
+  // can't be pressed twice.
+  const [saving, setSaving] = useState(false);
+  const [removeError, setRemoveError] = useState("");
   const [form, setForm] = useState<{ crop: string; variety: string; desc: string; pricePerKg: string; kg: string; location: string; photo: string | null }>(
     { crop: "Special Rice", variety: "", desc: "", pricePerKg: "", kg: "", location: "", photo: null });
   const [photoState, setPhotoState] = useState<"idle" | "working" | "failed">("idle");
@@ -70,6 +80,10 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
   const [showCart, setShowCart] = useState(false);
   const [qtyMap, setQtyMap] = useState<Record<string, number>>({});
   const [checkoutDone, setCheckoutDone] = useState(false);
+  // Checkout on its way, and why it didn't go through if it didn't. The cart
+  // is kept on failure: nothing the buyer chose is lost to a bad signal.
+  const [placing, setPlacing] = useState(false);
+  const [orderError, setOrderError] = useState("");
   // What was ordered, kept after the cart empties, so the receipt can show it.
   const [order, setOrder] = useState<ReceiptOrder | null>(null);
   // The farmer's own town, read from their profile ("San Ricardo, Talavera,
@@ -136,7 +150,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
   // mount rather than as initial state, so the sheet arrives instead of
   // simply being there, and the buyer sees where it came from.
   useEffect(() => {
-    const s = intent?.seller ? SELLER_DETAILS[intent.seller] : undefined;
+    const s = intent?.seller ? market.sellers[intent.seller] : undefined;
     if (s) setSellerDetail(s);
     // Once, on arrival. The intent is fixed for this visit.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -175,7 +189,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
 
   // Adding is idempotent. A listing already in the cart is left as it is, so
   // a second tap (or Buy Now after Add) can never quietly stack the quantity.
-  const addToCart = (l: typeof LISTINGS[0]) => {
+  const addToCart = (l: Listing) => {
     const qty = getQty(l.id);
     if (tomb.includes(l.id)) { undoRemove(l.id); return; }
     setCart(prev => prev.some(c => c.listingId === l.id)
@@ -199,10 +213,24 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
     resultsRef.current?.scrollIntoView({ block: "start", behavior: reduce ? "auto" : "smooth" });
   };
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
+    if (placing || activeCart.length === 0) return;
     // The receipt is written from the cart as it stands at the tap, before
     // the cart is emptied; lines waiting on Undo are not part of the order.
-    setOrder({ placed: new Date(), buyer: userName, lines: [...activeCart] });
+    const lines = [...activeCart];
+    setPlacing(true);
+    setOrderError("");
+    try {
+      await market.placeOrder(lines);
+    } catch (err) {
+      haptic.warn();
+      setOrderError(t(`order_err_${orderErrorOf(err)}`));
+      setPlacing(false);
+      return;
+    }
+    setPlacing(false);
+    haptic.success();
+    setOrder({ placed: new Date(), buyer: userName, lines });
     tombTimers.current.forEach(t => window.clearTimeout(t));
     tombTimers.current.clear();
     setTomb([]);
@@ -256,7 +284,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const openEdit = (l: typeof LISTINGS[0]) => {
+  const openEdit = (l: Listing) => {
     setEditId(l.id);
     setForm({ crop: l.crop, variety: l.variety, desc: l.desc, pricePerKg: String(l.pricePerKg), kg: String(l.kg), location: l.location, photo: l.photo ?? null });
     setPhotoState("idle");
@@ -264,29 +292,40 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
     setShowModal(true);
   };
 
-  const saveForm = () => {
+  const saveForm = async () => {
+    if (saving) return;
     if (!form.desc.trim()) { setFormError(t("err_desc_required")); return; }
     if (!form.pricePerKg || isNaN(Number(form.pricePerKg)) || Number(form.pricePerKg) <= 0) { setFormError(t("err_valid_price")); return; }
     if (!form.kg || isNaN(Number(form.kg)) || Number(form.kg) <= 0) { setFormError(t("err_valid_qty")); return; }
     if (!form.location.trim()) { setFormError(t("err_loc_required")); return; }
 
-    if (editId) {
-      setListings(ls => ls.map(l => l.id === editId ? { ...l, crop: form.crop, variety: form.variety, desc: form.desc, pricePerKg: Number(form.pricePerKg), kg: Number(form.kg), location: form.location, photo: form.photo ?? undefined } : l));
-    } else {
-      const newListing: typeof LISTINGS[0] = {
-        id: Date.now().toString(), crop: form.crop, variety: form.variety, desc: form.desc,
-        pricePerKg: Number(form.pricePerKg), kg: Number(form.kg),
-        date: localISO(),
-        seller: userName, sellerInitials: userInitials, rating: 5.0, location: form.location,
-        photo: form.photo ?? undefined,
-      };
-      setListings(ls => [newListing, ...ls]);
+    setSaving(true);
+    setFormError("");
+    try {
+      await market.saveListing(editId, {
+        crop: form.crop, variety: form.variety, desc: form.desc,
+        pricePerKg: Number(form.pricePerKg), kg: Number(form.kg), location: form.location,
+        photo: form.photo,
+      });
+    } catch {
+      haptic.warn();
+      setFormError(t(navigator.onLine ? "err_post_failed" : "err_offline_action"));
+      setSaving(false);
+      return;
     }
+    setSaving(false);
     setShowModal(false);
   };
 
-  const deleteListing = (id: string) => {
-    setListings(ls => ls.filter(l => l.id !== id));
+  const deleteListing = async (id: string) => {
+    setRemoveError("");
+    try {
+      await market.deleteListing(id);
+    } catch {
+      haptic.warn();
+      setRemoveError(t(navigator.onLine ? "err_remove_failed" : "err_offline_action"));
+      return;
+    }
     setConfirmDelete(null);
   };
 
@@ -301,7 +340,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
   // What the seller in the open profile is selling right now. Read from
   // live state, not the seed data, so a listing just posted or edited
   // appears here as well.
-  const sellerListings = shownSeller ? listings.filter(l => l.seller === shownSeller.name) : [];
+  const sellerListings = shownSeller ? listings.filter(l => market.sellerKeyOf(l) === sellerKeyOfDetail(shownSeller)) : [];
   // From a profile into one of its listings: the profile leaves first, then
   // the listing arrives. Both sheets share a layer, so opening the second
   // over the first would put it underneath; this reads as a hand-off
@@ -319,7 +358,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
 
   // "Red" under "Onions" reads as "Red Onions"; "Yellow Corn" under "Corn"
   // already says it; a variety that repeats the crop is said once.
-  const titleOf = (l: typeof LISTINGS[0]) => {
+  const titleOf = (l: Listing) => {
     if (!l.variety || l.variety === l.crop) return l.crop;
     const stem = l.crop.toLowerCase().replace(/(es|s)$/, "");
     return l.variety.toLowerCase().includes(stem) ? l.variety : `${l.variety} ${l.crop}`;
@@ -479,7 +518,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
           <div className="mp-grid stagger-list" key={`${category}-${variety}-${sortBy}`}>
             {sorted.map(l => {
               const photo = photoOf(l);
-              const mine = l.sellerInitials === userInitials;
+              const mine = market.isMine(l);
               const inC = isInCart(l.id);
               return (
                 <article key={l.id} className="mp-card">
@@ -534,7 +573,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
         {shownListing && (() => {
           const l = shownListing;
           const photo = photoOf(l);
-          const mine = l.sellerInitials === userInitials;
+          const mine = market.isMine(l);
           const inC = isInCart(l.id);
           const qty = getQty(l.id);
           return (
@@ -563,7 +602,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                 {l.desc && <p className="mp-desc">{l.desc}</p>}
 
                 {/* The seller, as one tappable row: the way to their details. */}
-                <button className="mp-seller" onClick={() => setSellerDetail(SELLER_DETAILS[l.sellerInitials] || null)}>
+                <button className="mp-seller" onClick={() => setSellerDetail(market.sellers[market.sellerKeyOf(l)] || null)}>
                   <span className="seller-ava" style={{ background: avaTone(l.seller) }}>{l.sellerInitials}</span>
                   <span className="mp-seller-who">
                     <span className="mp-seller-name">{l.seller}</span>
@@ -618,7 +657,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                 ) : (
                   <div className="listing-btns mp-actions">
                     <button className="btn-call"><Phone size={18} strokeWidth={2.2} /> {t("trade_call_seller")}</button>
-                    <button className="btn-details" onClick={() => setSellerDetail(SELLER_DETAILS[l.sellerInitials] || null)}>{t("trade_view_details")}</button>
+                    <button className="btn-details" onClick={() => setSellerDetail(market.sellers[market.sellerKeyOf(l)] || null)}>{t("trade_view_details")}</button>
                   </div>
                 )}
               </div>
@@ -630,15 +669,16 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
       {/* Delete confirmation, senior-friendly */}
       <Sheet
         open={!!confirmDelete}
-        onClose={() => setConfirmDelete(null)}
+        onClose={() => { setConfirmDelete(null); setRemoveError(""); }}
         className="confirm-sheet"
         label={t("trade_remove_title")}
       >
         <div style={{ fontSize: 40, textAlign: "center", marginBottom: 10 }}>🗑️</div>
         <div style={{ fontSize: "var(--fs-lead)", fontWeight: 900, color: "var(--text)", marginBottom: 8, textAlign: "center" }}>{t("trade_remove_title")}</div>
         <div style={{ fontSize: "var(--fs-body)", color: "var(--text-muted)", marginBottom: 26, textAlign: "center", lineHeight: 1.6 }}>{t("trade_remove_sub")}</div>
+        {removeError && <p className="form-err" role="alert"><AlertTriangle size={17} /> {removeError}</p>}
         <div style={{ display: "flex", gap: 12 }}>
-          <button className="btn-secondary" onClick={() => setConfirmDelete(null)} style={{ flex: 1 }}>← {t("cancel")}</button>
+          <button className="btn-secondary" onClick={() => { setConfirmDelete(null); setRemoveError(""); }} style={{ flex: 1 }}>← {t("cancel")}</button>
           <button className="btn-danger" onClick={() => pendingDelete && deleteListing(pendingDelete)} style={{ flex: 1 }}>{t("trade_yes_remove")}</button>
         </div>
       </Sheet>
@@ -847,8 +887,8 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                   <button className="btn-secondary" onClick={() => setShowModal(false)} style={{ flex: 1 }}>
                     ← {t("back")}
                   </button>
-                  <button className="btn-primary" onClick={saveForm} style={{ flex: 2 }}>
-                    {editId ? t("save_changes") : t("trade_post_now")}
+                  <button className="btn-primary" onClick={saveForm} disabled={saving} aria-busy={saving} style={{ flex: 2 }}>
+                    {saving ? t("trade_posting") : editId ? t("save_changes") : t("trade_post_now")}
                   </button>
                 </div>
               </div>
@@ -964,8 +1004,9 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                 </div>
                 {/* Says what happens next, so "Confirm" doesn't read as "pay". */}
                 <p className="cart-pay-note">{t("cart_pay_note")}</p>
-                <button className="cart-checkout-btn" onClick={handleCheckout} disabled={activeCart.length === 0}>
-                  {t("cart_confirm")}
+                {orderError && <p className="form-err" role="alert"><AlertTriangle size={17} /> {orderError}</p>}
+                <button className="cart-checkout-btn" onClick={handleCheckout} disabled={activeCart.length === 0 || placing} aria-busy={placing}>
+                  {placing ? t("cart_placing") : t("cart_confirm")}
                 </button>
               </div>
             )}

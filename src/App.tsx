@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
-import { Screen, AuthScreen, UserRole, FarmDetails, TradeIntent, Listing } from "./types";
+import { Screen, AuthScreen, UserRole, FarmDetails, TradeIntent } from "./types";
 import { useOffline } from "./hooks/useOffline";
 import { useHardwareBack } from "./hooks/useHardwareBack";
 import { setStatusBar, initKeyboard } from "./lib/platform";
@@ -12,8 +12,6 @@ import { pickerCss } from "./styles/pickerStyles";
 import { sheetCss } from "./styles/sheetStyles";
 import { buttonCss } from "./styles/buttonStyles";
 import { tourCss } from "./styles/tourStyles";
-import { BUYER_TRANSACTIONS } from "./data/expenses";
-import { LISTINGS } from "./data/marketplace";
 import { BottomNav } from "./components/layout/BottomNav";
 import { LanguageScreen } from "./screens/auth/LanguageScreen";
 import { SplashScreen } from "./screens/auth/SplashScreen";
@@ -40,6 +38,7 @@ import { FarmerProfile } from "./types";
 import { PriceAlert, loadAlerts, saveAlerts } from "./lib/priceAlerts";
 import { Planting, loadPlantings, savePlantings } from "./lib/plantings";
 import { Sale, loadSales, saveSales } from "./lib/sales";
+import { MarketContext, useMarketStore } from "./lib/market";
 
 // The bottom-nav destinations. Anything else is a page opened from one of them.
 const TABS: Screen[] = ["home", "market", "trade", "expenses", "profile"];
@@ -55,6 +54,8 @@ export default function App() {
   const [isAuthed, setIsAuthed] = useState(false);
   const [userName, setUserName] = useState("Juan Dela Cruz");
   const [userRole, setUserRole] = useState<UserRole>(null);
+  // The signed-in database account, when there is one. Null in the demo.
+  const [accountId, setAccountId] = useState<string | null>(null);
   // The welcome ID: set once, when an account is created, and shown over Home.
   const [welcome, setWelcome] = useState<WelcomeInfo | null>(null);
   const [showWelcome, setShowWelcome] = useState(false);
@@ -134,11 +135,18 @@ export default function App() {
   // Home is what the tour is about, then let the effect above start it.
   const replayTour = () => { navigate("home"); setTourPending(true); };
 
-  // The marketplace listings live here, not inside the marketplace screen.
-  // That screen is unmounted whenever the farmer changes tab, so a harvest
-  // they had just posted disappeared on the way back; and Home cannot show
-  // a farmer their own listings from state it cannot see.
-  const [listings, setListings] = useState<Listing[]>(() => [...LISTINGS]);
+  // Listings, sellers, purchases and expenses live here, not inside the
+  // screens. A screen is unmounted whenever the farmer changes tab, so a
+  // harvest they had just posted disappeared on the way back; and Home
+  // cannot show a farmer their own listings from state it cannot see.
+  // The store reads the database for a real account, and the sample data
+  // otherwise (src/lib/market.tsx).
+  const initials = userName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+  const market = useMarketStore({ accountId, role: userRole, name: userName, initials });
+  // The farmer's earnings: sales typed in on this phone, plus what they sold
+  // through the marketplace. Only the typed ones are theirs to edit and save.
+  const allSales = market.marketSales.length ? [...sales, ...market.marketSales] : sales;
+  const setTypedSales = (next: Sale[]) => setSales(next.filter(s => !s.id.startsWith("tx-")));
 
   // Set only by openMarketplace, and cleared by every other navigation, so a
   // later tap on the Market tab opens the plain marketplace, not the last
@@ -234,6 +242,7 @@ export default function App() {
   // that is where edits made on another phone land.
   const applySession = (session: Session, isNew: boolean) => {
     const { role, profile } = accountFromSession(session);
+    setAccountId(session.user.id);
     setUserName(profile.name);
     setUserRole(role);
     setFarmerProfile(profile);
@@ -293,6 +302,7 @@ export default function App() {
     setAuthScreen("splash");
     setSelectedRole(null);
     setUserRole(null);
+    setAccountId(null);
     setActive("home");
     setShowWelcome(false);
     setWelcomePending(false);
@@ -363,19 +373,17 @@ export default function App() {
   }
 
   // ── Main app ──
-  const initials = userName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
-
   const goHome = () => navigate("home");
   const openProfile = () => navigate("profile");
   const goBack = () => navigate("home");
 
   const renderScreen = () => {
     switch (active) {
-      case "home": return <HomeScreen onNavigate={navigate} onShop={openMarketplace} onReplayTour={replayTour} listings={listings} priceAlerts={priceAlerts} onPriceAlerts={setPriceAlerts} plantings={plantings} onPlantings={setPlantings} sales={sales} onSales={setSales} onProfile={openProfile} isOffline={isOffline} lastUpdated={lastUpdated} userName={userName} userInitials={initials} userRole={userRole} farmerCrops={farmerProfile.crops} />;
+      case "home": return <HomeScreen onNavigate={navigate} onShop={openMarketplace} onReplayTour={replayTour} priceAlerts={priceAlerts} onPriceAlerts={setPriceAlerts} plantings={plantings} onPlantings={setPlantings} sales={allSales} onSales={setTypedSales} onProfile={openProfile} isOffline={isOffline} lastUpdated={lastUpdated} userName={userName} userInitials={initials} userRole={userRole} farmerCrops={farmerProfile.crops} />;
       case "market": return <MarketScreen onProfile={openProfile} isOffline={isOffline} lastUpdated={lastUpdated} onBack={goHome} userInitials={initials} userRole={userRole} />;
-      case "expenses": return <ExpensesScreen onProfile={openProfile} onBack={goHome} farmerCrops={farmerProfile.crops} userInitials={initials} isBuyer={userRole === "buyer"} buyerTransactions={BUYER_TRANSACTIONS} sales={sales} />;
+      case "expenses": return <ExpensesScreen onProfile={openProfile} onBack={goHome} farmerCrops={farmerProfile.crops} userInitials={initials} isBuyer={userRole === "buyer"} sales={allSales} />;
       case "analytics": return <AnalyticsScreen onProfile={openProfile} onBack={goHome} userInitials={initials} farmerCrops={farmerProfile.crops} />;
-      case "trade": return <TradeScreen onProfile={openProfile} onBack={goHome} userName={userName} userInitials={initials} userRole={userRole} intent={tradeIntent ?? undefined} listings={listings} setListings={setListings} />;
+      case "trade": return <TradeScreen onProfile={openProfile} onBack={goHome} userName={userName} userInitials={initials} userRole={userRole} intent={tradeIntent ?? undefined} />;
       case "guide": return <GuideScreen onBack={goHome} onReplay={replayTour} />;
       case "weather": return <WeatherScreen onProfile={openProfile} onBack={goHome} userInitials={initials} userRole={userRole} />;
       case "profile": return <ProfileScreen onNavigate={navigate} onBack={goBack} profile={farmerProfile} setProfile={saveProfile} onSignOut={handleSignOut} userInitials={initials} userRole={userRole} userPhoto={userPhoto} onShowId={() => { setIdMode("view"); setShowWelcome(true); }} onReplayTour={replayTour} />;
@@ -391,6 +399,7 @@ export default function App() {
       <style>{buttonCss}</style>
       <style>{tourCss}</style>
       <ViewerContext.Provider value={{ role: userRole, location: farmerProfile.location, priceAlerts, plantings }}>
+      <MarketContext.Provider value={market}>
       <div className="outer">
         <div className="shell" data-nav={nav} data-revisit={revisit || undefined}>
           {renderScreen()}
@@ -411,6 +420,7 @@ export default function App() {
           <Tour open={tourOpen} onFinish={endTour} role={userRole} />
         </div>
       </div>
+      </MarketContext.Provider>
       </ViewerContext.Provider>
     </>
   );

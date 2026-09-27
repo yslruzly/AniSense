@@ -1,6 +1,6 @@
 import { CloudSun, CloudMoon, BarChart2, BookOpen, PlayCircle, CheckCircle, AlertTriangle, Bot, ChevronRight, ArrowUpRight, ArrowDownRight, ArrowRight, Sprout, Wallet, Megaphone, Store, Tag, MapPin, Search } from "lucide-react";
 import { useLang } from "../i18n";
-import { Screen, UserRole, TradeIntent, Listing } from "../types";
+import { Screen, UserRole, TradeIntent } from "../types";
 import { ShopByCrop, FeaturedProducts, FeaturedFarmers, YourPurchases, PriceMoves } from "../components/home/BuyerHome";
 import { YourHarvest } from "../components/home/FarmerHome";
 import { PriceAlerts } from "../components/home/PriceAlerts";
@@ -11,12 +11,11 @@ import { Planting } from "../lib/plantings";
 import { PriceAlert } from "../lib/priceAlerts";
 import { useViewer } from "../lib/viewer";
 import { CROPS, CROP_GROUP_BY_ID } from "../data/crops";
-import { LISTINGS } from "../data/marketplace";
 import { cropPhotoFor } from "../data/cropPhotos";
 import { Sparkline } from "../components/charts/Micro";
 import { cropPhoto } from "../data/cropPhotos";
 import { CropIcon } from "../components/icons";
-import { EXPENSES } from "../data/expenses";
+import { useMarket } from "../lib/market";
 import { AIAdvisorCard } from "../components/analytics/AIAdvisorCard";
 import { PredictedPriceCard } from "../components/analytics/PredictedPriceCard";
 import { Hdr } from "../components/layout/Hdr";
@@ -50,7 +49,7 @@ function Chg({ value }: { value: number }) {
   );
 }
 
-export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffline, userName = "Juan", userInitials = "JD", userRole, farmerCrops = ["Rice", "Corn"], listings = [], priceAlerts = [], onPriceAlerts, plantings = [], onPlantings, sales = [], onSales }: {
+export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffline, userName = "Juan", userInitials = "JD", userRole, farmerCrops = ["Rice", "Corn"], priceAlerts = [], onPriceAlerts, plantings = [], onPlantings, sales = [], onSales }: {
   onNavigate: (s: Screen) => void;
   /** Open the marketplace already showing a crop, a farmer or the search. */
   onShop?: (intent: TradeIntent) => void;
@@ -61,8 +60,6 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
   lastUpdated: string;
   userName?: string;
   userInitials?: string;
-  /** Live marketplace listings, so a farmer sees their own on Home. */
-  listings?: Listing[];
   priceAlerts?: PriceAlert[];
   onPriceAlerts?: (next: PriceAlert[]) => void;
   plantings?: Planting[];
@@ -75,6 +72,9 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
   const { t, tn, lang } = useLang();
   const locale = lang === "tl" ? "fil-PH" : "en-PH";
   const isNight = useIsNight();
+  // The marketplace and the farmer's expenses, from the database for a real
+  // account and from the sample data otherwise.
+  const { listings, expenses } = useMarket();
   const isBuyer = userRole === "buyer";
   const now = new Date();
   const dateStr = now.toLocaleDateString(locale, { weekday: "long", month: "long", day: "numeric" });
@@ -102,18 +102,18 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
   // today's price. Ranking by "under market" alone leaves the card empty on
   // a day when every farmer is asking the going rate, and an empty card is
   // worse than none: this one always has something to say.
-  const deals = [...LISTINGS]
+  const deals = [...listings]
     .sort((a, b) => a.pricePerKg - b.pricePerKg)
     .slice(0, 3)
     .map(l => { const m = marketPrice(l.crop, l.variety); return { l, save: m ? m - l.pricePerKg : 0 }; });
   const { location: buyerLocation } = useViewer();
   const shop = (intent: TradeIntent) => (onShop ? onShop(intent) : onNavigate("trade"));
-  const sellerCount = new Set(LISTINGS.map(l => l.seller)).size;
+  const sellerCount = new Set(listings.map(l => l.seller)).size;
 
   // This month's spend, last month's, and six months of trend for the line.
   const monthTotal = (offset: number) => {
     const d = new Date(now.getFullYear(), now.getMonth() - offset, 1);
-    return EXPENSES
+    return expenses
       .filter(e => { const x = new Date(e.date); return x.getMonth() === d.getMonth() && x.getFullYear() === d.getFullYear(); })
       .reduce((sum, e) => sum + e.amount, 0);
   };
@@ -179,8 +179,6 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
             business, and the only place on Home they can act from. */}
         {!isBuyer && (
           <YourHarvest
-            listings={listings}
-            userInitials={userInitials}
             onPost={() => shop({ post: true })}
             onOpenMarket={() => shop({})}
           />
@@ -302,7 +300,7 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
             <span className="hm-shop-copy">
               <span className="hm-shop-t">{t("home_buyer_cta_t")}</span>
               <span className="hm-shop-s">
-                {t("home_market_chip").replace("{n}", String(LISTINGS.length)).replace("{s}", String(sellerCount))}
+                {t("home_market_chip").replace("{n}", String(listings.length)).replace("{s}", String(sellerCount))}
               </span>
               <span className="hm-shop-btn">{t("cart_browse")} <ChevronRight size={16} strokeWidth={2.6} /></span>
             </span>

@@ -4,10 +4,19 @@
 // fetch fails (offline / bad signal) the last-known data is served instead.
 //
 // Usage: services wrap their server calls with cachedFetch():
-//   const { data, fromCache, updatedAt } = await fetchListings();
+//   const { data, fromCache, updatedAt } = await fetchMarket();
 //   if (fromCache) → show the "offline, as of {updatedAt}" banner (already in the UI)
 
 import { Preferences } from "@capacitor/preferences";
+
+// Whose data this is. Two accounts on one phone must never see each other's
+// cached expenses or purchases, so every key is filed under the signed-in
+// account's id. Set by the market store when an account opens.
+let scope = "";
+export function setCacheScope(accountId: string | null): void {
+  scope = accountId ? `${accountId}_` : "";
+}
+export const cacheScope = () => scope;
 
 interface CacheEntry<T> {
   data: T;
@@ -16,11 +25,11 @@ interface CacheEntry<T> {
 
 export async function cacheSet<T>(key: string, data: T): Promise<void> {
   const entry: CacheEntry<T> = { data, updatedAt: new Date().toISOString() };
-  await Preferences.set({ key: `cache_${key}`, value: JSON.stringify(entry) });
+  await Preferences.set({ key: `cache_${scope}${key}`, value: JSON.stringify(entry) });
 }
 
 export async function cacheGet<T>(key: string): Promise<CacheEntry<T> | null> {
-  const { value } = await Preferences.get({ key: `cache_${key}` });
+  const { value } = await Preferences.get({ key: `cache_${scope}${key}` });
   if (!value) return null;
   try {
     return JSON.parse(value) as CacheEntry<T>;

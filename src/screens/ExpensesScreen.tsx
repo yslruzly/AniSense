@@ -3,7 +3,7 @@ import { EmptyState } from "../components/states";
 import { PhilippinePeso, PieChart as PieIcon, CalendarDays, MapPin, Pencil, Trash2, X, ChevronRight, Calendar, Calculator, Receipt, Plus, CheckCircle, AlertTriangle, Sprout, Tag, Wheat, FlaskConical, User, Tractor, Waves, Package, ShoppingCart, Filter, Store } from "lucide-react";
 import { useLang } from "../i18n";
 import { Expense, BuyerTransaction } from "../types";
-import { EXPENSES } from "../data/expenses";
+import { useMarket } from "../lib/market";
 import { Hdr } from "../components/layout/Hdr";
 import { CropIcon, ExpenseIcon } from "../components/icons";
 import { cropPhotoFor } from "../data/cropPhotos";
@@ -20,8 +20,12 @@ import { Sale } from "../lib/sales";
 import { HarvestPlans, loadHarvestPlans, saveHarvestPlans } from "../lib/harvestPlans";
 
 // ─── Expenses Screen ──────────────────────────────────────────────────────────
-export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = "JD", isBuyer = false, buyerTransactions = [], sales = [] }: { onProfile: () => void; onBack: () => void; farmerCrops: string[]; userInitials?: string; isBuyer?: boolean; buyerTransactions?: BuyerTransaction[]; sales?: Sale[] }) {
+export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = "JD", isBuyer = false, sales = [] }: { onProfile: () => void; onBack: () => void; farmerCrops: string[]; userInitials?: string; isBuyer?: boolean; sales?: Sale[] }) {
   const { t, tn, lang } = useLang();
+  // Expenses and purchases come from the market store: the account's own
+  // rows on the database, or the sample data in the demo.
+  const market = useMarket();
+  const buyerTransactions = market.purchases;
   const ICONS: Record<string, string> = { Seeds: "Seeds", Fertilizer: "Fertilizer", Labor: "Labor", Equipment: "Equipment", Irrigation: "Irrigation", Other: "Other" };
   const cats = ["All", "Seeds", "Fertilizer", "Labor", "Equipment", "Irrigation", "Other"];
 
@@ -30,7 +34,8 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [viewMode, setViewMode] = useState<"all" | "by-crop" | "by-date">("all");
-  const [transactions, setTransactions] = useState([...EXPENSES]);
+  const transactions = market.expenses;
+  const [saving, setSaving] = useState(false);
   // Expected harvest per crop, for the estimated profit. Read once from the
   // phone, written back on every change.
   const [plans, setPlans] = useState<HarvestPlans>({});
@@ -175,20 +180,27 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
     setShowModal(true);
   };
 
-  const saveForm = () => {
+  // Saved even with no signal: offline, the entry waits on the phone and
+  // goes up by itself when the connection returns. What can still fail is
+  // the server turning it down, and then the form stays open and says so.
+  const saveForm = async () => {
+    if (saving) return;
     if (!form.description.trim()) { setFormError(t("err_desc_required")); return; }
     if (!form.amount || isNaN(Number(form.amount)) || Number(form.amount) <= 0) { setFormError(t("err_amount")); return; }
-    if (editId) {
-      setTransactions(t => t.map(e => e.id === editId ? { ...e, description: form.description, category: form.category, amount: Number(form.amount), date: form.date, icon: ICONS[form.category], crop: form.crop } : e));
-    } else {
-      const newEntry: Expense = { id: Date.now().toString(), description: form.description, category: form.category, amount: Number(form.amount), date: form.date, icon: ICONS[form.category], crop: form.crop };
-      setTransactions(t => [newEntry, ...t]);
+    setSaving(true);
+    try {
+      await market.saveExpense(editId, { description: form.description, category: form.category, amount: Number(form.amount), date: form.date, crop: form.crop });
+    } catch {
+      setFormError(t("err_expense_failed"));
+      setSaving(false);
+      return;
     }
+    setSaving(false);
     setShowModal(false);
   };
 
-  const deleteEntry = (id: string) => {
-    setTransactions(t => t.filter(e => e.id !== id));
+  const deleteEntry = async (id: string) => {
+    try { await market.deleteExpense(id); } catch { /* still listed; the next try can remove it */ }
     setConfirmDelete(null);
   };
 
@@ -826,8 +838,8 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
                 <button className="btn-secondary sm row-center" onClick={() => setShowModal(false)} style={{ flex: 1, border: "none" }}>
                   <X size={15} color="var(--text-soft)" /> {t("cancel")}
                 </button>
-                <button className="btn-primary sm row-center" onClick={saveForm} style={{ flex: 2 }}>
-                  {editId ? <><CheckCircle size={16} /> {t("save_changes")}</> : <><Plus size={16} /> {t("exp_add_title")}</>}
+                <button className="btn-primary sm row-center" onClick={saveForm} disabled={saving} aria-busy={saving} style={{ flex: 2 }}>
+                  {saving ? t("save_saving") : editId ? <><CheckCircle size={16} /> {t("save_changes")}</> : <><Plus size={16} /> {t("exp_add_title")}</>}
                 </button>
               </div>
 

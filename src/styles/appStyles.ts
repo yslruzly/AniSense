@@ -2689,6 +2689,15 @@ export const appCss = `
     letter-spacing: -.02em; line-height: 1; font-variant-numeric: tabular-nums;
   }
   .cart-pay-note { margin: 10px 0 14px; font-size: 13.5px; line-height: 1.4; color: var(--text-faint); }
+  /* Why an order, a post or a removal didn't go through: said in place,
+     right above the button that will try again. */
+  .form-err {
+    display: flex; align-items: flex-start; gap: 8px; margin: 0 0 12px; padding: 10px 12px;
+    border-radius: 12px; background: var(--error-sk); color: var(--error);
+    font-size: 14.5px; font-weight: 600; line-height: 1.4;
+  }
+  .form-err svg { flex-shrink: 0; margin-top: 1px; }
+  .cart-checkout-btn[aria-busy="true"], .btn-primary[aria-busy="true"] { opacity: .75; cursor: progress; }
   .cart-checkout-btn {
     width: 100%; min-height: 56px; padding: 0 18px; background: var(--tanim); color: #fff; border: none;
     border-radius: 16px; font-family: var(--font-display); font-size: var(--fs-body); font-weight: 700;

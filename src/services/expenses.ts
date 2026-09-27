@@ -3,8 +3,8 @@
 // can add/edit/delete expenses; changes apply to the local cache instantly and
 // are queued in the outbox, then synced to Supabase when connectivity returns.
 //
-// Replaces `useState([...EXPENSES])` in ExpensesScreen; see SETUP_DATABASE.md
-// Step 7. RLS guarantees each farmer only ever sees their own rows.
+// Called by the market store (src/lib/market.tsx). RLS guarantees each
+// farmer only ever sees their own rows.
 
 import { supabase } from "../lib/supabase";
 import { Expense } from "../types";
@@ -22,7 +22,7 @@ interface ExpenseRow {
   spent_on: string;
 }
 
-interface ExpenseForm {
+export interface ExpenseForm {
   description: string; category: string; amount: number; date: string; crop: string;
 }
 

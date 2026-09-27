@@ -1,8 +1,7 @@
 // ─── Sync Coordinator ─────────────────────────────────────────────────────────
-// Drains the offline outbox whenever the connection comes back. Wire this once
-// in App.tsx (see SETUP_DATABASE.md Step 8):
-//
-//   useEffect(() => initAutoSync(), []);
+// Drains the offline outbox. The market store (src/lib/market.tsx) calls
+// syncNow() when an account opens and whenever the connection comes back,
+// before it fetches, so a fresh list already includes what was queued.
 //
 // New offline-capable services just add their handlers to ALL_HANDLERS below.
 
@@ -25,16 +24,4 @@ export async function syncNow(): Promise<number> {
   } finally {
     syncing = false;
   }
-}
-
-/**
- * Start automatic syncing: runs once on startup (in case ops were queued last
- * session) and again every time the device comes back online.
- * Returns a cleanup function for useEffect.
- */
-export function initAutoSync(): () => void {
-  const run = () => { void syncNow(); };
-  window.addEventListener("online", run);
-  run(); // catch anything queued from a previous session
-  return () => window.removeEventListener("online", run);
 }

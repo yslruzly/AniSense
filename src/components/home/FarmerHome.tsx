@@ -3,7 +3,7 @@ import { useLang } from "../../i18n";
 import { CROPS, CROP_GROUP_BY_ID } from "../../data/crops";
 import { cropPhotoFor } from "../../data/cropPhotos";
 import { CropIcon } from "../icons";
-import { Listing } from "../../types";
+import { useMarket } from "../../lib/market";
 
 // ─── Your harvest ─────────────────────────────────────────────────────────────
 // The farmer's own half of the marketplace, on Home. Everything else on this
@@ -18,14 +18,13 @@ function marketPrice(crop: string, variety: string) {
   return CROPS.find(c => CROP_GROUP_BY_ID[c.id] === crop)?.pricePerKg ?? null;
 }
 
-export function YourHarvest({ listings, userInitials, onPost, onOpenMarket }: {
-  listings: Listing[];
-  userInitials: string;
+export function YourHarvest({ onPost, onOpenMarket }: {
   onPost: () => void;
   onOpenMarket: () => void;
 }) {
   const { t, tn } = useLang();
-  const mine = listings.filter(l => l.sellerInitials === userInitials);
+  const { listings, isMine } = useMarket();
+  const mine = listings.filter(isMine);
   // What the harvest on sale is worth at the price they set: kilos × price.
   // Their asking price, not a forecast, and not a promise that it sells.
   const value = mine.reduce((sum, l) => sum + l.kg * l.pricePerKg, 0);

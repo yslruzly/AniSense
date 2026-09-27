@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ArrowDownCircle, ArrowUpCircle, ChevronRight, HandCoins, Minus, Plus, X } from "lucide-react";
 import { useLang } from "../../i18n";
 import { CROPS, CROP_GROUP_BY_ID } from "../../data/crops";
-import { EXPENSES } from "../../data/expenses";
+import { useMarket } from "../../lib/market";
 import { CROP_CYCLES } from "../../data/cropCycles";
 import { cropGroupPhoto } from "../../data/cropPhotos";
 import { Sheet } from "../ui/Sheet";
@@ -32,6 +32,7 @@ export function ProfitSnapshot({ sales, onChange, plantings, onOpenExpenses }: {
   onOpenExpenses: () => void;
 }) {
   const { t, tn } = useLang();
+  const { expenses } = useMarket();
   const now = new Date();
   const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
   // The season starts with the oldest planting still in the ground.
@@ -42,7 +43,7 @@ export function ProfitSnapshot({ sales, onChange, plantings, onOpenExpenses }: {
   const from = range === "season" && seasonStart ? seasonStart : monthStart;
 
   const earned = soldSince(sales, from);
-  const spent = EXPENSES.filter(e => e.date >= from).reduce((sum, e) => sum + e.amount, 0);
+  const spent = expenses.filter(e => e.date >= from).reduce((sum, e) => sum + e.amount, 0);
   const net = earned - spent;
 
   const [adding, setAdding] = useState(false);

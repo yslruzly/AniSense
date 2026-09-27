@@ -12,12 +12,16 @@
 //      reference them (edit/delete an expense that was also created offline).
 
 import { Preferences } from "@capacitor/preferences";
+import { cacheScope } from "./cache";
 
 export interface OutboxOp {
   id: string;
   type: string;                     // e.g. "add_expense", matched to a handler
   payload: Record<string, unknown>;
   queuedAt: string;
+  /** The account that made the change. Another account signing in on the
+   *  same phone must not send it under their own name; it waits for its owner. */
+  owner?: string;
 }
 
 /** Handlers may return an id mapping when a temp local id got a real DB id. */
@@ -40,7 +44,8 @@ async function load(): Promise<OutboxOp[]> {
 
 async function save(ops: OutboxOp[]): Promise<void> {
   await Preferences.set({ key: KEY, value: JSON.stringify(ops) });
-  listeners.forEach(cb => cb(ops.length));
+  const n = ops.filter(mine).length;
+  listeners.forEach(cb => cb(n));
 }
 
 export async function enqueue(type: string, payload: Record<string, unknown>): Promise<void> {
@@ -50,12 +55,16 @@ export async function enqueue(type: string, payload: Record<string, unknown>): P
     type,
     payload,
     queuedAt: new Date().toISOString(),
+    owner: cacheScope(),
   });
   await save(ops);
 }
 
+const mine = (op: OutboxOp) => (op.owner ?? "") === cacheScope();
+
+/** Changes of the signed-in account still waiting to reach the server. */
 export async function pendingCount(): Promise<number> {
-  return (await load()).length;
+  return (await load()).filter(mine).length;
 }
 
 /** Subscribe to queue-size changes (for a "3 waiting to sync" badge). Returns unsubscribe. */
@@ -84,7 +93,10 @@ function remapIds(
  * Returns how many ops were synced.
  */
 export async function processOutbox(handlers: Record<string, OutboxHandler>): Promise<number> {
-  const ops = await load();
+  const all = await load();
+  // Only the signed-in account's changes; anyone else's stay queued for them.
+  const others = all.filter(op => !mine(op));
+  const ops = all.filter(mine);
   if (ops.length === 0) return 0;
 
   const idMap: Record<string, string> = {};
@@ -99,11 +111,11 @@ export async function processOutbox(handlers: Record<string, OutboxHandler>): Pr
       if (result) idMap[result.localId] = result.realId;
       synced++;
     } catch {
-      await save(ops.slice(i)); // keep the failed op + the rest, in order
+      await save([...others, ...ops.slice(i)]); // keep the failed op + the rest, in order
       return synced;
     }
   }
 
-  await save([]);
+  await save(others);
   return synced;
 }
