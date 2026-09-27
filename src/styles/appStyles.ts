@@ -361,8 +361,6 @@ export const appCss = `
   .hero-loc   { font-size: var(--fs-label); opacity: .85; }
   .hero-emoji { font-size: 40px; }
 
-  .sec-title { font-family: var(--font-display); font-size: var(--fs-lead); font-weight: 700; color: var(--text); }
-  .sec-sub   { font-size: var(--fs-label); color: var(--text-muted); margin-top: 2px; }
 
   /* ── Badge ── */
 
@@ -411,10 +409,6 @@ export const appCss = `
   .mkt-row-chg.down { color: var(--error); }
 
   /* ── Chart ── */
-  .chart-svg { width:100%; height:auto; }
-  .legend { display:flex; gap:16px; justify-content:center; margin-top:9px; }
-  .leg-item { display:flex; align-items:center; gap:5px; font-size: var(--fs-label); color:var(--text-muted); font-weight:600; }
-  .leg-dot  { width:9px; height:9px; border-radius:50%; }
 
   /* ── Bottom nav ──────────────────────────────────────────────────────────
      A floating layer, not a strip. Content scrolls underneath a translucent
@@ -784,6 +778,136 @@ export const appCss = `
   .adv-foot {
     margin-top: 4px; padding-top: 12px; border-top: 1px solid var(--line);
     font-size: 13px; line-height: 1.45; color: var(--text-faint);
+  }
+
+  /* ── Analytics ───────────────────────────────────────────────────────────── */
+  /* The forecast: the page's hero, on the same ink as Prices' "Today's market"
+     card, so the two dark cards read as the app's two data centrepieces. */
+  .fc {
+    position: relative; overflow: hidden; isolation: isolate; flex-shrink: 0;
+    display: flex; flex-direction: column; gap: 14px;
+    padding: 18px 18px 16px; border-radius: 26px; color: #fff;
+    background:
+      radial-gradient(120% 90% at 100% 0%, rgba(78,155,219,.2), transparent 58%),
+      linear-gradient(150deg, #1D2E25 0%, var(--ink) 60%, #0D1511 100%);
+    box-shadow: 0 18px 34px -22px rgba(22,33,27,.8), inset 0 0 0 1px rgba(255,255,255,.05);
+  }
+  .fc-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .fc-t { margin: 0; font-family: var(--font-display); font-size: 19px; font-weight: 700; letter-spacing: -.01em; }
+  .fc-s { font-size: 13px; font-weight: 600; color: rgba(255,255,255,.6); }
+
+  /* The crop switch on ink: the same pill, a darker well. */
+  .fseg.on-ink {
+    background: rgba(0,0,0,.28);
+    box-shadow: inset 0 1px 2px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.06);
+  }
+  .fseg.on-ink .fseg-tab { color: rgba(255,255,255,.68); }
+  .fseg.on-ink .fseg-tab.on { color: #fff; }
+
+  .fc-read { display: flex; align-items: flex-end; gap: 12px; animation: fc-in 260ms var(--ease-out) both; }
+  .fc-col { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .fc-k { font-size: 12.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: rgba(255,255,255,.6); }
+  .fc-v { font-family: var(--font-display); font-size: 30px; font-weight: 700; line-height: 1.05; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .fc-to { color: rgba(255,255,255,.45); margin-bottom: 6px; flex-shrink: 0; }
+  @keyframes fc-in { from { opacity: 0; transform: translateY(4px); } }
+
+  .fc-verdict { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 10px; margin-top: -4px; }
+  .fc-chip {
+    display: inline-flex; align-items: center; gap: 4px; padding: 5px 11px 5px 8px; border-radius: 99px;
+    font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums;
+    background: rgba(255,255,255,.1); color: rgba(255,255,255,.88);
+  }
+  .fc-chip.up { background: rgba(126,196,120,.16); color: #9BD796; box-shadow: inset 0 0 0 1px rgba(126,196,120,.28); }
+  .fc-chip.down { background: rgba(240,138,126,.16); color: #F4B2AB; box-shadow: inset 0 0 0 1px rgba(240,138,126,.28); }
+  .fc-say { font-size: 14px; font-weight: 600; color: rgba(255,255,255,.78); }
+
+  /* The chart. Recessive grid and axis; the line and band do the talking. */
+  .fc-chart { position: relative; margin: 0 -4px; }
+  .fc-svg { display: block; width: 100%; height: auto; touch-action: pan-y; user-select: none; -webkit-user-select: none; cursor: crosshair; overflow: visible; }
+  .fc-grid { stroke: rgba(255,255,255,.07); stroke-width: 1; }
+  .fc-axis { font-size: 10.5px; fill: rgba(255,255,255,.5); font-variant-numeric: tabular-nums; }
+  .fc-axis.now { fill: rgba(255,255,255,.85); font-weight: 700; }
+  .fc-now { stroke: rgba(255,255,255,.22); stroke-width: 1; stroke-dasharray: 3 3; }
+  .fc-band { opacity: .2; }
+  .fc-past { fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 0; }
+  .fc-future { fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 5 5; }
+  /* A 2px ring in the card's colour lifts each dot off the line under it. */
+  .fc-dot { stroke: #16211B; stroke-width: 2; }
+  .fc-endlbl { font-size: 12px; font-weight: 700; fill: #fff; font-variant-numeric: tabular-nums; }
+  .fc-scrub line { stroke: rgba(255,255,255,.4); stroke-width: 1; }
+
+  /* The story told once: what happened draws in from the left, then the
+     forecast and its range fade up after it. On a crop switch the same, in
+     less time; coming back to the page, it is simply there. */
+  .shell:not([data-revisit]) .fc-plot.first .fc-past { animation: fc-draw 620ms var(--ease-out) 120ms both; }
+  .shell:not([data-revisit]) .fc-plot.first :is(.fc-band, .fc-future, .fc-end) { animation: fc-fade 320ms var(--ease-out) 620ms both; }
+  .fc-plot.swap .fc-past { animation: fc-draw 380ms var(--ease-out) both; }
+  .fc-plot.swap :is(.fc-band, .fc-future, .fc-end) { animation: fc-fade 240ms var(--ease-out) 300ms both; }
+  @keyframes fc-draw { from { stroke-dashoffset: 1; } }
+  @keyframes fc-fade { from { opacity: 0; } }
+
+  /* The tooltip rides above the finger, never under it. */
+  .fc-tip {
+    position: absolute; top: -8px; z-index: 2; transform: translate(-50%, -100%);
+    display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 7px 11px; border-radius: 12px;
+    background: #fff; color: var(--text); white-space: nowrap; pointer-events: none;
+    box-shadow: 0 10px 22px -10px rgba(0,0,0,.55);
+    animation: fc-tip-in 120ms var(--ease-out);
+  }
+  .fc-tip-k { font-size: 12px; font-weight: 700; color: var(--text-faint); }
+  .fc-tip-v { font-family: var(--font-display); font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .fc-tip-r { font-size: 11.5px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+  @keyframes fc-tip-in { from { opacity: 0; transform: translate(-50%, calc(-100% + 4px)); } }
+
+  .fc-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; font-weight: 600; color: rgba(255,255,255,.72); }
+  .fc-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .fc-legend i { display: inline-block; width: 18px; height: 3px; border-radius: 2px; }
+  .fc-legend i.dashed { height: 0; border-top: 3px dashed currentColor; background: none; }
+  .fc-legend i.band { height: 10px; border-radius: 3px; opacity: .3; }
+  .fc-hint { margin: -6px 0 0; font-size: 12.5px; color: rgba(255,255,255,.5); }
+  .fc-hint + .fc-hint { margin-top: -10px; }
+  .fc-none { margin: 0; font-size: 15px; line-height: 1.5; color: rgba(255,255,255,.8); }
+
+  /* White cards under the hero. */
+  .an-stack { display: flex; flex-direction: column; gap: 14px; }
+  .an-card {
+    padding: 16px; border-radius: 22px; background: var(--card);
+    box-shadow: inset 0 0 0 1px var(--line), 0 12px 24px -20px rgba(22,33,27,.45);
+  }
+  .an-card-t { margin: 0; font-family: var(--font-display); font-size: 18px; font-weight: 700; letter-spacing: -.01em; color: var(--text); }
+  .an-card-s { margin: 3px 0 12px; font-size: 14px; line-height: 1.4; color: var(--text-muted); }
+
+  /* Price change today: name, a diverging bar from the middle, the value. */
+  .mc-list { display: flex; flex-direction: column; }
+  .mc-row { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr) 54px; align-items: center; gap: 10px; min-height: 40px; }
+  .mc-row + .mc-row { border-top: 1px solid var(--line); }
+  .mc-name { display: flex; align-items: center; gap: 6px; min-width: 0; }
+  .mc-n { font-size: 15px; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mc-row.mine .mc-n { font-weight: 800; }
+  .mc-yours {
+    flex-shrink: 0; padding: 2px 7px; border-radius: 99px; font-size: 11px; font-weight: 800;
+    background: var(--tanim-sk); color: var(--tanim);
+  }
+  .mc-track { position: relative; height: 12px; }
+  .mc-zero { position: absolute; left: 50%; top: -6px; bottom: -6px; width: 1px; background: var(--line-strong); }
+  .mc-bar { position: absolute; top: 0; bottom: 0; }
+  .mc-bar.up { background: var(--tanim); border-radius: 0 4px 4px 0; transform-origin: left center; }
+  .mc-bar.down { background: var(--error); border-radius: 4px 0 0 4px; transform-origin: right center; }
+  /* Values wear the text colour; the bar beside them carries the colour. */
+  .mc-val { text-align: right; font-size: 14.5px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+  /* Each bar grows out of the zero line, the way a change grows from nothing.
+     Explanatory, seen once per visit; stagger keeps it a read, not a wait. */
+  .shell:not([data-revisit]) .mc-bar { animation: mc-grow 480ms var(--ease-out) both; }
+  @keyframes mc-grow { from { transform: scaleX(0); } }
+
+  .an-note { margin: 0 4px; font-size: 13px; line-height: 1.5; color: var(--text-faint); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .shell:not([data-revisit]) .fc-plot.first .fc-past, .fc-plot.swap .fc-past { animation: none; }
+    .shell:not([data-revisit]) .fc-plot.first :is(.fc-band, .fc-future, .fc-end),
+    .fc-plot.swap :is(.fc-band, .fc-future, .fc-end) { animation: fc-fade 200ms ease both; }
+    .fc-read, .fc-tip { animation: none; }
+    .shell:not([data-revisit]) .mc-bar { animation: none; }
   }
 
   /* ── Prices in the next 3 days ───────────────────────────────────────────── */
@@ -2458,15 +2582,7 @@ export const appCss = `
   .bar-fill  { height:100%; border-radius:99px; }
   .bar-val   { font-size: var(--fs-label); color:var(--text-muted); width:44px; text-align:right; flex-shrink:0; }
 
-  .perf-grid { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
-  .perf-card { border-radius:14px; padding:13px; text-align:center; }
-  .perf-name  { font-size: var(--fs-label); font-weight:600; color:var(--text-muted); margin-bottom:4px; }
-  .perf-price { font-size: var(--fs-body); font-weight:800; color:var(--text); }
-  .perf-chg   { font-size: var(--fs-label); font-weight:700; margin-top:3px; }
 
-  .sum-row { display:flex; justify-content:space-around; }
-  .sum-val { font-size: var(--fs-lead); font-weight:800; color:var(--tanim); }
-  .sum-lbl { font-size: var(--fs-label); color:var(--text-muted); margin-top:3px; text-align:center; }
 
   /* ── Marketplace ── */
   /* The greeting sits on its own green panel now, so the page opens with the
@@ -3486,39 +3602,6 @@ export const appCss = `
   }
 
   /* ── LSTM Forecast ── */
-  .lstm-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:13px; }
-  .lstm-badge { background:var(--ink); color:var(--palay); font-size: var(--fs-label); font-weight:700; padding:4px 9px; border-radius:99px; letter-spacing:0.5px; }
-  .lstm-acc   { font-size: var(--fs-label); color:var(--text-muted); }
-  .lstm-acc span { color:var(--tanim); font-weight:700; }
-
-  .lstm-crop-tabs { display:flex; gap:7px; overflow-x:auto; margin-bottom:15px; padding-bottom:2px; flex-shrink:0; }
-  .lstm-crop-tabs::-webkit-scrollbar { display:none; }
-  .lstm-tab { flex-shrink:0; padding:6px 13px; border-radius:99px; border:1.5px solid var(--border); background:var(--bg); font-family:inherit; font-size: var(--fs-label); font-weight:600; color:var(--text-muted); cursor:pointer; }
-  .lstm-tab.on { background:var(--ink); border-color:var(--ink); color:#fff; }
-
-  .lstm-summary { display:grid; grid-template-columns:repeat(3,1fr); gap:9px; margin-bottom:15px; }
-  .lstm-sum-item { background:var(--bg); border-radius:12px; padding:10px 9px; text-align:center; }
-  .lstm-sum-val  { font-size: var(--fs-label); font-weight:800; color:var(--text); }
-  .lstm-sum-lbl  { font-size: var(--fs-label); color:var(--text-muted); margin-top:3px; line-height:1.35; }
-
-  .lstm-trend-up   { color:var(--tanim); }
-  .lstm-trend-down { color:var(--error); }
-  .lstm-trend-stable { color:var(--gold-text); }
-
-  .lstm-forecast-row { display:flex; gap:6px; overflow-x:auto; padding-bottom:4px; margin-bottom:13px; flex-shrink:0; }
-  .lstm-forecast-row::-webkit-scrollbar { display:none; }
-  .lstm-day-card { flex-shrink:0; text-align:center; padding:9px 7px; border-radius:12px; min-width:46px; }
-  .lstm-day-card.future { background:var(--paper-alt); border:1px solid var(--line); }
-  .lstm-day-card.past   { background:var(--bg); border:1px solid var(--border); }
-  .lstm-day-card.now    { background:var(--ink); border:1px solid var(--ink); }
-  .lstm-day-lbl  { font-size: var(--fs-label); font-weight:700; color:var(--text-muted); margin-bottom:5px; }
-  .lstm-day-card.now .lstm-day-lbl { color:var(--palay); }
-  .lstm-day-price { font-size: var(--fs-label); font-weight:800; color:var(--text); }
-  .lstm-day-card.now .lstm-day-price { color:#fff; }
-  .lstm-day-card.future .lstm-day-price { color:var(--ink-2); }
-  .lstm-day-dot  { font-size:8px; margin-top:3px; }
-
-  .lstm-note { font-size: var(--fs-label); color:var(--text-faint); line-height:1.55; padding:9px 11px; background:var(--bg); border-radius:10px; border-left:3px solid var(--palay); }
 
   /* ── Profile ── */
   /* A card in the scroll, so it takes the same corner as everything around it
@@ -3917,7 +4000,7 @@ export const appCss = `
      tap that did nothing, and, because :active applies to every ancestor,
      pressing Add to Cart shrank the whole listing around it as well. */
   .pcard, .module-btn,
-  .lstm-tab, .add-btn, .post-btn,
+  .add-btn, .post-btn,
   .ntab, .signout-btn,
   .cat-tab, .var-tab, .crop-pick,
   .hdr-back, .alerts-close, .prof-edit-btn,
@@ -3928,7 +4011,7 @@ export const appCss = `
     touch-action: manipulation;
   }
   .pcard:active, .module-btn:active,
-  .lstm-tab:active, .add-btn:active, .post-btn:active,
+  .add-btn:active, .post-btn:active,
   .ntab:active, .signout-btn:active,
   .cat-tab:active, .var-tab:active, .crop-pick:active,
   .hdr-back:active, .alerts-close:active,
@@ -3941,7 +4024,7 @@ export const appCss = `
      the element gets. Big surfaces take less; a 40px disc takes the most. */
   .pcard:active, .module-btn:active,
   .cat-tab:active, .crop-pick:active { transform: scale(0.975); }
-  .lstm-tab:active, .var-tab:active,
+  .var-tab:active,
   .add-btn:active, .post-btn:active, .signout-btn:active,
   .btn-call:active, .btn-details:active, .add-cart-btn:active, .buy-now-btn:active,
   .cart-checkout-btn:active, .call-seller-btn:active { transform: scale(0.97); }
@@ -3955,7 +4038,7 @@ export const appCss = `
   /* Selected states cross-fade rather than cut. These are the controls that
      re-render a list under them, so the colour change is the only signal the
      tap registered before the content swaps. */
-  .cat-tab, .var-tab, .lstm-tab {
+  .cat-tab, .var-tab {
     transition: transform 190ms var(--ease-out),
                 background-color var(--dur-fast) ease,
                 border-color var(--dur-fast) ease,

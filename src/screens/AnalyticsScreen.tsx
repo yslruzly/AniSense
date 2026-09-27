@@ -1,57 +1,28 @@
 import { BarChart2 } from "lucide-react";
 import { useLang } from "../i18n";
-import { CROPS, PRICE_HISTORY } from "../data/crops";
 import { Hdr } from "../components/layout/Hdr";
-import { PriceChart } from "../components/charts/PriceChart";
 import { AIAdvisorCard } from "../components/analytics/AIAdvisorCard";
-import { LSTMForecast } from "../components/analytics/LSTMForecast";
+import { ForecastHero } from "../components/analytics/ForecastHero";
+import { MarketChange } from "../components/analytics/MarketChange";
 
-// ─── Analytics Screen ─────────────────────────────────────────────────────────
-export function AnalyticsScreen({ onProfile, onBack, userInitials = "JD", farmerCrops = ["Rice", "Corn"] }: { onProfile: () => void; onBack: () => void; userInitials?: string; farmerCrops?: string[] }) {
+// ─── Analytics ────────────────────────────────────────────────────────────────
+// Three questions, in the order a farmer asks them:
+//   1. Where is my price going?         → the forecast, one crop at a time
+//   2. So, sell now or wait?            → the advice for each crop they grow
+//   3. How is the rest of the market?   → every crop's move today, on one scale
+// The old summary strip (an "average price" across rice and calamansi, a sum
+// of tonnages) is gone: numbers nobody could act on.
+export function AnalyticsScreen({ onBack, farmerCrops = ["Rice", "Corn"] }: { onProfile: () => void; onBack: () => void; userInitials?: string; farmerCrops?: string[] }) {
   const { t } = useLang();
-  const maxV = Math.max(...CROPS.map(c => c.volume));
-  const risingCount = CROPS.filter(c => c.change > 0).length;
-  const totalVol = CROPS.reduce((s, c) => s + c.volume, 0);
-  const avgPrice = Math.round(CROPS.reduce((s, c) => s + c.pricePerKg, 0) / CROPS.length);
-
   return (
     <div className="screen">
       <Hdr icon={<BarChart2 size={20} color="var(--tanim)" />} title={t("ana_title")} sub={t("ana_sub")} onBack={onBack} />
       <div className="scroll screen-enter">
-        <div>
-          <div className="sec-title">{t("ana_glance")}</div>
-          <div className="sec-sub">{t("ana_glance_sub")}</div>
-        </div>
-        <div className="card">
-          <div className="sum-row">
-            {[
-              [`${risingCount}/${CROPS.length}`, t("ana_crops_rising")],
-              [totalVol.toLocaleString(), t("ana_total_tons")],
-              [`₱${avgPrice}`, t("ana_avg_price")],
-            ].map(([v, l]) => (
-              <div key={l}><div className="sum-val">{v}</div><div className="sum-lbl">{l}</div></div>
-            ))}
-          </div>
-        </div>
-        <AIAdvisorCard farmerCrops={farmerCrops} />
-        <div className="card">
-          <div className="card-title">{t("ana_trends")}</div>
-          <PriceChart data={PRICE_HISTORY} />
-        </div>
-        <LSTMForecast />
-        <div className="card">
-          <div className="card-title">{t("ana_performance")}</div>
-          <div className="perf-grid">
-            {CROPS.map(c => (
-              <div key={c.id} className="perf-card" style={{ background: c.change >= 0 ? "var(--tanim-sk)" : "var(--error-sk)" }}>
-                <div className="perf-name">{c.name}</div>
-                <div className="perf-price">₱{c.pricePerKg}<span className="unit-suffix">{t("per_kg_short")}</span></div>
-                <div className="perf-chg" style={{ color: c.change >= 0 ? "var(--tanim)" : "var(--error)" }}>
-                  {c.change >= 0 ? "▲" : "▼"} {Math.abs(c.change)}%
-                </div>
-              </div>
-            ))}
-          </div>
+        <ForecastHero farmerCrops={farmerCrops} />
+        <div className="an-stack stagger-list">
+          <AIAdvisorCard farmerCrops={farmerCrops} />
+          <MarketChange farmerCrops={farmerCrops} />
+          <p className="an-note">{t("ana_models_note")}</p>
         </div>
       </div>
     </div>

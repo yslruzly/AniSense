@@ -536,20 +536,39 @@ export const translations: Dict = {
 
   // ── Analytics ─────────────────────────────────────────────────────────────
   ana_title: { en: "Analytics", tl: "Analytics" },
-  ana_sub: { en: "Market insights", tl: "Pagsusuri ng merkado" },
-  ana_glance: { en: "This Week at a Glance", tl: "Buod ng Linggong Ito" },
-  ana_glance_sub: {
-    en: "A quick read on Nueva Ecija crop markets",
-    tl: "Mabilis na buod ng merkado ng pananim sa Nueva Ecija",
+  // Analytics: the forecast card and the market change chart.
+  ana_next7: { en: "Next 7 days", tl: "Susunod na 7 araw" },
+  ana_in_7_days: { en: "In 7 days", tl: "Sa 7 araw" },
+  ana_exp_rise: { en: "Expected to rise", tl: "Inaasahang tataas" },
+  ana_exp_fall: { en: "Expected to fall", tl: "Inaasahang bababa" },
+  ana_exp_flat: { en: "Expected to hold steady", tl: "Inaasahang hindi gagalaw" },
+  ana_yesterday: { en: "Yesterday", tl: "Kahapon" },
+  ana_tomorrow: { en: "Tomorrow", tl: "Bukas" },
+  ana_days_ago: { en: "{n} days ago", tl: "{n} araw na ang nakalipas" },
+  ana_in_days: { en: "In {n} days", tl: "Sa {n} araw" },
+  ana_likely: { en: "Likely {lo}–{hi}", tl: "Malamang {lo}–{hi}" },
+  ana_last_week: { en: "Last week", tl: "Nakaraang linggo" },
+  ana_next_week: { en: "Next week", tl: "Susunod na linggo" },
+  ana_leg_forecast: { en: "Forecast", tl: "Taya" },
+  ana_leg_range: { en: "Likely range", tl: "Malamang na saklaw" },
+  ana_scrub_hint: { en: "Touch and slide on the chart to see each day.", tl: "Pindutin at i-slide sa chart para makita ang bawat araw." },
+  ana_fc_missing: { en: "No 7-day forecast yet for {crops}.", tl: "Wala pang 7-araw na taya para sa {crops}." },
+  ana_fc_none: {
+    en: "There is no 7-day forecast yet for {crops}. For now it covers rice, corn, onions and calamansi; the advice below still covers every crop you grow.",
+    tl: "Wala pang 7-araw na taya para sa {crops}. Sa ngayon, palay, mais, sibuyas at kalamansi pa lang; sakop pa rin ng payo sa ibaba ang lahat ng tanim mo.",
   },
-  ana_crops_rising: { en: "Crops Rising", tl: "Tumataas" },
-  ana_total_tons: { en: "Total Tons", tl: "Kabuuang Tonelada" },
-  ana_avg_price: { en: "Avg Price/kg", tl: "Avg Presyo/kilo" },
-  ana_trends: { en: "7-Day Price Trends", tl: "7-Araw na Galaw ng Presyo" },
+  ana_change_t: { en: "Price change today", tl: "Galaw ng presyo ngayon" },
+  ana_change_s: {
+    en: "Every crop, compared with yesterday. Green went up, red went down.",
+    tl: "Bawat pananim, kumpara kahapon. Berde ang tumaas, pula ang bumaba.",
+  },
+  ana_yours: { en: "Yours", tl: "Tanim mo" },
+  ana_models_note: {
+    en: "Forecasts come from models trained on Nueva Ecija market data. They are a guide, not a promise: check your local market too.",
+    tl: "Ang mga taya ay galing sa mga modelong sinanay sa datos ng merkado ng Nueva Ecija. Gabay lamang, hindi pangako: tingnan din ang lokal na merkado.",
+  },
+  ana_sub: { en: "Market insights", tl: "Pagsusuri ng merkado" },
   ana_forecast: { en: "Price Forecast", tl: "Taya ng Presyo" },
-  ana_today_price: { en: "Today's Price", tl: "Presyo Ngayon" },
-  ana_day7: { en: "Day +7 Forecast", tl: "Taya sa Ika-7 Araw" },
-  ana_change7: { en: "7-Day Change", tl: "Pagbabago sa 7 Araw" },
   ana_suggestion: { en: "Sell now or wait?", tl: "Ibenta na o hintayin?" },
   ana_suggestion_sub: {
     en: "Our advice for your crops, from the next 3 days of prices.",
@@ -559,7 +578,6 @@ export const translations: Dict = {
     en: "Predictions are not guaranteed. Always verify with local market conditions.",
     tl: "Hindi garantisado ang mga taya. Laging suriin ang aktwal na presyo sa merkado.",
   },
-  ana_performance: { en: "Price Performance: All Crops", tl: "Galaw ng Presyo: Lahat ng Pananim" },
   ana_predicted: { en: "Prices in the next 3 days", tl: "Presyo sa susunod na 3 araw" },
   ana_based_on: {
     en: "How the price of each crop you grow is expected to move.",
@@ -918,14 +936,7 @@ export const translations: Dict = {
   exp_buyer_sub: { en: "Purchase history", tl: "Mga binili" },
 
   // ── Extra: analytics ──────────────────────────────────────────────────────
-  ana_outlook: { en: "7-Day Price Outlook", tl: "7-Araw na Taya ng Presyo" },
   ana_actual: { en: "Actual Price", tl: "Aktwal na Presyo" },
-  ana_pred: { en: "LSTM Prediction", tl: "Taya ng LSTM" },
-  ana_band: { en: "Confidence Band", tl: "Saklaw ng Kumpiyansa" },
-  ana_uptrend: { en: "Uptrend", tl: "Pataas" },
-  ana_downtrend: { en: "Downtrend", tl: "Pababa" },
-  ana_stable: { en: "Stable", tl: "Matatag" },
-  ana_over7: { en: "₱/kg over 7 days", tl: "₱/kg sa loob ng 7 araw" },
   ana_watch: { en: "WATCH", tl: "BANTAYAN" },
   ana_act_sell: { en: "Sell now", tl: "Ibenta na" },
   ana_act_hold: { en: "Hold", tl: "Hintayin" },
@@ -944,10 +955,6 @@ export const translations: Dict = {
   ana_watch_reason: {
     en: "No clear direction yet. Check again tomorrow.",
     tl: "Wala pang malinaw na direksyon. Tingnan ulit bukas.",
-  },
-  ana_lstm_note: {
-    en: "Predictions generated by an LSTM neural network trained on 3 years of Nueva Ecija market data. Confidence intervals shown at 95%. Not financial advice. Always verify with local market conditions.",
-    tl: "Ang mga taya ay galing sa LSTM neural network na sinanay sa 3 taong datos ng merkado ng Nueva Ecija. 95% ang confidence interval. Hindi ito payong pinansyal. Laging suriin ang aktwal na presyo sa merkado.",
   },
   ana_forecast_note: {
     en: "Forecast by ARIMA. A guide, not a promise: check your local market too.",
