@@ -279,7 +279,9 @@ export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userIn
             {FAMS.map(f => (
               <button key={f} role="tab" aria-selected={fam === f} className={`fseg-tab ${fam === f ? "on" : ""}`}
                 onClick={() => { haptic.select(); setFam(f); }}>
-                {t(f === "All" ? "all" : `fam_${f.toLowerCase()}`)}
+                {/* Always in English, like the marketplace's switch and
+                    Home's family cards. */}
+                {f}
               </button>
             ))}
           </div>
@@ -321,7 +323,8 @@ export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userIn
                   <section className={`pr-fam ${family.toLowerCase()}`} key={family}>
                     <h3 className="pr-fam-t">
                       <span className="pr-fam-dot" aria-hidden="true" />
-                      {t(`fam_${family.toLowerCase()}`)}
+                      {/* The same word as its tab above. */}
+                      {family}
                       <span className="pr-fam-n">{groups.length}</span>
                     </h3>
                     {groups.map(g => {

@@ -491,7 +491,10 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                 className={`fseg-tab ${family === f ? "on" : ""}`}
                 onClick={() => selectFamily(f)}
               >
-                {t(f === "All" ? "all" : `fam_${f.toLowerCase()}`)}
+                {/* Always in English, whichever language the app is set to,
+                    like the Crops / Fruits / Vegetables cards on Home: the
+                    same four words wherever the market is sorted. */}
+                {f}
               </button>
             ))}
           </div>
