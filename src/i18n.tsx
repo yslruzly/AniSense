@@ -658,7 +658,7 @@ export const translations: Dict = {
   ach_year_t: { en: "AniSense Farmer of the Year", tl: "AniSense Magsasaka ng Taon" },
   ach_year_how: { en: "AniSense's top farmer of the whole year", tl: "Ang nangungunang magsasaka ng AniSense sa buong taon" },
   au_kicker: { en: "Achievement unlocked", tl: "May bago kang nakamit" },
-  au_ok: { en: "Nice!", tl: "Ayos!" },
+  au_ok: { en: "Close", tl: "Isara" },
   au_next: { en: "Next", tl: "Susunod" },
   au_see: { en: "See my achievements", tl: "Tingnan ang mga nakamit ko" },
   prof_years_farming: { en: "Years Farming", tl: "Taon sa Pagsasaka" },

@@ -1,6 +1,6 @@
 import { useRef, useState, type PointerEvent } from "react";
 import { ArrowUpRight, ArrowDownRight, ArrowRight } from "lucide-react";
-import { useLang } from "../../i18n";
+import { translations } from "../../i18n";
 import { LSTM_DATA } from "../../data/forecast";
 import { haptic } from "../../lib/platform";
 
@@ -33,8 +33,13 @@ function niceStep(raw: number) {
 }
 const peso = (n: number) => `₱${n.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
+const en = (key: keyof typeof translations) => translations[key].en;
+
 export function ForecastHero({ farmerCrops = [] }: { farmerCrops?: string[] }) {
-  const { t, tn } = useLang();
+  // The forecast is always in English, whatever language the app is set to, crop
+  // names included: the market's words, the same on every phone.
+  const t = en;
+  const tn = (crop: string) => crop;
   const crops = farmerCrops.filter(c => LSTM_DATA[c]);
   const without = farmerCrops.filter(c => !LSTM_DATA[c]);
   const [picked, setPicked] = useState(() => crops[0] ?? "");

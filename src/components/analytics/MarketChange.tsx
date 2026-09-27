@@ -1,4 +1,4 @@
-import { useLang } from "../../i18n";
+import { translations } from "../../i18n";
 import { CROP_GROUPS, RICE_VARIETIES } from "../../data/crops";
 
 // ─── Price change today ───────────────────────────────────────────────────────
@@ -11,8 +11,13 @@ import { CROP_GROUPS, RICE_VARIETIES } from "../../data/crops";
 // The farmer's own crops are tagged, so "how are mine doing" is answered in
 // the same glance as "how is the market doing".
 
+const en = (key: keyof typeof translations) => translations[key].en;
+
 export function MarketChange({ farmerCrops = [] }: { farmerCrops?: string[] }) {
-  const { t, tn } = useLang();
+  // This chart is always in English, whatever language the app is set to, crop
+  // names included: the market's words, the same on every phone.
+  const t = en;
+  const tn = (crop: string) => crop;
   const groups = [{ group: "Rice", varieties: RICE_VARIETIES }, ...CROP_GROUPS];
   // A crop's move is the average of its varieties', so Rice is one row, not
   // three.
