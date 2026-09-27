@@ -378,13 +378,16 @@ export const authCss = `
     88%  { opacity: 0; }
     100% { opacity: 0; }
   }
-  /* Juan chats and never stops: open, half, shut in 130 ms beats, in an
-     uneven order so it reads as words, not a metronome. Twelve beats to a
-     loop, no pause; the two layers share one clock, so they never drift.
-     Starts once he has risen into place, and only while he is on stage. */
+  /* Juan says each line once: open, half, shut in 130 ms beats, in an
+     uneven order so it reads as words, not a metronome, for about a second
+     and a half. Then he stops on the open smile he was drawn with, until
+     the next line. The two layers share one clock, so they never drift.
+     Only while he is on stage. */
   .a-fig-talk { opacity: 0; }
-  .a-fig.on .a-fig-talk.half { animation: a-chat-half 1.56s step-end 700ms infinite; }
-  .a-fig.on .a-fig-talk.shut { animation: a-chat-shut 1.56s step-end 700ms infinite; }
+  .a-fig.on .a-fig-talk.half { animation: a-chat-half 1.56s step-end 200ms; }
+  .a-fig.on .a-fig-talk.shut { animation: a-chat-shut 1.56s step-end 200ms; }
+  /* The first line waits for him to rise into place. */
+  .a-fig.on .a-fig-talk.is-first { animation-delay: 700ms; }
   @keyframes a-chat-half {
     0% { opacity: 1; } 8.33% { opacity: 0; } 16.67% { opacity: 1; } 25% { opacity: 0; } 33.33% { opacity: 1; }
     41.67% { opacity: 0; } 58.33% { opacity: 1; } 66.67% { opacity: 0; } 75% { opacity: 1; } 83.33% { opacity: 0; }
