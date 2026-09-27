@@ -220,6 +220,8 @@ export function FeaturedProducts({ onShop }: { onShop: Shop }) {
   );
 }
 
+const en = (key: keyof typeof translations) => translations[key].en;
+
 // ── Featured farmers ─────────────────────────────────────────────────────────
 // The trust half of a marketplace: who is growing this food. Only real fields
 // are shown (rating, sales, years, town); no "verified" badge the data cannot
@@ -231,7 +233,8 @@ const tone = avatarTone;
 const townOf = (loc: string) => loc.split(",")[0].trim();
 
 export function FeaturedFarmers({ onShop, buyerLocation }: { onShop: Shop; buyerLocation: string }) {
-  const { t, tn } = useLang();
+  // Always in English, like the profile sheet it opens: a farmer's public
+  // card reads the same to every buyer, crop names included.
   // Everyone with something on sale, best-rated first. Keyed the way the
   // marketplace finds a seller again: account id, or initials in the demo.
   const ranked = Object.entries(useMarket().sellers)
@@ -253,8 +256,8 @@ export function FeaturedFarmers({ onShop, buyerLocation }: { onShop: Shop; buyer
 
   return (
     <section className="hm-sec" aria-labelledby="ff-t" data-tour="b-farmers">
-      <h2 className="hm-sec-title" id="ff-t">{t("ff_title")}</h2>
-      <p className="hm-sec-sub">{t("ff_sub")}</p>
+      <h2 className="hm-sec-title" id="ff-t">{en("ff_title")}</h2>
+      <p className="hm-sec-sub">{en("ff_sub")}</p>
 
       <div className="ff">
         {/* The spotlight is a profile to read, not a button: only "See their
@@ -267,7 +270,7 @@ export function FeaturedFarmers({ onShop, buyerLocation }: { onShop: Shop; buyer
         <article className="ff-spot">
           <div className="spf-hero ff-hero">
             <img className="spf-mark" src={leafMask} alt="" aria-hidden="true" />
-            <span className="ff-badge"><Award size={15} strokeWidth={2.6} /> {t("ff_week")}</span>
+            <span className="ff-badge"><Award size={15} strokeWidth={2.6} /> {en("ff_week")}</span>
             <div className="spf-id">
               <span className="spf-ava" style={{ background: tone(spot.name) }} aria-hidden="true">{spot.initials}</span>
               <div className="spf-name">{spot.name}</div>
@@ -277,26 +280,26 @@ export function FeaturedFarmers({ onShop, buyerLocation }: { onShop: Shop; buyer
           <div className="spf-stats">
             <div className="spf-stat">
               <span className="spf-stat-v"><Star size={16} strokeWidth={0} fill="#C98A1B" /> {spot.rating.toFixed(1)}</span>
-              <span className="spf-stat-l">{t("seller_rating")}</span>
+              <span className="spf-stat-l">{en("seller_rating")}</span>
             </div>
             <div className="spf-stat">
-              <span className="spf-stat-v">{spot.yearsfarming}<small> {t("seller_years_suffix")}</small></span>
-              <span className="spf-stat-l">{t("seller_experience")}</span>
+              <span className="spf-stat-v">{spot.yearsfarming}<small> {en("seller_years_suffix")}</small></span>
+              <span className="spf-stat-l">{en("seller_experience")}</span>
             </div>
             <div className="spf-stat">
               <span className="spf-stat-v">{spot.totalSales}+</span>
-              <span className="spf-stat-l">{t("seller_sales")}</span>
+              <span className="spf-stat-l">{en("seller_sales")}</span>
             </div>
           </div>
           <span className="ff-spot-body">
             <span className="spf-bio ff-bio">{spot.bio}</span>
             <span className="spf-crops">
-              {spot.crops.map(c => <span key={c} className="spf-crop">{tn(c)}</span>)}
+              {spot.crops.map(c => <span key={c} className="spf-crop">{c}</span>)}
             </span>
             {/* The card's one action, as wide as the card, with a "go" disc
                 at the end that nudges forward under the thumb. */}
             <button type="button" className="ff-cta" onClick={() => open(spot)}>
-              <span>{t("ff_cta")}</span>
+              <span>{en("ff_cta")}</span>
               <span className="ff-cta-go" aria-hidden="true"><ArrowRight size={18} strokeWidth={2.6} /></span>
             </button>
           </span>
@@ -309,11 +312,11 @@ export function FeaturedFarmers({ onShop, buyerLocation }: { onShop: Shop; buyer
               <span className="ff-row-body">
                 <span className="ff-row-name">
                   {s.name}
-                  {isNear(s.location) && <span className="ff-near">{t("ff_near")}</span>}
+                  {isNear(s.location) && <span className="ff-near">{en("ff_near")}</span>}
                 </span>
                 <span className="ff-row-meta">
                   <span className="ff-star"><Star size={13} fill="currentColor" strokeWidth={0} /> {s.rating}</span>
-                  {" · "}{tn(s.crops[0] || "")}{" · "}{townOf(s.location)}
+                  {" · "}{s.crops[0] || ""}{" · "}{townOf(s.location)}
                 </span>
               </span>
               <ChevronRight size={20} strokeWidth={2.4} className="ff-chev" aria-hidden="true" />

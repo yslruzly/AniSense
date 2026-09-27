@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { ShoppingCart, Plus, Minus, X, Check, Search, Pencil, Trash2, ChevronRight, Package, Calendar, Star, MapPin, Phone, ShoppingBag, CreditCard, AlertTriangle, Wheat, Sprout, ArrowUpDown, Camera, ImageOff, LayoutGrid } from "lucide-react";
 import { haptic } from "../lib/platform";
-import { useLang } from "../i18n";
+import { useLang, translations } from "../i18n";
 import { UserRole, CartItem, SellerDetail, TradeIntent, Listing } from "../types";
 import { CROP_FILTER_MAP, CROP_CATEGORIES, CROP_FAMILIES, ALL_RICE_NAMES, RICE_VARIETY_LIST, familyCropNames, FAMILY_GROUPS, CROP_GROUPS, RICE_VARIETIES } from "../data/crops";
 import { Hdr } from "../components/layout/Hdr";
@@ -25,6 +25,10 @@ import { MUNICIPALITIES } from "../data/locations";
 import { useViewer } from "../lib/viewer";
 import { useMarket, sellerKeyOfDetail } from "../lib/market";
 import { orderErrorOf } from "../services/transactions";
+
+// A farmer's profile is always in English, whatever language the app is set
+// to: it is their public card, and it reads the same to every buyer.
+const en = (key: keyof typeof translations) => translations[key].en;
 
 // ─── Trade / Marketplace Screen ───────────────────────────────────────────────
 export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", userInitials = "JD", userRole, intent }: { onProfile: () => void; onBack: () => void; userName?: string; userInitials?: string; userRole?: UserRole; intent?: TradeIntent }) {
@@ -1027,7 +1031,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
         open={!!sellerDetail}
         onClose={() => setSellerDetail(null)}
         className="seller-modal-sheet"
-        label={shownSeller?.name ?? t("seller_about")}
+        label={shownSeller?.name ?? en("seller_about")}
       >
         {shownSeller && <>
 
@@ -1038,7 +1042,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                     as a large watermark. */}
                 <div className="spf-hero">
                   <img className="spf-mark" src={leafMask} alt="" aria-hidden="true" />
-                  <button className="spf-x" onClick={() => setSellerDetail(null)} aria-label={t("close")}>
+                  <button className="spf-x" onClick={() => setSellerDetail(null)} aria-label={en("close")}>
                     <X size={20} strokeWidth={2.6} />
                   </button>
                   <div className="spf-id">
@@ -1053,15 +1057,15 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                 <div className="spf-stats">
                   <div className="spf-stat">
                     <span className="spf-stat-v"><Star size={16} strokeWidth={0} fill="#C98A1B" /> {shownSeller.rating.toFixed(1)}</span>
-                    <span className="spf-stat-l">{t("seller_rating")}</span>
+                    <span className="spf-stat-l">{en("seller_rating")}</span>
                   </div>
                   <div className="spf-stat">
-                    <span className="spf-stat-v">{shownSeller.yearsfarming}<small> {t("seller_years_suffix")}</small></span>
-                    <span className="spf-stat-l">{t("seller_experience")}</span>
+                    <span className="spf-stat-v">{shownSeller.yearsfarming}<small> {en("seller_years_suffix")}</small></span>
+                    <span className="spf-stat-l">{en("seller_experience")}</span>
                   </div>
                   <div className="spf-stat">
                     <span className="spf-stat-v">{shownSeller.totalSales}+</span>
-                    <span className="spf-stat-l">{t("seller_sales")}</span>
+                    <span className="spf-stat-l">{en("seller_sales")}</span>
                   </div>
                 </div>
 
@@ -1070,11 +1074,11 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                       profile at all, so it comes first. */}
                   <section className="spf-card">
                     <div className="spf-h">
-                      {t("seller_listings")}
+                      {en("seller_listings")}
                       <span className="spf-count">{sellerListings.length}</span>
                     </div>
                     {sellerListings.length === 0 ? (
-                      <p className="sml-none">{t("seller_listings_none")}</p>
+                      <p className="sml-none">{en("seller_listings_none")}</p>
                     ) : (
                       <div className="sml-list">
                         {sellerListings.map(l => {
@@ -1086,9 +1090,9 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                               </span>
                               <span className="sml-body">
                                 <span className="sml-name">{titleOf(l)}</span>
-                                <span className="sml-meta">{l.kg} {t("trade_kg_available")}</span>
+                                <span className="sml-meta">{l.kg} {en("trade_kg_available")}</span>
                               </span>
-                              <span className="sml-price">₱{l.pricePerKg}<small>{t("per_kg_short")}</small></span>
+                              <span className="sml-price">₱{l.pricePerKg}<small>{en("per_kg_short")}</small></span>
                               <ChevronRight size={18} strokeWidth={2.4} className="sml-chev" aria-hidden="true" />
                             </button>
                           );
@@ -1098,7 +1102,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                   </section>
 
                   <section className="spf-card">
-                    <div className="spf-h">{t("seller_crops_sold")}</div>
+                    <div className="spf-h">{en("seller_crops_sold")}</div>
                     <div className="spf-crops">
                       {shownSeller.crops.map(c => <span key={c} className="spf-crop">{c}</span>)}
                     </div>
@@ -1106,18 +1110,18 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
 
                   {/* In their own words: set as a quote, not as a form field. */}
                   <section className="spf-card">
-                    <div className="spf-h">{t("seller_about")}</div>
+                    <div className="spf-h">{en("seller_about")}</div>
                     <p className="spf-bio">{shownSeller.bio}</p>
                   </section>
 
                   {/* The practical facts, as one grouped list rather than a
                       card each: they are read together, once. */}
                   <section className="spf-card spf-facts">
-                    <div className="spf-h">{t("seller_details")}</div>
+                    <div className="spf-h">{en("seller_details")}</div>
                     <a className="spf-fact" href={`tel:${tel}`}>
                       <span className="spf-fact-ico green"><Phone size={18} strokeWidth={2.4} /></span>
                       <span className="spf-fact-txt">
-                        <span className="spf-fact-l">{t("seller_phone")}</span>
+                        <span className="spf-fact-l">{en("seller_phone")}</span>
                         <span className="spf-fact-v">{shownSeller.phone}</span>
                       </span>
                       <ChevronRight size={18} strokeWidth={2.4} className="sml-chev" aria-hidden="true" />
@@ -1125,15 +1129,15 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                     <div className="spf-fact">
                       <span className="spf-fact-ico blue"><MapPin size={18} strokeWidth={2.4} /></span>
                       <span className="spf-fact-txt">
-                        <span className="spf-fact-l">{t("seller_location")}</span>
+                        <span className="spf-fact-l">{en("seller_location")}</span>
                         <span className="spf-fact-v">{shownSeller.location}</span>
                       </span>
                     </div>
                     <div className="spf-fact">
                       <span className="spf-fact-ico gold"><Sprout size={18} strokeWidth={2.4} /></span>
                       <span className="spf-fact-txt">
-                        <span className="spf-fact-l">{t("seller_years")}</span>
-                        <span className="spf-fact-v">{shownSeller.yearsfarming} {t("seller_years_suffix")}</span>
+                        <span className="spf-fact-l">{en("seller_years")}</span>
+                        <span className="spf-fact-v">{shownSeller.yearsfarming} {en("seller_years_suffix")}</span>
                       </span>
                     </div>
                   </section>
@@ -1143,7 +1147,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                     phone's dialer with the number already in. */}
                 <div className="seller-modal-footer spf-foot">
                   <a className="call-seller-btn" href={`tel:${tel}`}>
-                    <Phone size={20} strokeWidth={2.4} /> {t("seller_call")} {shownSeller.name.split(" ")[0]}
+                    <Phone size={20} strokeWidth={2.4} /> {en("seller_call")} {shownSeller.name.split(" ")[0]}
                   </a>
                 </div>
               </>);
