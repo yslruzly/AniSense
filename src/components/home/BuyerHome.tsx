@@ -316,7 +316,7 @@ export function FeaturedFarmers({ onShop, buyerLocation }: { onShop: Shop; buyer
                 </span>
                 <span className="ff-row-meta">
                   <span className="ff-star"><Star size={13} fill="currentColor" strokeWidth={0} /> {s.rating}</span>
-                  {" · "}{s.crops[0] || ""}{" · "}{townOf(s.location)}
+                  {" · "}{townOf(s.location)}
                 </span>
               </span>
               <ChevronRight size={20} strokeWidth={2.4} className="ff-chev" aria-hidden="true" />
