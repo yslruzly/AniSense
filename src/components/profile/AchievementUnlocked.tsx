@@ -17,6 +17,9 @@ import mascotThumbsEyes from "../../assets/mascot-thumbs-eyes.webp";
 //   · Juan rises from behind the plate and keeps blinking while it is open
 // Several earned at once play one after another: each "Next" re-mounts the
 // content, so every badge gets its own arrival.
+//
+// Never for Newbie: joining already has the welcome ID and the walkthrough,
+// so that badge simply appears as earned on Profile (App.tsx filters it).
 
 export function AchievementUnlocked({ id, open, remaining, memberSince, onNext, onSeeAll }: {
   id: AchievementId | null;

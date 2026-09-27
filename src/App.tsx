@@ -182,7 +182,9 @@ export default function App() {
       }
       if (!alive) return;
       if (seen === null) { await saveSeenAchievements(achOwner, earned); return; }
-      const fresh = earned.filter(x => !seen!.includes(x));
+      // Newbie comes with joining, which already has the welcome ID and the
+      // walkthrough: it shows as earned on Profile, but gets no pop-up.
+      const fresh = earned.filter(x => x !== "newbie" && !seen!.includes(x));
       if (fresh.length) setAchQueue(q => [...q, ...fresh.filter(x => !q.includes(x))]);
     })();
     return () => { alive = false; };
@@ -295,6 +297,10 @@ export default function App() {
     // made at sign-in; they should come from the user's record.
     setWelcome({ id: makeMemberId(), since: new Date() });
     justJoined.current = isNew;
+    // A new account always gets the walkthrough after its welcome ID. The
+    // "seen" flag is kept per phone and role, so without this, a second
+    // account made on the same phone would never be shown round.
+    if (isNew) { tourChecked.current = true; setTourPending(true); }
     if (isNew) {
       setActive("home");
       setIdMode("welcome");
@@ -316,6 +322,10 @@ export default function App() {
     setFarmerProfile(profile);
     setWelcome(memberIdFor(session));
     justJoined.current = isNew;
+    // A new account always gets the walkthrough after its welcome ID. The
+    // "seen" flag is kept per phone and role, so without this, a second
+    // account made on the same phone would never be shown round.
+    if (isNew) { tourChecked.current = true; setTourPending(true); }
     if (isNew) {
       setActive("home");
       setIdMode("welcome");
