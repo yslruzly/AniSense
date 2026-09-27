@@ -1403,7 +1403,22 @@ export const appCss = `
     border-radius: 18px; text-align: center; background: var(--paper);
     box-shadow: inset 0 0 0 1px var(--line);
   }
-  .ach-badge.on { background: var(--card); box-shadow: inset 0 0 0 1px var(--line), 0 10px 20px -16px rgba(22,33,27,.45); }
+  /* Earned: a plate of brushed metal. Fine horizontal grain, broad bands of
+     light and shade across it the way a polished surface catches a room, a
+     bright top edge where the light lands and a darker lower one, and a thin
+     steel rim. Locked badges stay flat paper, so the metal itself says
+     "earned". */
+  .ach-badge.on {
+    background:
+      repeating-linear-gradient(0deg, rgba(255,255,255,.07) 0 1px, rgba(0,0,0,.022) 1px 2px),
+      linear-gradient(155deg, #F7F8F9 0%, #DDE0E4 30%, #F1F2F4 48%, #CFD3D8 72%, #E6E8EB 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.95),
+      inset 0 -1px 0 rgba(60,66,74,.14),
+      inset 0 0 0 1px rgba(120,127,136,.32),
+      0 10px 20px -14px rgba(40,46,54,.5);
+  }
+  .ach-badge.on .ach-note { color: var(--text-muted); }
   .ach-medal {
     position: relative; width: 56px; height: 56px; border-radius: 50%; margin-bottom: 2px;
     display: flex; align-items: center; justify-content: center; color: #fff;
