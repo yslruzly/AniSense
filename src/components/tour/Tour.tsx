@@ -17,8 +17,8 @@ import { usePresence } from "../../hooks/usePresence";
 // thing on Home is lit, and a card under it says what that thing is for.
 //
 // It points at the app itself rather than at drawings of it: every step
-// resolves a live element by `data-tour`, scrolls it to the middle of the
-// screen and measures where it landed. So the tour cannot drift out of date
+// resolves a live element by `data-tour`, scrolls it so the part and its card
+// fit on the screen together, card underneath, and measures where it landed. So the tour cannot drift out of date
 // as the page changes, and a farmer is looking at the button they will press
 // a moment later, in the place they will press it.
 //
@@ -58,14 +58,17 @@ const FARMER_STEPS: Step[] = [
   { id: "done" },
 ];
 
+// In the order of the buyer's Home, top to bottom.
 const BUYER_STEPS: Step[] = [
   { id: "b_intro" },
   { id: "b_search", targets: ['[data-tour="b-search"]'] },
   { id: "b_crops", targets: ['[data-tour="b-crops"]'] },
   { id: "b_featured", targets: ['[data-tour="b-featured"]'] },
+  { id: "b_deals", targets: ['[data-tour="b-deals"]'] },
   { id: "b_farmers", targets: ['[data-tour="b-farmers"]'] },
   { id: "b_moves", targets: ['[data-tour="b-moves"]'] },
   { id: "b_purchases", targets: ['[data-tour="b-purchases"]'] },
+  { id: "b_tools", targets: ['[data-tour="tools"]'] },
   // Back up to the header for the bell. The light travels up the page the
   // same way it came down, so the farmer never loses track of where it is.
   { id: "b_bell", targets: ['[data-tour="bell"]'] },
@@ -156,13 +159,22 @@ export function Tour({ open, onFinish, role }: { open: boolean; onFinish: () => 
 
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const el = document.querySelector(sel);
-    // Middle of the screen for most cards. A tall one — the price chart, the
-    // profit card — goes to the top instead, or it fills the middle and the
-    // caption has nowhere to sit but on top of the thing it describes.
-    const tall = el ? el.getBoundingClientRect().height > (host.current?.offsetHeight ?? 844) * 0.42 : false;
-    el?.scrollIntoView({ block: tall ? "start" : "center", behavior: reduce ? "auto" : "smooth" });
+    const scroller = el?.closest<HTMLElement>(".scroll") ?? null;
+    // The part and its card are placed as one block: the part on top, the
+    // card right under it, the pair centred in the space under the header
+    // (a little high, where the eye starts). A part too tall for that goes
+    // to the top of the page, and its card sits at the foot of the screen.
+    // Parts outside the scrolling page (the bell, the tab bar) stay put.
+    const h = host.current?.getBoundingClientRect();
+    const b = h ? measure(step.targets, h) : null;
+    if (scroller && h && b) {
+      const top = scroller.getBoundingClientRect().top - h.top + EDGE;
+      const room = h.height - EDGE - top;
+      const block = b.height + GAP + cardH;
+      const want = block <= room ? top + (room - block) * 0.35 : top;
+      scroller.scrollTo({ top: scroller.scrollTop + (b.top - want), behavior: reduce ? "auto" : "smooth" });
+    }
 
-    const scroller = el?.closest(".scroll");
     scroller?.addEventListener("scroll", place, { passive: true });
     window.addEventListener("resize", place);
     const ro = el ? new ResizeObserver(place) : null;
@@ -179,7 +191,9 @@ export function Tour({ open, onFinish, role }: { open: boolean; onFinish: () => 
       window.removeEventListener("resize", place);
       ro?.disconnect();
     };
-  }, [open, i, step.targets, place]);
+    // cardH: a step whose card is taller than the last one's settles again
+    // once it has been measured, so the pair still fits.
+  }, [open, i, step.targets, place, cardH]);
 
   // The card is measured, not guessed: the copy is two lines in English and
   // often three in Filipino, and the difference decides which side it sits on.
@@ -209,8 +223,11 @@ export function Tour({ open, onFinish, role }: { open: boolean; onFinish: () => 
 
   if (!mounted) return null;
 
-  // Under the hole if it fits, over it if not, and pinned to the bottom when
-  // the lit thing is too tall for either — the card is never off-screen.
+  // The card goes under the part it explains, always: read the part, then
+  // the words about it, in the order the eye moves down a page. A part too
+  // tall to leave room has its card at the foot of the screen, over the
+  // part's lower edge. The one exception is something already at the foot
+  // (the tab bar): there is no "under", so its card sits just above it.
   let cardTop: number;
   if (!box) {
     // The opening card makes room above itself for the mascot, and the two
@@ -219,7 +236,7 @@ export function Tour({ open, onFinish, role }: { open: boolean; onFinish: () => 
     cardTop = Math.max(EDGE + room, (shellH - cardH + room) / 2);
   } else if (box.top + box.height + GAP + cardH + EDGE <= shellH) {
     cardTop = box.top + box.height + GAP;
-  } else if (box.top - GAP - cardH >= EDGE) {
+  } else if (box.top > shellH * 0.6 && box.top - GAP - cardH >= EDGE) {
     cardTop = box.top - GAP - cardH;
   } else {
     cardTop = shellH - cardH - EDGE;

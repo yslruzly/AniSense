@@ -195,7 +195,7 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
             the featured harvests: the two "what to buy today" blocks together,
             before the invitation to browse everything. */}
         {isBuyer && (
-          <section className="hm-card tint-green">
+          <section className="hm-card tint-green" data-tour="b-deals">
             <div className="hm-card-head">
               <span className="hm-ico"><Tag size={20} strokeWidth={2.2} /></span>
               <div>
