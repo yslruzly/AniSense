@@ -1022,8 +1022,8 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
 
       {/* ── Checkout: the receipt ──
           The one place in the app that gets a celebration: seen once per
-          order, at the end of a long flow. It prints out, the check draws
-          itself, and it stays until the buyer puts it away. */}
+          order, at the end of a long flow. It prints out, and it stays until
+          the buyer puts it away. */}
       <Receipt order={order} open={checkoutDone} onClose={() => setCheckoutDone(false)} />
 
       {/* ── Seller Details Modal ── */}

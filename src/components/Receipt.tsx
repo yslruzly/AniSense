@@ -93,13 +93,6 @@ export function Receipt({ order, open, onClose }: { order: ReceiptOrder | null; 
             <span className="rc-kicker">{en("rc_kicker")}</span>
           </header>
 
-          {/* The check draws itself once the paper is out: the order is done. */}
-          <div className="rc-ok" aria-hidden="true">
-            <svg viewBox="0 0 52 52" width="46" height="46">
-              <circle className="rc-ok-ring" cx="26" cy="26" r="23" />
-              <path className="rc-ok-tick" d="M15 27.5 L22.5 35 L37.5 19" />
-            </svg>
-          </div>
           {/* No subtitle: what happens next is said once, in the note under
               the total, where it sits beside the amount it is about. */}
           <h2 className="rc-title">{en("rc_title")}</h2>

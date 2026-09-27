@@ -71,7 +71,7 @@ export async function renderReceipt(d: ReceiptImageData): Promise<Blob> {
 
   let h = PAD;
   h += 34 + 8 + 14;                 // logo row, kicker
-  h += 14 + 46 + 8 + 28;            // check, title
+  h += 18 + 28;                     // title
   h += 16 + 14 + Math.max(18, buyerLines.length * 18); // meta
   h += 16 + 2 + 16;                 // perforation
   d.groups.forEach((g, i) => {
@@ -144,16 +144,8 @@ export async function renderReceipt(d: ReceiptImageData): Promise<Blob> {
   track(ctx, 0);
   y += 14;
 
-  // Check
-  y += 14;
-  const cy = y + 23;
-  ctx.beginPath(); ctx.arc(centre, cy, 20.5, 0, Math.PI * 2);
-  ctx.fillStyle = TANIM_SK; ctx.fill();
-  ctx.lineWidth = 2.2; ctx.strokeStyle = TANIM; ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(centre - 9.7, cy + 1.3); ctx.lineTo(centre - 3.1, cy + 7.9); ctx.lineTo(centre + 10.1, cy - 6.2);
-  ctx.lineWidth = 4; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.stroke();
-  y += 46 + 8;
+  // Title
+  y += 18;
   ctx.font = `700 22px ${DISPLAY}`;
   ctx.fillStyle = TEXT;
   ctx.fillText(d.title, centre, y + 14);

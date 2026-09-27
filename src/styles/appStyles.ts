@@ -3021,16 +3021,8 @@ export const appCss = `
   }
   .rc-kicker { font-size: 11.5px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--text-faint); }
 
-  .rc-ok { display: flex; justify-content: center; margin-top: 14px; }
-  .rc-ok-ring { fill: var(--tanim-sk); stroke: var(--tanim); stroke-width: 2.5; }
-  .rc-ok-tick {
-    fill: none; stroke: var(--tanim); stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round;
-    stroke-dasharray: 34; stroke-dashoffset: 34;
-    animation: rc-tick 420ms var(--ease-out) 720ms forwards;
-  }
-  @keyframes rc-tick { to { stroke-dashoffset: 0; } }
   .rc-title {
-    margin: 8px 0 0; text-align: center; font-family: var(--font-display); font-size: 22px; font-weight: 700;
+    margin: 18px 0 0; text-align: center; font-family: var(--font-display); font-size: 22px; font-weight: 700;
     letter-spacing: -.015em; color: var(--text);
   }
 
@@ -3111,7 +3103,6 @@ export const appCss = `
   .rc-done:active { transform: scale(.975); transition-duration: 90ms; }
   @media (prefers-reduced-motion: reduce) {
     .rc-paper { animation: a-fade-in 240ms ease both; }
-    .rc-ok-tick { animation: none; stroke-dashoffset: 0; }
     .rc-actions { animation: a-fade-in 240ms ease both; }
     .rc-save-lbl { animation: none; }
     .rc-done:active, .rc-save:active { transform: none; }
@@ -3239,11 +3230,10 @@ export const appCss = `
   .spf-card .sml-price small { color: var(--tanim); }
   .spf-crops { display: flex; flex-wrap: wrap; gap: 8px; }
   .spf-crop {
-    display: inline-flex; align-items: center; gap: 7px; padding: 7px 12px; border-radius: 99px;
+    display: inline-flex; align-items: center; padding: 7px 12px; border-radius: 99px;
     background: var(--paper); box-shadow: inset 0 0 0 1px var(--line);
     font-size: 14px; font-weight: 700; color: var(--text);
   }
-  .spf-crop::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--tanim); }
   .spf-bio {
     margin: 0; padding: 2px 0 2px 12px; border-left: 3px solid var(--tanim-sk);
     font-size: 15px; line-height: 1.6; color: var(--text-soft);
