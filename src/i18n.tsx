@@ -972,18 +972,17 @@ export const translations: Dict = {
     tl: "Pwede mo itong palitan anumang oras sa Setting.",
   },
 
-  // ── Welcome / price board ─────────────────────────────────────────────────
-  splash_board_label: { en: "Palay today", tl: "Palay ngayon" },
-  /** Suffix for the other crop groups on the welcome board: "Onions today". */
-  splash_board_today: { en: "today", tl: "ngayon" },
-  splash_from_yesterday: { en: "from yesterday", tl: "mula kahapon" },
-  splash_last_update: { en: "Last updated 6:05 AM", tl: "Huling update 6:05 ng umaga" },
+  // ── Welcome ───────────────────────────────────────────────────────────────
   splash_lines: {
     en: "Prices, marketplace, expenses,\nand weather: all in one place.",
     tl: "Presyo, bentahan, gastos, at panahon:\nnasa isang lugar na lang.",
   },
   splash_have_account: { en: "I already have an account", tl: "Mayroon na akong account" },
   splash_free: { en: "Free. No paid account.", tl: "Libre. Walang bayad na account." },
+  splash_sr: {
+    en: "AniSense. Real farmers, real produce, a stronger tomorrow. Prices, marketplace, expenses and weather in one place.",
+    tl: "AniSense. Totoong magsasaka, totoong ani, mas matibay na bukas. Presyo, bentahan, gastos at panahon sa iisang lugar.",
+  },
 
   // ── Role ──────────────────────────────────────────────────────────────────
   role_pick_one: {

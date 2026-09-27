@@ -4,7 +4,7 @@
 //   · every tappable thing ≥ 52dp; primary actions 60dp (Material floor is 48dp)
 //   · secondary text #454F49 ≈ 7.4:1 on paper, no gray-on-gray
 //   · motion: transform/opacity only, <300ms, custom ease-out, reduced-motion honoured
-import riceField from "../assets/rice-field.webp";
+import wallpaper from "../assets/anisense-wallpaper.webp";
 
 export const authCss = `
   /* A verification code: six digits read off another screen and typed back,
@@ -130,12 +130,7 @@ export const authCss = `
     .a-rolehead .a-rolestage, .a-rolehead .a-say { animation: a-fade-in 260ms ease both; }
     .a-screen .a-rolehead .a-cast .a-fig.a-fig { transform: none; filter: none; }
     .a-screen .a-say .a-say-emoji { animation: none; }
-    /* Reduced motion is gentler, not nothing: the price still crossfades so the
-       swap stays legible, it just no longer travels or blurs. */
-    .a-board-slide { animation: a-fade-in 260ms ease; }
     @keyframes a-fade-in { from { opacity: 0; } to { opacity: 1; } }
-    .a-board-dots span { transition: background-color 140ms ease; }
-    .a-board-dots span.on { transform: none; }
   }
 
   /* ── Language gate ─────────────────────────────────────────────────────── */
@@ -181,99 +176,45 @@ export const authCss = `
 
   .a-help { font-size: var(--fs-label); color: var(--dilim); margin-top: 8px; line-height: 1.45; }
 
-  /* ── Welcome: the price board ──────────────────────────────────────────── */
-  /* The welcome screen sits on a Cordillera rice terrace. The scrim stays hard
-     under the brand row and under the buttons, and opens through the middle so
-     the glass board has something worth blurring behind it. */
-  /* The photo lives on the screen, which never scrolls, so it stays put while
-     the content scrolls over it on a short handset. */
-  .a-welcome-shell { background: var(--ink); position: relative; isolation: isolate; }
-  .a-welcome {
-    flex: 1; min-height: 0; display: flex; flex-direction: column;
-    padding: calc(20px + var(--safe-top)) 22px calc(26px + var(--safe-bottom));
-    overflow-y: auto; overscroll-behavior: contain;
-  }
-  .a-welcome::-webkit-scrollbar { width: 0; }
+  /* ── Welcome: the AniSense poster ──────────────────────────────────────── */
+  /* The poster, full-bleed. Everything on it stays as drawn except the foot,
+     where a soft green scrim rises just enough to hold the buttons and the
+     line under them; it starts below Juan's face so he stays bright. Pushed a
+     little right of centre on a narrow phone, so his basket isn't the part
+     that gets cropped. A faint light haze along the very top keeps the
+     status bar's dark icons readable over the leaves in the corner. */
+  /* The picture lives on the screen, which never scrolls, so it stays put. */
+  .a-welcome-shell { background: #CFE3C0; position: relative; isolation: isolate; }
   .a-welcome-shell::before {
     content: ""; position: absolute; inset: 0; z-index: -1;
     background-image:
-      linear-gradient(180deg,
-        rgba(16,21,18,.93) 0%,
-        rgba(16,21,18,.72) 9%,
-        rgba(16,21,18,.44) 22%,
-        rgba(16,21,18,.42) 48%,
-        rgba(16,21,18,.72) 62%,
-        rgba(16,21,18,.93) 74%,
-        rgba(16,21,18,.97) 100%),
-      url(${riceField});
-    background-size: cover, cover; background-position: center, center;
+      linear-gradient(180deg, rgba(255,255,255,.5) 0, rgba(255,255,255,0) calc(56px + var(--safe-top))),
+      linear-gradient(180deg, rgba(8,28,16,0) 52%, rgba(8,28,16,.5) 66%, rgba(6,24,13,.9) 100%),
+      url(${wallpaper});
+    background-size: cover, cover, cover; background-position: center, center, 64% center;
   }
-  /* Glass. The tint is thin and does the legibility work; the blur does the
-     depth. A sheen across the top-left and a hairline edge keep it reading as a
-     pane of glass rather than a flat translucent box, and the shadow is wide
-     and soft so the panel floats instead of being stamped on. */
-  .a-board {
-    margin-top: 26px; border-radius: var(--r-lg); padding: 22px 22px 20px;
-    background:
-      linear-gradient(148deg, rgba(255,255,255,.13), rgba(255,255,255,.03) 44%, rgba(255,255,255,0) 72%),
-      rgba(16,21,18,.34);
-    backdrop-filter: blur(26px) saturate(150%);
-    -webkit-backdrop-filter: blur(26px) saturate(150%);
-    box-shadow:
-      inset 0 0 0 1px rgba(255,255,255,.13),
-      inset 0 1px 0 rgba(255,255,255,.24),
-      inset 0 -1px 0 rgba(0,0,0,.22),
-      0 22px 44px -22px rgba(0,0,0,.78);
+  .a-welcome {
+    flex: 1; min-height: 0; display: flex; flex-direction: column;
+    padding: calc(20px + var(--safe-top)) 22px calc(22px + var(--safe-bottom));
+    overflow-y: auto; overscroll-behavior: contain;
   }
-  /* Without backdrop-filter the tint alone cannot hold text over a photograph,
-     so fall back to the opaque plate. */
-  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-    .a-board { background: var(--ink-2); }
-  }
-  .a-board-lbl {
-    font-family: var(--font-display); font-weight: 600; font-size: var(--fs-label); color: var(--palay);
-    /* One line, always: the board must not change height as it rotates. */
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-  .a-board-price {
-    font-family: var(--font-display); font-weight: 700; color: #fff; letter-spacing: -.045em;
-    line-height: .92; font-size: var(--fs-num-xl); font-variant-numeric: tabular-nums;
-    margin-top: 12px; display: flex; align-items: baseline;
-  }
-  .a-board-price .a-peso { font-size: var(--fs-num); font-weight: 600; margin-right: 4px; letter-spacing: 0; }
-  .a-board-unit { font-size: var(--fs-lead); color: rgba(255,255,255,.66); margin-top: 6px; }
-  .a-board-delta {
-    display: inline-flex; align-items: center; gap: 8px; margin-top: 16px;
-    padding: 9px 15px; border-radius: var(--r-pill);
-    font-family: var(--font-display); font-weight: 600; font-size: var(--fs-label); font-variant-numeric: tabular-nums;
-  }
-  .a-board-delta.up   { background: rgba(11,107,65,.3);  box-shadow: inset 0 0 0 1.5px rgba(126,214,168,.4); color: #9EE3BE; }
-  .a-board-delta.down { background: rgba(165,35,27,.24); box-shadow: inset 0 0 0 1.5px rgba(233,157,150,.4); color: #F0AFA9; }
-  .a-board-foot {
-    display: flex; align-items: center; gap: 8px; margin-top: 18px; padding-top: 16px;
-    border-top: 1px solid rgba(255,255,255,.16); font-size: var(--fs-label); color: rgba(255,255,255,.72);
-  }
-  /* The board cycles through the crop groups; each slide fades up on arrival. */
-  /* Under 300ms, like every other UI beat here. The blur is the trick for a
-     swap in place: it blends the outgoing and incoming figures into one motion
-     instead of two numbers trading places. */
-  .a-board-slide { animation: a-swap 260ms var(--ease-out); }
-  @keyframes a-swap {
-    from { opacity: 0; transform: translateY(7px); filter: blur(3px); }
-    to   { opacity: 1; transform: none;            filter: blur(0); }
-  }
-  .a-board-dots { display: flex; justify-content: center; gap: 6px; margin-top: 16px; }
-  .a-board-dots span {
-    width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.26);
-    transition: background-color 260ms ease, transform 260ms var(--ease-out);
-  }
-  .a-board-dots span.on { background: var(--palay); transform: scale(1.34); }
+  .a-welcome::-webkit-scrollbar { width: 0; }
+  /* What the app does and its slogan, above the buttons. The scrim rises
+     a little higher for it than it would for the buttons alone, and a soft
+     shadow keeps the white type clear of the busy picture behind it. */
   .a-tagline {
-    margin-top: auto; margin-bottom: 22px; font-family: var(--font-display); font-weight: 500;
-    font-size: var(--fs-lead); line-height: 1.45; color: rgba(255,255,255,.9); white-space: pre-line;
+    margin-top: auto; margin-bottom: 20px; font-family: var(--font-display); font-weight: 500;
+    font-size: var(--fs-lead); line-height: 1.45; color: #fff; white-space: pre-line;
+    text-shadow: 0 1px 12px rgba(0,0,0,.5), 0 1px 2px rgba(0,0,0,.35);
   }
-  .a-tagline em { font-style: normal; color: var(--palay); }
-  .a-legal { text-align: center; font-size: var(--fs-label); color: rgba(255,255,255,.5); margin-top: 14px; }
+  .a-tagline em { font-style: normal; font-weight: 700; color: var(--palay); }
+  .a-welcome-cta { display: flex; flex-direction: column; gap: 12px; }
+  .a-legal { text-align: center; font-size: var(--fs-label); color: rgba(255,255,255,.78); margin-top: 14px; text-shadow: 0 1px 6px rgba(0,0,0,.35); }
+  /* For screen readers only: the poster's words are in the picture. */
+  .a-sr {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
 
   /* ── Role picker ───────────────────────────────────────────────────────── */
   .a-role {

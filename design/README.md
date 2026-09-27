@@ -7,6 +7,7 @@ a second of loading for a picture that renders 380 pixels wide.
 
 | Source here | Used by the app as | Where it appears |
 |---|---|---|
+| `AniSenseWallpaper.png` | `src/assets/anisense-wallpaper.webp` | Welcome screen, full-bleed behind the two sign-up buttons |
 | `AnisensePosterLS.png` | `src/assets/anisense-poster.webp` | Buyer Home, between the price chart and Featured farmers |
 | `AnisensePosterMarket.png` | *(unused — identical to `AnisensePosterLS.png`)* | — |
 | `FarmerMarketSell.png` | `src/assets/farmer-sell.webp` | Marketplace panel, farmer accounts |
