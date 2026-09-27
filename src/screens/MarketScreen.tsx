@@ -13,11 +13,7 @@ import { CropIcon } from "../components/icons";
 import { cropPhoto, cropGroupPhoto } from "../data/cropPhotos";
 import { Sheet } from "../components/ui/Sheet";
 import { useRetained } from "../hooks/usePresence";
-import mascotBody from "../assets/mascot-wave-body.webp";
-import mascotHand from "../assets/mascot-wave-hand.webp";
-import mascotEyes from "../assets/mascot-wave-eyes.webp";
-import mascotThumbs from "../assets/mascot-thumbs.webp";
-import mascotThumbsEyes from "../assets/mascot-thumbs-eyes.webp";
+import mascotBasket from "../assets/mascot-basket.webp";
 
 // ─── Prices ───────────────────────────────────────────────────────────────────
 // Reads top to bottom as three questions:
@@ -168,8 +164,8 @@ export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userIn
   const flat = ALL_ITEMS.length - up - down;
   const movers = [...ALL_ITEMS].sort((a, b) => Math.abs(b.change) - Math.abs(a.change)).slice(0, 6);
   // Whether today's market is good news for the person reading it: rising
-  // prices are a good day to sell, falling ones a good day to buy. The
-  // mascot's gesture says which, so the same numbers read right for both.
+  // prices are a good day to sell, falling ones a good day to buy. How the
+  // farmer arrives says which, so the same numbers read right for both.
   const goodDay = userRole === "buyer" ? down > up : up > down;
   const [headA, headB = ""] = t("mkt_pulse_head").split("{up}");
 
@@ -210,22 +206,15 @@ export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userIn
             <span className="pr-fresh-dot" />
             {isOffline ? t("market_offline_cached") : `${t("market_up_to_date")} · ${lastUpdated}`}
           </div>
-          {/* The mascot from the tour, standing in the corner of the card.
-              A good day for you: thumbs up, and he hops. Otherwise he leans
-              in and waves. Decoration with a meaning, so hidden from screen
-              readers: the headline already says it. */}
-          {prices.status === "ready" && (goodDay ? (
-            <div className="pr-mascot thumbs" aria-hidden="true">
-              <img className="tm-body" src={mascotThumbs} alt="" width={420} height={443} decoding="async" />
-              <img className="tm-eyes" src={mascotThumbsEyes} alt="" width={420} height={443} decoding="async" />
+          {/* A farmer with the day's basket, standing behind the card's
+              bottom edge. A good day for you: he lifts it up with a little
+              bounce. Otherwise he simply rises into view. Decoration with a
+              meaning, so hidden from screen readers: the headline says it. */}
+          {prices.status === "ready" && (
+            <div className={`pr-mascot basket ${goodDay ? "good" : ""}`} aria-hidden="true">
+              <img src={mascotBasket} alt="" width={420} height={474} decoding="async" />
             </div>
-          ) : (
-            <div className="pr-mascot wave" aria-hidden="true">
-              <img className="tm-body" src={mascotBody} alt="" width={420} height={435} decoding="async" />
-              <img className="tm-eyes" src={mascotEyes} alt="" width={420} height={435} decoding="async" />
-              <img className="tm-hand" src={mascotHand} alt="" width={420} height={435} decoding="async" />
-            </div>
-          ))}
+          )}
         </section>
 
         {/* 2 ── Biggest moves ── */}
