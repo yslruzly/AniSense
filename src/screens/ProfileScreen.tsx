@@ -6,9 +6,11 @@ import { CropEmoji } from "../components/CropEmoji";
 import { formatName } from "../lib/names";
 import { AniSenseLogo } from "../components/AniSenseLogo";
 import leafMask from "../assets/anisense-leaf-mask.png";
+import { Achievements } from "../components/profile/Achievements";
+import { Sale } from "../lib/sales";
 
 // ─── Profile Screen ───────────────────────────────────────────────────────────
-export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignOut, userInitials = "JD", userRole, userPhoto = null, onShowId, onReplayTour }: {
+export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignOut, userInitials = "JD", userRole, userPhoto = null, onShowId, onReplayTour, sales = [], memberSince }: {
   onNavigate: (s: Screen) => void;
   onBack: () => void;
   profile: FarmerProfile;
@@ -20,6 +22,9 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
   onShowId?: () => void;
   /** Runs the guided walkthrough again, from wherever the farmer asked. */
   onReplayTour?: () => void;
+  /** For the achievements: what they have sold, and when they joined. */
+  sales?: Sale[];
+  memberSince?: Date;
 }) {
   const { t, tn } = useLang();
 
@@ -174,6 +179,9 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
             </div>
           </div>
         )}
+
+        {/* What they have earned on AniSense, right under their numbers. */}
+        {userRole !== "buyer" && !editing && <Achievements sales={sales} memberSince={memberSince} />}
 
         {/* Contact Info */}
         <div className="card">

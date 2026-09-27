@@ -1387,6 +1387,55 @@ export const appCss = `
      stats card takes a wash, because it's the one that's about the person
      rather than about a setting. */
   .card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 13px; }
+
+  /* ── Achievements (farmer Profile) ──────────────────────────────────────── */
+  /* A medal per achievement, two to a row. Earned: a raised medal in its own
+     colour, the same material as the app's filled icon tiles. Not yet: the
+     same medal in grey with a small lock, and the words say how to earn it. */
+  .ach .card-head { margin-bottom: 14px; }
+  .ach-count {
+    margin-left: auto; flex-shrink: 0; padding: 4px 10px; border-radius: 99px;
+    font-size: 12.5px; font-weight: 800; background: var(--gold-sk); color: var(--gold-text);
+  }
+  .ach-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .ach-badge {
+    display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 10px 13px;
+    border-radius: 18px; text-align: center; background: var(--paper);
+    box-shadow: inset 0 0 0 1px var(--line);
+  }
+  .ach-badge.on { background: var(--card); box-shadow: inset 0 0 0 1px var(--line), 0 10px 20px -16px rgba(22,33,27,.45); }
+  .ach-medal {
+    position: relative; width: 56px; height: 56px; border-radius: 50%; margin-bottom: 2px;
+    display: flex; align-items: center; justify-content: center; color: #fff;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.3), inset 0 -2px 0 rgba(0,0,0,.18),
+      0 0 0 3px #fff, 0 0 0 4px var(--line), 0 8px 16px -8px rgba(0,0,0,.4);
+  }
+  .ach-medal.blue   { background: linear-gradient(180deg, #5A9CD6 0%, #2F6FA8 55%, #235887 100%); }
+  .ach-medal.green  { background: linear-gradient(180deg, #16895B 0%, var(--tanim) 55%, #07522F 100%); }
+  .ach-medal.orange { background: linear-gradient(180deg, #F0A05A 0%, #D9722E 55%, #A2481A 100%); }
+  .ach-medal.gold   { background: linear-gradient(180deg, #E3B04A 0%, #C08A22 55%, #8A5D0C 100%); }
+  .ach-medal.violet { background: linear-gradient(180deg, #8E78DB 0%, #5C45A8 55%, #47348A 100%); }
+  /* The top award gets the richest gold and a warm glow. */
+  .ach-medal.trophy {
+    background: radial-gradient(120% 90% at 30% 20%, #FFE08A 0%, #F2B32C 45%, #B07A16 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.45), inset 0 -2px 0 rgba(0,0,0,.18),
+      0 0 0 3px #fff, 0 0 0 4px #E7C26A, 0 8px 18px -8px rgba(176,122,22,.7);
+  }
+  /* Not yet earned: the same medal, drained. */
+  .ach-badge.off .ach-medal {
+    background: var(--paper-alt); color: var(--text-faint);
+    box-shadow: inset 0 0 0 1px var(--line), 0 0 0 3px var(--paper), 0 0 0 4px var(--line);
+  }
+  .ach-lock {
+    position: absolute; right: -4px; bottom: -4px; width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: #fff; color: var(--text-muted); box-shadow: 0 0 0 1px var(--line), 0 2px 6px -2px rgba(0,0,0,.25);
+  }
+  .ach-name { font-family: var(--font-display); font-size: 14.5px; font-weight: 700; line-height: 1.25; color: var(--text); text-wrap: balance; }
+  .ach-badge.off .ach-name { color: var(--text-muted); }
+  .ach-note { font-size: 12.5px; line-height: 1.35; color: var(--text-faint); text-wrap: balance; }
   .card-ico {
     width: 38px; height: 38px; flex: 0 0 38px; border-radius: 11px;
     display: flex; align-items: center; justify-content: center;

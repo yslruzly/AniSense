@@ -5,6 +5,7 @@ import familyCrops from "../../assets/families/family-crops.webp";
 import familyFruits from "../../assets/families/family-fruits.webp";
 import familyVegetables from "../../assets/families/family-vegetables.webp";
 import { useMarket } from "../../lib/market";
+import { rankSellers, farmerOfTheWeek } from "../../lib/featured";
 import { cropPhoto, cropPhotoFor, cropGroupPhoto } from "../../data/cropPhotos";
 import { CropEmoji } from "../CropEmoji";
 import { Listing, TradeIntent } from "../../types";
@@ -237,11 +238,10 @@ export function FeaturedFarmers({ onShop, buyerLocation }: { onShop: Shop; buyer
   // card reads the same to every buyer, crop names included.
   // Everyone with something on sale, best-rated first. Keyed the way the
   // marketplace finds a seller again: account id, or initials in the demo.
-  const ranked = Object.entries(useMarket().sellers)
-    .map(([key, s]) => ({ key, ...s }))
-    .sort((a, b) => b.rating - a.rating || b.totalSales - a.totalSales);
-  const week = Math.floor(Date.now() / (7 * 864e5));
-  const spot = ranked[week % Math.min(4, ranked.length)];
+  // The spotlight is the same pick that awards the Profile achievement.
+  const { sellers } = useMarket();
+  const ranked = rankSellers(sellers);
+  const spot = farmerOfTheWeek(sellers);
   if (!spot) return null;
 
   // Then three more: anyone growing in the buyer's own town first (tagged, so
