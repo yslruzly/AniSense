@@ -17,7 +17,6 @@ import { useRetained } from "../hooks/usePresence";
 import { DateField, localISO } from "../components/ui/DateField";
 import { ProfitCard, estimateFor, spentOn } from "../components/expenses/ProfitCard";
 import { Sale } from "../lib/sales";
-import { HarvestPlans, loadHarvestPlans, saveHarvestPlans } from "../lib/harvestPlans";
 
 // ─── Expenses Screen ──────────────────────────────────────────────────────────
 export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = "JD", isBuyer = false, sales = [] }: { onProfile: () => void; onBack: () => void; farmerCrops: string[]; userInitials?: string; isBuyer?: boolean; sales?: Sale[] }) {
@@ -38,10 +37,10 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
   const [saving, setSaving] = useState(false);
   // Expected harvest per crop, for the estimated profit. Read once from the
   // phone, written back on every change.
-  const [plans, setPlans] = useState<HarvestPlans>({});
-  const plansLoaded = useRef(false);
-  useEffect(() => { loadHarvestPlans().then(p => { setPlans(p); plansLoaded.current = true; }); }, []);
-  useEffect(() => { if (plansLoaded.current) void saveHarvestPlans(plans); }, [plans]);
+  // Expected harvests, kept by the store: on the database for a real
+  // account, on this phone in the demo.
+  const plans = market.harvestPlans;
+  const setPlans = market.setHarvestPlans;
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);

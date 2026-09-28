@@ -35,9 +35,7 @@ import {
   toFarmerProfile, accountFromSession, memberIdFor, toE164Phone,
 } from "./services/auth";
 import { FarmerProfile } from "./types";
-import { PriceAlert, loadAlerts, saveAlerts } from "./lib/priceAlerts";
-import { Planting, loadPlantings, savePlantings } from "./lib/plantings";
-import { Sale, loadSales, saveSales } from "./lib/sales";
+import { Sale } from "./lib/sales";
 import { MarketContext, useMarketStore } from "./lib/market";
 import { AchievementId, earnedAchievements, loadSeenAchievements, saveSeenAchievements } from "./lib/achievements";
 import { AchievementUnlocked } from "./components/profile/AchievementUnlocked";
@@ -84,27 +82,6 @@ export default function App() {
   // twentieth tab switch of the day.
   const visited = useRef(new Set<Screen>(["home"]));
   const [revisit, setRevisit] = useState(false);
-  // Price targets a farmer set. Loaded once from native storage, and
-  // written back whenever they change, so they outlive the app closing.
-  const [priceAlerts, setPriceAlerts] = useState<PriceAlert[]>([]);
-  const alertsLoaded = useRef(false);
-  useEffect(() => { loadAlerts().then(a => { setPriceAlerts(a); alertsLoaded.current = true; }); }, []);
-  useEffect(() => { if (alertsLoaded.current) saveAlerts(priceAlerts); }, [priceAlerts]);
-
-  // What the farmer sold. The income half of the profit snapshot; the app
-  // has no other record of a farmer's earnings.
-  const [sales, setSales] = useState<Sale[]>([]);
-  const salesLoaded = useRef(false);
-  useEffect(() => { loadSales().then(s => { setSales(s); salesLoaded.current = true; }); }, []);
-  useEffect(() => { if (salesLoaded.current) saveSales(sales); }, [sales]);
-
-  // What the farmer has in the ground. Same shape as the price targets:
-  // read once at launch, written back on every change.
-  const [plantings, setPlantings] = useState<Planting[]>([]);
-  const plantingsLoaded = useRef(false);
-  useEffect(() => { loadPlantings().then(p => { setPlantings(p); plantingsLoaded.current = true; }); }, []);
-  useEffect(() => { if (plantingsLoaded.current) savePlantings(plantings); }, [plantings]);
-
   // ── The guided tour ──
   // Runs once per role on this phone, on the first Home the account lands
   // on. It is held back until the welcome ID is out of the way, because two
@@ -154,10 +131,13 @@ export default function App() {
   // otherwise (src/lib/market.tsx).
   const initials = userName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
   const market = useMarketStore({ accountId, role: userRole, name: userName, initials });
-  // The farmer's earnings: sales typed in on this phone, plus what they sold
-  // through the marketplace. Only the typed ones are theirs to edit and save.
-  const allSales = market.marketSales.length ? [...sales, ...market.marketSales] : sales;
-  const setTypedSales = (next: Sale[]) => setSales(next.filter(s => !s.id.startsWith("tx-")));
+  // A farmer's own records (price alerts, plantings, sales typed in) live in
+  // the store too: on the database for a real account, on the phone in the
+  // demo. Their earnings are the typed sales plus what they sold through the
+  // marketplace; only the typed ones are theirs to edit.
+  const { priceAlerts, setPriceAlerts, plantings, setPlantings } = market;
+  const allSales = market.marketSales.length ? [...market.sales, ...market.marketSales] : market.sales;
+  const setTypedSales = (next: Sale[]) => market.setSales(next.filter(s => !s.id.startsWith("tx-")));
 
   // Whose badges these are: the database account, or this phone's demo one.
   const achOwner = isAuthed && userRole === "farmer" ? (accountId ?? "demo") : null;
@@ -168,7 +148,7 @@ export default function App() {
     if (!achOwner || market.loading) return;
     const earned = [...earnedAchievements({
       listings: market.listings, isMine: market.isMine, sellers: market.sellers,
-      sellerKeyOf: market.sellerKeyOf, sales: allSales,
+      sellerKeyOf: market.sellerKeyOf, sales: allSales, awarded: market.awards,
     })];
     let alive = true;
     (async () => {
@@ -189,7 +169,7 @@ export default function App() {
     })();
     return () => { alive = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [achOwner, market.loading, market.listings, market.sellers, allSales.length]);
+  }, [achOwner, market.loading, market.listings, market.sellers, market.awards, allSales.length]);
 
   // Shown when nothing else is: never over the welcome ID or the walkthrough,
   // and a beat after the screen underneath has settled.

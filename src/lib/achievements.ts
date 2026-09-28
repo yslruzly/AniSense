@@ -26,15 +26,19 @@ export function earnedAchievements(a: {
   sellers: Record<string, SellerDetail>;
   sellerKeyOf: (l: Listing) => string;
   sales: Sale[];
+  /** Badges on record in the database: its own awards, and any the admin
+   *  granted, such as Farmer of the Month. */
+  awarded?: AchievementId[];
 }): Set<AchievementId> {
   const mine = a.listings.filter(a.isMine);
   const spot = farmerOfTheWeek(a.sellers);
-  // Newbie comes with joining. Farmer of the Month and of the Year are named
-  // goals until those awards are run.
+  // Newbie comes with joining. Farmer of the Month and of the Year are
+  // granted by the admin (user_achievements) and arrive through `awarded`.
   const out = new Set<AchievementId>(["newbie"]);
   if (mine.length > 0) out.add("harvest");
   if (a.sales.length > 0) out.add("sale");
   if (spot && mine.some(l => a.sellerKeyOf(l) === spot.key)) out.add("week");
+  for (const id of a.awarded ?? []) out.add(id);
   return out;
 }
 

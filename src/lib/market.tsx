@@ -2,15 +2,20 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState } f
 import { BuyerTransaction, CartItem, Expense, Listing, SellerDetail, UserRole } from "../types";
 import { LISTINGS, SELLER_DETAILS } from "../data/marketplace";
 import { EXPENSES, BUYER_TRANSACTIONS } from "../data/expenses";
-import { CROPS, CROP_GROUP_BY_ID } from "../data/crops";
+import { CROPS, CROP_GROUP_BY_ID, applyPrices } from "../data/crops";
 import { isSupabaseConfigured } from "./supabase";
 import { setCacheScope } from "./cache";
-import { localISO } from "./plantings";
-import { Sale } from "./sales";
+import { Planting, localISO, loadPlantings, savePlantings as keepPlantings } from "./plantings";
+import { Sale, loadSales, saveSales as keepSales } from "./sales";
+import { PriceAlert, loadAlerts, saveAlerts as keepAlerts } from "./priceAlerts";
+import { HarvestPlans, loadHarvestPlans, saveHarvestPlans as keepPlans } from "./harvestPlans";
+import type { AchievementId } from "./achievements";
 import { fetchMarket, createListing, updateListing, removeListing, ListingInput } from "../services/listings";
 import { fetchMyPurchases, fetchMySales, placeOrder as sendOrder } from "../services/transactions";
 import { fetchExpenses, addExpense, updateExpense, deleteExpense as dropExpense, ExpenseForm } from "../services/expenses";
 import { syncNow } from "../services/sync";
+import { fetchFarmRecords, saveSales as storeSales, savePlantings as storePlantings, saveAlerts as storeAlerts, savePlans as storePlans } from "../services/farmRecords";
+import { fetchLatestPrices, fetchMyAwards } from "../services/catalog";
 
 // ─── The market store ─────────────────────────────────────────────────────────
 // One place for what the marketplace and the money screens show: listings and
@@ -18,11 +23,16 @@ import { syncNow } from "../services/sync";
 // sales. Screens read it with useMarket() and change it through its actions;
 // none of them knows whether it is talking to the database.
 //
+// It also holds a farmer's own records (sales typed in by hand, plantings,
+// price alerts, expected harvests), today's prices and the badges on record.
+//
 // Two modes, picked by whether a real account is signed in:
-//   live  Supabase. Reads are cached for offline; expenses also queue writes
-//         offline; listings and checkout need a connection and say so.
+//   live  Supabase. Reads are cached for offline; expenses and farm records
+//         also queue writes offline; listings and checkout need a connection
+//         and say so. Today's prices come from the database's catalog.
 //   demo  No .env yet, or the demo sign-in: the built-in sample data, changed
-//         in memory, exactly as the app behaved before the database.
+//         in memory, and farm records kept on this phone, exactly as the app
+//         behaved before the database.
 
 export type { ListingInput } from "../services/listings";
 export type { ExpenseForm } from "../services/expenses";
@@ -41,6 +51,19 @@ export interface Market {
   expenses: Expense[];
   /** What this farmer sold through the marketplace (live only). */
   marketSales: Sale[];
+  /** A farmer's own records, and how to change them (saved for them). */
+  sales: Sale[];
+  setSales: (next: Sale[]) => void;
+  plantings: Planting[];
+  setPlantings: (next: Planting[]) => void;
+  priceAlerts: PriceAlert[];
+  setPriceAlerts: (next: PriceAlert[]) => void;
+  harvestPlans: HarvestPlans;
+  setHarvestPlans: (next: HarvestPlans) => void;
+  /** Badges on record in the database (live only): self-awarded and admin-granted. */
+  awards: AchievementId[];
+  /** Bumped when today's prices arrive from the database, so screens redraw. */
+  pricesVersion: number;
   isMine: (l: Listing) => boolean;
   sellerKeyOf: (l: Listing) => string;
   saveListing: (id: string | null, form: ListingInput) => Promise<void>;
@@ -75,6 +98,12 @@ export function useMarketStore({ accountId, role, name, initials }: {
   const [purchases, setPurchases] = useState<BuyerTransaction[]>(() => [...BUYER_TRANSACTIONS]);
   const [expenses, setExpenses] = useState<Expense[]>(() => [...EXPENSES]);
   const [marketSales, setMarketSales] = useState<Sale[]>([]);
+  const [sales, setSalesState] = useState<Sale[]>([]);
+  const [plantings, setPlantingsState] = useState<Planting[]>([]);
+  const [priceAlerts, setAlertsState] = useState<PriceAlert[]>([]);
+  const [harvestPlans, setPlansState] = useState<HarvestPlans>({});
+  const [awards, setAwards] = useState<AchievementId[]>([]);
+  const [pricesVersion, setPricesVersion] = useState(0);
   const [loading, setLoading] = useState(false);
   const [fromCache, setFromCache] = useState(false);
 
@@ -94,13 +123,29 @@ export function useMarketStore({ accountId, role, name, initials }: {
   const loadAll = useCallback(async () => {
     const g = gen.current;
     const jobs: Promise<boolean>[] = [loadMarket()];
+    // Today's prices, from the database's catalog, into every screen.
+    jobs.push(fetchLatestPrices().then(r => {
+      if (g === gen.current && r.data.length) { applyPrices(r.data); setPricesVersion(v => v + 1); }
+      return r.fromCache;
+    }));
     if (role === "buyer") {
       jobs.push(fetchMyPurchases().then(r => { if (g === gen.current) setPurchases(r.data); return r.fromCache; }));
     } else {
-      // Send anything recorded offline first, so the fresh list includes it.
-      jobs.push(syncNow().catch(() => 0).then(() => fetchExpenses())
+      // Send anything recorded offline first, once, so both fresh lists
+      // include it (a second sync started alongside would return at once).
+      const synced = syncNow().catch(() => 0);
+      jobs.push(synced.then(() => fetchExpenses())
         .then(r => { if (g === gen.current) setExpenses(r.data); return r.fromCache; }));
-      jobs.push(fetchMySales(groupOf).then(r => { if (g === gen.current) setMarketSales(r.data); return r.fromCache; }));
+      jobs.push(fetchMySales().then(r => { if (g === gen.current) setMarketSales(r.data); return r.fromCache; }));
+      jobs.push(synced.then(() => fetchFarmRecords()).then(r => {
+        if (g !== gen.current) return r.fromCache;
+        setSalesState(r.data.sales);
+        setPlantingsState(r.data.plantings);
+        setAlertsState(r.data.alerts);
+        setPlansState(r.data.plans);
+        return r.fromCache;
+      }));
+      jobs.push(fetchMyAwards().then(r => { if (g === gen.current) setAwards(r.data); return r.fromCache; }));
     }
     const results = await Promise.allSettled(jobs);
     if (g !== gen.current) return;
@@ -119,8 +164,15 @@ export function useMarketStore({ accountId, role, name, initials }: {
       setPurchases([...BUYER_TRANSACTIONS]);
       setExpenses([...EXPENSES]);
       setMarketSales([]);
+      setAwards([]);
       setLoading(false);
       setFromCache(false);
+      // The demo's own records, kept on this phone.
+      const g = gen.current;
+      void Promise.all([loadSales(), loadPlantings(), loadAlerts(), loadHarvestPlans()]).then(([sl, pl, al, hp]) => {
+        if (g !== gen.current) return;
+        setSalesState(sl); setPlantingsState(pl); setAlertsState(al); setPlansState(hp);
+      });
       return;
     }
     setCacheScope(accountId);
@@ -129,6 +181,11 @@ export function useMarketStore({ accountId, role, name, initials }: {
     setPurchases([]);
     setExpenses([]);
     setMarketSales([]);
+    setSalesState([]);
+    setPlantingsState([]);
+    setAlertsState([]);
+    setPlansState({});
+    setAwards([]);
     setLoading(true);
     void loadAll();
     // When the signal returns: expenses written offline go up (loadAll sends
@@ -211,9 +268,19 @@ export function useMarketStore({ accountId, role, name, initials }: {
     setExpenses(es => es.filter(e => e.id !== id));
   };
 
+  // A farmer's own records: shown at once, then saved where they belong, the
+  // database for a real account (queued if offline), this phone in the demo.
+  const quiet = (p: Promise<unknown>) => { void p.catch(() => { /* kept on screen; saved again with the next change */ }); };
+  const setSales = (next: Sale[]) => { setSalesState(next); quiet(live ? storeSales(next) : keepSales(next)); };
+  const setPlantings = (next: Planting[]) => { setPlantingsState(next); quiet(live ? storePlantings(next) : keepPlantings(next)); };
+  const setPriceAlerts = (next: PriceAlert[]) => { setAlertsState(next); quiet(live ? storeAlerts(next) : keepAlerts(next)); };
+  const setHarvestPlans = (next: HarvestPlans) => { setPlansState(next); quiet(live ? storePlans(next) : keepPlans(next)); };
+
   return {
     live, loading, fromCache,
     listings, sellers, purchases, expenses, marketSales,
+    sales, setSales, plantings, setPlantings, priceAlerts, setPriceAlerts, harvestPlans, setHarvestPlans,
+    awards, pricesVersion,
     isMine, sellerKeyOf,
     saveListing, deleteListing, placeOrder, saveExpense, deleteExpense, refresh,
   };

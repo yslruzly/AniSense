@@ -13,13 +13,19 @@ and the APK is rebuilt, AniSense runs on the database:
 | Buyer's purchases (Home and history) | Yes |
 | Farmer's expenses | Yes, and they also work offline, syncing when the signal returns |
 | Farmer's marketplace sales | Yes, counted in the profit figures automatically |
+| Sales typed in, crop tracker, price alerts, expected harvests | Yes, and they work offline too |
+| Crop catalog and today's prices | Yes: every screen shows the database's newest prices |
+| Achievements | Yes: Newbie, First harvest and First sale are awarded by the database itself; Farmer of the Month and Year can be granted from the dashboard |
 
 Without `.env` the app runs exactly as before on the built-in sample data, so
 an APK built without keys still works for demos.
 
-**Still kept on the phone only:** price alerts, the crop tracker, expected
-harvests, sales typed in by hand, and the ID photo. **Still built in:** market
-prices and forecasts.
+**Still kept on the phone only:** the ID photo, and which achievements have
+already been celebrated. **Still built in:** weather and the price forecasts.
+
+The database is organized in five sections (catalog, accounts, market, farm
+records, rewards). The table diagram and what each table holds are in
+`supabase/README.md`.
 
 It takes about 15 minutes. You need Steps 1 to 6.
 
@@ -33,18 +39,24 @@ It takes about 15 minutes. You need Steps 1 to 6.
 3. Region: **Southeast Asia (Singapore)**, the closest to the Philippines.
 4. Wait about 2 minutes while it sets up.
 
-## Step 2: Create the tables
+## Step 2: Create the tables, then fill the catalog
 
-1. Sidebar: **SQL Editor → New query**.
-2. Open `supabase/schema.sql` from this project, copy **all** of it, paste, **Run**.
-3. You should see "Success. No rows returned".
+Two files, in this order, each in its own query:
 
-This creates the four tables (`profiles`, `listings`, `expenses`,
-`transactions`), the security rules, the checkout function `place_order`,
-the sign-up trigger and the `listing-photos` storage bucket.
+1. Sidebar: **SQL Editor → New query**. Open `supabase/schema.sql`, copy
+   **all** of it, paste, **Run**. You should see "Success. No rows returned".
+   This creates the 15 tables, the security rules, the functions (checkout,
+   sign-up, farm-record sync, badges) and the `listing-photos` storage bucket.
+2. **New query** again. Open `supabase/seed.sql`, copy all of it, paste,
+   **Run**. This fills the catalog: 10 crop types, 24 varieties, today's
+   prices and the 6 badges.
 
-It is safe to run again. If anything went wrong, or `schema.sql` changes
-later, just paste and run it again.
+Both are safe to run again. If anything went wrong, or a file changes later,
+just paste and run it again.
+
+> Ran an older version of `schema.sql` before (it had a `transactions`
+> table)? Run `supabase/reset.sql` first, then both files. It deletes all
+> AniSense data, so only do it before real people use the app.
 
 ## Step 3: Turn off "Confirm email"
 
@@ -87,7 +99,10 @@ checks that:
 - the key is the public one
 - the project answers
 - Confirm email is off
-- the tables, the checkout function and the photo bucket exist
+- all 15 tables exist, section by section
+- every database function exists
+- the catalog is filled (seed.sql ran)
+- the photo bucket exists
 
 Anything wrong is listed with its fix.
 
@@ -109,16 +124,18 @@ The APK is at `android/app/build/outputs/apk/debug/app-debug.apk`.
 
 ## Test checklist
 
-- [ ] Sign up as a farmer with a CP number: you land on Home, and a row appears in **Table Editor → profiles**
+- [ ] Sign up as a farmer with a CP number: you land on Home, a row appears in **Table Editor → profiles**, their crops in **profile_crops**, and the Newbie badge in **user_achievements**
 - [ ] Close and reopen the app: still signed in
-- [ ] Farmer posts a harvest with a photo: it appears in **listings**, and the photo appears in **Storage → listing-photos**
+- [ ] Farmer posts a harvest with a photo: it appears in **listings**, the photo in **Storage → listing-photos**, and the First harvest pop-up shows
 - [ ] Sign up as a buyer on another phone: the farmer's harvest is in the marketplace, and the farmer is under Featured farmers
-- [ ] Buyer orders 5 kg: the receipt shows, the listing drops by 5 kg, and a row appears in **transactions**
+- [ ] Buyer orders 5 kg: the receipt shows, the listing drops by 5 kg, and a row appears in **orders** with its line in **order_items**
 - [ ] Buyer asks for more kilos than are left: "A farmer has less left than you asked for"
 - [ ] Buyer's Home shows the order under Your purchases
 - [ ] Farmer's Profit snapshot counts the sale
 - [ ] Farmer adds an expense in airplane mode: it shows at once; turn the internet back on and it appears in **expenses**
 - [ ] Two farmer accounts each see only their own expenses
+- [ ] Farmer records a sale, adds a planting and a price alert: rows appear in **sales**, **plantings** and **price_alerts**; they are still there after reinstalling the app
+- [ ] Change a price in **crop_prices** (today's row), reopen Prices: the app shows the new price
 - [ ] Airplane mode, posting a listing or checking out: a clear "No internet" message, and the cart is kept
 
 ## How the security works

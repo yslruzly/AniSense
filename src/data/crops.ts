@@ -139,3 +139,35 @@ export const MAIN_CROPS = [
 ];
 
 export const FARMER_CROPS = ["Rice", "Corn", "Tomatoes", "Onions", "Garlic", "Calamansi", "Mango", "Squash", "Ampalaya", "Watermelon"];
+
+// ─── The database's names for the catalog ────────────────────────────────────
+// The database (supabase/seed.sql, built from this file) keys crop groups by
+// a slug ('rice') and varieties by the ids above ('rice-special'). These turn
+// the app's names into those keys and back.
+
+/** 'Rice' → 'rice': the crop_groups id. */
+export const groupIdOf = (name: string) => name.toLowerCase();
+
+/** 'rice' → 'Rice'. */
+export const groupNameOf = (id: string) => MAIN_CROPS.find(n => n.toLowerCase() === id) ?? id;
+
+/** A listing's crop → its variety id. New listings name a variety ("Special
+ *  Rice"); an older one may name only the type ("Onions"), which becomes that
+ *  type's first variety. */
+export function cropIdOf(name: string): string | undefined {
+  const v = CROPS.find(c => c.name === name);
+  if (v) return v.id;
+  if (name === "Rice") return RICE_VARIETIES[0]?.id;
+  return CROP_GROUPS.find(g => g.group === name)?.varieties[0]?.id;
+}
+
+/** Writes the database's newest prices into the catalog every screen reads,
+ *  so Home, Prices, Analytics and the forecasts all show the same numbers. */
+export function applyPrices(rows: { crop_id: string; price_per_kg: number | string; change_pct: number | string }[]) {
+  for (const r of rows) {
+    const c = CROPS.find(x => x.id === r.crop_id);
+    if (!c) continue;
+    c.pricePerKg = Number(r.price_per_kg);
+    c.change = Number(r.change_pct);
+  }
+}

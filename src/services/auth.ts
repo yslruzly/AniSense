@@ -222,10 +222,13 @@ export interface ProfileRow {
 export async function getMyProfile(): Promise<ProfileRow | null> {
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) return null;
+  // The crops a farmer grows live in their own table (profile_crops), one
+  // row per crop; they come back as a plain list of names.
   const { data, error } = await supabase
-    .from("profiles").select("*").eq("id", userData.user.id).single();
+    .from("profiles").select("*, profile_crops(crop_groups(name))").eq("id", userData.user.id).single();
   if (error) throw error;
-  return data as ProfileRow;
+  const { profile_crops, ...row } = data as ProfileRow & { profile_crops?: { crop_groups: { name: string } | null }[] };
+  return { ...row, crops: (profile_crops ?? []).map(pc => pc.crop_groups?.name).filter((n): n is string => !!n) };
 }
 
 /** Saves the farm-details + crop-picker steps of signup, and ProfileScreen edits. */
@@ -239,9 +242,16 @@ export async function updateMyProfile(changes: Partial<{
 }>) {
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) throw new Error("Not signed in");
-  const { error } = await supabase
-    .from("profiles").update(changes).eq("id", userData.user.id);
-  if (error) throw error;
+  const { crops, ...details } = changes;
+  if (Object.keys(details).length) {
+    const { error } = await supabase.from("profiles").update(details).eq("id", userData.user.id);
+    if (error) throw error;
+  }
+  // The crop list is replaced in one step by the database (set_my_crops).
+  if (crops) {
+    const { error } = await supabase.rpc("set_my_crops", { crop_names: crops });
+    if (error) throw error;
+  }
 }
 
 /** "+639171234567" → "+63 917 123 4567", the way the Profile screen shows it. */

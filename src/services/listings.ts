@@ -6,13 +6,15 @@
 import { supabase } from "../lib/supabase";
 import { Listing, SellerDetail } from "../types";
 import { cachedFetch, requireOnline, FetchResult } from "../lib/cache";
+import { cropIdOf } from "../data/crops";
 
 const PHOTO_BUCKET = "listing-photos";
 
 export const initialsOf = (name: string) =>
   name.split(" ").filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase() || "?";
 
-// The seller's public side, joined onto every listing.
+// The seller's public side, joined onto every listing, with the crops they
+// grow from profile_crops.
 interface SellerRow {
   id: string;
   full_name: string;
@@ -21,21 +23,20 @@ interface SellerRow {
   location: string | null;
   years_farming: number | null;
   total_sales: number;
-  crops: string[] | null;
   bio: string | null;
+  profile_crops: { crop_groups: { name: string } | null }[] | null;
 }
 
 interface ListingRow {
   id: string;
   seller_id: string;
-  crop: string;
-  variety: string;
   description: string;
   price_per_kg: number;
-  kg: number;
+  quantity_kg: number;
   location: string;
   photo_url: string | null;
   created_at: string;
+  crop: { id: string; name: string } | null;
   seller: SellerRow | null;
 }
 
@@ -51,11 +52,13 @@ function toListing(row: ListingRow): Listing {
   return {
     id: row.id,
     sellerId: row.seller_id,
-    crop: row.crop,
-    variety: row.variety,
+    // The variety is the listing's crop ("Special Rice"), as the post form
+    // names it; the app shows the type from the catalog.
+    crop: row.crop?.name ?? "",
+    variety: "",
     desc: row.description,
     pricePerKg: Number(row.price_per_kg),
-    kg: Number(row.kg),
+    kg: Number(row.quantity_kg),
     date: row.created_at.split("T")[0],
     seller: name,
     sellerInitials: initialsOf(name),
@@ -76,7 +79,7 @@ function toSeller(row: SellerRow): SellerDetail {
     yearsfarming: row.years_farming ?? 0,
     rating: Number(row.rating ?? 5),
     totalSales: row.total_sales ?? 0,
-    crops: row.crops ?? [],
+    crops: (row.profile_crops ?? []).map(pc => pc.crop_groups?.name).filter((n): n is string => !!n),
     bio: row.bio ?? "",
   };
 }
@@ -95,10 +98,11 @@ export async function fetchMarket(): Promise<FetchResult<MarketSnapshot>> {
   return cachedFetch("market", async () => {
     const { data, error } = await supabase
       .from("listings")
-      .select("id, seller_id, crop, variety, description, price_per_kg, kg, location, photo_url, created_at, " +
-        "seller:profiles!seller_id(id, full_name, rating, phone, location, years_farming, total_sales, crops, bio)")
+      .select("id, seller_id, description, price_per_kg, quantity_kg, location, photo_url, created_at, " +
+        "crop:crops(id, name), " +
+        "seller:profiles!seller_id(id, full_name, rating, phone, location, years_farming, total_sales, bio, profile_crops(crop_groups(name)))")
       .eq("status", "active")
-      .gt("kg", 0)
+      .gt("quantity_kg", 0)
       .order("created_at", { ascending: false });
     if (error) throw error;
     const rows = data as unknown as ListingRow[];
@@ -135,6 +139,13 @@ async function storedPhoto(uid: string, photo: string | null): Promise<string | 
   return supabase.storage.from(PHOTO_BUCKET).getPublicUrl(path).data.publicUrl;
 }
 
+/** The catalog id for the crop the form picked, or a clear error. */
+function cropIdFor(form: ListingInput): string {
+  const id = cropIdOf(form.crop) ?? cropIdOf(form.variety);
+  if (!id) throw new Error(`Unknown crop: ${form.crop}`);
+  return id;
+}
+
 async function myId(): Promise<string> {
   const { data } = await supabase.auth.getUser();
   if (!data.user) throw new Error("NOT_SIGNED_IN");
@@ -151,11 +162,10 @@ export async function createListing(form: ListingInput): Promise<void> {
   const photo_url = await storedPhoto(uid, form.photo);
   const { error } = await supabase.from("listings").insert({
     seller_id: uid,
-    crop: form.crop,
-    variety: form.variety,
+    crop_id: cropIdFor(form),
     description: form.desc,
     price_per_kg: form.pricePerKg,
-    kg: form.kg,
+    quantity_kg: form.kg,
     location: form.location,
     photo_url,
   });
@@ -167,11 +177,10 @@ export async function updateListing(id: string, form: ListingInput): Promise<voi
   const uid = await myId();
   const photo_url = await storedPhoto(uid, form.photo);
   const { error } = await supabase.from("listings").update({
-    crop: form.crop,
-    variety: form.variety,
+    crop_id: cropIdFor(form),
     description: form.desc,
     price_per_kg: form.pricePerKg,
-    kg: form.kg,
+    quantity_kg: form.kg,
     location: form.location,
     photo_url,
     // Restocking a sold-out listing puts it back on the market.

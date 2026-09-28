@@ -30,15 +30,16 @@ export function achNote(id: AchievementId, earned: boolean, t: (k: string) => st
       ? t("ach_newbie_on").replace("{date}", memberSince.toLocaleDateString(locale, { month: "long", year: "numeric" }))
       : t("ach_newbie_welcome");
   }
-  if (id === "month" || id === "year") return t(`ach_${id}_how`);
+  if ((id === "month" || id === "year") && !earned) return t(`ach_${id}_how`);
+  if (id === "month" || id === "year") return t(`ach_${id}_done`);
   return t(`ach_${id}_${earned ? "done" : "how"}`);
 }
 
 export function Achievements({ sales = [], memberSince }: { sales?: Sale[]; memberSince?: Date }) {
   const { t, lang } = useLang();
-  const { listings, isMine, sellers, sellerKeyOf } = useMarket();
+  const { listings, isMine, sellers, sellerKeyOf, awards } = useMarket();
   const locale = lang === "tl" ? "fil-PH" : "en-PH";
-  const have = earnedAchievements({ listings, isMine, sellers, sellerKeyOf, sales });
+  const have = earnedAchievements({ listings, isMine, sellers, sellerKeyOf, sales, awarded: awards });
 
   return (
     <div className="card ach">

@@ -657,6 +657,8 @@ export const translations: Dict = {
   ach_month_how: { en: "Top ratings and the most sales in a month", tl: "Pinakamataas na rating at pinakamaraming benta sa isang buwan" },
   ach_year_t: { en: "AniSense Farmer of the Year", tl: "AniSense Magsasaka ng Taon" },
   ach_year_how: { en: "AniSense's top farmer of the whole year", tl: "Ang nangungunang magsasaka ng AniSense sa buong taon" },
+  ach_month_done: { en: "Named Farmer of the Month by AniSense", tl: "Pinangalanang Magsasaka ng Buwan ng AniSense" },
+  ach_year_done: { en: "Named Farmer of the Year by AniSense", tl: "Pinangalanang Magsasaka ng Taon ng AniSense" },
   au_kicker: { en: "Achievement unlocked", tl: "May bago kang nakamit" },
   au_ok: { en: "Close", tl: "Isara" },
   au_next: { en: "Next", tl: "Susunod" },

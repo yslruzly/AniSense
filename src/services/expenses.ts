@@ -10,6 +10,7 @@ import { supabase } from "../lib/supabase";
 import { Expense } from "../types";
 import { cachedFetch, cacheGet, cacheSet, isNetworkError, FetchResult } from "../lib/cache";
 import { enqueue, OutboxHandler } from "../lib/outbox";
+import { groupIdOf, groupNameOf } from "../data/crops";
 
 const CACHE_KEY = "expenses";
 
@@ -17,7 +18,7 @@ interface ExpenseRow {
   id: string;
   category: string;
   description: string;
-  crop: string;
+  crop_group_id: string;   // 'rice': the crop_groups id
   amount: number;
   spent_on: string;
 }
@@ -34,7 +35,7 @@ function toExpense(row: ExpenseRow): Expense {
     amount: Number(row.amount),
     date: row.spent_on,
     icon: row.category, // ExpenseIcon component keys off the category name
-    crop: row.crop,
+    crop: groupNameOf(row.crop_group_id),
   };
 }
 
@@ -49,7 +50,7 @@ async function mutateCache(fn: (list: Expense[]) => Expense[]): Promise<void> {
 async function serverFetch(): Promise<Expense[]> {
   const { data, error } = await supabase
     .from("expenses")
-    .select("id, category, description, crop, amount, spent_on")
+    .select("id, category, description, crop_group_id, amount, spent_on")
     .order("spent_on", { ascending: false });
   if (error) throw error;
   return (data as ExpenseRow[]).map(toExpense);
@@ -64,8 +65,8 @@ async function serverAdd(form: ExpenseForm): Promise<Expense> {
     category: form.category,
     amount: form.amount,
     spent_on: form.date,
-    crop: form.crop,
-  }).select().single();
+    crop_group_id: groupIdOf(form.crop),
+  }).select("id, category, description, crop_group_id, amount, spent_on").single();
   if (error) throw error;
   return toExpense(data as ExpenseRow);
 }
@@ -76,7 +77,7 @@ async function serverUpdate(id: string, form: ExpenseForm): Promise<void> {
     category: form.category,
     amount: form.amount,
     spent_on: form.date,
-    crop: form.crop,
+    crop_group_id: groupIdOf(form.crop),
   }).eq("id", id);
   if (error) throw error;
 }

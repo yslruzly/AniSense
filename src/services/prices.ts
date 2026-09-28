@@ -1,5 +1,6 @@
 import { cachedFetch, FetchResult } from "../lib/cache";
-import { RICE_VARIETIES, CROP_GROUPS } from "../data/crops";
+import { RICE_VARIETIES, CROP_GROUPS, applyPrices } from "../data/crops";
+import { supabase, isSupabaseConfigured } from "../lib/supabase";
 
 export interface PriceItem {
   id: string;
@@ -14,10 +15,11 @@ export interface PriceItem {
 // no point at which loading could fail, and therefore no loading or error
 // state could exist. This is the seam.
 //
-// Today the "server call" resolves from the bundled dataset. Swap the body of
-// loadPrices for the real Supabase query and every state around it already
-// works: cachedFetch handles the offline fallback, useResource handles the
-// status machine, and the screen already renders skeleton, error, and empty.
+// Signed in to a real account, today's prices come from the database
+// (crop_prices_latest) and are written into the catalog every screen reads;
+// otherwise the bundled prices stand. Either way cachedFetch handles the
+// offline fallback, useResource the status, and the screen the skeleton,
+// error and empty states.
 
 function fromBundle(): PriceItem[] {
   return [
@@ -28,7 +30,14 @@ function fromBundle(): PriceItem[] {
 
 export function fetchPrices(): Promise<FetchResult<PriceItem[]>> {
   return cachedFetch<PriceItem[]>("market_prices", async () => {
-    // TODO: replace with the Supabase query. Everything downstream is agnostic.
+    if (isSupabaseConfigured) {
+      const { data: s } = await supabase.auth.getSession();
+      if (s.session) {
+        const { data, error } = await supabase.from("crop_prices_latest").select("crop_id, price_per_kg, change_pct");
+        if (error) throw error;
+        applyPrices(data ?? []);
+      }
+    }
     return fromBundle();
   });
 }

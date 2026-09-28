@@ -6,8 +6,9 @@
 //   ✓ the key is the public one (never the secret / service_role key)
 //   ✓ the project answers
 //   ✓ "Confirm email" is OFF (CP-number accounts have no inbox)
-//   ✓ the four tables exist (schema.sql ran)
-//   ✓ the checkout function exists
+//   ✓ all 15 tables and the price view exist (schema.sql ran)
+//   ✓ every database function exists (checkout, farm-record sync, crops)
+//   ✓ the crop catalog, prices and badges are loaded (seed.sql ran)
 //   ✓ the listing-photos bucket exists
 
 import { readFileSync, existsSync } from "node:fs";
@@ -73,24 +74,61 @@ else bad("Confirm email is ON: CP-number accounts can't finish signing up",
   "Authentication → Sign In / Providers → Email: turn “Confirm email” OFF. (SETUP_DATABASE.md, Step 4)");
 if (settings.body?.disable_signup) bad("New sign-ups are disabled", "Authentication → Sign In / Providers: allow new users to sign up.");
 
-// 2. Tables. With no one signed in, row security returns an empty list:
-//    that still proves the table is there.
+// 2. Tables, section by section. With no one signed in, row security returns
+//    an empty list: that still proves the table is there.
+const SECTIONS = {
+  Catalog: ["crop_groups", "crops", "crop_prices", "crop_prices_latest"],
+  Accounts: ["profiles", "profile_crops"],
+  Market: ["listings", "orders", "order_items"],
+  "Farm records": ["expenses", "sales", "plantings", "price_alerts", "harvest_plans"],
+  Rewards: ["achievements", "user_achievements"],
+};
 const missing = [];
-for (const t of ["profiles", "listings", "expenses", "transactions"]) {
-  const r = await get(`/rest/v1/${t}?select=id&limit=1`);
-  if (r.status === 200) continue;
-  missing.push(`${t} (${r.body?.code || r.status})`);
+for (const [section, tables] of Object.entries(SECTIONS)) {
+  const gone = [];
+  for (const t of tables) {
+    const r = await get(`/rest/v1/${t}?select=*&limit=1`);
+    if (r.status !== 200) gone.push(t);
+  }
+  if (gone.length) missing.push(...gone);
+  else ok(`${section}: ${tables.join(", ")}`);
 }
-if (missing.length) bad(`Missing tables: ${missing.join(", ")}`, "SQL Editor → paste all of supabase/schema.sql → Run. (Step 2)");
-else ok("Tables: profiles, listings, expenses, transactions");
+if (missing.length) {
+  // The first version of the schema had a "transactions" table instead of
+  // orders + order_items. Its tables block the new ones: wipe, then rebuild.
+  const old = (await get("/rest/v1/transactions?select=*&limit=1")).status === 200;
+  bad(`Missing: ${missing.join(", ")}`, old
+    ? "This project has the OLD schema. SQL Editor: run supabase/reset.sql, then schema.sql, then seed.sql."
+    : "SQL Editor → paste all of supabase/schema.sql → Run. (Step 2)");
+}
 
-// 3. Checkout function. Signed-out callers are refused, which proves it exists;
-//    "not found" means schema.sql hasn't been run (or is the old version).
-const rpc = await get("/rest/v1/rpc/place_order", {
-  method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items: [] }),
-});
-if (rpc.body?.code === "PGRST202" || rpc.status === 404) bad("Checkout function place_order() is missing", "Run the latest supabase/schema.sql again (safe to re-run).");
-else ok("Checkout function place_order()");
+// 3. Functions. Signed-out callers are refused, which proves each exists;
+//    "not found" means schema.sql hasn't been run (or is an older version).
+const FUNCTIONS = {
+  place_order: { items: [] },
+  set_my_crops: { crop_names: [] },
+  replace_my_sales: { items: [] },
+  replace_my_plantings: { items: [] },
+  replace_my_price_alerts: { items: [] },
+  replace_my_harvest_plans: { plans: {} },
+};
+const noFn = [];
+for (const [fn, args] of Object.entries(FUNCTIONS)) {
+  const r = await get(`/rest/v1/rpc/${fn}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(args) });
+  if (r.body?.code === "PGRST202" || r.status === 404) noFn.push(fn);
+}
+if (noFn.length) bad(`Missing functions: ${noFn.join(", ")}`, "Run the latest supabase/schema.sql again (safe to re-run).");
+else ok("Functions: checkout, crop list, and farm-record sync");
+
+// 3b. Starter data. catalog_status() only counts rows, so it answers without
+//     an account: were the crops, prices and badges loaded?
+const status = await get("/rest/v1/rpc/catalog_status", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+const c = status.body || {};
+if (status.status !== 200) bad("Can't read the catalog status", "Run the latest supabase/schema.sql again (safe to re-run).");
+else if (!c.crop_groups || !c.crops || !c.prices || !c.badges)
+  bad(`Starter data missing (crop groups ${c.crop_groups ?? 0}, varieties ${c.crops ?? 0}, prices ${c.prices ?? 0}, badges ${c.badges ?? 0})`,
+    "SQL Editor → paste all of supabase/seed.sql → Run.");
+else ok(`Starter data: ${c.crop_groups} crop groups, ${c.crops} varieties, ${c.prices} prices, ${c.badges} badges`);
 
 // 4. Photo bucket. Asking for a file that isn't there says whether the
 //    bucket itself exists.

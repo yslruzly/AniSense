@@ -7,9 +7,11 @@
 
 import { processOutbox, OutboxHandler } from "../lib/outbox";
 import { expenseSyncHandlers } from "./expenses";
+import { farmRecordSyncHandlers } from "./farmRecords";
 
 const ALL_HANDLERS: Record<string, OutboxHandler> = {
   ...expenseSyncHandlers,
+  ...farmRecordSyncHandlers,
   // ...future offline-capable features register their handlers here
 };
 
