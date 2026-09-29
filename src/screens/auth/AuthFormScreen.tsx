@@ -358,7 +358,7 @@ export function AuthFormScreen({
 
   // Back beside the primary action, as on the earlier steps, so the whole
   // setup is driven from one place under the thumb.
-  const dock = (main: ReactNode, before?: ReactNode, after?: ReactNode) => (
+  const dock = (main: ReactNode, before?: ReactNode) => (
     <div className="a-dock">
       {before}
       <div className="a-dockpair">
@@ -367,7 +367,6 @@ export function AuthFormScreen({
         </button>
         {main}
       </div>
-      {after}
     </div>
   );
 
@@ -482,21 +481,18 @@ export function AuthFormScreen({
             </div>
             {fieldErr("password")}
           </div>
+          {/* For someone who lands here without an account: under the last
+              field, the mirror of "Already have an account? Sign In" on the
+              first sign-up question, and away from the Sign In button. */}
+          <p className="a-switch">
+            {t("signin_new_q")} <button type="button" className="a-link" onClick={() => go("name")}>{t("signin_new_btn")}</button>
+          </p>
           {/* Errors about one field sit under that field. This is for the
               rest: no signal, too many tries, things no field can fix. */}
           {!errField && alert()}
         </div>
 
-        {/* Someone who lands here without an account (they tapped the wrong
-            button on the welcome screen) gets a real button, not a line of
-            small print: the same pair as the welcome screen, the filled one
-            to sign in and a white one under it to start an account, in
-            plain words. */}
-        {dock(primary(t("auth_signin_btn")), undefined, (
-          <button type="button" className="a-btn a-btn-quiet a-dock-alt" onClick={() => go("name")}>
-            <span className="a-btn-lead">{t("signin_new_q")}</span>{t("signin_new_btn")}
-          </button>
-        ))}
+        {dock(primary(t("auth_signin_btn")))}
       </form>
     );
   }

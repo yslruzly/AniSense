@@ -793,13 +793,12 @@ export const authCss = `
     transition: opacity 140ms ease; -webkit-tap-highlight-color: transparent;
   }
   .a-link:active { opacity: .55; transition-duration: 0ms; }
-  .a-switch { text-align: center; font-size: var(--fs-body); color: var(--dilim); margin-top: 6px; }
-  .a-switch .a-link { min-height: auto; }
-  /* In the ink header: left-aligned under the subtitle, link in the palay
-     accent so it reads as tappable on dark. The link keeps a 44px hit area
-     without adding visible height. */
-  .a-switch.on-ink { text-align: left; color: rgba(255,255,255,.72); margin-top: 14px; font-size: var(--fs-label); }
-  .a-switch.on-ink .a-link { color: var(--palay); font-size: var(--fs-label); min-height: 44px; margin: -12px 0; padding: 0 4px; }
+  /* The line that swaps between Sign in and Create account, under the last
+     field of each ("New here? Create an account", "Already have an account?
+     Sign In"): a quiet question and a link, centred. The link keeps a 44px
+     target without making the line taller. */
+  .a-switch { text-align: center; font-size: var(--fs-body); color: var(--text-muted); margin-top: 18px; }
+  .a-switch .a-link { min-height: 44px; margin: -10px 0; }
 
   /* ── Crop picker ───────────────────────────────────────────────────────── */
   /* White tiles on the grey page, like the setup card: a hairline and a soft
@@ -963,19 +962,6 @@ export const authCss = `
   /* The answer goes right under the header. */
   .a-ask-body { padding-top: 22px; }
   .a-ask-body > .a-field:first-child, .a-ask-body > .a-cropgrid { margin-top: 0; }
-  .a-ask-body .a-switch { margin-top: 14px; }
-  /* Sign in's second way out, under the Sign In button: a white capsule,
-     the quiet half of a pair, like the welcome screen's two. The question
-     is set lighter than the action, so the words that do something stand
-     out. A touch shorter than Sign In, and 10px apart from it. */
-  .a-btn-quiet {
-    min-height: 54px; gap: 6px; font-size: var(--fs-body); color: var(--tanim);
-    background: var(--card);
-    box-shadow: 0 0 0 1px rgba(22,33,27,.14), 0 1px 2px rgba(22,33,27,.06);
-  }
-  .a-btn-quiet:active { background: #F2F4F3; }
-  .a-btn-lead { color: var(--text-muted); font-weight: 500; }
-  .a-dock-alt { margin-top: 10px; }
   /* A label with an action at its far end ("Password ... Forgot your
      password?"). The link keeps a 44px target without making the row
      taller. */
