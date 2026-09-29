@@ -94,9 +94,12 @@ export const authCss = `
      make the last two buttons look like a separate panel. */
   .a-dock { padding: 16px 22px calc(26px + var(--safe-bottom)); background: transparent; }
   .a-brandrow { display: flex; align-items: center; gap: 10px; }
+  /* The mark sits like an app icon on the ink: a tight contact shadow and a
+     softer one under it, so it reads as a raised tile, not a white cut-out. */
   .a-brandmark {
     width: 34px; height: 34px; border-radius: 10px; background: #fff;
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    box-shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 14px -6px rgba(0,0,0,.5);
   }
   .a-brandname { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-lead); color: #fff; letter-spacing: -.01em; }
   /* Back + primary in one row. Back matches the button height so the pair
@@ -302,17 +305,39 @@ export const authCss = `
     flex: 1 1 auto; min-height: 0; position: relative; overflow: hidden;
     display: flex; flex-direction: column; padding: calc(18px + var(--safe-top)) 22px 0;
   }
-  /* Lit from above rather than flat: a touch lighter at the top, deepest at
-     the curve, with a faint line of light along the curved edge and a soft
-     shadow under it, so the header reads as a surface resting over the page.
-     Shared by the language and role steps, so the two stay one piece. */
+  /* A field at first light rather than a flat panel. Three soft lights over
+     the ink, all dim enough that white type stays crisp on them:
+       · a faint warm dawn in the top corner, the sun coming up over the field
+       · a cool green haze along the left, so the space between the title and
+         Juan reads as air, not as an empty box
+       · the brightest, green, low behind Juan, so he stands in the light
+     A fine grain over it all keeps the long dark gradients from banding into
+     visible steps on phone screens. A faint line of light along the curved
+     edge and a soft shadow under it make the header a surface resting over
+     the page. Shared by the language and role steps, so the two stay one
+     piece. */
   .a-inkhead.a-rolehead {
-    background: linear-gradient(180deg, #1F3128 0%, var(--ink) 52%, #111915 100%);
+    background:
+      url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .07 0 0 0 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23g)'/%3E%3C/svg%3E"),
+      radial-gradient(55% 34% at 92% 0%, rgba(242,179,44,.16), rgba(242,179,44,0) 72%),
+      radial-gradient(70% 45% at 0% 62%, rgba(46,128,98,.2), rgba(46,128,98,0) 72%),
+      radial-gradient(85% 55% at 86% 100%, rgba(88,172,106,.3), rgba(88,172,106,0) 70%),
+      linear-gradient(180deg, #1C2D24 0%, #15201A 55%, #101814 100%);
+    background-size: 180px 180px, auto, auto, auto, auto;
     border-radius: 0 0 30px 30px;
     box-shadow: inset 0 -1px 0 rgba(255,255,255,.08), 0 18px 34px -24px rgba(16,26,21,.55);
   }
   .a-rolehead-copy { margin-top: 22px; }
   .a-rolehead-copy .a-sub { margin-top: 6px; }
+  /* On the language step the line under the title is the same question in
+     the other language, so it is set as a second title rather than as small
+     print: the same face, lighter and dimmer. A Tagalog reader finds
+     "Piliin ang wika" as quickly as an English reader finds the title. */
+  .a-lang .a-rolehead-copy .a-sub {
+    margin-top: 4px; font-family: var(--font-display); font-weight: 500;
+    font-size: var(--fs-title); line-height: 1.2; letter-spacing: -.015em;
+    color: rgba(255,255,255,.58);
+  }
 
   .a-rolestage {
     flex: 1 1 auto; min-height: 170px; position: relative; margin-top: 8px;
@@ -320,9 +345,13 @@ export const authCss = `
   }
   /* A soft pool of light behind the figure grounds him on the ink, so he reads
      as placed rather than pasted. */
+  /* Centred on the figure's chest (he stands flush right, about 160px wide),
+     so the light sits behind him like a spotlight on a stage rather than
+     off to one side of him. */
   .a-rolestage::before {
-    content: ""; position: absolute; right: -30px; bottom: -90px; width: 300px; height: 300px;
-    border-radius: 50%; background: radial-gradient(closest-side, rgba(126,196,120,.22), rgba(126,196,120,0));
+    content: ""; position: absolute; right: -112px; bottom: -80px; width: 340px; height: 340px;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(140,208,132,.3), rgba(140,208,132,.1) 55%, rgba(140,208,132,0));
   }
   /* The cast hugs the figure: it's as wide as whichever figure is on stage,
      and flush to the screen's right edge. The bubble is placed against the
