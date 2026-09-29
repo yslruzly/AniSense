@@ -1544,40 +1544,84 @@ export const appCss = `
   }
   .mp-sell-btn:active { transform: scale(.97); transition-duration: 90ms; }
 
-  /* Crops as an even 3 × 3 grid: nine equal tiles, icon over name, so the
-     choices line up in rows and columns and scan like a keypad instead of a
-     ragged cloud of pills. Everything is visible; nothing to swipe. */
-  .mp-filters { display: flex; flex-direction: column; gap: 10px; }
+  /* The crop tiles. Three columns, "All crops" two wide, so eleven choices
+     close in four even rows. Each is a white tile held off the page by a
+     hairline and a soft shadow rather than a drawn border, with the crop in
+     a soft circle of its own colour (wheat for rice, red for tomatoes), so
+     they read like a set of app icons and tell apart at a glance. Names at
+     16px, the app's floor. */
+  .mp-filters { display: flex; flex-direction: column; gap: 12px; }
   .mp-cats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
   .mp-cat {
-    min-width: 0; min-height: 70px; padding: 8px 4px; border-radius: 16px; cursor: pointer;
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
-    border: none; background: var(--card); color: var(--text-soft); box-shadow: inset 0 0 0 1.5px var(--line);
-    font-family: var(--font-display); font-size: 14px; font-weight: 600; line-height: 1.15; text-align: center;
-    transition: transform 160ms var(--ease-out), background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+    position: relative; min-width: 0; min-height: 80px; padding: 10px 3px 9px; border-radius: 20px; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    border: none; background: var(--card); color: var(--text);
+    box-shadow: 0 0 0 1px rgba(22,33,27,.06), 0 1px 2px rgba(22,33,27,.06), 0 8px 18px -14px rgba(22,33,27,.35);
+    font-family: var(--font-display); font-size: var(--fs-label); font-weight: 600; line-height: 1.15;
+    letter-spacing: -.01em; text-align: center;
+    transition: transform 160ms var(--ease-out), background-color 180ms ease, color 180ms ease, box-shadow 200ms var(--ease-out);
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
-  .mp-cat-ico { height: 24px; display: flex; align-items: center; justify-content: center; }
-  .mp-cat-lbl { max-width: 100%; overflow-wrap: anywhere; }
-  .mp-cat:active { transform: scale(.96); transition-duration: 90ms; }
-  /* Chosen: ink tile, white label. The one dark tile in the grid is found
-     at a glance. */
-  .mp-cat.on { background: var(--ink); color: #fff; box-shadow: none; }
-  .mp-cat.on .mp-cat-ico { color: #fff; }
+  .mp-cat-ico {
+    width: 40px; height: 40px; flex-shrink: 0; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; color: var(--tanim);
+    background: radial-gradient(circle at 35% 28%, #FFFFFF 0%, var(--tint, #EEF0F1) 72%);
+    box-shadow: inset 0 0 0 1px rgba(22,33,27,.05);
+    transition: opacity 180ms ease, filter 180ms ease;
+  }
+  .mp-cat[data-crop="all"]        { --tint: #D6ECDD; }
+  .mp-cat[data-crop="rice"]       { --tint: #F4E4B8; }
+  .mp-cat[data-crop="onions"]     { --tint: #F2DAE6; }
+  .mp-cat[data-crop="calamansi"]  { --tint: #E3F0C2; }
+  .mp-cat[data-crop="corn"]       { --tint: #F9EAAE; }
+  .mp-cat[data-crop="mango"]      { --tint: #FBD9B6; }
+  .mp-cat[data-crop="garlic"]     { --tint: #E9E2F4; }
+  .mp-cat[data-crop="tomatoes"]   { --tint: #F9D2CD; }
+  .mp-cat[data-crop="squash"]     { --tint: #FAD8BD; }
+  .mp-cat[data-crop="ampalaya"]   { --tint: #D4EBCD; }
+  .mp-cat[data-crop="watermelon"] { --tint: #F9D5DB; }
+  .mp-cat-lbl { max-width: 100%; overflow-wrap: break-word; }
+  /* Nothing for sale in it right now: the tile goes quiet (still tappable;
+     the list then says so). */
+  .mp-cat.none:not(.on) { color: var(--text-faint); }
+  .mp-cat.none:not(.on) .mp-cat-ico { opacity: .5; filter: saturate(.35); }
+  .mp-cat:active { transform: scale(.97); transition-duration: 90ms; }
+  /* Chosen: a green ring closes round the tile and it takes a green wash,
+     the same as a chosen crop in sign-up, and its circle pops once, slightly
+     past full size, as the answer to the tap. */
+  .mp-cat.on {
+    background: #F2F9F5; color: var(--tanim);
+    box-shadow: 0 0 0 2px var(--tanim), 0 1px 2px rgba(11,107,65,.12), 0 10px 20px -14px rgba(11,107,65,.5);
+  }
+  .mp-cat.on .mp-cat-ico {
+    box-shadow: inset 0 0 0 1px rgba(11,107,65,.12), 0 0 0 3px #fff;
+    animation: mp-cat-pop 280ms var(--ease-out);
+  }
+  @keyframes mp-cat-pop { 0% { transform: scale(.88); } 60% { transform: scale(1.06); } 100% { transform: scale(1); } }
+  /* "All crops", two columns wide: its circle beside the words. */
+  .mp-cat.all {
+    grid-column: span 2; flex-direction: row; justify-content: flex-start; gap: 12px;
+    padding: 12px 14px; text-align: left;
+  }
+  .mp-cat.all .mp-cat-ico { width: 44px; height: 44px; }
+  .mp-cat.all .mp-cat-lbl { font-size: var(--fs-body); }
+
   /* Varieties arrive under the crops in two even columns: long names like
-     "Shallots (Sibuyas Tagalog)" get room to wrap instead of being cut. */
+     "Shallots (Sibuyas Tagalog)" get room to wrap instead of being cut.
+     White pills in the tiles' family; the chosen one takes the same ring. */
   .mp-vars { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; animation: mp-vars-in 220ms var(--ease-out); }
   @keyframes mp-vars-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
   .mp-var {
-    min-width: 0; min-height: 44px; padding: 6px 10px; border-radius: 12px; cursor: pointer;
+    min-width: 0; min-height: 48px; padding: 8px 12px; border-radius: 14px; cursor: pointer;
     display: flex; align-items: center; justify-content: center; text-align: center; line-height: 1.2;
-    border: none; background: var(--paper-alt); color: var(--text-muted);
-    font-family: var(--font-display); font-size: 14px; font-weight: 600; overflow-wrap: anywhere;
-    transition: transform 160ms var(--ease-out), background-color 160ms ease, color 160ms ease;
+    border: none; background: var(--card); color: var(--text-soft);
+    box-shadow: 0 0 0 1px rgba(22,33,27,.08), 0 1px 2px rgba(22,33,27,.05);
+    font-family: var(--font-display); font-size: var(--fs-label); font-weight: 600; overflow-wrap: break-word;
+    transition: transform 160ms var(--ease-out), background-color 180ms ease, color 180ms ease, box-shadow 200ms var(--ease-out);
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
   .mp-var:active { transform: scale(.96); transition-duration: 90ms; }
-  .mp-var.on { background: var(--tanim-sk); color: var(--tanim); box-shadow: inset 0 0 0 1.5px rgba(11,107,65,.25); }
+  .mp-var.on { background: #F2F9F5; color: var(--tanim); box-shadow: 0 0 0 2px var(--tanim), 0 1px 2px rgba(11,107,65,.1); }
 
   /* Facts on the left, sort on the right, on one line: the count and the
      going rate are read together, and wrapping split them apart. */
@@ -1771,7 +1815,7 @@ export const appCss = `
   .btn-details { gap: 8px; }
 
   @media (prefers-reduced-motion: reduce) {
-    .mp-vars, .mp-quick-ico { animation: none; }
+    .mp-vars, .mp-quick-ico, .mp-cat.on .mp-cat-ico { animation: none; }
     .mp-card:has(.mp-card-main:active), .mp-quick:active, .mp-cat:active, .mp-var:active, .mp-sell-btn:active, .mp-seller:active { transform: none; }
   }
 

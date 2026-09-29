@@ -245,25 +245,28 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
   };
 
   // Determine which listings to show
+  const q = search.toLowerCase();
+  const matchesSearch = (l: typeof listings[number]) =>
+    !q || l.crop.toLowerCase().includes(q) || l.seller.toLowerCase().includes(q) || l.location.toLowerCase().includes(q);
+  const inCategory = (l: typeof listings[number], cat: string) => cat === "Rice"
+    ? ALL_RICE_NAMES.has(l.crop) || RICE_VARIETY_LIST.includes(l.crop)
+    : (CROP_FILTER_MAP[cat] || []).includes(l.crop) || l.crop === cat;
   const filtered = listings.filter(l => {
-    const q = search.toLowerCase();
-    const matchSearch = !q || l.crop.toLowerCase().includes(q) || l.seller.toLowerCase().includes(q) || l.location.toLowerCase().includes(q);
-    if (!matchSearch) return false;
+    if (!matchesSearch(l)) return false;
     if (family !== "All") {
       const names = familyCropNames(family);
       if (!names.includes(l.crop) && !names.includes(l.variety)) return false;
     }
     if (category === "All Crops") return true;
-    if (category === "Rice") {
-      const isRice = ALL_RICE_NAMES.has(l.crop) || RICE_VARIETY_LIST.includes(l.crop);
-      if (!isRice) return false;
-      return variety === "All" || l.crop === variety || l.variety === variety;
-    }
-    const vars = CROP_FILTER_MAP[category] || [];
-    const matchCat = vars.includes(l.crop) || l.crop === category;
-    if (!matchCat) return false;
+    if (!inCategory(l, category)) return false;
     return variety === "All" || l.crop === variety || l.variety === variety;
   });
+  // How many are for sale under each crop tile, by the same rules as the
+  // list itself (and whatever has been searched), so a tile only goes quiet
+  // when the list would really be empty. Not narrowed by Crops / Vegetables /
+  // Fruits: picking a crop clears that anyway.
+  const searched = listings.filter(matchesSearch);
+  const countOf = (cat: string) => searched.filter(l => inCategory(l, cat)).length;
 
 
   const sorted = [...filtered].sort((a, b) => {
@@ -438,22 +441,31 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
           </button>
         </div>
 
-        {/* Filters: the nine crop choices as an even 3 × 3 grid of tiles, all
-            visible, all the same size, nothing to swipe. Varieties appear
-            under it, in two columns, only once a crop is chosen. */}
+        {/* Filters: every crop as a tile, all visible, nothing to swipe.
+            Eleven choices in three columns would leave a ragged last row, so
+            "All crops" takes two columns and the grid closes in four even
+            rows. A crop with nothing for sale right now is quieter, so a
+            farmer or buyer sees where to tap before tapping. Varieties appear
+            under the grid, in two columns, only once a crop is chosen. */}
         <div className="mp-filters">
           <div className="mp-cats" role="radiogroup" aria-label={t("trade_select_category")}>
-            {CROP_CATEGORIES.map(cat => (
-              <button key={cat} role="radio" aria-checked={category === cat}
-                className={`mp-cat ${category === cat ? "on" : ""}`} onClick={() => selectCategory(cat)}>
-                {/* Every tile has an icon, All included, so the nine read
-                    as one set. */}
-                <span className="mp-cat-ico" aria-hidden="true">
-                  {cat === "All Crops" ? <LayoutGrid size={20} strokeWidth={2.2} /> : <CropEmoji crop={cat} size={22} />}
-                </span>
-                <span className="mp-cat-lbl">{cat === "All Crops" ? t("all") : tn(cat)}</span>
-              </button>
-            ))}
+            {CROP_CATEGORIES.map(cat => {
+              const all = cat === "All Crops";
+              const none = !all && countOf(cat) === 0;
+              return (
+                <button key={cat} role="radio" aria-checked={category === cat}
+                  data-crop={all ? "all" : cat.toLowerCase()}
+                  className={`mp-cat${all ? " all" : ""}${category === cat ? " on" : ""}${none ? " none" : ""}`}
+                  onClick={() => selectCategory(cat)}>
+                  {/* Each crop in a soft circle of its own colour, like an
+                      app's icon: the tiles tell apart at a glance. */}
+                  <span className="mp-cat-ico" aria-hidden="true">
+                    {all ? <LayoutGrid size={22} strokeWidth={2.2} /> : <CropEmoji crop={cat} size={24} />}
+                  </span>
+                  <span className="mp-cat-lbl">{all ? t("mp_all_crops") : tn(cat)}</span>
+                </button>
+              );
+            })}
           </div>
           {subVarieties.length > 0 && (
             <div className="mp-vars" role="radiogroup" aria-label={t("trade_select_variety")} key={category}>

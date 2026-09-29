@@ -35,6 +35,7 @@ export const translations: Dict = {
   close: { en: "Close", tl: "Isara" },
   search: { en: "Search", tl: "Maghanap" },
   all: { en: "All", tl: "Lahat" },
+  mp_all_crops: { en: "All crops", tl: "Lahat ng pananim" },
   online: { en: "Online", tl: "Online" },
   offline: { en: "Offline", tl: "Offline" },
   per_kg: { en: "per kg", tl: "kada kilo" },
