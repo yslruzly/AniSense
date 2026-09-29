@@ -87,10 +87,6 @@ export const translations: Dict = {
 
   // ── Auth form ─────────────────────────────────────────────────────────────
   auth_signin_title: { en: "Welcome back", tl: "Maligayang pagbabalik" },
-  auth_signin_sub: {
-    en: "Sign in to continue to AniSense.",
-    tl: "Mag-sign in para magpatuloy sa AniSense.",
-  },
   auth_farmer_account: { en: "Farmer Account", tl: "Account ng Magsasaka" },
   auth_buyer_account: { en: "Buyer Account", tl: "Account ng Mamimili" },
   auth_sign_in_with: { en: "Sign in with", tl: "Mag-sign in gamit ang" },

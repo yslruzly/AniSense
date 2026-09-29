@@ -449,7 +449,6 @@ export function AuthFormScreen({
           {brand}
           <div className="a-swap" key="signin">
             <h1 className="a-title on-ink">{t("auth_signin_title")}</h1>
-            <p className="a-sub on-ink">{t("auth_signin_sub")}</p>
             <p className="a-switch on-ink">
               {t("auth_no_account")} <button type="button" className="a-link" onClick={() => go("name")}>{t("auth_sign_up_link")}</button>
             </p>
