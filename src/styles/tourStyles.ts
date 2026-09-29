@@ -37,7 +37,7 @@ export const tourCss = `
      the world appears from nothing — so it never starts from scale(0), or
      from a standstill. */
   .tour-card {
-    background: var(--card); border-radius: 22px; padding: 18px 18px 16px;
+    background: var(--card); border-radius: 22px; padding: 20px 20px 18px;
     box-shadow: 0 18px 40px -12px rgba(9,17,13,.45);
     opacity: 0; transform: translateY(10px);
     transition: opacity 140ms ease, transform 140ms ease;
@@ -115,36 +115,41 @@ export const tourCss = `
   /* The logo on its own, no tile: it is full-colour artwork, and a pale green
      square behind green leaves only muddies both. */
   .tour-mark { display: block; width: 60px; height: 60px; margin: -4px 0 8px -4px; }
+  /* On the app's own type scale, which starts at 16px because the people
+     reading this are 50 to 70: a title, then the explanation one step below
+     it (lead, 19px) rather than small print. The card is measured on every
+     step and placed to fit, so a longer card just sits where it fits. */
   .tour-t {
-    margin: 0; font-family: var(--font-display); font-size: 21px; font-weight: 700;
-    letter-spacing: -.015em; line-height: 1.25; color: var(--text);
+    margin: 0; font-family: var(--font-display); font-size: var(--fs-title); font-weight: 700;
+    letter-spacing: -.015em; line-height: 1.2; color: var(--text);
   }
-  .tour-b { margin: 7px 0 0; font-size: 15.5px; line-height: 1.5; color: var(--text-muted); }
+  .tour-b { margin: 8px 0 0; font-size: var(--fs-lead); line-height: 1.45; color: var(--text-soft); }
 
-  .tour-foot { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+  .tour-foot { display: flex; align-items: center; gap: 10px; margin-top: 16px; }
   .tour-dots { display: flex; align-items: center; gap: 5px; }
   .tour-dot {
-    width: 6px; height: 6px; border-radius: 50%; background: var(--line);
+    width: 7px; height: 7px; border-radius: 50%; background: var(--line-strong);
     transition: width var(--dur-fast) ease, background-color var(--dur-fast) ease;
   }
   .tour-dot.done { background: var(--tanim-sk); }
-  .tour-dot.on { width: 18px; border-radius: 3px; background: var(--tanim); }
-  .tour-count { margin-left: auto; font-size: 13px; font-weight: 600; color: var(--text-faint); }
+  .tour-dot.on { width: 20px; border-radius: 4px; background: var(--tanim); }
+  .tour-count { margin-left: auto; font-size: var(--fs-label); font-weight: 600; color: var(--text-muted); font-variant-numeric: tabular-nums; }
 
-  .tour-btns { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
+  /* 52px tall, the app's floor for anything pressed. */
+  .tour-btns { display: flex; align-items: center; gap: 8px; margin-top: 16px; }
   .tour-skip, .tour-back, .tour-next {
-    min-height: 46px; border: none; border-radius: 14px; cursor: pointer;
-    font-family: inherit; font-size: 16px; font-weight: 700;
+    min-height: 52px; border: none; border-radius: 16px; cursor: pointer;
+    font-family: inherit; font-size: var(--fs-body); font-weight: 700;
     display: inline-flex; align-items: center; justify-content: center; gap: 4px;
     transition: transform 190ms var(--ease-out), background-color var(--dur-fast) ease;
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
   /* Skip is a real option, plainly offered — a tour nobody can leave is a
      cage — but it is the quietest thing on the card. */
-  .tour-skip { padding: 0 14px; background: none; color: var(--text-faint); font-weight: 600; }
-  .tour-back { width: 46px; padding: 0; margin-left: auto; background: var(--paper-alt); color: var(--text-muted); }
+  .tour-skip { padding: 0 16px; background: none; color: var(--text-muted); font-weight: 600; }
+  .tour-back { width: 52px; padding: 0; margin-left: auto; background: var(--paper-alt); color: var(--text-muted); }
   .tour-next {
-    padding: 0 18px; color: #fff;
+    padding: 0 20px; color: #fff;
     background-image: linear-gradient(180deg, #14875A 0%, var(--tanim) 54%, #075232 100%);
     box-shadow: inset 0 1px 0 rgba(255,255,255,.26), inset 0 -1px 0 rgba(0,0,0,.24), 0 1px 2px rgba(6,38,23,.3);
   }
@@ -205,11 +210,13 @@ export const tourCss = `
     box-shadow: inset 0 0 0 1px rgba(11,107,65,.14), 0 10px 24px -20px rgba(15,53,36,.5);
   }
   .gd-intro-copy { grid-area: copy; align-self: center; padding: 2px 0 6px; }
+  /* The guide reads at the same sizes as the walkthrough: nothing under
+     16px. */
   .gd-intro-t {
-    margin: 0; font-family: var(--font-display); font-size: 20px; font-weight: 700;
+    margin: 0; font-family: var(--font-display); font-size: var(--fs-title); font-weight: 700;
     letter-spacing: -.015em; line-height: 1.2; color: var(--text);
   }
-  .gd-intro-s { margin: 6px 0 0; font-size: 14.5px; line-height: 1.5; color: var(--text-muted); }
+  .gd-intro-s { margin: 6px 0 0; font-size: var(--fs-body); line-height: 1.45; color: var(--text-soft); }
   /* Anchored to the card's right edge; the negative bottom margin lets the
      button's row start over his waist, so the cut-off drawing never shows. */
   .gd-mascot {
@@ -227,7 +234,7 @@ export const tourCss = `
     grid-area: btn; position: relative; z-index: 1; margin-top: 12px;
     min-height: 56px; width: 100%; border: none; border-radius: 16px; cursor: pointer;
     display: inline-flex; align-items: center; justify-content: center; gap: 9px;
-    font-family: var(--font-display); font-size: 16.5px; font-weight: 700; letter-spacing: -.01em; color: #fff;
+    font-family: var(--font-display); font-size: var(--fs-lead); font-weight: 700; letter-spacing: -.01em; color: #fff;
     background-image: linear-gradient(180deg, #14875A 0%, var(--tanim) 54%, #075232 100%);
     box-shadow:
       inset 0 1px 0 rgba(255,255,255,.26),
@@ -269,8 +276,8 @@ export const tourCss = `
     background: linear-gradient(180deg, #16895B 0%, var(--tanim) 55%, #07522F 100%); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.24), inset 0 -1px 0 rgba(0,0,0,.18), 0 1px 2px rgba(0,0,0,.18), 0 6px 12px -8px rgba(11,107,65,.6);
   }
   .gd-head-body { flex: 1; min-width: 0; }
-  .gd-head-t { display: block; font-size: 16px; font-weight: 700; color: var(--text); line-height: 1.3; }
-  .gd-head-s { display: block; margin-top: 2px; font-size: 13.5px; color: var(--text-faint); }
+  .gd-head-t { display: block; font-size: var(--fs-lead); font-weight: 700; color: var(--text); line-height: 1.25; }
+  .gd-head-s { display: block; margin-top: 3px; font-size: var(--fs-label); line-height: 1.35; color: var(--text-muted); }
   /* A quarter turn is movement on screen, so it eases in and out, and it is
      short: this one is pressed over and over while a farmer reads down. */
   .gd-chev { flex-shrink: 0; color: var(--text-faint); transition: transform 200ms var(--ease-io); }
@@ -279,23 +286,23 @@ export const tourCss = `
   .gd-steps { padding: 2px 16px 16px 16px; display: flex; flex-direction: column; gap: 12px; }
   .gd-step { display: flex; gap: 12px; align-items: flex-start; }
   .gd-n {
-    flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; margin-top: 1px;
+    flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; margin-top: 0;
     display: inline-flex; align-items: center; justify-content: center;
-    background: var(--tanim); color: #fff; font-size: 13px; font-weight: 800;
+    background: var(--tanim); color: #fff; font-size: 15px; font-weight: 800;
     font-variant-numeric: tabular-nums;
   }
-  .gd-step-b { font-size: 15px; line-height: 1.5; color: var(--text-muted); }
+  .gd-step-b { font-size: var(--fs-body); line-height: 1.5; color: var(--text-soft); }
   .gd-step-b strong { color: var(--text); font-weight: 700; }
   /* The one line that matters most in a step: where to tap. */
   .gd-where {
     display: inline-flex; align-items: center; gap: 5px; margin-top: 8px;
-    padding: 5px 10px; border-radius: 9px; background: var(--paper-alt);
-    font-size: 13px; font-weight: 600; color: var(--text-muted);
+    padding: 6px 11px; border-radius: 10px; background: var(--paper-alt);
+    font-size: var(--fs-label); font-weight: 600; color: var(--text-muted);
   }
   .gd-note {
     display: flex; gap: 10px; padding: 12px 14px; border-radius: 14px;
     background: var(--gold-sk); box-shadow: inset 0 0 0 1px var(--gold-line);
-    font-size: 14.5px; line-height: 1.5; color: var(--text-muted);
+    font-size: var(--fs-label); line-height: 1.5; color: var(--text-soft);
   }
   .gd-note svg { flex-shrink: 0; color: var(--gold-text); margin-top: 2px; }
   @media (prefers-reduced-motion: reduce) {

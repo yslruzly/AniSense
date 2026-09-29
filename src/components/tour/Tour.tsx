@@ -32,6 +32,11 @@ type Step = {
   /** Live selectors to light up. The hole is the union of their rectangles.
    *  Absent → a plain card in the middle, for the opening and the closing. */
   targets?: string[];
+  /** The card goes above the part instead of under it. For a part at the
+   *  very foot of the page (More tools): the page cannot scroll it any
+   *  higher, so there is no room under it, and a card pinned to the foot of
+   *  the screen would cover the very thing it is explaining. */
+  above?: boolean;
 };
 
 // Two scripts, one engine. Each stays on one screen, Home: a tour that
@@ -53,7 +58,7 @@ const FARMER_STEPS: Step[] = [
   { id: "tracker", targets: ['[data-tour="tracker"]'] },
   { id: "alerts", targets: ['[data-tour="alerts"]'] },
   { id: "profit", targets: ['[data-tour="profit"]'] },
-  { id: "tools", targets: ['[data-tour="tools"]'] },
+  { id: "tools", targets: ['[data-tour="tools"]'], above: true },
   { id: "nav", targets: ['[data-tour="nav"]'] },
   { id: "done" },
 ];
@@ -68,7 +73,7 @@ const BUYER_STEPS: Step[] = [
   { id: "b_farmers", targets: ['[data-tour="b-farmers"]'] },
   { id: "b_moves", targets: ['[data-tour="b-moves"]'] },
   { id: "b_purchases", targets: ['[data-tour="b-purchases"]'] },
-  { id: "b_tools", targets: ['[data-tour="tools"]'] },
+  { id: "b_tools", targets: ['[data-tour="tools"]'], above: true },
   // Back up to the header for the bell. The light travels up the page the
   // same way it came down, so the farmer never loses track of where it is.
   { id: "b_bell", targets: ['[data-tour="bell"]'] },
@@ -171,7 +176,9 @@ export function Tour({ open, onFinish, role }: { open: boolean; onFinish: () => 
       const top = scroller.getBoundingClientRect().top - h.top + EDGE;
       const room = h.height - EDGE - top;
       const block = b.height + GAP + cardH;
-      const want = block <= room ? top + (room - block) * 0.35 : top;
+      // With the card above, the part sits a card's height lower in the block.
+      const lead = step.above ? cardH + GAP : 0;
+      const want = (block <= room ? top + (room - block) * 0.35 : top) + lead;
       scroller.scrollTo({ top: scroller.scrollTop + (b.top - want), behavior: reduce ? "auto" : "smooth" });
     }
 
@@ -193,7 +200,7 @@ export function Tour({ open, onFinish, role }: { open: boolean; onFinish: () => 
     };
     // cardH: a step whose card is taller than the last one's settles again
     // once it has been measured, so the pair still fits.
-  }, [open, i, step.targets, place, cardH]);
+  }, [open, i, step.targets, step.above, place, cardH]);
 
   // The card is measured, not guessed: the copy is two lines in English and
   // often three in Filipino, and the difference decides which side it sits on.
@@ -226,14 +233,19 @@ export function Tour({ open, onFinish, role }: { open: boolean; onFinish: () => 
   // The card goes under the part it explains, always: read the part, then
   // the words about it, in the order the eye moves down a page. A part too
   // tall to leave room has its card at the foot of the screen, over the
-  // part's lower edge. The one exception is something already at the foot
-  // (the tab bar): there is no "under", so its card sits just above it.
+  // part's lower edge. The exceptions are parts already at the foot: the tab
+  // bar, and a step that asks for it (More tools, at the end of the page).
+  // There is no "under" for those, so the card sits just above.
   let cardTop: number;
   if (!box) {
     // The opening card makes room above itself for the mascot, and the two
     // are centred together.
     const room = withMascot ? MASCOT_ROOM : 0;
     cardTop = Math.max(EDGE + room, (shellH - cardH + room) / 2);
+  } else if (step.above) {
+    // Above the part; on a short phone where the pair can't both fit, at the
+    // top of the screen, over the part's heading rather than its buttons.
+    cardTop = Math.max(EDGE, box.top - GAP - cardH);
   } else if (box.top + box.height + GAP + cardH + EDGE <= shellH) {
     cardTop = box.top + box.height + GAP;
   } else if (box.top > shellH * 0.6 && box.top - GAP - cardH >= EDGE) {
