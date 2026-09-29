@@ -1026,7 +1026,9 @@ export const translations: Dict = {
   auth_forgot: { en: "Forgot your password?", tl: "Nakalimutan ang password?" },
   auth_contact_method: { en: "How we'll reach you", tl: "Paano ka namin makokontak" },
   // ── Create account: Juan asks, one question per page ──────────────────────
+  ask_title: { en: "Create your account", tl: "Gumawa ng account" },
   ask_step: { en: "Step {n} of {total}", tl: "Hakbang {n} sa {total}" },
+  ask_signin_say: { en: "Good to see you again! 👋", tl: "Masaya akong makita ka ulit! 👋" },
   ask_name: { en: "First, what's your name?", tl: "Una, ano ang pangalan mo?" },
   ask_name_why: {
     en: "This is the name farmers and buyers will see.",

@@ -885,55 +885,79 @@ export const authCss = `
   }
   .a-progress-seg > span.on { transform: none; }
 
-  /* No dead space. The answer area is only as tall as the answer, so it
-     sits right above Continue in the thumb zone, and the header takes every
-     spare pixel: whoever is asking stands in it, as on the role step, and
-     grows with the room.
-     On a short phone, or once the keyboard is up, the header shrinks to the
-     brand row and the progress, and the figure sinks out of the way instead
-     of being squeezed: the question and the answer are what matter then. */
-  .a-askscreen .a-scroll { flex: 0 1 auto; }
-  /* min-content, because a header that clips its overflow may otherwise be
-     squeezed below its own brand row and progress; this way it shrinks only
-     as far as the figure's room, and the brand and the bar are never cut. */
-  .a-askhead { flex: 1 1 auto; min-height: min-content; display: flex; flex-direction: column; padding-bottom: 0; }
-  .a-askstage { flex: 1 1 auto; min-height: 20px; margin-top: 6px; container-type: size; }
-  .a-askstage .a-cast { height: min(100%, 340px); transition: opacity 200ms ease, transform 260ms var(--ease-out); }
-  .a-askstage .a-cast[data-fig="buyer"] { height: min(100%, 290px); }
-  @container (max-height: 120px) {
-    .a-askstage .a-cast { opacity: 0; transform: translateY(28px); }
+  /* Laid out like the language and role steps. The header ends in the
+     question, in a speech bubble on the left, beside whoever is asking,
+     standing on the header's edge on the right, a little smaller than on the
+     role step. The header is only as tall as that, so the answer starts high
+     on the screen, right under it (the same 22px below it as the cards on
+     those steps), and Continue stays at the bottom, as on an iPhone's setup
+     screens; on the typing questions the keyboard fills the room between. */
+  /* It can give up height when the screen is short, never grow, and never
+     below its own content (min-content: a header that clips its overflow
+     could otherwise be squeezed past its brand row and progress). */
+  .a-askhead { flex: 0 1 auto; min-height: min-content; display: flex; flex-direction: column; padding-bottom: 0; }
+  .a-asktitle + .a-progress { margin-top: 14px; }
+  /* As tall as the figure at full size, shrinking (with the figure) down to
+     the bubble's height when room is short. */
+  .a-askscene {
+    flex: 0 1 237px; min-height: min-content; margin-top: 18px;
+    display: flex; align-items: flex-end; gap: 12px;
+  }
+  .a-askscene[data-fig="buyer"] { flex-basis: 196px; }
+  /* The figure's column: exactly as wide as the figure at its full height,
+     so the bubble gets all the rest, and flush with the screen's right edge
+     as on the role step. The figure fills the column's height, so when the
+     scene gives up height it is simply smaller. */
+  .a-askfig {
+    position: relative; flex: 0 0 150px; align-self: stretch; margin-right: -22px;
+    animation: a-stage-in 520ms var(--ease-out) 140ms both;
+  }
+  .a-askfig[data-fig="buyer"] { flex-basis: 172px; }
+  .a-askfig .a-cast { right: 0; height: min(100%, 237px); }
+  .a-askfig .a-cast[data-fig="buyer"] { height: min(100%, 196px); }
+  /* A soft pool of light behind the figure, as on the role step. */
+  .a-askfig::before {
+    content: ""; position: absolute; right: -70px; bottom: -80px; width: 300px; height: 300px;
+    border-radius: 50%; pointer-events: none;
+    background: radial-gradient(closest-side, rgba(140,208,132,.28), rgba(140,208,132,.08) 55%, rgba(140,208,132,0));
   }
 
-  /* The question, in a white bubble just under the header, the same 22px
-     below it as the cards on the language and role steps, its point aimed up
-     at the one asking. It sits clear of the header rather than over it, so
-     it never covers the figure's waving hand. Outside the scrolling area, so
-     it stays in view while the answer is typed. It grows out of its point as
-     each question arrives. */
+  /* The question, in the same white speech bubble as the role step, its
+     point on the right edge aimed at the asker's face. It sits a little
+     above the header's edge so the point lands at about his face whatever
+     the length of the question, and grows out of that point as each
+     question arrives. */
   .a-ask {
-    position: relative; z-index: 2; flex: none;
-    margin: 22px 22px 0; padding: 16px 18px 17px;
-    background: var(--card); border-radius: 22px;
-    box-shadow:
-      0 0 0 1px rgba(22,33,27,.05),
-      0 2px 4px rgba(22,33,27,.06),
-      0 18px 34px -20px rgba(22,33,27,.5);
-    transform-origin: calc(100% - 80px) 0;
-    animation: a-ask-pop 300ms var(--ease-out) 60ms both;
+    position: relative; flex: 1 1 auto; min-width: 0; margin-bottom: 54px;
+    background: var(--card); color: var(--ink); border-radius: 20px; padding: 14px 16px 15px;
+    box-shadow: 0 10px 24px -10px rgba(0,0,0,.55), 0 1px 0 rgba(255,255,255,.9) inset;
+    transform-origin: 100% 36px; animation: a-ask-pop 280ms var(--ease-out) 60ms both;
   }
-  .a-ask::before {
-    content: ""; position: absolute; top: -7px; right: 72px; width: 16px; height: 16px;
-    background: var(--card); border-radius: 3px 0 0 0; transform: rotate(45deg);
+  .a-ask::after {
+    content: ""; position: absolute; right: -6px; top: 30px; width: 14px; height: 14px;
+    background: var(--card); border-radius: 2px; transform: rotate(45deg);
   }
-  @keyframes a-ask-pop { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: none; } }
+  @keyframes a-ask-pop { from { opacity: 0; transform: scale(.92); } to { opacity: 1; transform: none; } }
   .a-ask-q {
-    font-family: var(--font-display); font-weight: 700; font-size: var(--fs-title);
-    line-height: 1.22; letter-spacing: -.015em; color: var(--ink); text-wrap: pretty;
+    font-family: var(--font-display); font-weight: 700; font-size: var(--fs-lead);
+    line-height: 1.25; letter-spacing: -.012em; color: var(--ink); text-wrap: pretty;
   }
-  .a-ask-why { margin-top: 6px; font-size: var(--fs-label); line-height: 1.45; color: var(--text-faint); text-wrap: pretty; }
+  .a-ask-why { margin-top: 5px; font-size: var(--fs-label); line-height: 1.4; color: var(--text-faint); text-wrap: pretty; }
 
-  /* The answer goes right under the question. */
-  .a-ask-body { padding-top: 18px; }
+  /* With the keyboard up (the window shrinks to what is left above it) or on
+     a very short phone, the figure and the title step aside and the bubble
+     takes the full width: the question and the answer are what matter then,
+     and they both stay in view. Sign in's greeting goes too; it's only a
+     hello. */
+  @media (max-height: 600px) {
+    .a-askfig, .a-asktitle, .a-ask-hi { display: none; }
+    .a-askscene, .a-askscene[data-fig="buyer"] { flex-basis: auto; }
+    .a-ask { margin-bottom: 18px; }
+    .a-ask::after { display: none; }
+  }
+
+  /* The answer goes right under the header. */
+  .a-ask-body { padding-top: 22px; }
   .a-ask-body > .a-field:first-child, .a-ask-body > .a-cropgrid { margin-top: 0; }
   .a-ask-body .a-switch { margin-top: 14px; }
   /* A one-line answer is typed large, like a reply, not like a form field. */
@@ -948,7 +972,6 @@ export const authCss = `
   .a-unit-row .a-inp, .a-unit-row .a-inp:focus, .a-unit-row .a-inp.bad { border-radius: 16px 0 0 16px; padding-left: 18px; }
 
   @media (prefers-reduced-motion: reduce) {
-    .a-ask { animation: a-step-fade 200ms ease both; }
-    .a-askstage .a-cast { transition: opacity 200ms ease; transform: none; }
+    .a-ask, .a-askfig { animation: a-step-fade 200ms ease both; }
   }
 `;

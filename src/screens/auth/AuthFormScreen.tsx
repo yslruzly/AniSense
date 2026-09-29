@@ -59,37 +59,40 @@ const focusNext = (id: string) => (e: KeyboardEvent<HTMLInputElement>) => {
   if (e.key === "Enter") { e.preventDefault(); document.getElementById(id)?.focus(); }
 };
 
-// Whoever is asking stands in the header, as on the role step: Juan for a
-// farmer, the buyer mascot for a buyer, drawn with the same layers and moved
-// by the same rules. With each new question they say it (the mouth moves for
-// about a second); Juan waves once, when he first appears. Decorative: the
-// question itself is the page's heading.
-function Asker({ role, cue }: { role: UserRole; cue: string }) {
+// The bottom of the header, laid out like the language and role steps: the
+// speech bubble on the left, whoever is asking standing on the header's edge
+// on the right (Juan for a farmer, the buyer mascot for a buyer, drawn with
+// the same layers and moved by the same rules). With each new question they
+// say it (the mouth moves for about a second); Juan waves once, when he
+// first appears. The figure is decorative: the question is the heading.
+function Scene({ role, cue, children }: { role: UserRole; cue: string; children?: ReactNode }) {
   // Counted once per new cue, so typing (which re-renders) changes nothing.
   const said = useRef({ cue, n: 0 });
   if (said.current.cue !== cue) said.current = { cue, n: said.current.n + 1 };
   // The first line waits for the figure to rise into place.
   const first = said.current.n === 0 ? "is-first" : "";
+  const fig = role === "buyer" ? "buyer" : "farmer";
   return (
-    <div className="a-rolestage a-askstage" aria-hidden="true">
-      {role === "buyer" ? (
-        <div className="a-cast" data-fig="buyer">
-          <span className="a-fig a-fig-layers fig-buyer on">
-            <img src={buyerMascot} alt="" />
-            <img className="a-fig-eyes" src={buyerEyes} alt="" />
-            <img key={`m${cue}`} className={`a-fig-mouth ${first}`} src={buyerMouth} alt="" />
-          </span>
+    <div className="a-askscene" data-fig={fig}>
+      {children}
+      <div className="a-askfig" data-fig={fig} aria-hidden="true">
+        <div className="a-cast" data-fig={fig}>
+          {fig === "buyer" ? (
+            <span className="a-fig a-fig-layers fig-buyer on">
+              <img src={buyerMascot} alt="" />
+              <img className="a-fig-eyes" src={buyerEyes} alt="" />
+              <img key={`m${cue}`} className={`a-fig-mouth ${first}`} src={buyerMouth} alt="" />
+            </span>
+          ) : (
+            <span className="a-fig a-fig-layers fig-farmer on">
+              <img src={juanPeekBody} alt="" />
+              <img key={`h${cue}`} className={`a-fig-talk half ${first}`} src={juanMouthHalf} alt="" />
+              <img key={`s${cue}`} className={`a-fig-talk shut ${first}`} src={juanMouthShut} alt="" />
+              <img className="a-fig-hand is-first" src={juanPeekHand} alt="" />
+            </span>
+          )}
         </div>
-      ) : (
-        <div className="a-cast" data-fig="farmer">
-          <span className="a-fig a-fig-layers fig-farmer on">
-            <img src={juanPeekBody} alt="" />
-            <img key={`h${cue}`} className={`a-fig-talk half ${first}`} src={juanMouthHalf} alt="" />
-            <img key={`s${cue}`} className={`a-fig-talk shut ${first}`} src={juanMouthShut} alt="" />
-            <img className="a-fig-hand is-first" src={juanPeekHand} alt="" />
-          </span>
-        </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -451,7 +454,10 @@ export function AuthFormScreen({
               {t("auth_no_account")} <button type="button" className="a-link" onClick={() => go("name")}>{t("auth_sign_up_link")}</button>
             </p>
           </div>
-          <Asker role={role} cue="signin" />
+          {/* Juan greets a returning user, in the bubble beside him. */}
+          <Scene role={role} cue="signin">
+            <div className="a-ask a-ask-hi"><p className="a-ask-q">{t("ask_signin_say")}</p></div>
+          </Scene>
         </div>
 
         <div className="a-scroll a-step" data-anim={anim} key="signin">
@@ -490,15 +496,16 @@ export function AuthFormScreen({
   const step = page === "verify" ? pages.length : at + 1;
   const stepLabel = t("ask_step").replace("{n}", String(step)).replace("{total}", String(pages.length));
 
-  // The layout, top to bottom: the header, which takes whatever height is
-  // left over, with the asker standing in it; the question, in a bubble that
-  // overlaps the header's edge and points up at them; the answer, right
-  // above Continue. The answer area is only as tall as the answer, so no gap
-  // opens between it and the button: spare height goes to the header.
+  // The layout, top to bottom: the header, ending in the question (in a
+  // bubble on the left) and whoever is asking it (standing on the right);
+  // then the answer, right under the header; then Continue, at the bottom.
   const ask = (q: string, why: string | undefined, body: ReactNode, main: ReactNode, onSubmit = next, beforeDock?: ReactNode) => (
     <form className="a-screen a-setup a-askscreen" noValidate onSubmit={e => { e.preventDefault(); onSubmit(); }}>
       <div className="a-inkhead a-formhead a-askhead">
         {brand}
+        {/* What all these questions add up to. Not a heading: the question
+            in the bubble is this page's heading. */}
+        <p className="a-title on-ink a-asktitle">{t("ask_title")}</p>
         <div className="a-progress" role="progressbar" aria-label={stepLabel}
           aria-valuemin={1} aria-valuemax={pages.length} aria-valuenow={step}>
           <span className="a-progress-t" aria-hidden="true"><span className="a-swap" key={stepLabel}>{stepLabel}</span></span>
@@ -506,14 +513,15 @@ export function AuthFormScreen({
             {pages.map((p, i) => <span key={p} className="a-progress-seg"><span className={i < step ? "on" : ""} /></span>)}
           </span>
         </div>
-        <Asker role={role} cue={page} />
-      </div>
-
-      {/* Outside the scrolling part, so the question stays in view while the
-          keyboard is up. Keyed by page, so each question pops in afresh. */}
-      <div className="a-ask" key={`q-${page}`}>
-        <h1 className="a-ask-q" id="ask-q">{q}</h1>
-        {why && <p className="a-ask-why">{why}</p>}
+        {/* Keyed by page, so each question pops out of the bubble's point
+            afresh as the asker says it. In the header, not the scrolling
+            part, so it stays in view while the answer is typed. */}
+        <Scene role={role} cue={page}>
+          <div className="a-ask" key={`q-${page}`}>
+            <h1 className="a-ask-q" id="ask-q">{q}</h1>
+            {why && <p className="a-ask-why">{why}</p>}
+          </div>
+        </Scene>
       </div>
 
       {/* Keyed by page: each answer arrives in the direction of travel. */}
