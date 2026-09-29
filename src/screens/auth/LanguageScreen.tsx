@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { haptic } from "../../lib/platform";
-import { ArrowLeft, Check } from "lucide-react";
+import { ChevronLeft, Check } from "lucide-react";
 import { AniSenseLogo } from "../../components/AniSenseLogo";
 import juanPeek from "../../assets/juan-peek.webp";
 import juanPeekBody from "../../assets/juan-peek-body.webp";
@@ -15,6 +15,11 @@ import { useLang, Lang } from "../../i18n";
 // The first step of signing in or signing up, ahead of the role picker. Language
 // used to live inside Profile, which meant a Tagalog reader had to navigate an
 // English app to find the Tagalog switch.
+//
+// Laid out the way Apple lays out a setup step: one question as a large title,
+// the answers as one inset grouped list, and one prominent button. The ink
+// header and Juan stay, so it still reads as the start of the same flow as the
+// role picker after it.
 export function LanguageScreen({ onDone, onBack }: { onDone: () => void; onBack?: () => void }) {
   const { t, lang, setLang } = useLang();
   const [choice, setChoice] = useState<Lang>(lang);
@@ -22,10 +27,20 @@ export function LanguageScreen({ onDone, onBack }: { onDone: () => void; onBack?
   // The flag is the fastest way in: someone who reads little English still
   // recognises their own flag, and the native name ("Tagalog") is written the
   // same in both languages.
-  const options: { id: Lang; title: string; desc: string; note: string; flag: React.ReactNode }[] = [
-    { id: "tl", title: t("lang_tl"), desc: t("lang_tl_desc"), note: "PH", flag: <FlagPH /> },
-    { id: "en", title: t("lang_en"), desc: t("lang_en_desc"), note: "EN", flag: <FlagUS /> },
+  const options: { id: Lang; title: string; desc: string; flag: React.ReactNode }[] = [
+    { id: "tl", title: t("lang_tl"), desc: t("lang_tl_desc"), flag: <FlagPH /> },
+    { id: "en", title: t("lang_en"), desc: t("lang_en_desc"), flag: <FlagUS /> },
   ];
+
+  // The app switches language on the tap, so the choice is previewed on this
+  // very screen. Tapping the row that's already chosen changes nothing, so it
+  // gets no haptic: feedback only for something that happened.
+  const pick = (id: Lang) => {
+    if (id === choice) return;
+    haptic.select();
+    setChoice(id);
+    setLang(id);
+  };
 
   const confirm = () => {
     setLang(choice);
@@ -33,7 +48,7 @@ export function LanguageScreen({ onDone, onBack }: { onDone: () => void; onBack?
   };
 
   return (
-    <div className="a-screen">
+    <div className="a-screen a-lang">
       {/* Same ink header as the role step, so the two setup screens read as
           one flow. Juan greets in whichever language is picked: the header
           answers the tap in the language the app is about to use. */}
@@ -42,8 +57,11 @@ export function LanguageScreen({ onDone, onBack }: { onDone: () => void; onBack?
           <span className="a-brandmark"><AniSenseLogo size={26} /></span>
           <span className="a-brandname">AniSense</span>
         </div>
-        <div className="a-rolehead-copy">
-          <h1 className="a-title on-ink">{t("lang_title")}</h1>
+        {/* Keyed by language, so when the app switches the heading swaps
+            with a short blur: one line turning into the other, rather than
+            text jumping in place. */}
+        <div className="a-rolehead-copy a-lang-swap" key={lang}>
+          <h1 className="a-title on-ink" id="lang-title">{t("lang_title")}</h1>
           <p className="a-sub on-ink">{t("lang_sub")}</p>
         </div>
 
@@ -58,35 +76,45 @@ export function LanguageScreen({ onDone, onBack }: { onDone: () => void; onBack?
         />
       </div>
 
-      <div className="a-scroll a-stagger a-rolelist">
-        {options.map(o => (
-          <button
-            key={o.id}
-            className={`a-pick ${choice === o.id ? "on" : ""}`}
-            aria-pressed={choice === o.id}
-            onClick={() => { haptic.select(); setChoice(o.id); setLang(o.id); }}
-          >
-            <span className="a-pick-flag">{o.flag}</span>
-            <span className="a-pick-copy">
-              <span className="a-pick-t">{o.title} <small>{o.note}</small></span>
-              <span className="a-pick-d">{o.desc}</span>
-            </span>
-            <span className="a-tick"><Check size={19} color="#fff" strokeWidth={3.4} /></span>
-          </button>
-        ))}
-        <p className="a-help" style={{ marginTop: 2 }}>{t("lang_change_later")}</p>
+      <div className="a-scroll a-stagger a-lang-list">
+        {/* One card, two rows: a single question with two answers, rather
+            than two separate things to weigh. A radio group, so a screen
+            reader says "1 of 2, checked". */}
+        <div className="a-lang-group" role="radiogroup" aria-labelledby="lang-title">
+          {options.map(o => (
+            <button
+              key={o.id}
+              type="button"
+              role="radio"
+              aria-checked={choice === o.id}
+              className={`a-lang-row ${choice === o.id ? "on" : ""}`}
+              onClick={() => pick(o.id)}
+            >
+              <span className="a-lang-flag">{o.flag}</span>
+              <span className="a-lang-copy">
+                <span className="a-lang-t">{o.title}</span>
+                <span className="a-lang-d">{o.desc}</span>
+              </span>
+              <span className="a-lang-radio"><Check size={18} color="#fff" strokeWidth={3.2} /></span>
+            </button>
+          ))}
+        </div>
+        <p className="a-lang-foot"><span className="a-lang-swap" key={lang}>{t("lang_change_later")}</span></p>
       </div>
+
       {/* Back lives in the dock, beside Continue: both steps of the decision sit
-          in the thumb zone, and Back stays a quiet square so Continue reads as
-          the primary action. */}
+          in the thumb zone, and Back stays a quiet round button so Continue
+          reads as the primary action. */}
       <div className="a-dock">
         <div className="a-dockrow">
           {onBack && (
             <button className="a-iconbtn on-paper" onClick={onBack} aria-label={t("back")}>
-              <ArrowLeft size={24} color="var(--ink)" strokeWidth={2.4} />
+              <ChevronLeft size={28} color="var(--ink)" strokeWidth={2.4} />
             </button>
           )}
-          <button className="a-btn a-btn-green" onClick={confirm}>{t("continue")}</button>
+          <button className="a-btn a-btn-green" onClick={confirm}>
+            <span className="a-lang-swap" key={lang}>{t("continue")}</span>
+          </button>
         </div>
       </div>
     </div>
