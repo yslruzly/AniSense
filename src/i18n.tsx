@@ -86,11 +86,6 @@ export const translations: Dict = {
   },
 
   // ── Auth form ─────────────────────────────────────────────────────────────
-  auth_create_title: { en: "Create account", tl: "Gumawa ng account" },
-  auth_create_sub: {
-    en: "Create your free account in under a minute.",
-    tl: "Gumawa ng libreng account sa loob ng isang minuto.",
-  },
   auth_signin_title: { en: "Welcome back", tl: "Maligayang pagbabalik" },
   auth_signin_sub: {
     en: "Sign in to continue to AniSense.",
@@ -100,12 +95,11 @@ export const translations: Dict = {
   auth_buyer_account: { en: "Buyer Account", tl: "Account ng Mamimili" },
   auth_sign_in_with: { en: "Sign in with", tl: "Mag-sign in gamit ang" },
   auth_cp_number: { en: "CP Number", tl: "Numero ng CP" },
-  auth_full_name: { en: "Full Name", tl: "Buong Pangalan" },
   auth_full_name_ph: { en: "e.g. Juan Dela Cruz", tl: "hal. Juan Dela Cruz" },
   auth_gmail_address: { en: "Gmail Address", tl: "Gmail Address" },
   auth_password: { en: "Password", tl: "Password" },
   auth_password_ph: { en: "Enter password", tl: "Ilagay ang password" },
-  auth_confirm_password: { en: "Confirm Password", tl: "Kumpirmahin ang Password" },
+  auth_confirm_password: { en: "Type it again", tl: "I-type muli" },
   auth_confirm_password_ph: { en: "Re-enter password", tl: "Ilagay muli ang password" },
   auth_create_btn: { en: "Create Account", tl: "Gumawa ng Account" },
   auth_signin_btn: { en: "Sign In", tl: "Mag-sign In" },
@@ -115,11 +109,8 @@ export const translations: Dict = {
   auth_or: { en: "or", tl: "o" },
 
   // ── Crop picker ───────────────────────────────────────────────────────────
-  crops_title: { en: "What you grow", tl: "Anong tinatanim mo?" },
-  crops_sub: {
-    en: "Select all the crops you grow or plan to grow.",
-    tl: "Piliin ang lahat ng pananim na itinatanim mo o balak mong itanim.",
-  },
+  crops_title: { en: "What do you grow?", tl: "Ano ang mga tanim mo?" },
+  crops_sub: { en: "Pick all that you grow or plan to grow.", tl: "Piliin lahat ng itinatanim mo o balak mong itanim." },
   crops_select_label: { en: "Select your crops", tl: "Piliin ang mga tinatanim mo" },
   crops_selected: { en: "selected", tl: "ang napili" },
   crops_continue_with: { en: "Continue with", tl: "Magpatuloy gamit ang" },
@@ -783,14 +774,7 @@ export const translations: Dict = {
   },
   optional: { en: "optional", tl: "opsyonal" },
 
-  farm_details_title: { en: "About your farm", tl: "Tungkol sa bukid mo" },
-  farm_details_sub: {
-    en: "Tell us a bit about your farming background.",
-    tl: "Ikwento mo nang kaunti ang pagsasaka mo.",
-  },
-  farm_years_lbl: { en: "Years of Farming", tl: "Taon sa Pagsasaka" },
   farm_years_ph: { en: "e.g. 12", tl: "hal. 12" },
-  farm_loc_lbl: { en: "Farm Location", tl: "Lokasyon ng Bukid" },
   farm_province_lbl: { en: "Province", tl: "Probinsya" },
   farm_municipality_lbl: { en: "City / Municipality", tl: "Lungsod / Bayan" },
   farm_barangay_lbl: { en: "Barangay", tl: "Barangay" },
@@ -808,7 +792,6 @@ export const translations: Dict = {
     en: "e.g. Cabanatuan City, Nueva Ecija",
     tl: "hal. Cabanatuan City, Nueva Ecija",
   },
-  farm_phone_lbl: { en: "Phone Number", tl: "Numero ng Telepono" },
   err_years_required: {
     en: "Enter a valid number of years (0–80).",
     tl: "Maglagay ng wastong bilang ng taon (0–80).",
@@ -1040,12 +1023,36 @@ export const translations: Dict = {
     en: "6 letters or numbers, or more.",
     tl: "6 na letra o numero pataas.",
   },
-  auth_help_years: {
-    en: "Roughly how long you've been farming.",
-    tl: "Humigit-kumulang na taon mo nang pagsasaka.",
-  },
   auth_forgot: { en: "Forgot your password?", tl: "Nakalimutan ang password?" },
   auth_contact_method: { en: "How we'll reach you", tl: "Paano ka namin makokontak" },
+  // ── Create account: Juan asks, one question per page ──────────────────────
+  ask_step: { en: "Step {n} of {total}", tl: "Hakbang {n} sa {total}" },
+  ask_name: { en: "First, what's your name?", tl: "Una, ano ang pangalan mo?" },
+  ask_name_why: {
+    en: "This is the name farmers and buyers will see.",
+    tl: "Ito ang pangalang makikita ng mga magsasaka at mamimili.",
+  },
+  ask_contact: { en: "How can we reach you, {name}?", tl: "Paano ka namin makokontak, {name}?" },
+  ask_contact_why: { en: "You'll use this to sign in.", tl: "Ito ang gagamitin mo sa pag-sign in." },
+  ask_password: { en: "Now, make a password", tl: "Ngayon, gumawa ng password" },
+  ask_password_why: {
+    en: "You'll type it each time you sign in, so pick one you'll remember.",
+    tl: "Ita-type mo ito tuwing magsa-sign in ka, kaya pumili ng madaling tandaan.",
+  },
+  ask_years: { en: "How many years have you been farming?", tl: "Ilang taon ka nang nagsasaka?" },
+  ask_years_why: {
+    en: "A rough number is fine. Buyers like to see experience.",
+    tl: "Ayos lang ang tantiya. Gusto ng mamimili na makita ang karanasan mo.",
+  },
+  ask_years_unit: { en: "years", tl: "taon" },
+  ask_farm: { en: "Where is your farm?", tl: "Saan ang bukid mo?" },
+  ask_farm_why: {
+    en: "So buyers near you can find your harvest.",
+    tl: "Para mahanap ng mga mamimili sa malapit ang ani mo.",
+  },
+  ask_phone: { en: "What number can buyers call?", tl: "Anong numero ang puwedeng tawagan ng mamimili?" },
+  ask_phone_why: { en: "It shows on the harvests you sell.", tl: "Makikita ito sa mga aning ibinebenta mo." },
+
   auth_pw_match: { en: "Passwords match", tl: "Magkatugma ang password" },
   crops_none_yet: { en: "None selected yet", tl: "Wala pang napili" },
 

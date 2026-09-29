@@ -234,13 +234,13 @@ export const authCss = `
   span.a-swap { display: inline-block; }
   @keyframes a-swap {
     from { opacity: 0; filter: blur(6px); transform: translateY(4px); }
-    to   { opacity: 1; filter: blur(0); transform: none; }
+    to   { opacity: 1; filter: none; transform: none; }
   }
 
   /* One prominent button as a capsule and Back as a round button beside it,
      the shapes iOS uses for a setup step's actions. */
   .a-setup .a-btn { border-radius: var(--r-pill); }
-  .a-setup .a-dockrow .a-iconbtn { border-radius: 50%; }
+  .a-setup .a-dockrow .a-iconbtn, .a-setup .a-dockpair .a-iconbtn { border-radius: 50%; }
 
   @media (prefers-reduced-motion: reduce) {
     .a-swap { animation: a-swap-fade 200ms ease both; }
@@ -382,9 +382,9 @@ export const authCss = `
      A fine grain over it all keeps the long dark gradients from banding into
      visible steps on phone screens. A faint line of light along the curved
      edge and a soft shadow under it make the header a surface resting over
-     the page. Shared by the language and role steps, so the two stay one
-     piece. */
-  .a-inkhead.a-rolehead {
+     the page. Shared by the language, role and account steps, so the
+     whole setup stays one piece. */
+  .a-inkhead.a-rolehead, .a-inkhead.a-formhead {
     background:
       url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .07 0 0 0 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23g)'/%3E%3C/svg%3E"),
       radial-gradient(55% 34% at 92% 0%, rgba(242,179,44,.16), rgba(242,179,44,0) 72%),
@@ -556,67 +556,99 @@ export const authCss = `
   @keyframes a-bubble-in { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: none; } }
 
   /* ── Form header ───────────────────────────────────────────────────────── */
-  /* Same lockup as the setup steps, plus the account type as a pill on the
-     brand row. The glow echoes the mascot stage so the flow feels like one
-     place, at a fraction of the height a form can afford to give up. */
+  /* Same lockup and the same first light as the setup steps before it (the
+     background is shared with .a-rolehead above), shorter, because a form
+     needs the room. The account type rides the brand row as a small glass
+     pill. */
   .a-formhead { position: relative; overflow: hidden; padding: calc(18px + var(--safe-top)) 22px 26px; }
-  .a-formhead::before {
-    content: ""; position: absolute; right: -80px; top: -90px; width: 260px; height: 260px; border-radius: 50%;
-    background: radial-gradient(closest-side, rgba(126,196,120,.2), rgba(126,196,120,0)); pointer-events: none;
-  }
   .a-formhead > * { position: relative; }
   .a-formhead .a-title { margin-top: 22px; }
   .a-formhead .a-sub { margin-top: 6px; }
-  .a-brandrow .a-badge { margin: 0 0 0 auto; padding: 6px 12px; gap: 6px; }
+  .a-brandrow .a-badge {
+    margin: 0 0 0 auto; padding: 6px 13px 6px 11px; gap: 6px;
+    background: rgba(255,255,255,.12);
+    backdrop-filter: blur(12px) saturate(160%); -webkit-backdrop-filter: blur(12px) saturate(160%);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.28),
+      inset 0 0 0 1px rgba(255,255,255,.16),
+      0 4px 10px -6px rgba(0,0,0,.5);
+  }
+
+  /* ── Step transitions ──────────────────────────────────────────────────── */
+  /* Moving through sign-up is navigation, so it moves like iOS navigation:
+     the next step comes in from the right, going back comes in from the
+     left, and the page answers at once (strong ease-out). Only the entrance
+     animates; the old step is simply gone, so a quick tap never waits on an
+     exit. Switching between Sign in and Create account is not a move to
+     another place, so that one settles in where it is with a small blur.
+     End states are "none", never blur(0): a filter left on the page would
+     become the frame for anything fixed inside it. */
+  .a-step[data-anim="fwd"]  { animation: a-step-fwd 300ms var(--ease-out) both; }
+  .a-step[data-anim="back"] { animation: a-step-back 300ms var(--ease-out) both; }
+  .a-step[data-anim="swap"] { animation: a-step-swap 240ms var(--ease-out) both; }
+  @keyframes a-step-fwd  { from { opacity: 0; transform: translateX(32px); } to { opacity: 1; transform: none; } }
+  @keyframes a-step-back { from { opacity: 0; transform: translateX(-32px); } to { opacity: 1; transform: none; } }
+  @keyframes a-step-swap { from { opacity: 0; transform: translateY(6px); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
 
   /* ── Contact method switch ─────────────────────────────────────────────── */
   /* Segmented, not a link: both options are visible, the current one is
-     obvious, and each half is a 48px target. The thumb slides rather than
-     jumping so the eye follows the change to the field below. */
+     obvious, and each half is a 48px target. Drawn like iOS's own segmented
+     control: a grey well, a white thumb with the soft double shadow iOS
+     gives it, and the chosen label in ink. The thumb glides on the iOS
+     sheet curve so the eye follows it to the field below, and holding the
+     chosen segment presses the thumb in a little, as iOS does. */
   .a-seg {
-    position: relative; display: grid; grid-template-columns: 1fr 1fr; padding: 4px; margin-bottom: 16px;
-    border-radius: var(--r-md); background: var(--paper-alt);
+    position: relative; display: grid; grid-template-columns: 1fr 1fr; padding: 3px; margin-bottom: 18px;
+    border-radius: 15px; background: rgba(118,118,128,.13);
   }
   .a-seg-thumb {
-    position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px);
-    border-radius: 12px; background: var(--card); box-shadow: 0 1px 2px rgba(22,33,27,.12), 0 2px 8px -2px rgba(22,33,27,.12);
-    transition: transform 220ms var(--ease-out);
+    position: absolute; top: 3px; bottom: 3px; left: 3px; width: calc(50% - 3px);
+    border-radius: 12px; background: var(--card);
+    box-shadow: 0 3px 8px rgba(0,0,0,.12), 0 3px 1px rgba(0,0,0,.04), 0 0 0 .5px rgba(0,0,0,.04);
+    transform: translateX(calc(var(--seg-i, 0) * 100%)) scale(var(--seg-s, 1));
+    transition: transform 260ms var(--ease-drawer);
   }
-  .a-seg[data-mode="gmail"] .a-seg-thumb { transform: translateX(100%); }
+  .a-seg[data-mode="gmail"] { --seg-i: 1; }
+  .a-seg:has(button.on:active) { --seg-s: .96; }
   .a-seg button {
     position: relative; min-height: 48px; border: none; background: none; cursor: pointer;
     display: flex; align-items: center; justify-content: center; gap: 8px;
-    font-family: var(--font-display); font-weight: 600; font-size: var(--fs-label); color: var(--dilim);
-    transition: color 160ms ease; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+    font-family: var(--font-display); font-weight: 600; font-size: var(--fs-label); color: var(--text-muted);
+    transition: color 200ms ease; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
-  .a-seg button.on { color: var(--tanim); }
-  /* Three options (Luzon, Visayas, Mindanao): the same well and sliding
+  .a-seg button.on { color: var(--ink); }
+  /* Three options (Luzon, Visayas, Mindanao): the same well and gliding
      thumb, a third of the width, moved by index. */
   .a-seg.three { grid-template-columns: repeat(3, 1fr); }
-  .a-seg.three .a-seg-thumb { width: calc((100% - 8px) / 3); }
-  .a-seg.three[data-i="1"] .a-seg-thumb { transform: translateX(100%); }
-  .a-seg.three[data-i="2"] .a-seg-thumb { transform: translateX(200%); }
+  .a-seg.three .a-seg-thumb { width: calc((100% - 6px) / 3); }
+  .a-seg.three[data-i="1"] { --seg-i: 1; }
+  .a-seg.three[data-i="2"] { --seg-i: 2; }
 
   /* ── Inline feedback ───────────────────────────────────────────────────── */
   /* Errors sit under their field and slide in a few pixels from it, so they
      read as belonging to that field rather than arriving from nowhere. */
   .a-err {
-    display: flex; gap: 8px; align-items: flex-start; margin-top: 8px;
+    display: flex; gap: 8px; align-items: flex-start; margin-top: 8px; padding-left: 4px;
     font-size: var(--fs-label); line-height: 1.4; color: var(--error); font-weight: 600;
     animation: a-err-in 180ms var(--ease-out);
   }
   .a-err svg { flex: 0 0 18px; margin-top: 1px; }
   @keyframes a-err-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
-  /* A rule that turns into a tick the moment it's met. */
+  /* A rule that turns into a tick the moment it's met, with the same small
+     pop as the setup radios: the form answers progress as it happens. */
   .a-hint { display: flex; align-items: center; gap: 8px; transition: color 160ms ease; }
   .a-hint-ico {
     width: 18px; height: 18px; flex: 0 0 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    box-shadow: inset 0 0 0 1.5px #C7C1B2; color: transparent;
+    box-shadow: inset 0 0 0 1.5px var(--line-strong); color: transparent;
     transition: background-color 160ms ease, box-shadow 160ms ease, color 160ms ease;
   }
   .a-hint.ok { color: var(--tanim); font-weight: 600; }
-  .a-hint.ok .a-hint-ico { background: var(--tanim); box-shadow: inset 0 0 0 1.5px var(--tanim); color: #fff; }
+  .a-hint.ok .a-hint-ico {
+    background: var(--tanim); box-shadow: inset 0 0 0 1.5px var(--tanim); color: #fff;
+    animation: a-radio-pop 260ms var(--ease-out);
+  }
   .a-hint-in { animation: a-err-in 180ms var(--ease-out); }
+  .a-field .a-help { padding-left: 4px; }
 
   /* Spins fast on purpose: a quicker spinner makes the same wait feel shorter. */
   .a-spin {
@@ -627,27 +659,51 @@ export const authCss = `
   @keyframes a-spin { to { transform: rotate(360deg); } }
 
   /* ── Fields ────────────────────────────────────────────────────────────── */
-  .a-field { margin-top: 22px; }
+  /* iOS fields: white, softly rounded, held on the grey page by a hairline
+     and a whisper of a shadow instead of a drawn border. Focus answers with
+     a green ring and a soft halo of the same green around it, the way iOS
+     and macOS show which field is taking the typing; an error uses the same
+     ring in red. Every state lists the same three layers, so moving between
+     them animates rather than snaps. */
+  .a-field { margin-top: 20px; }
   .a-lbl {
     font-family: var(--font-display); font-weight: 600; font-size: var(--fs-body);
-    color: var(--ink); display: block; margin-bottom: 9px;
+    color: var(--text-soft); display: block; margin-bottom: 8px; padding-left: 4px;
   }
   /* Quieter than the label it rides, louder than nothing: enough to be read
      before the field is tapped, not enough to compete with the question. */
   .a-lbl small {
     font-family: var(--font-body); font-weight: 600; font-size: var(--fs-label);
-    color: var(--dilim);
+    color: var(--text-faint);
+  }
+  .a-inp, .a-prefix-row {
+    border-radius: 16px; background: var(--card);
+    box-shadow:
+      0 0 0 1px rgba(22,33,27,.14),
+      0 1px 2px rgba(22,33,27,.06),
+      0 0 0 0 rgba(11,107,65,0);
+    transition: box-shadow 180ms var(--ease-out);
   }
   .a-inp {
-    width: 100%; min-height: 62px; border-radius: var(--r-md); background: var(--card);
-    border: none; box-shadow: inset 0 0 0 2px var(--line); padding: 0 18px;
+    width: 100%; min-height: 60px; border: none; padding: 0 18px;
     font-size: var(--fs-lead); color: var(--ink); font-family: var(--font-body);
-    transition: box-shadow 140ms ease;
+    caret-color: var(--tanim);
   }
   .a-inp::placeholder { color: #8F958E; }
-  .a-inp:focus { outline: none; box-shadow: inset 0 0 0 3px var(--tanim); }
+  .a-inp:focus, .a-prefix-row:focus-within {
+    outline: none;
+    box-shadow:
+      0 0 0 2px var(--tanim),
+      0 1px 2px rgba(22,33,27,.06),
+      0 0 0 6px rgba(11,107,65,.14);
+  }
+  .a-inp.bad, .a-prefix-row:has(.a-inp.bad) {
+    box-shadow:
+      0 0 0 2px var(--error),
+      0 1px 2px rgba(22,33,27,.06),
+      0 0 0 6px rgba(165,35,27,.12);
+  }
   .a-inp.num { font-variant-numeric: tabular-nums; letter-spacing: .02em; }
-  .a-inp.bad { box-shadow: inset 0 0 0 3px var(--error); }
   /* A native select, deliberately. The OS picker is a full-screen list with
      system-sized rows and its own scrolling, which beats anything custom for a
      849-item barangay list on a 50-70 year-old's phone. */
@@ -659,41 +715,71 @@ export const authCss = `
     background-position: right 18px center;
   }
   .a-select:disabled { background-color: var(--paper-alt); color: #8F958E; cursor: default; opacity: 1; }
-  /* Province is fixed, so it is shown rather than asked. */
+  /* The picker fields read as the same family as the inputs: same shape, same
+     hairline, and the same green ring while the finger is on them. */
+  .a-setup .pick-field {
+    min-height: 60px; border-radius: 16px; background-color: var(--card); background-image: none;
+    box-shadow:
+      0 0 0 1px rgba(22,33,27,.14),
+      0 1px 2px rgba(22,33,27,.06),
+      0 0 0 0 rgba(11,107,65,0);
+    transition: transform 160ms var(--ease-out), box-shadow 180ms var(--ease-out), background-color 140ms ease;
+  }
+  .a-setup .pick-field:active {
+    background-image: none; background-color: #F8F9F9; transform: scale(.99);
+    box-shadow:
+      0 0 0 2px var(--tanim),
+      0 1px 2px rgba(22,33,27,.06),
+      0 0 0 6px rgba(11,107,65,.14);
+  }
+  .a-setup .pick-field:disabled {
+    background-color: rgba(118,118,128,.08); background-image: none;
+    box-shadow: 0 0 0 1px rgba(22,33,27,.06), 0 0 0 0 transparent, 0 0 0 0 transparent;
+  }
+  /* Province is fixed, so it is shown rather than asked: a quiet grey row, the
+     way iOS shows a setting that can't be changed here. */
   .a-locked {
     display: flex; align-items: center; gap: 12px;
-    min-height: 62px; padding: 0 18px; border-radius: var(--r-md);
-    background: var(--tanim-sk); box-shadow: inset 0 0 0 2px var(--tanim-sk);
-    font-size: var(--fs-lead); color: var(--ink);
+    min-height: 60px; padding: 0 18px; border-radius: 16px;
+    background: rgba(118,118,128,.1); font-size: var(--fs-lead); color: var(--ink);
   }
-  .a-locked-note { margin-left: auto; font-size: var(--fs-label); color: var(--dilim); }
-  .a-prefix-row { display: flex; }
+  .a-locked-note { margin-left: auto; font-size: var(--fs-label); color: var(--text-faint); }
+  /* +63 and the number are one field, as in the iOS phone field: the prefix
+     sits inside it behind a short divider, and the ring goes round both. */
+  .a-prefix-row { display: flex; align-items: stretch; }
   .a-prefix {
-    display: flex; align-items: center; gap: 7px; flex-shrink: 0; padding: 0 16px;
-    background: var(--tanim-sk); border-radius: var(--r-md) 0 0 var(--r-md);
-    box-shadow: inset 0 0 0 2px var(--tanim);
-    font-family: var(--font-display); font-weight: 600; font-size: var(--fs-body); color: var(--tanim);
+    position: relative; display: flex; align-items: center; flex-shrink: 0; padding: 0 14px 0 18px;
+    font-family: var(--font-display); font-weight: 600; font-size: var(--fs-lead); color: var(--text-soft);
   }
-  .a-prefix-row .a-inp { border-radius: 0 var(--r-md) var(--r-md) 0; }
+  .a-prefix::after {
+    content: ""; position: absolute; right: 0; top: 16px; bottom: 16px; width: 1px; background: var(--line);
+  }
+  .a-prefix-row .a-inp,
+  .a-prefix-row .a-inp:focus,
+  .a-prefix-row .a-inp.bad { background: transparent; box-shadow: none; border-radius: 0 16px 16px 0; padding-left: 14px; }
   .a-pwrow { position: relative; display: flex; align-items: center; }
   .a-pwrow .a-inp { padding-right: 106px; }
+  /* Show / Hide as a word in a soft green capsule inside the field: a word
+     an older reader can't mistake, in the shape iOS uses for small inline
+     actions. The word swaps with a short blur. */
   .a-reveal {
-    position: absolute; right: 8px; height: 48px; min-width: 88px; padding: 0 14px;
-    border: none; border-radius: 10px; background: #F1EEE5; color: var(--tanim);
+    position: absolute; right: 7px; height: 48px; min-width: 88px; padding: 0 14px;
+    border: none; border-radius: var(--r-pill); background: rgba(11,107,65,.08); color: var(--tanim);
     font-family: var(--font-display); font-weight: 600; font-size: var(--fs-label); cursor: pointer;
-    transition: transform 180ms var(--ease-out), background-color 140ms ease;
+    transition: transform 160ms var(--ease-out), background-color 140ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
-  .a-reveal:active { transform: scale(.95); }
+  .a-reveal:active { transform: scale(.95); background: rgba(11,107,65,.15); }
   .a-alert {
-    display: flex; gap: 12px; align-items: flex-start; background: var(--error-bg);
-    box-shadow: inset 0 0 0 1.5px #E9BDB8; border-radius: var(--r-md);
-    padding: 15px 16px; margin-top: 20px; font-size: var(--fs-label); line-height: 1.45; color: var(--error);
+    display: flex; gap: 12px; align-items: flex-start; background: var(--error-sk);
+    box-shadow: 0 0 0 1px rgba(165,35,27,.14); border-radius: 16px;
+    padding: 14px 16px; margin-top: 20px; font-size: var(--fs-label); line-height: 1.45; color: var(--error);
   }
   .a-alert svg { flex: 0 0 22px; margin-top: 1px; }
   /* Errors arrive rather than appear: a short drop from above, so the eye
      catches the change without being startled by it. */
-  .a-alert { animation: a-alert-in 200ms var(--ease-out); }
-  @keyframes a-alert-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+  .a-alert { animation: a-alert-in 220ms var(--ease-out); }
+  @keyframes a-alert-in { from { opacity: 0; transform: translateY(-6px) scale(.98); } to { opacity: 1; transform: none; } }
   /* The field that's wrong shakes once when it turns red, the way iOS
      shakes a wrong password: "no" in a gesture, not only in colour. Small
      and quick, with the swing dying out, so it reads as a shake and not a
@@ -705,44 +791,155 @@ export const authCss = `
     18% { transform: translateX(-7px); } 36% { transform: translateX(6px); }
     54% { transform: translateX(-4px); } 72% { transform: translateX(2px); }
   }
+  /* Links keep their underline, a cue this audience relies on, but a light
+     one: thin, set off from the letters and half the strength of the text. */
   .a-link {
     display: inline-flex; align-items: center; min-height: 52px; color: var(--tanim);
     font-family: var(--font-display); font-weight: 600; font-size: var(--fs-body);
-    text-decoration: underline; text-underline-offset: 4px; cursor: pointer;
-    background: none; border: none; padding: 0;
+    text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 5px;
+    text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+    cursor: pointer; background: none; border: none; padding: 0 4px;
+    transition: opacity 140ms ease; -webkit-tap-highlight-color: transparent;
   }
+  .a-link:active { opacity: .55; transition-duration: 0ms; }
   .a-switch { text-align: center; font-size: var(--fs-body); color: var(--dilim); margin-top: 6px; }
   .a-switch .a-link { min-height: auto; }
   /* In the ink header: left-aligned under the subtitle, link in the palay
      accent so it reads as tappable on dark. The link keeps a 44px hit area
      without adding visible height. */
-  .a-switch.on-ink { text-align: left; color: rgba(255,255,255,.78); margin-top: 14px; font-size: var(--fs-label); }
+  .a-switch.on-ink { text-align: left; color: rgba(255,255,255,.72); margin-top: 14px; font-size: var(--fs-label); }
   .a-switch.on-ink .a-link { color: var(--palay); font-size: var(--fs-label); min-height: 44px; margin: -12px 0; padding: 0 4px; }
 
   /* ── Crop picker ───────────────────────────────────────────────────────── */
-  .a-cropgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; }
+  /* White tiles on the grey page, like the setup card: a hairline and a soft
+     shadow at rest. Picked, a green ring closes round the tile and its
+     corner circle fills with a check, with the same pop as the setup radios.
+     The empty circle is there from the start, so the tiles say "pick any"
+     before they're touched. */
+  .a-cropgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
   .a-crop {
     position: relative; background: var(--card); border: none; cursor: pointer; text-align: left;
-    box-shadow: inset 0 0 0 2px var(--line); border-radius: var(--r-md);
-    padding: 16px 14px; display: flex; flex-direction: column; gap: 9px; min-height: 124px;
-    transition: transform 180ms var(--ease-out), box-shadow 160ms ease, background-color 160ms ease;
+    border-radius: 20px; padding: 16px 14px; display: flex; flex-direction: column; gap: 10px; min-height: 124px;
+    box-shadow:
+      0 0 0 1px rgba(22,33,27,.07),
+      0 1px 2px rgba(22,33,27,.06),
+      0 10px 22px -16px rgba(22,33,27,.32);
+    transition: transform 180ms var(--ease-out), box-shadow 200ms var(--ease-out), background-color 200ms ease;
     touch-action: manipulation; -webkit-tap-highlight-color: transparent;
   }
   .a-crop:active { transform: scale(.97); }
-  .a-crop.on { background: var(--tanim-sk); box-shadow: inset 0 0 0 3px var(--tanim); }
+  .a-crop.on {
+    background: #F3FAF6;
+    box-shadow:
+      0 0 0 2px var(--tanim),
+      0 1px 2px rgba(11,107,65,.12),
+      0 12px 24px -14px rgba(11,107,65,.45);
+  }
   /* Emoji are artwork, not text, and deliberately off the type ramp. */
   .a-crop-emoji { font-size: 34px; line-height: 1; display: block; }
   .a-crop-n { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-lead); line-height: 1.1; display: block; }
-  .a-crop-e { font-size: var(--fs-label); color: var(--dilim); margin-top: 3px; display: block; }
+  .a-crop-e { font-size: var(--fs-label); color: var(--text-faint); margin-top: 3px; display: block; }
   .a-crop-tick {
     position: absolute; top: 12px; right: 12px; width: 26px; height: 26px; border-radius: 50%;
-    background: var(--tanim); display: flex; align-items: center; justify-content: center;
-    opacity: 0; transform: scale(.7);
-    transition: opacity 140ms var(--ease-out), transform 200ms var(--ease-out);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: inset 0 0 0 2px var(--line-strong);
+    transition: background-color 160ms ease, box-shadow 160ms ease;
   }
-  .a-crop.on .a-crop-tick { opacity: 1; transform: scale(1); }
+  .a-crop.on .a-crop-tick {
+    background: var(--tanim);
+    box-shadow: inset 0 0 0 2px var(--tanim), 0 2px 6px -1px rgba(11,107,65,.45);
+    animation: a-radio-pop 260ms var(--ease-out);
+  }
+  .a-crop-tick svg { opacity: 0; transform: scale(.6); transition: opacity 100ms ease, transform 140ms var(--ease-out); }
+  .a-crop.on .a-crop-tick svg { opacity: 1; transform: none; transition: opacity 140ms var(--ease-out), transform 180ms var(--ease-out); }
   .a-count {
     font-family: var(--font-display); font-weight: 600; font-size: var(--fs-label);
-    color: var(--dilim); font-variant-numeric: tabular-nums; margin-bottom: 12px;
+    color: var(--text-muted); font-variant-numeric: tabular-nums; margin-bottom: 12px; padding-left: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .a-step[data-anim] { animation: a-step-fade 200ms ease both; }
+    @keyframes a-step-fade { from { opacity: 0; } to { opacity: 1; } }
+    .a-hint.ok .a-hint-ico, .a-crop.on .a-crop-tick { animation: none; }
+    .a-crop-tick svg, .a-crop.on .a-crop-tick svg { transform: none; }
+    .a-setup .pick-field:active { transform: none; }
+    .a-seg:has(button.on:active) { --seg-s: 1; }
+  }
+
+  /* ── Create account: one question per page ─────────────────────────────── */
+  /* The header keeps the brand row and gains the progress: "Step 2 of 6" in
+     words, and a row of gold segments that fill as each question is
+     answered. The header stays mounted between questions, so the next
+     segment visibly fills from its left end (and empties back towards it on
+     Back) instead of the bar being redrawn. Gold is the accent the ink
+     allows; on paper it would fail contrast, so it lives up here. */
+  .a-askhead { padding-bottom: 22px; }
+  .a-progress { margin-top: 18px; display: flex; flex-direction: column; gap: 10px; }
+  .a-progress-t { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-label); color: rgba(255,255,255,.74); }
+  .a-progress-bar { display: flex; gap: 6px; }
+  .a-progress-seg { flex: 1; height: 6px; border-radius: 3px; background: rgba(255,255,255,.16); overflow: hidden; }
+  .a-progress-seg > span {
+    display: block; height: 100%; border-radius: inherit; background: var(--palay);
+    transform: scaleX(0); transform-origin: left center;
+    transition: transform 360ms var(--ease-out);
+  }
+  .a-progress-seg > span.on { transform: none; }
+
+  /* Juan asks: his face in a circle, and the question in a white bubble
+     beside it whose sharp corner points at him, like a message from a
+     person rather than a label on a form. The bubble grows out of that
+     corner as the page arrives. */
+  .a-ask { display: flex; align-items: flex-start; gap: 12px; padding-top: 22px; }
+  /* The drawing is 420×435; the circle shows a 320px square around his
+     face and hat, with his waving hand at the edge. */
+  .a-ask-face {
+    position: relative; flex: 0 0 60px; width: 60px; height: 60px; border-radius: 50%; overflow: hidden;
+    background: radial-gradient(circle at 50% 30%, #EAF5EC 0%, #CFE5D5 100%);
+    box-shadow: 0 0 0 2.5px #fff, 0 3px 10px -3px rgba(22,33,27,.35);
+  }
+  .a-ask-face img {
+    position: absolute; left: -22.5%; top: -1.5%; width: 131.25%; height: auto; max-width: none;
+    pointer-events: none; user-select: none;
+  }
+  /* The same switched overlays as on the role step: closed eyelids for a
+     blink every few seconds, and a closed smile flicked on and off while he
+     says the question, then he stops on the open smile he was drawn with. */
+  .a-ask-eyes, .a-ask-mouth { opacity: 0; }
+  .a-ask-eyes { animation: a-blink 3.6s step-end 1.6s infinite; }
+  .a-ask-mouth { animation: a-talk 1.3s step-end 220ms forwards; }
+  .a-ask-bubble {
+    flex: 1; min-width: 0; background: var(--card);
+    border-radius: 6px 22px 22px 22px; padding: 14px 18px 16px;
+    box-shadow:
+      0 0 0 1px rgba(22,33,27,.05),
+      0 1px 2px rgba(22,33,27,.06),
+      0 14px 28px -20px rgba(22,33,27,.4);
+    transform-origin: 0 0; animation: a-ask-pop 300ms var(--ease-out) 60ms both;
+  }
+  @keyframes a-ask-pop { from { opacity: 0; transform: scale(.92); } to { opacity: 1; transform: none; } }
+  .a-ask-q {
+    font-family: var(--font-display); font-weight: 700; font-size: var(--fs-title);
+    line-height: 1.22; letter-spacing: -.015em; color: var(--ink); text-wrap: pretty;
+  }
+  .a-ask-why { margin-top: 6px; font-size: var(--fs-label); line-height: 1.45; color: var(--text-faint); text-wrap: pretty; }
+
+  /* The answer goes right under the question. */
+  .a-ask-body { margin-top: 22px; }
+  .a-ask-body > .a-field:first-child, .a-ask-body > .a-cropgrid { margin-top: 0; }
+  .a-ask-body .a-switch { margin-top: 18px; }
+  /* A one-line answer is typed large, like a reply, not like a form field. */
+  .a-inp-lg {
+    min-height: 64px; font-family: var(--font-display); font-weight: 500;
+    font-size: var(--fs-title); letter-spacing: -.01em;
+  }
+  /* A number with its unit after it, "12 | years": the prefix field turned
+     round, the divider on the unit's left. */
+  .a-suffix { padding: 0 18px 0 14px; color: var(--text-faint); font-weight: 500; }
+  .a-suffix::after { left: 0; right: auto; }
+  .a-unit-row .a-inp, .a-unit-row .a-inp:focus, .a-unit-row .a-inp.bad { border-radius: 16px 0 0 16px; padding-left: 18px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .a-ask-bubble { animation: a-step-fade 200ms ease both; }
+    .a-ask-eyes, .a-ask-mouth { animation: none; }
   }
 `;

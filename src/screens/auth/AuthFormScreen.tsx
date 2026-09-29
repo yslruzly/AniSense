@@ -1,6 +1,6 @@
-import { useEffect, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { haptic } from "../../lib/platform";
-import { Wheat, ShoppingCart, ArrowLeft, Check, AlertCircle, MapPin, Smartphone, Mail } from "lucide-react";
+import { Wheat, ShoppingCart, ChevronLeft, Check, AlertCircle, MapPin, Smartphone, Mail } from "lucide-react";
 import { useLang } from "../../i18n";
 import { UserRole, FarmDetails } from "../../types";
 import { MAIN_CROPS } from "../../data/crops";
@@ -9,22 +9,31 @@ import { ISLAND_GROUPS, IslandGroup, PH_PROVINCES } from "../../data/phPlaces";
 import { CropEmoji } from "../../components/CropEmoji";
 import { PickerField } from "../../components/ui/PickerField";
 import { AniSenseLogo } from "../../components/AniSenseLogo";
+import juanBody from "../../assets/mascot-wave-body.webp";
+import juanHand from "../../assets/mascot-wave-hand.webp";
+import juanEyes from "../../assets/mascot-wave-eyes.webp";
+import juanMouth from "../../assets/mascot-wave-mouth.webp";
 import type { Session } from "@supabase/supabase-js";
 import { isSupabaseConfigured } from "../../lib/supabase";
 import { formatName } from "../../lib/names";
 import { createAccount, signIn, verifyEmailCode, resendEmailCode, authErrorKey } from "../../services/auth";
 
-// ─── Sign In / Sign Up Form ───────────────────────────────────────────────────
-// Validation and flow are unchanged from the original. What changed is the
-// presentation: labels sit above the field permanently (placeholder-only labels
-// vanish exactly when an older user looks up to check what they were filling
-// in), the password reveal is a word rather than a 16px eye icon, and errors
-// carry an icon so state is never signalled by colour alone.
+// ─── Sign In / Create Account ─────────────────────────────────────────────────
+// Signing in is one short page: two fields, for someone who has done it before.
 //
-// Errors now appear under the field they're about, and that field takes focus,
-// so the fix is where the eye already is instead of at the bottom of the form.
+// Creating an account is a conversation instead of a form. Juan asks one
+// question per page, in plain words, and the answer goes right under it:
+// name, how to reach you, a password, then the farm (or, for a buyer, where
+// they are). A long form asks for everything at once and reads like paperwork
+// at the municipal hall; one question at a time is easy to answer, easy to
+// get right, and the bar at the top shows how little is left.
+//
+// What stays from the form: labels are never only placeholders, the password
+// reveal is a word, errors carry an icon and sit under the field they are
+// about, and that field takes focus, so the fix is where the eye already is.
 
-type Field = "name" | "contact" | "password" | "confirm";
+type Field = "name" | "contact" | "password" | "confirm" | "years" | "phone";
+type Page = "signin" | "name" | "contact" | "password" | "years" | "farm" | "phone" | "crops" | "where" | "verify";
 
 // Chunked the way Filipinos read numbers aloud: 917 123 4567, or 0917 123 4567.
 // State keeps digits only, so validation never sees the spaces.
@@ -40,11 +49,27 @@ const fmtPhone = (d: string) => {
   return out.join(" ");
 };
 const digits = (v: string) => v.replace(/\D/g, "").slice(0, 11);
+const validPhone = (d: string) => /^0?9\d{9}$/.test(d);
 
-// Enter on a "next" field moves on instead of submitting half a form.
+// Enter on a "next" field moves on instead of submitting half a page.
 const focusNext = (id: string) => (e: KeyboardEvent<HTMLInputElement>) => {
   if (e.key === "Enter") { e.preventDefault(); document.getElementById(id)?.focus(); }
 };
+
+// Juan's face in a circle, cut from the waving drawing: the same Juan as the
+// language and role steps, now close up, the way a contact's photo sits beside
+// their message. He says each question (the mouth moves for about a second
+// as the bubble arrives) and blinks now and then while he waits.
+function JuanAsks() {
+  return (
+    <span className="a-ask-face" aria-hidden="true">
+      <img src={juanBody} alt="" />
+      <img src={juanHand} alt="" />
+      <img className="a-ask-eyes" src={juanEyes} alt="" />
+      <img className="a-ask-mouth" src={juanMouth} alt="" />
+    </span>
+  );
+}
 
 export function AuthFormScreen({
   flow, role, onBack, onSuccess, onSession,
@@ -58,8 +83,8 @@ export function AuthFormScreen({
   /** Real sign-in: a Supabase session, from signing in or from a new account. */
   onSession?: (session: Session, isNew: boolean) => void;
 }) {
+  const [page, setPage] = useState<Page>(flow === "signin" ? "signin" : "name");
   const [mode, setMode] = useState<"gmail" | "phone">("phone");
-  const [formFlow, setFormFlow] = useState(flow);
   const [name, setName] = useState("");
   const [contact, setContact] = useState("");
   const [password, setPassword] = useState("");
@@ -68,7 +93,6 @@ export function AuthFormScreen({
   const [error, setError] = useState("");
   const [errField, setErrField] = useState<Field | null>(null);
   const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState<"form" | "details" | "crops" | "verify">("form");
   // Only for projects that still have email confirmation on: the address the
   // code went to, what was typed, and a quiet "sent" line after a resend.
   const [pendingEmail, setPendingEmail] = useState("");
@@ -83,66 +107,81 @@ export function AuthFormScreen({
   const [island, setIsland] = useState<IslandGroup>("Luzon");
   const [province, setProvince] = useState("");
   // Every barangay in the country is half a megabyte, so it is fetched only
-  // for a buyer, once they reach the step that asks, and only once.
+  // for a buyer, once they reach the page that asks, and only once.
   const [phBarangays, setPhBarangays] = useState<Record<string, Record<string, string[]>> | null>(null);
   useEffect(() => {
-    if (role !== "buyer" || step !== "details" || phBarangays) return;
+    if (role !== "buyer" || page !== "where" || phBarangays) return;
     let alive = true;
     import("../../data/phBarangays.json")
       .then(m => { if (alive) setPhBarangays(m.default as Record<string, Record<string, string[]>>); })
       .catch(() => { /* barangay is optional; the field simply stays closed */ });
     return () => { alive = false; };
-  }, [role, step, phBarangays]);
+  }, [role, page, phBarangays]);
   const [farmPhone, setFarmPhone] = useState("");
   const { t, tn } = useLang();
 
-  const signup = formFlow === "signup";
+  // The questions, in order. A farmer who signs up with a CP number has
+  // already given the number buyers should call, so they aren't asked twice;
+  // only a Gmail sign-up gets that page.
+  const pages: Page[] = role === "farmer"
+    ? ["name", "contact", "password", "years", "farm", ...(mode === "gmail" ? ["phone" as const] : []), "crops"]
+    : ["name", "contact", "password", "where"];
+  const at = pages.indexOf(page);
+
+  // How the page arrives. A question further on comes in from the right and
+  // one back from the left, like iOS navigation; switching between Sign in
+  // and Create account settles in place. Worked out once per change of page
+  // and remembered, so typing (which re-renders) never replays it. The first
+  // page comes in from the right: it follows the role step.
+  const order = (p: Page) => p === "verify" ? pages.length : pages.indexOf(p);
+  const nav = useRef<{ page: Page; anim: "fwd" | "back" | "swap" }>({ page, anim: "fwd" });
+  if (nav.current.page !== page) {
+    const from = nav.current.page;
+    nav.current.anim = from === "signin" || page === "signin" ? "swap" : order(page) > order(from) ? "fwd" : "back";
+    nav.current.page = page;
+  }
+  const anim = nav.current.anim;
+
   // A real account when the app has a database to put it in; the demo
   // sign-in otherwise, so a build without .env still opens for respondents.
   const live = isSupabaseConfigured && !!onSession;
   // Short on purpose: it rides the brand row, and "Account ng Magsasaka" would
-  // push it off a 360px screen. The title already says it's an account.
+  // push it off a 360px screen.
   const roleLabel = role === "farmer" ? t("role_farmer") : t("role_buyer");
   const roleIcon = role === "farmer"
     ? <Wheat size={14} color="#fff" strokeWidth={2.2} />
     : <ShoppingCart size={14} color="#fff" strokeWidth={2.2} />;
 
   const labelContact = mode === "gmail" ? t("auth_gmail_address") : t("auth_cp_number");
+  // The number buyers call: the sign-in number when there is one.
+  const buyersCall = mode === "phone" ? contact : farmPhone;
+  const firstName = formatName(name).split(" ")[0] || "";
 
   const clear = () => { setError(""); setErrField(null); };
+  const go = (p: Page) => { clear(); setPage(p); };
 
   const fail = (field: Field, msg: string) => {
     setError(msg);
     setErrField(field);
     haptic.select();
-    // After paint, so the field is focusable if it only just gained its error.
-    requestAnimationFrame(() => document.getElementById(`f-${field}`)?.focus());
+    // After paint, so the field is focusable if it only just gained its error
+    // or its page only just arrived.
+    requestAnimationFrame(() => requestAnimationFrame(() => document.getElementById(`f-${field}`)?.focus()));
     return false;
   };
 
-  const validate = () => {
-    if (signup && !name.trim()) return fail("name", t("err_full_name"));
-    if (!contact.trim()) return fail("contact", mode === "gmail" ? t("err_gmail_required") : t("err_cp_required"));
-    if (mode === "gmail" && !contact.includes("@")) return fail("contact", t("err_valid_gmail"));
-    if (mode === "phone" && !/^0?9\d{9}$/.test(contact)) return fail("contact", t("err_valid_phone"));
-    if (!password) return fail("password", t("err_password_required"));
-    if (signup && password.length < 6) return fail("password", t("err_password_short"));
-    if (signup && password !== confirm) return fail("confirm", t("err_password_mismatch"));
-    return true;
+  const contactError = () => {
+    if (!contact.trim()) return mode === "gmail" ? t("err_gmail_required") : t("err_cp_required");
+    if (mode === "gmail" && !contact.includes("@")) return t("err_valid_gmail");
+    if (mode === "phone" && !validPhone(contact)) return t("err_valid_phone");
+    return "";
   };
 
-  const submit = () => {
-    clear();
-    if (!validate()) return;
-    // Both roles say where they are before the account exists: a farmer so
-    // buyers can find them, a buyer so the listings they are shown are ones
-    // they can actually drive to. It was only ever asked of farmers, which
-    // left every buyer sitting in a default town they never chose.
-    if (signup) {
-      if (mode === "phone" && !farmPhone) setFarmPhone(contact);
-      setStep("details");
-      return;
-    }
+  // ── Sign in ──
+  const signInNow = () => {
+    const bad = contactError();
+    if (bad) return fail("contact", bad);
+    if (!password) return fail("password", t("err_password_required"));
     setLoading(true);
     if (live) {
       signIn(mode, contact, password)
@@ -159,15 +198,14 @@ export function AuthFormScreen({
     }
     setTimeout(() => {
       setLoading(false);
-      const displayName = signup ? formatName(name) : (role === "farmer" ? "Juan Dela Cruz" : "Maria Santos");
-      onSuccess(displayName, role, selectedCrops.length > 0 ? selectedCrops : ["Rice", "Corn"], undefined, signup);
+      onSuccess(role === "farmer" ? "Juan Dela Cruz" : "Maria Santos", role, ["Rice", "Corn"], undefined, false);
     }, 1200);
   };
 
-  // ── Sign up, at the last step ──
-  // The account is made once, at the end, with everything the steps asked.
-  // Made at the first step, a farmer who stopped halfway would own an account
-  // with no town and no crops, and would never be asked for them again.
+  // ── Create the account, after the last question ──
+  // The account is made once, at the end, with every answer. Made at the
+  // first question, a farmer who stopped halfway would own an account with no
+  // town and no crops, and would never be asked for them again.
   const createLive = (details: { location: string; phone?: string; years?: number; crops: string[] }) => {
     setLoading(true);
     setError("");
@@ -181,70 +219,82 @@ export function AuthFormScreen({
         setPendingEmail(email);
         setCode("");
         setNotice("");
-        setStep("verify");
+        go("verify");
       })
       .catch(err => {
         setLoading(false);
         const key = authErrorKey(err);
-        // Both of these are answered on the first step, so go back to it and
-        // put the message under the field that needs changing.
-        if (key === "err_account_exists") { setStep("form"); fail("contact", t(key)); return; }
-        if (key === "err_password_short") { setStep("form"); fail("password", t(key)); return; }
+        // Both of these were answered earlier, so go back to that question
+        // and put the message under the field that needs changing.
+        if (key === "err_account_exists") { go("contact"); fail("contact", t(key)); return; }
+        if (key === "err_password_short") { go("password"); fail("password", t(key)); return; }
         setError(t(key));
       });
   };
 
-  const finishDetails = () => {
-    const yrs = Number(farmYears);
-    if (!farmYears.trim() || isNaN(yrs) || yrs < 0 || yrs > 80) { setError(t("err_years_required")); return; }
-    if (!municipality) { setError(t("err_municipality_required")); return; }
-    if (!barangay) { setError(t("err_barangay_required")); return; }
-    if (!farmPhone.trim()) { setError(t("err_phone_required")); return; }
-    if (!/^0?9\d{9}$/.test(farmPhone)) { setError(t("err_valid_phone")); return; }
-    setError("");
-    setStep("crops");
-  };
-
-  // Province and city are what a farmer needs to plan a delivery, so those
-  // are required; barangay only sharpens it, so it is not.
   // "Bagong Sikat, Cabanatuan City, Nueva Ecija" / "Quezon City, Metro Manila".
   const buyerLocation = () => [barangay, municipality, province].filter(Boolean).join(", ");
-  const finishBuyerLocation = () => {
-    if (!province) { setError(t("err_province_required")); return; }
-    if (!municipality) { setError(t("err_municipality_required")); return; }
-    setError("");
-    if (live) { createLive({ location: buyerLocation(), crops: [] }); return; }
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      onSuccess(formatName(name), role, [], {
-        location: buyerLocation(),
-        phone: contact.trim(),
-      }, true);
-    }, 1200);
-  };
 
-  const finishCrops = () => {
-    if (selectedCrops.length === 0) { setError(t("err_select_crop")); return; }
-    setError("");
+  const finish = () => {
+    const farmer = role === "farmer";
+    const location = farmer ? formatFarmLocation(barangay, municipality) : buyerLocation();
     if (live) {
-      createLive({
-        location: formatFarmLocation(barangay, municipality),
-        phone: farmPhone.trim(),
-        years: Number(farmYears),
-        crops: selectedCrops,
-      });
+      createLive(farmer
+        ? { location, phone: buyersCall.trim(), years: Number(farmYears), crops: selectedCrops }
+        : { location, crops: [] });
       return;
     }
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      onSuccess(formatName(name), role, selectedCrops, {
-        years: farmYears.trim(),
-        location: formatFarmLocation(barangay, municipality),
-        phone: farmPhone.trim(),
-      }, true);
+      onSuccess(formatName(name), role, farmer ? selectedCrops : [], farmer
+        ? { years: farmYears.trim(), location, phone: buyersCall.trim() }
+        : { location, phone: contact.trim() }, true);
     }, 1200);
+  };
+
+  // ── Continue: check this page's answer, then the next question ──
+  const next = () => {
+    clear();
+    if (page === "signin") { signInNow(); return; }
+    if (page === "name" && !name.trim()) { fail("name", t("err_full_name")); return; }
+    if (page === "name") setName(formatName(name));
+    if (page === "contact") {
+      const bad = contactError();
+      if (bad) { fail("contact", bad); return; }
+    }
+    if (page === "password") {
+      if (!password) { fail("password", t("err_password_required")); return; }
+      if (password.length < 6) { fail("password", t("err_password_short")); return; }
+      if (password !== confirm) { fail("confirm", t("err_password_mismatch")); return; }
+    }
+    if (page === "years") {
+      const yrs = Number(farmYears);
+      if (!farmYears.trim() || isNaN(yrs) || yrs < 0 || yrs > 80) { fail("years", t("err_years_required")); return; }
+    }
+    if (page === "farm") {
+      if (!municipality) { setError(t("err_municipality_required")); return; }
+      if (!barangay) { setError(t("err_barangay_required")); return; }
+    }
+    if (page === "phone") {
+      if (!farmPhone.trim()) { fail("phone", t("err_phone_required")); return; }
+      if (!validPhone(farmPhone)) { fail("phone", t("err_valid_phone")); return; }
+    }
+    if (page === "crops" && selectedCrops.length === 0) { setError(t("err_select_crop")); return; }
+    if (page === "where") {
+      // Province and city are what a farmer needs to plan a delivery, so
+      // those are required; barangay only sharpens it, so it is not.
+      if (!province) { setError(t("err_province_required")); return; }
+      if (!municipality) { setError(t("err_municipality_required")); return; }
+    }
+    if (at === pages.length - 1) { finish(); return; }
+    go(pages[at + 1]);
+  };
+
+  const back = () => {
+    if (page === "verify") { go(pages[pages.length - 1]); return; }
+    if (at > 0) { go(pages[at - 1]); return; }
+    onBack();
   };
 
   const toggleCrop = (crop: string) => {
@@ -273,44 +323,186 @@ export function AuthFormScreen({
     "aria-invalid": errField === f || undefined,
     "aria-describedby": [errField === f ? `f-${f}-err` : "", helpId ?? ""].filter(Boolean).join(" ") || undefined,
   });
-
-  // Same header as the language and role steps: whose app on top, what this
-  // step is below, and the account type riding on the brand row where it
-  // costs no height.
-  const head = (title: string, sub?: string, extra?: ReactNode) => (
-    <div className="a-inkhead a-formhead">
-      <div className="a-brandrow">
-        <span className="a-brandmark"><AniSenseLogo size={26} /></span>
-        <span className="a-brandname">AniSense</span>
-        <span className="a-badge">{roleIcon} {roleLabel}</span>
-      </div>
-      <h1 className="a-title on-ink">{title}</h1>
-      {sub && <p className="a-sub on-ink">{sub}</p>}
-      {extra}
-    </div>
-  );
-
-  // Back beside the primary action, as on the earlier steps, so the whole
-  // setup is driven from one place under the thumb.
-  const dock = (onUp: () => void, primary: ReactNode, before?: ReactNode, after?: ReactNode) => (
-    <div className="a-dock">
-      {before}
-      <div className="a-dockpair">
-        <button type="button" className="a-iconbtn on-paper" onClick={onUp} aria-label={t("back")}>
-          <ArrowLeft size={24} color="var(--ink)" strokeWidth={2.4} />
-        </button>
-        {primary}
-      </div>
-      {after}
-    </div>
-  );
+  const bad = (f: Field) => errField === f ? "bad" : "";
 
   const busy = (label: string) => (
     <><span className="a-spin" aria-hidden="true" />{label}</>
   );
 
-  // ── Last step, only while email confirmation is on: the 6-digit code ──
-  if (step === "verify") {
+  // The main button. Its words swap with a short blur when they change, so
+  // "Continue" turning into "Create Account" on the last question is seen.
+  const primary = (label: string, busyLabel = t("please_wait")) => (
+    <button type="submit" className="a-btn a-btn-green" disabled={loading} aria-busy={loading}>
+      {loading ? busy(busyLabel) : <span className="a-swap" key={label}>{label}</span>}
+    </button>
+  );
+
+  // Back beside the primary action, as on the earlier steps, so the whole
+  // setup is driven from one place under the thumb.
+  const dock = (main: ReactNode, before?: ReactNode) => (
+    <div className="a-dock">
+      {before}
+      <div className="a-dockpair">
+        <button type="button" className="a-iconbtn on-paper" onClick={back} aria-label={t("back")}>
+          <ChevronLeft size={28} color="var(--ink)" strokeWidth={2.4} />
+        </button>
+        {main}
+      </div>
+    </div>
+  );
+
+  // Same lockup as the language and role steps: whose app, and the account
+  // type riding on the brand row where it costs no height.
+  const brand = (
+    <div className="a-brandrow">
+      <span className="a-brandmark"><AniSenseLogo size={26} /></span>
+      <span className="a-brandname">AniSense</span>
+      <span className="a-badge">{roleIcon} {roleLabel}</span>
+    </div>
+  );
+
+  // CP number or Gmail, both visible at once, then the field for the one
+  // picked. Shared by Sign in and the "how can we reach you" question.
+  const contactInput = (autoFocus: boolean, labelled: boolean) => (
+    <>
+      <div className="a-seg" role="radiogroup" aria-label={t("auth_contact_method")} data-mode={mode}>
+        <span className="a-seg-thumb" aria-hidden="true" />
+        {([["phone", <Smartphone key="i" size={18} strokeWidth={2.2} />, t("auth_cp_number")],
+           ["gmail", <Mail key="i" size={18} strokeWidth={2.2} />, "Gmail"]] as const).map(([id, ico, lbl]) => (
+          <button key={id} type="button" role="radio" aria-checked={mode === id}
+            className={mode === id ? "on" : ""}
+            onClick={() => {
+              if (mode === id) return;
+              haptic.select(); setMode(id); setContact(""); clear();
+              requestAnimationFrame(() => document.getElementById("f-contact")?.focus());
+            }}>
+            {ico}{lbl}
+          </button>
+        ))}
+      </div>
+      {labelled && <label className="a-lbl" htmlFor="f-contact">{labelContact}</label>}
+      {mode === "gmail" ? (
+        <input id="f-contact" className={`a-inp ${bad("contact")}`} type="email"
+          placeholder="juan@gmail.com" autoComplete={page === "signin" ? "username" : "email"} autoCapitalize="none" spellCheck={false}
+          enterKeyHint="next" onKeyDown={page === "signin" ? focusNext("f-password") : undefined} autoFocus={autoFocus}
+          aria-label={labelled ? undefined : labelContact}
+          {...errProps("contact", "f-contact-help")}
+          value={contact} onChange={e => { setContact(e.target.value.trim()); clear(); }} />
+      ) : (
+        <div className="a-prefix-row">
+          <span className="a-prefix">+63</span>
+          <input id="f-contact" className={`a-inp num ${bad("contact")}`} type="tel"
+            inputMode="numeric" autoComplete={page === "signin" ? "username" : "tel-national"} placeholder="9XX XXX XXXX" maxLength={13}
+            enterKeyHint="next" onKeyDown={page === "signin" ? focusNext("f-password") : undefined} autoFocus={autoFocus}
+            aria-label={labelled ? undefined : labelContact}
+            {...errProps("contact", "f-contact-help")}
+            value={fmtPhone(contact)}
+            onChange={e => { setContact(digits(e.target.value)); clear(); }} />
+        </div>
+      )}
+      {errField === "contact" ? fieldErr("contact") : <p className="a-help" id="f-contact-help">{t("auth_help_cp")}</p>}
+    </>
+  );
+
+  const reveal = (
+    <button type="button" className="a-reveal" aria-pressed={showPw} onClick={() => setShowPw(s => !s)}>
+      <span className="a-swap" key={String(showPw)}>{showPw ? t("auth_hide") : t("auth_show")}</span>
+    </button>
+  );
+
+  // ── Sign in: one short page ──
+  if (page === "signin") {
+    return (
+      // A real form, so the keyboard's Go key submits and password managers
+      // recognise the sign-in.
+      <form className="a-screen a-setup" noValidate onSubmit={e => { e.preventDefault(); next(); }}>
+        {/* The switch to Create account lives up here, not under the primary
+            button: a new user sees it before typing anything, and it's out
+            of reach of a thumb aiming for Sign In. */}
+        <div className="a-inkhead a-formhead">
+          {brand}
+          <div className="a-swap" key="signin">
+            <h1 className="a-title on-ink">{t("auth_signin_title")}</h1>
+            <p className="a-sub on-ink">{t("auth_signin_sub")}</p>
+            <p className="a-switch on-ink">
+              {t("auth_no_account")} <button type="button" className="a-link" onClick={() => go("name")}>{t("auth_sign_up_link")}</button>
+            </p>
+          </div>
+        </div>
+
+        <div className="a-scroll a-step" data-anim={anim} key="signin">
+          <div className="a-field">{contactInput(false, true)}</div>
+          <div className="a-field">
+            <label className="a-lbl" htmlFor="f-password">{t("auth_password")}</label>
+            <div className="a-pwrow">
+              <input id="f-password" className={`a-inp ${bad("password")}`}
+                type={showPw ? "text" : "password"} placeholder={t("auth_password_ph")}
+                autoComplete="current-password" enterKeyHint="go"
+                {...errProps("password")}
+                value={password} onChange={e => { setPassword(e.target.value); clear(); }} />
+              {reveal}
+            </div>
+            {fieldErr("password")}
+          </div>
+          <div style={{ marginTop: 6 }}>
+            <button type="button" className="a-link">{t("auth_forgot")}</button>
+          </div>
+          {/* Errors about one field sit under that field. This is for the
+              rest: no signal, too many tries, things no field can fix. */}
+          {!errField && alert()}
+          <div style={{ height: 20 }} />
+        </div>
+
+        {dock(primary(t("auth_signin_btn")))}
+      </form>
+    );
+  }
+
+  // ── Create account: Juan asks, one question per page ──
+  // The header keeps the brand row and gains a progress bar: "Step 2 of 6"
+  // in words for anyone who reads, and a row of segments that fill as each
+  // question is answered. The header stays mounted from page to page, so the
+  // next segment visibly fills rather than the whole bar being redrawn.
+  const step = page === "verify" ? pages.length : at + 1;
+  const stepLabel = t("ask_step").replace("{n}", String(step)).replace("{total}", String(pages.length));
+
+  const ask = (q: string, why: string | undefined, body: ReactNode, main: ReactNode, onSubmit = next, beforeDock?: ReactNode) => (
+    <form className="a-screen a-setup" noValidate onSubmit={e => { e.preventDefault(); onSubmit(); }}>
+      <div className="a-inkhead a-formhead a-askhead">
+        {brand}
+        <div className="a-progress" role="progressbar" aria-label={stepLabel}
+          aria-valuemin={1} aria-valuemax={pages.length} aria-valuenow={step}>
+          <span className="a-progress-t" aria-hidden="true"><span className="a-swap" key={stepLabel}>{stepLabel}</span></span>
+          <span className="a-progress-bar" aria-hidden="true">
+            {pages.map((p, i) => <span key={p} className="a-progress-seg"><span className={i < step ? "on" : ""} /></span>)}
+          </span>
+        </div>
+      </div>
+
+      {/* Keyed by page: each question arrives in the direction of travel,
+          and Juan says it afresh. */}
+      <div className="a-scroll a-step" data-anim={anim} key={page}>
+        <div className="a-ask">
+          <JuanAsks />
+          <div className="a-ask-bubble">
+            <h1 className="a-ask-q" id="ask-q">{q}</h1>
+            {why && <p className="a-ask-why">{why}</p>}
+          </div>
+        </div>
+        <div className="a-ask-body">{body}</div>
+        {!errField && alert()}
+        <div style={{ height: 24 }} />
+      </div>
+
+      {dock(main, beforeDock)}
+    </form>
+  );
+
+  const last = at === pages.length - 1;
+  const onward = primary(last ? t("auth_create_btn") : t("continue"));
+
+  // ── Only while email confirmation is on: the 6-digit code ──
+  if (page === "verify") {
     const verify = () => {
       if (!/^\d{6}$/.test(code)) { setError(t("err_code_required")); return; }
       setLoading(true);
@@ -329,385 +521,295 @@ export function AuthFormScreen({
         .then(() => setNotice(t("verify_resent")))
         .catch(err => setError(t(authErrorKey(err))));
     };
-    return (
-      <form className="a-screen" noValidate onSubmit={e => { e.preventDefault(); verify(); }}>
-        {head(t("verify_title"), t("verify_sub").replace("{email}", pendingEmail))}
-        <div className="a-scroll">
-          <div className="a-field">
-            <label className="a-lbl" htmlFor="f-code">{t("verify_lbl")}</label>
-            {/* one-time-code lets Android offer the code from the email or
-                SMS notification without the app reading anyone's messages. */}
-            <input id="f-code" className="a-inp num a-code" type="text" inputMode="numeric"
-              autoComplete="one-time-code" enterKeyHint="go" maxLength={6} placeholder="000000"
-              value={code}
-              onChange={e => { setCode(e.target.value.replace(/\D/g, "").slice(0, 6)); setError(""); setNotice(""); }} />
-            <p className="a-help" role="status">{notice || t("verify_help")}</p>
-          </div>
-          <button type="button" className="a-link" onClick={resend}>{t("verify_resend")}</button>
-          {alert()}
-          <div style={{ height: 24 }} />
-        </div>
-        {dock(
-          () => { setStep(role === "buyer" ? "details" : "crops"); setError(""); },
-          <button type="submit" className="a-btn a-btn-green" disabled={loading} aria-busy={loading}>
-            {loading ? busy(t("please_wait")) : t("verify_btn")}
-          </button>,
-        )}
-      </form>
+    return ask(
+      t("verify_title"),
+      t("verify_sub").replace("{email}", pendingEmail),
+      <>
+        {/* one-time-code lets Android offer the code from the email or SMS
+            notification without the app reading anyone's messages. */}
+        <input id="f-code" className="a-inp num a-code" type="text" inputMode="numeric"
+          autoComplete="one-time-code" enterKeyHint="go" maxLength={6} placeholder="000000" autoFocus
+          aria-label={t("verify_lbl")}
+          value={code}
+          onChange={e => { setCode(e.target.value.replace(/\D/g, "").slice(0, 6)); setError(""); setNotice(""); }} />
+        <p className="a-help" role="status">{notice || t("verify_help")}</p>
+        <button type="button" className="a-link" onClick={resend}>{t("verify_resend")}</button>
+      </>,
+      primary(t("verify_btn")),
+      verify,
     );
   }
 
-  // ── Step 2 (buyer): where they are ──
-  // Anywhere in the Philippines, narrowed the way people say it: Luzon,
-  // Visayas or Mindanao, then the province, then the city or town. The same
-  // pickers and dock as the farmer step: one setup flow with two endings.
-  if (step === "details" && role === "buyer") {
-    const provinces = PH_PROVINCES.filter(p => p.island === island);
-    const places = PH_PROVINCES.find(p => p.name === province)?.places ?? [];
-    const barangays = phBarangays?.[province]?.[municipality] ?? [];
-    const pickIsland = (g: IslandGroup) => {
-      if (g === island) return;
-      haptic.select();
-      setIsland(g); setProvince(""); setMunicipality(""); setBarangay(""); setError("");
-    };
-    return (
-      <div className="a-screen">
-        {head(t("buyer_loc_title"), t("buyer_loc_sub"))}
-        <div className="a-scroll">
-          <div className="a-field">
-            <label className="a-lbl" id="f-island">{t("buyer_island_lbl")}</label>
-            {/* Three, all visible: it is the one question everyone in the
-                country answers without thinking, and it cuts 82 provinces
-                to a list short enough to scan. */}
-            <div className="a-seg three" role="radiogroup" aria-labelledby="f-island" data-i={ISLAND_GROUPS.indexOf(island)}>
-              <span className="a-seg-thumb" aria-hidden="true" />
-              {ISLAND_GROUPS.map(g => (
-                <button key={g} type="button" role="radio" aria-checked={island === g}
-                  className={island === g ? "on" : ""} onClick={() => pickIsland(g)}>
-                  {g}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="a-field">
-            <label className="a-lbl">{t("farm_province_lbl")}</label>
-            <PickerField
-              title={t("farm_province_lbl")}
-              placeholder={t("farm_pick_province")}
-              value={province}
-              // The region under each name tells look-alikes apart and
-              // confirms the choice for anyone unsure of a province's name.
-              options={provinces.map(p => ({ value: p.name, label: p.name, sub: p.region }))}
-              onChange={v => { if (v !== province) { setProvince(v); setMunicipality(""); setBarangay(""); } setError(""); }}
-            />
-          </div>
-
-          <div className="a-field">
-            <label className="a-lbl">{t("farm_municipality_lbl")}</label>
-            <PickerField
-              title={t("farm_municipality_lbl")}
-              placeholder={t("farm_pick_municipality")}
-              disabledHint={t("farm_pick_province_first")}
-              disabled={!province}
-              value={municipality}
-              options={places}
-              onChange={v => { setMunicipality(v); setBarangay(""); setError(""); }}
-            />
-            <p className="a-help">{t("buyer_municipality_help")}</p>
-          </div>
-
-          <div className="a-field">
-            {/* The word "optional" sits on the label, not in the placeholder:
-                a field you may skip should say so before it is tapped. */}
-            <label className="a-lbl">{t("farm_barangay_lbl")} <small>{t("optional")}</small></label>
-            <PickerField
-              title={t("farm_barangay_lbl")}
-              placeholder={t("farm_pick_barangay")}
-              disabledHint={t(!municipality ? "farm_pick_municipality_first" : "list_loading")}
-              disabled={!municipality || !phBarangays}
-              value={barangay}
-              options={barangays}
-              onChange={v => { setBarangay(v); setError(""); }}
-            />
-            <p className="a-help">{t("buyer_barangay_help")}</p>
-          </div>
-
-          {alert()}
-          <div style={{ height: 24 }} />
-        </div>
-        {dock(
-          () => { setStep("form"); setError(""); },
-          // Last step for a buyer, so the button says what it finishes, not
-          // "Continue" into a step that does not exist.
-          <button type="button" className="a-btn a-btn-green" disabled={loading} onClick={finishBuyerLocation}>
-            {loading ? busy(t("please_wait")) : t("auth_create_btn")}
-          </button>,
-        )}
-      </div>
+  // ── 1. Name ──
+  // The question is the label: the field sits right under it and is read
+  // out with it. The way back to Sign in stays on this first question only.
+  if (page === "name") {
+    return ask(
+      t("ask_name"),
+      t("ask_name_why"),
+      <>
+        <input id="f-name" className={`a-inp a-inp-lg ${bad("name")}`}
+          placeholder={t("auth_full_name_ph")}
+          autoComplete="name" autoCapitalize="words" enterKeyHint="next" autoFocus
+          aria-labelledby="ask-q" {...errProps("name")}
+          onBlur={() => setName(n => formatName(n))}
+          value={name} onChange={e => { setName(e.target.value); clear(); }} />
+        {fieldErr("name")}
+        <p className="a-switch">
+          {t("auth_have_account")} <button type="button" className="a-link" onClick={() => go("signin")}>{t("auth_signin_btn")}</button>
+        </p>
+      </>,
+      onward,
     );
   }
 
-  // ── Step 2 (farmer): farm details ──
-  if (step === "details") {
-    return (
-      <div className="a-screen">
-        {head(t("farm_details_title"), t("farm_details_sub"))}
-        <div className="a-scroll">
-          <div className="a-field">
-            <label className="a-lbl" htmlFor="f-years">{t("farm_years_lbl")}</label>
-            <input id="f-years" className="a-inp num" type="number" inputMode="numeric" min={0} max={80}
-              placeholder={t("farm_years_ph")} value={farmYears}
-              onChange={e => { setFarmYears(e.target.value); setError(""); }} />
-            <p className="a-help">{t("auth_help_years")}</p>
-          </div>
-
-          {/* Location is picked, not typed. Free text produced "Talavera",
-              "talavera n.e.", and "Brgy. San Ricardo Talavera" for the same
-              place, none of which a buyer can filter on. */}
-          <div className="a-field">
-            <label className="a-lbl">{t("farm_loc_lbl")}</label>
-            <div className="a-locked">
-              <MapPin size={20} color="var(--tanim)" />
-              <span>{FARM_PROVINCE}</span>
-              <span className="a-locked-note">{t("farm_province_lbl")}</span>
-            </div>
-          </div>
-
-          {/* Both were <select>s: 32 municipalities and up to 89 barangays in
-              a system dropdown of 36px rows, with no way to search. */}
-          <div className="a-field">
-            <label className="a-lbl">{t("farm_municipality_lbl")}</label>
-            <PickerField
-              title={t("farm_municipality_lbl")}
-              placeholder={t("farm_pick_municipality")}
-              value={municipality}
-              options={MUNICIPALITIES}
-              onChange={v => { setMunicipality(v); setBarangay(""); setError(""); }}
-            />
-          </div>
-
-          <div className="a-field">
-            <label className="a-lbl">{t("farm_barangay_lbl")}</label>
-            <PickerField
-              title={t("farm_barangay_lbl")}
-              placeholder={t("farm_pick_barangay")}
-              disabledHint={t("farm_pick_municipality_first")}
-              disabled={!municipality}
-              value={barangay}
-              options={BARANGAYS_BY_MUNICIPALITY[municipality] ?? []}
-              onChange={v => { setBarangay(v); setError(""); }}
-            />
-          </div>
-
-          <div className="a-field">
-            <label className="a-lbl" htmlFor="f-phone">{t("farm_phone_lbl")}</label>
-            <div className="a-prefix-row">
-              <span className="a-prefix">+63</span>
-              <input id="f-phone" className="a-inp num" type="tel" inputMode="numeric" autoComplete="tel-national"
-                placeholder="9XX XXX XXXX" maxLength={13}
-                value={fmtPhone(farmPhone)}
-                onChange={e => { setFarmPhone(digits(e.target.value)); setError(""); }} />
-            </div>
-          </div>
-
-          {alert()}
-          <div style={{ height: 24 }} />
-        </div>
-        {dock(
-          () => { setStep("form"); setError(""); },
-          <button type="button" className="a-btn a-btn-green" onClick={finishDetails}>{t("continue")}</button>,
-        )}
-      </div>
+  // ── 2. How to reach you ── (by name, now that Juan knows it)
+  if (page === "contact") {
+    return ask(
+      t("ask_contact").replace("{name}", firstName),
+      t("ask_contact_why"),
+      contactInput(true, false),
+      onward,
     );
   }
 
-  // ── Step 3 (farmer): crop specialisation ──
-  if (step === "crops") {
-    return (
-      <div className="a-screen">
-        {head(t("crops_title"), t("crops_sub"))}
-        <div className="a-scroll">
-          <div className="a-cropgrid">
-            {MAIN_CROPS.map(crop => {
-              const on = selectedCrops.includes(crop);
-              return (
-                <button
-                  key={crop}
-                  type="button"
-                  className={`a-crop ${on ? "on" : ""}`}
-                  aria-pressed={on}
-                  onClick={() => { haptic.select(); toggleCrop(crop); setError(""); }}
-                >
-                  <CropEmoji crop={crop} size={34} />
-                  <span>
-                    <span className="a-crop-n">{tn(crop)}</span>
-                    <span className="a-crop-e">{crop}</span>
-                  </span>
-                  <span className="a-crop-tick"><Check size={14} color="#fff" strokeWidth={3.6} /></span>
-                </button>
-              );
-            })}
-          </div>
-          {alert()}
-          <div style={{ height: 20 }} />
+  // ── 3. Password ── (and once more, to be sure it was typed as meant)
+  if (page === "password") {
+    const pwOk = password.length >= 6;
+    const confirmOk = confirm.length > 0 && confirm === password;
+    return ask(
+      t("ask_password"),
+      t("ask_password_why"),
+      <>
+        <div className="a-pwrow">
+          <input id="f-password" className={`a-inp ${bad("password")}`}
+            type={showPw ? "text" : "password"} placeholder={t("auth_password_ph")}
+            autoComplete="new-password" enterKeyHint="next" onKeyDown={focusNext("f-confirm")} autoFocus
+            aria-labelledby="ask-q" {...errProps("password", "f-password-help")}
+            value={password} onChange={e => { setPassword(e.target.value); clear(); }} />
+          {reveal}
         </div>
-        {dock(
-          () => { setStep("details"); setError(""); },
-          <button type="button" className="a-btn a-btn-green" onClick={finishCrops} disabled={loading} aria-busy={loading}>
-            {loading ? busy(t("crops_setting_up")) : t("continue")}
-          </button>,
-          <p className="a-count">
-            {selectedCrops.length === 0
-              ? t("crops_none_yet")
-              : `${selectedCrops.length} ${t("crops_selected")}`}
-          </p>,
-        )}
-      </div>
-    );
-  }
-
-  // ── Step 1: account ──
-  const pwOk = password.length >= 6;
-  const confirmOk = confirm.length > 0 && confirm === password;
-
-  return (
-    // A real form, so the keyboard's Go key submits and password managers
-    // recognise the sign-up.
-    <form className="a-screen" noValidate onSubmit={e => { e.preventDefault(); submit(); }}>
-      {/* The sign-in / sign-up switch lives up here, not under the primary
-          button: a returning user sees it before typing anything, and it's
-          out of reach of a thumb aiming for Create Account. */}
-      {head(
-        signup ? t("auth_create_title") : t("auth_signin_title"),
-        signup ? t("auth_create_sub") : t("auth_signin_sub"),
-        <p className="a-switch on-ink">
-          {signup
-            ? <>{t("auth_have_account")} <button type="button" className="a-link" onClick={() => { setFormFlow("signin"); clear(); }}>{t("auth_signin_btn")}</button></>
-            : <>{t("auth_no_account")} <button type="button" className="a-link" onClick={() => { setFormFlow("signup"); clear(); }}>{t("auth_sign_up_link")}</button></>
-          }
-        </p>,
-      )}
-
-      <div className="a-scroll">
-        {signup && (
-          <div className="a-field">
-            <label className="a-lbl" htmlFor="f-name">{t("auth_full_name")}</label>
-            <input id="f-name" className={`a-inp ${errField === "name" ? "bad" : ""}`}
-              placeholder={t("auth_full_name_ph")}
-              autoComplete="name" autoCapitalize="words" enterKeyHint="next"
-              onKeyDown={focusNext("f-contact")}
-              {...errProps("name")}
-              onBlur={() => setName(n => formatName(n))}
-              value={name} onChange={e => { setName(e.target.value); clear(); }} />
-            {fieldErr("name")}
-          </div>
-        )}
-
-        {/* Both ways in are visible at once. A link that swaps the field hid
-            the Gmail option and read "Sign in" on a sign-up screen. */}
-        <div className="a-field">
-          <div className="a-seg" role="radiogroup" aria-label={t("auth_contact_method")} data-mode={mode}>
-            <span className="a-seg-thumb" aria-hidden="true" />
-            {([["phone", <Smartphone key="i" size={18} strokeWidth={2.2} />, t("auth_cp_number")],
-               ["gmail", <Mail key="i" size={18} strokeWidth={2.2} />, "Gmail"]] as const).map(([id, ico, lbl]) => (
-              <button key={id} type="button" role="radio" aria-checked={mode === id}
-                className={mode === id ? "on" : ""}
-                onClick={() => {
-                  if (mode === id) return;
-                  haptic.select(); setMode(id); setContact(""); clear();
-                  requestAnimationFrame(() => document.getElementById("f-contact")?.focus());
-                }}>
-                {ico}{lbl}
-              </button>
-            ))}
-          </div>
-
-          <label className="a-lbl" htmlFor="f-contact">{labelContact}</label>
-          {mode === "gmail" ? (
-            <input id="f-contact" className={`a-inp ${errField === "contact" ? "bad" : ""}`} type="email"
-              placeholder="juan@gmail.com" autoComplete="email" autoCapitalize="none" spellCheck={false}
-              enterKeyHint="next" onKeyDown={focusNext("f-password")}
-              {...errProps("contact", "f-contact-help")}
-              value={contact} onChange={e => { setContact(e.target.value.trim()); clear(); }} />
-          ) : (
-            <div className="a-prefix-row">
-              <span className="a-prefix">+63</span>
-              <input id="f-contact" className={`a-inp num ${errField === "contact" ? "bad" : ""}`} type="tel"
-                inputMode="numeric" autoComplete="tel-national" placeholder="9XX XXX XXXX" maxLength={13}
-                enterKeyHint="next" onKeyDown={focusNext("f-password")}
-                {...errProps("contact", "f-contact-help")}
-                value={fmtPhone(contact)}
-                onChange={e => { setContact(digits(e.target.value)); clear(); }} />
-            </div>
+        {errField === "password"
+          ? fieldErr("password")
+          : (
+            // The rule turns into a tick the moment it's met: the page
+            // confirms progress as it happens, not only on Continue.
+            <p className={`a-help a-hint ${pwOk ? "ok" : ""}`} id="f-password-help">
+              <span className="a-hint-ico"><Check size={12} strokeWidth={3.4} /></span>
+              {t("auth_help_pw")}
+            </p>
           )}
-          {errField === "contact" ? fieldErr("contact") : <p className="a-help" id="f-contact-help">{t("auth_help_cp")}</p>}
-        </div>
-
         <div className="a-field">
-          <label className="a-lbl" htmlFor="f-password">{t("auth_password")}</label>
-          <div className="a-pwrow">
-            <input id="f-password" className={`a-inp ${errField === "password" ? "bad" : ""}`}
-              type={showPw ? "text" : "password"}
-              placeholder={t("auth_password_ph")}
-              autoComplete={signup ? "new-password" : "current-password"}
-              enterKeyHint={signup ? "next" : "go"}
-              onKeyDown={signup ? focusNext("f-confirm") : undefined}
-              {...errProps("password", signup ? "f-password-help" : undefined)}
-              value={password} onChange={e => { setPassword(e.target.value); clear(); }} />
-            <button type="button" className="a-reveal" aria-pressed={showPw} onClick={() => setShowPw(s => !s)}>
-              {showPw ? t("auth_hide") : t("auth_show")}
-            </button>
-          </div>
-          {errField === "password"
-            ? fieldErr("password")
-            : signup && (
-              // The rule turns into a tick the moment it's met: the form
-              // confirms progress as it happens, not only on submit.
-              <p className={`a-help a-hint ${pwOk ? "ok" : ""}`} id="f-password-help">
+          <label className="a-lbl" htmlFor="f-confirm">{t("auth_confirm_password")}</label>
+          <input id="f-confirm" className={`a-inp ${bad("confirm")}`}
+            type={showPw ? "text" : "password"} placeholder={t("auth_confirm_password_ph")}
+            autoComplete="new-password" enterKeyHint="next"
+            {...errProps("confirm")}
+            value={confirm} onChange={e => { setConfirm(e.target.value); clear(); }} />
+          {errField === "confirm"
+            ? fieldErr("confirm")
+            : confirmOk && (
+              <p className="a-help a-hint ok a-hint-in">
                 <span className="a-hint-ico"><Check size={12} strokeWidth={3.4} /></span>
-                {t("auth_help_pw")}
+                {t("auth_pw_match")}
               </p>
             )}
         </div>
+      </>,
+      onward,
+    );
+  }
 
-        {signup && (
-          <div className="a-field">
-            <label className="a-lbl" htmlFor="f-confirm">{t("auth_confirm_password")}</label>
-            <input id="f-confirm" className={`a-inp ${errField === "confirm" ? "bad" : ""}`}
-              type={showPw ? "text" : "password"}
-              placeholder={t("auth_confirm_password_ph")}
-              autoComplete="new-password" enterKeyHint="go"
-              {...errProps("confirm")}
-              value={confirm} onChange={e => { setConfirm(e.target.value); clear(); }} />
-            {errField === "confirm"
-              ? fieldErr("confirm")
-              : confirmOk && (
-                <p className="a-help a-hint ok a-hint-in">
-                  <span className="a-hint-ico"><Check size={12} strokeWidth={3.4} /></span>
-                  {t("auth_pw_match")}
-                </p>
-              )}
-          </div>
-        )}
+  // ── 4 (farmer). Years farming ── A number with its unit beside it.
+  if (page === "years") {
+    return ask(
+      t("ask_years"),
+      t("ask_years_why"),
+      <>
+        <div className="a-prefix-row a-unit-row">
+          <input id="f-years" className={`a-inp num a-inp-lg ${bad("years")}`} type="text"
+            inputMode="numeric" pattern="[0-9]*" maxLength={2} placeholder={t("farm_years_ph")}
+            enterKeyHint="next" autoFocus aria-labelledby="ask-q" {...errProps("years")}
+            value={farmYears} onChange={e => { setFarmYears(e.target.value.replace(/\D/g, "").slice(0, 2)); clear(); }} />
+          <span className="a-prefix a-suffix">{t("ask_years_unit")}</span>
+        </div>
+        {fieldErr("years")}
+      </>,
+      onward,
+    );
+  }
 
-        {!signup && (
-          <div style={{ marginTop: 6 }}>
-            <button type="button" className="a-link">{t("auth_forgot")}</button>
-          </div>
-        )}
-        {/* Errors about one field sit under that field. This is for the rest:
-            no signal, too many tries — things no field can fix. */}
-        {!errField && alert()}
-        <div style={{ height: 20 }} />
+  // ── 5 (farmer). Where the farm is ──
+  // Picked, not typed. Free text produced "Talavera", "talavera n.e.", and
+  // "Brgy. San Ricardo Talavera" for the same place, none of which a buyer
+  // can filter on. The province is fixed, so it is shown rather than asked.
+  if (page === "farm") {
+    return ask(
+      t("ask_farm"),
+      t("ask_farm_why"),
+      <>
+        <div className="a-locked">
+          <MapPin size={20} color="var(--tanim)" />
+          <span>{FARM_PROVINCE}</span>
+          <span className="a-locked-note">{t("farm_province_lbl")}</span>
+        </div>
+        <div className="a-field">
+          <label className="a-lbl">{t("farm_municipality_lbl")}</label>
+          <PickerField
+            title={t("farm_municipality_lbl")}
+            placeholder={t("farm_pick_municipality")}
+            value={municipality}
+            options={MUNICIPALITIES}
+            onChange={v => { setMunicipality(v); setBarangay(""); setError(""); }}
+          />
+        </div>
+        <div className="a-field">
+          <label className="a-lbl">{t("farm_barangay_lbl")}</label>
+          <PickerField
+            title={t("farm_barangay_lbl")}
+            placeholder={t("farm_pick_barangay")}
+            disabledHint={t("farm_pick_municipality_first")}
+            disabled={!municipality}
+            value={barangay}
+            options={BARANGAYS_BY_MUNICIPALITY[municipality] ?? []}
+            onChange={v => { setBarangay(v); setError(""); }}
+          />
+        </div>
+      </>,
+      onward,
+    );
+  }
+
+  // ── 6 (farmer, Gmail sign-up only). The number buyers call ──
+  if (page === "phone") {
+    return ask(
+      t("ask_phone"),
+      t("ask_phone_why"),
+      <>
+        <div className="a-prefix-row">
+          <span className="a-prefix">+63</span>
+          <input id="f-phone" className={`a-inp num ${bad("phone")}`} type="tel" inputMode="numeric" autoComplete="tel-national"
+            placeholder="9XX XXX XXXX" maxLength={13} enterKeyHint="next" autoFocus
+            aria-labelledby="ask-q" {...errProps("phone")}
+            value={fmtPhone(farmPhone)}
+            onChange={e => { setFarmPhone(digits(e.target.value)); clear(); }} />
+        </div>
+        {fieldErr("phone")}
+      </>,
+      onward,
+    );
+  }
+
+  // ── Last (farmer). What they grow ──
+  if (page === "crops") {
+    return ask(
+      t("crops_title"),
+      t("crops_sub"),
+      <div className="a-cropgrid">
+        {MAIN_CROPS.map(crop => {
+          const on = selectedCrops.includes(crop);
+          return (
+            <button
+              key={crop}
+              type="button"
+              className={`a-crop ${on ? "on" : ""}`}
+              aria-pressed={on}
+              onClick={() => { haptic.select(); toggleCrop(crop); setError(""); }}
+            >
+              <CropEmoji crop={crop} size={34} />
+              <span>
+                <span className="a-crop-n">{tn(crop)}</span>
+                <span className="a-crop-e">{crop}</span>
+              </span>
+              <span className="a-crop-tick"><Check size={14} color="#fff" strokeWidth={3.6} /></span>
+            </button>
+          );
+        })}
+      </div>,
+      primary(t("auth_create_btn"), t("crops_setting_up")),
+      next,
+      <p className="a-count">
+        {selectedCrops.length === 0
+          ? t("crops_none_yet")
+          : `${selectedCrops.length} ${t("crops_selected")}`}
+      </p>,
+    );
+  }
+
+  // ── Last (buyer). Where they are ──
+  // Anywhere in the Philippines, narrowed the way people say it: Luzon,
+  // Visayas or Mindanao, then the province, then the city or town.
+  const provinces = PH_PROVINCES.filter(p => p.island === island);
+  const places = PH_PROVINCES.find(p => p.name === province)?.places ?? [];
+  const barangays = phBarangays?.[province]?.[municipality] ?? [];
+  const pickIsland = (g: IslandGroup) => {
+    if (g === island) return;
+    haptic.select();
+    setIsland(g); setProvince(""); setMunicipality(""); setBarangay(""); setError("");
+  };
+  return ask(
+    t("buyer_loc_title"),
+    t("buyer_loc_sub"),
+    <>
+      <div className="a-field">
+        <label className="a-lbl" id="f-island">{t("buyer_island_lbl")}</label>
+        {/* Three, all visible: it is the one question everyone in the
+            country answers without thinking, and it cuts 82 provinces to a
+            list short enough to scan. */}
+        <div className="a-seg three" role="radiogroup" aria-labelledby="f-island" data-i={ISLAND_GROUPS.indexOf(island)}>
+          <span className="a-seg-thumb" aria-hidden="true" />
+          {ISLAND_GROUPS.map(g => (
+            <button key={g} type="button" role="radio" aria-checked={island === g}
+              className={island === g ? "on" : ""} onClick={() => pickIsland(g)}>
+              {g}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {dock(
-        onBack,
-        <button type="submit" className="a-btn a-btn-green" disabled={loading} aria-busy={loading}>
-          {loading ? busy(t("please_wait")) : signup ? t("auth_create_btn") : t("auth_signin_btn")}
-        </button>,
-      )}
-    </form>
+      <div className="a-field">
+        <label className="a-lbl">{t("farm_province_lbl")}</label>
+        <PickerField
+          title={t("farm_province_lbl")}
+          placeholder={t("farm_pick_province")}
+          value={province}
+          // The region under each name tells look-alikes apart and confirms
+          // the choice for anyone unsure of a province's name.
+          options={provinces.map(p => ({ value: p.name, label: p.name, sub: p.region }))}
+          onChange={v => { if (v !== province) { setProvince(v); setMunicipality(""); setBarangay(""); } setError(""); }}
+        />
+      </div>
+
+      <div className="a-field">
+        <label className="a-lbl">{t("farm_municipality_lbl")}</label>
+        <PickerField
+          title={t("farm_municipality_lbl")}
+          placeholder={t("farm_pick_municipality")}
+          disabledHint={t("farm_pick_province_first")}
+          disabled={!province}
+          value={municipality}
+          options={places}
+          onChange={v => { setMunicipality(v); setBarangay(""); setError(""); }}
+        />
+        <p className="a-help">{t("buyer_municipality_help")}</p>
+      </div>
+
+      <div className="a-field">
+        {/* The word "optional" sits on the label, not in the placeholder: a
+            field you may skip should say so before it is tapped. */}
+        <label className="a-lbl">{t("farm_barangay_lbl")} <small>{t("optional")}</small></label>
+        <PickerField
+          title={t("farm_barangay_lbl")}
+          placeholder={t("farm_pick_barangay")}
+          disabledHint={t(!municipality ? "farm_pick_municipality_first" : "list_loading")}
+          disabled={!municipality || !phBarangays}
+          value={barangay}
+          options={barangays}
+          onChange={v => { setBarangay(v); setError(""); }}
+        />
+        <p className="a-help">{t("buyer_barangay_help")}</p>
+      </div>
+    </>,
+    onward,
   );
 }
