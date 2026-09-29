@@ -885,38 +885,47 @@ export const authCss = `
   }
   .a-progress-seg > span.on { transform: none; }
 
-  /* Juan asks: his face in a circle, and the question in a white bubble
-     beside it whose sharp corner points at him, like a message from a
-     person rather than a label on a form. The bubble grows out of that
-     corner as the page arrives. */
-  .a-ask { display: flex; align-items: flex-start; gap: 12px; padding-top: 22px; }
-  /* The drawing is 420×435; the circle shows a 320px square around his
-     face and hat, with his waving hand at the edge. */
-  .a-ask-face {
-    position: relative; flex: 0 0 60px; width: 60px; height: 60px; border-radius: 50%; overflow: hidden;
-    background: radial-gradient(circle at 50% 30%, #EAF5EC 0%, #CFE5D5 100%);
-    box-shadow: 0 0 0 2.5px #fff, 0 3px 10px -3px rgba(22,33,27,.35);
+  /* No dead space. The answer area is only as tall as the answer, so it
+     sits right above Continue in the thumb zone, and the header takes every
+     spare pixel: whoever is asking stands in it, as on the role step, and
+     grows with the room.
+     On a short phone, or once the keyboard is up, the header shrinks to the
+     brand row and the progress, and the figure sinks out of the way instead
+     of being squeezed: the question and the answer are what matter then. */
+  .a-askscreen .a-scroll { flex: 0 1 auto; }
+  /* min-content, because a header that clips its overflow may otherwise be
+     squeezed below its own brand row and progress; this way it shrinks only
+     as far as the figure's room, and the brand and the bar are never cut. */
+  .a-askhead { flex: 1 1 auto; min-height: min-content; display: flex; flex-direction: column; padding-bottom: 0; }
+  .a-askstage { flex: 1 1 auto; min-height: 20px; margin-top: 6px; container-type: size; }
+  .a-askstage .a-cast { height: min(100%, 340px); transition: opacity 200ms ease, transform 260ms var(--ease-out); }
+  .a-askstage .a-cast[data-fig="buyer"] { height: min(100%, 290px); }
+  @container (max-height: 120px) {
+    .a-askstage .a-cast { opacity: 0; transform: translateY(28px); }
   }
-  .a-ask-face img {
-    position: absolute; left: -22.5%; top: -1.5%; width: 131.25%; height: auto; max-width: none;
-    pointer-events: none; user-select: none;
-  }
-  /* The same switched overlays as on the role step: closed eyelids for a
-     blink every few seconds, and a closed smile flicked on and off while he
-     says the question, then he stops on the open smile he was drawn with. */
-  .a-ask-eyes, .a-ask-mouth { opacity: 0; }
-  .a-ask-eyes { animation: a-blink 3.6s step-end 1.6s infinite; }
-  .a-ask-mouth { animation: a-talk 1.3s step-end 220ms forwards; }
-  .a-ask-bubble {
-    flex: 1; min-width: 0; background: var(--card);
-    border-radius: 6px 22px 22px 22px; padding: 14px 18px 16px;
+
+  /* The question, in a white bubble just under the header, the same 22px
+     below it as the cards on the language and role steps, its point aimed up
+     at the one asking. It sits clear of the header rather than over it, so
+     it never covers the figure's waving hand. Outside the scrolling area, so
+     it stays in view while the answer is typed. It grows out of its point as
+     each question arrives. */
+  .a-ask {
+    position: relative; z-index: 2; flex: none;
+    margin: 22px 22px 0; padding: 16px 18px 17px;
+    background: var(--card); border-radius: 22px;
     box-shadow:
       0 0 0 1px rgba(22,33,27,.05),
-      0 1px 2px rgba(22,33,27,.06),
-      0 14px 28px -20px rgba(22,33,27,.4);
-    transform-origin: 0 0; animation: a-ask-pop 300ms var(--ease-out) 60ms both;
+      0 2px 4px rgba(22,33,27,.06),
+      0 18px 34px -20px rgba(22,33,27,.5);
+    transform-origin: calc(100% - 80px) 0;
+    animation: a-ask-pop 300ms var(--ease-out) 60ms both;
   }
-  @keyframes a-ask-pop { from { opacity: 0; transform: scale(.92); } to { opacity: 1; transform: none; } }
+  .a-ask::before {
+    content: ""; position: absolute; top: -7px; right: 72px; width: 16px; height: 16px;
+    background: var(--card); border-radius: 3px 0 0 0; transform: rotate(45deg);
+  }
+  @keyframes a-ask-pop { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: none; } }
   .a-ask-q {
     font-family: var(--font-display); font-weight: 700; font-size: var(--fs-title);
     line-height: 1.22; letter-spacing: -.015em; color: var(--ink); text-wrap: pretty;
@@ -924,9 +933,9 @@ export const authCss = `
   .a-ask-why { margin-top: 6px; font-size: var(--fs-label); line-height: 1.45; color: var(--text-faint); text-wrap: pretty; }
 
   /* The answer goes right under the question. */
-  .a-ask-body { margin-top: 22px; }
+  .a-ask-body { padding-top: 18px; }
   .a-ask-body > .a-field:first-child, .a-ask-body > .a-cropgrid { margin-top: 0; }
-  .a-ask-body .a-switch { margin-top: 18px; }
+  .a-ask-body .a-switch { margin-top: 14px; }
   /* A one-line answer is typed large, like a reply, not like a form field. */
   .a-inp-lg {
     min-height: 64px; font-family: var(--font-display); font-weight: 500;
@@ -939,7 +948,7 @@ export const authCss = `
   .a-unit-row .a-inp, .a-unit-row .a-inp:focus, .a-unit-row .a-inp.bad { border-radius: 16px 0 0 16px; padding-left: 18px; }
 
   @media (prefers-reduced-motion: reduce) {
-    .a-ask-bubble { animation: a-step-fade 200ms ease both; }
-    .a-ask-eyes, .a-ask-mouth { animation: none; }
+    .a-ask { animation: a-step-fade 200ms ease both; }
+    .a-askstage .a-cast { transition: opacity 200ms ease; transform: none; }
   }
 `;

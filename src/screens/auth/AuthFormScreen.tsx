@@ -9,10 +9,13 @@ import { ISLAND_GROUPS, IslandGroup, PH_PROVINCES } from "../../data/phPlaces";
 import { CropEmoji } from "../../components/CropEmoji";
 import { PickerField } from "../../components/ui/PickerField";
 import { AniSenseLogo } from "../../components/AniSenseLogo";
-import juanBody from "../../assets/mascot-wave-body.webp";
-import juanHand from "../../assets/mascot-wave-hand.webp";
-import juanEyes from "../../assets/mascot-wave-eyes.webp";
-import juanMouth from "../../assets/mascot-wave-mouth.webp";
+import juanPeekBody from "../../assets/juan-peek-body.webp";
+import juanPeekHand from "../../assets/juan-peek-hand.webp";
+import juanMouthHalf from "../../assets/juan-peek-mouth-half.webp";
+import juanMouthShut from "../../assets/juan-peek-mouth-shut.webp";
+import buyerMascot from "../../assets/buyer-mascot.webp";
+import buyerEyes from "../../assets/buyer-mascot-eyes.webp";
+import buyerMouth from "../../assets/buyer-mascot-mouth.webp";
 import type { Session } from "@supabase/supabase-js";
 import { isSupabaseConfigured } from "../../lib/supabase";
 import { formatName } from "../../lib/names";
@@ -56,18 +59,38 @@ const focusNext = (id: string) => (e: KeyboardEvent<HTMLInputElement>) => {
   if (e.key === "Enter") { e.preventDefault(); document.getElementById(id)?.focus(); }
 };
 
-// Juan's face in a circle, cut from the waving drawing: the same Juan as the
-// language and role steps, now close up, the way a contact's photo sits beside
-// their message. He says each question (the mouth moves for about a second
-// as the bubble arrives) and blinks now and then while he waits.
-function JuanAsks() {
+// Whoever is asking stands in the header, as on the role step: Juan for a
+// farmer, the buyer mascot for a buyer, drawn with the same layers and moved
+// by the same rules. With each new question they say it (the mouth moves for
+// about a second); Juan waves once, when he first appears. Decorative: the
+// question itself is the page's heading.
+function Asker({ role, cue }: { role: UserRole; cue: string }) {
+  // Counted once per new cue, so typing (which re-renders) changes nothing.
+  const said = useRef({ cue, n: 0 });
+  if (said.current.cue !== cue) said.current = { cue, n: said.current.n + 1 };
+  // The first line waits for the figure to rise into place.
+  const first = said.current.n === 0 ? "is-first" : "";
   return (
-    <span className="a-ask-face" aria-hidden="true">
-      <img src={juanBody} alt="" />
-      <img src={juanHand} alt="" />
-      <img className="a-ask-eyes" src={juanEyes} alt="" />
-      <img className="a-ask-mouth" src={juanMouth} alt="" />
-    </span>
+    <div className="a-rolestage a-askstage" aria-hidden="true">
+      {role === "buyer" ? (
+        <div className="a-cast" data-fig="buyer">
+          <span className="a-fig a-fig-layers fig-buyer on">
+            <img src={buyerMascot} alt="" />
+            <img className="a-fig-eyes" src={buyerEyes} alt="" />
+            <img key={`m${cue}`} className={`a-fig-mouth ${first}`} src={buyerMouth} alt="" />
+          </span>
+        </div>
+      ) : (
+        <div className="a-cast" data-fig="farmer">
+          <span className="a-fig a-fig-layers fig-farmer on">
+            <img src={juanPeekBody} alt="" />
+            <img key={`h${cue}`} className={`a-fig-talk half ${first}`} src={juanMouthHalf} alt="" />
+            <img key={`s${cue}`} className={`a-fig-talk shut ${first}`} src={juanMouthShut} alt="" />
+            <img className="a-fig-hand is-first" src={juanPeekHand} alt="" />
+          </span>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -415,11 +438,11 @@ export function AuthFormScreen({
     return (
       // A real form, so the keyboard's Go key submits and password managers
       // recognise the sign-in.
-      <form className="a-screen a-setup" noValidate onSubmit={e => { e.preventDefault(); next(); }}>
+      <form className="a-screen a-setup a-askscreen" noValidate onSubmit={e => { e.preventDefault(); next(); }}>
         {/* The switch to Create account lives up here, not under the primary
             button: a new user sees it before typing anything, and it's out
             of reach of a thumb aiming for Sign In. */}
-        <div className="a-inkhead a-formhead">
+        <div className="a-inkhead a-formhead a-askhead">
           {brand}
           <div className="a-swap" key="signin">
             <h1 className="a-title on-ink">{t("auth_signin_title")}</h1>
@@ -428,6 +451,7 @@ export function AuthFormScreen({
               {t("auth_no_account")} <button type="button" className="a-link" onClick={() => go("name")}>{t("auth_sign_up_link")}</button>
             </p>
           </div>
+          <Asker role={role} cue="signin" />
         </div>
 
         <div className="a-scroll a-step" data-anim={anim} key="signin">
@@ -466,8 +490,13 @@ export function AuthFormScreen({
   const step = page === "verify" ? pages.length : at + 1;
   const stepLabel = t("ask_step").replace("{n}", String(step)).replace("{total}", String(pages.length));
 
+  // The layout, top to bottom: the header, which takes whatever height is
+  // left over, with the asker standing in it; the question, in a bubble that
+  // overlaps the header's edge and points up at them; the answer, right
+  // above Continue. The answer area is only as tall as the answer, so no gap
+  // opens between it and the button: spare height goes to the header.
   const ask = (q: string, why: string | undefined, body: ReactNode, main: ReactNode, onSubmit = next, beforeDock?: ReactNode) => (
-    <form className="a-screen a-setup" noValidate onSubmit={e => { e.preventDefault(); onSubmit(); }}>
+    <form className="a-screen a-setup a-askscreen" noValidate onSubmit={e => { e.preventDefault(); onSubmit(); }}>
       <div className="a-inkhead a-formhead a-askhead">
         {brand}
         <div className="a-progress" role="progressbar" aria-label={stepLabel}
@@ -477,21 +506,21 @@ export function AuthFormScreen({
             {pages.map((p, i) => <span key={p} className="a-progress-seg"><span className={i < step ? "on" : ""} /></span>)}
           </span>
         </div>
+        <Asker role={role} cue={page} />
       </div>
 
-      {/* Keyed by page: each question arrives in the direction of travel,
-          and Juan says it afresh. */}
-      <div className="a-scroll a-step" data-anim={anim} key={page}>
-        <div className="a-ask">
-          <JuanAsks />
-          <div className="a-ask-bubble">
-            <h1 className="a-ask-q" id="ask-q">{q}</h1>
-            {why && <p className="a-ask-why">{why}</p>}
-          </div>
-        </div>
+      {/* Outside the scrolling part, so the question stays in view while the
+          keyboard is up. Keyed by page, so each question pops in afresh. */}
+      <div className="a-ask" key={`q-${page}`}>
+        <h1 className="a-ask-q" id="ask-q">{q}</h1>
+        {why && <p className="a-ask-why">{why}</p>}
+      </div>
+
+      {/* Keyed by page: each answer arrives in the direction of travel. */}
+      <div className="a-scroll a-step" data-anim={anim} key={`a-${page}`}>
         <div className="a-ask-body">{body}</div>
         {!errField && alert()}
-        <div style={{ height: 24 }} />
+        <div style={{ height: 8 }} />
       </div>
 
       {dock(main, beforeDock)}
