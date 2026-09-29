@@ -271,6 +271,80 @@ export const authCss = `
   }
   .a-tagline em { font-style: normal; font-weight: 700; color: var(--palay); }
   .a-welcome-cta { display: flex; flex-direction: column; gap: 12px; }
+  /* The two ways in, as capsules, the same shape as Continue on the next
+     step, and built the way an iPhone button is: out of light, not lines.
+       · a crisp bright rim along the top edge, where light catches it
+       · a soft gloss filling the upper half, so the surface has a curve
+       · a slight shade along the bottom, where the capsule turns away
+       · three shadows under it: a tight one where it touches the page, a
+         close one, and a wide soft one, so it floats a little above the
+         picture instead of being printed on it
+     The shadows are dark, never gold: a coloured halo reads as glow, not
+     depth. Pressed, all of it collapses: the gloss dims, the shade moves
+     inside and the shadows pull in tight, so it reads as pushed down into
+     the page rather than merely smaller. Both states list the same layers
+     in the same order, so the press animates instead of snapping. */
+  .a-welcome-cta .a-btn { border-radius: var(--r-pill); }
+  .a-welcome-cta .a-btn-gold {
+    background-image: linear-gradient(180deg, #FFD066 0%, #F7BB33 52%, #ECA81E 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.7),
+      inset 0 12px 16px -12px rgba(255,255,255,.5),
+      inset 0 -3px 4px -2px rgba(150,95,0,.3),
+      inset 0 0 0 1px rgba(120,78,0,.2),
+      0 1px 1px rgba(0,0,0,.3),
+      0 4px 10px -2px rgba(0,0,0,.32),
+      0 16px 30px -10px rgba(0,0,0,.55);
+  }
+  .a-welcome-cta .a-btn-gold:active {
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.4),
+      inset 0 12px 16px -12px rgba(255,255,255,.2),
+      inset 0 3px 7px -1px rgba(150,95,0,.32),
+      inset 0 0 0 1px rgba(120,78,0,.26),
+      0 1px 1px rgba(0,0,0,.3),
+      0 2px 4px -1px rgba(0,0,0,.26),
+      0 6px 12px -8px rgba(0,0,0,.4);
+    filter: brightness(.97);
+  }
+  /* I already have an account is glass: the poster shows through, blurred
+     and a little richer. Its rim is bright on top and fainter along the
+     bottom, where the same light passes through the glass and out the
+     other side. Pressed, the glass lights up under the finger, the way
+     Apple's glass buttons answer a touch. */
+  .a-welcome-cta .a-btn-ghost-ink {
+    color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.3);
+    background-color: rgba(255,255,255,.14);
+    background-image: linear-gradient(180deg, rgba(255,255,255,.2) 0%, rgba(255,255,255,.04) 55%, rgba(255,255,255,.09) 100%);
+    backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.55),
+      inset 0 -1px 0 rgba(255,255,255,.16),
+      inset 0 12px 16px -12px rgba(255,255,255,.35),
+      inset 0 0 0 1px rgba(255,255,255,.22),
+      0 1px 1px rgba(0,0,0,.28),
+      0 4px 10px -2px rgba(0,0,0,.3),
+      0 16px 30px -10px rgba(0,0,0,.5);
+  }
+  .a-welcome-cta .a-btn-ghost-ink:active {
+    background-color: rgba(255,255,255,.24);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.4),
+      inset 0 -1px 0 rgba(255,255,255,.1),
+      inset 0 12px 16px -12px rgba(255,255,255,.18),
+      inset 0 0 0 1px rgba(255,255,255,.32),
+      0 1px 1px rgba(0,0,0,.28),
+      0 2px 4px -1px rgba(0,0,0,.24),
+      0 6px 12px -8px rgba(0,0,0,.36);
+  }
+  /* For people who have asked the phone for less see-through glass: the
+     same button, solid. */
+  @media (prefers-reduced-transparency: reduce) {
+    .a-welcome-cta .a-btn-ghost-ink {
+      backdrop-filter: none; -webkit-backdrop-filter: none;
+      background-color: #1E3A2A; background-image: none;
+    }
+  }
   .a-legal { text-align: center; font-size: var(--fs-label); color: rgba(255,255,255,.78); margin-top: 14px; text-shadow: 0 1px 6px rgba(0,0,0,.35); }
   /* For screen readers only: the poster's words are in the picture. */
   .a-sr {
