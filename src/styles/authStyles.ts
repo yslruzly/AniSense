@@ -81,12 +81,6 @@ export const authCss = `
   .a-iconbtn.on-paper { background: var(--card); box-shadow: inset 0 0 0 2px var(--line); }
 
   .a-inkhead { background: var(--ink); padding: calc(14px + var(--safe-top)) 22px 30px; border-radius: 0 0 26px 26px; }
-  .a-badge {
-    display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px;
-    border-radius: var(--r-pill); background: rgba(255,255,255,.15);
-    box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.3);
-    font-family: var(--font-display); font-weight: 600; font-size: var(--fs-label); color: #fff; margin-top: 16px;
-  }
   /* No hairline above the button. The soft lift alone is enough to separate the
      dock from content scrolling under it. */
   /* No fill and no shadow of its own: the buttons sit on the same ground as
@@ -564,15 +558,6 @@ export const authCss = `
   .a-formhead > * { position: relative; }
   .a-formhead .a-title { margin-top: 22px; }
   .a-formhead .a-sub { margin-top: 6px; }
-  .a-brandrow .a-badge {
-    margin: 0 0 0 auto; padding: 6px 13px 6px 11px; gap: 6px;
-    background: rgba(255,255,255,.12);
-    backdrop-filter: blur(12px) saturate(160%); -webkit-backdrop-filter: blur(12px) saturate(160%);
-    box-shadow:
-      inset 0 1px 0 rgba(255,255,255,.28),
-      inset 0 0 0 1px rgba(255,255,255,.16),
-      0 4px 10px -6px rgba(0,0,0,.5);
-  }
 
   /* ── Step transitions ──────────────────────────────────────────────────── */
   /* Moving through sign-up is navigation, so it moves like iOS navigation:
@@ -896,6 +881,9 @@ export const authCss = `
      below its own content (min-content: a header that clips its overflow
      could otherwise be squeezed past its brand row and progress). */
   .a-askhead { flex: 0 1 auto; min-height: min-content; display: flex; flex-direction: column; padding-bottom: 0; }
+  /* No brand row on these pages: the title is the first thing in the header,
+     just under the status bar. */
+  .a-askhead .a-title { margin-top: 10px; }
   .a-asktitle + .a-progress { margin-top: 14px; }
   /* The plain header (the crop question): its title and line under it, then
      the progress, with the header's own bottom padding, as the form header
@@ -965,6 +953,10 @@ export const authCss = `
   .a-ask-body { padding-top: 22px; }
   .a-ask-body > .a-field:first-child, .a-ask-body > .a-cropgrid { margin-top: 0; }
   .a-ask-body .a-switch { margin-top: 14px; }
+  /* Under the dock's buttons (Sign in's way to Create account), a little
+     apart from them; the link keeps a 44px target without adding height. */
+  .a-dock-switch { margin-top: 12px; color: var(--text-muted); font-size: var(--fs-label); }
+  .a-dock-switch .a-link { font-size: var(--fs-label); min-height: 44px; margin: -12px 0; }
   /* A one-line answer is typed large, like a reply, not like a form field. */
   .a-inp-lg {
     min-height: 64px; font-family: var(--font-display); font-weight: 500;

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { haptic } from "../../lib/platform";
-import { Wheat, ShoppingCart, ChevronLeft, Check, AlertCircle, MapPin, Smartphone, Mail } from "lucide-react";
+import { ChevronLeft, Check, AlertCircle, MapPin, Smartphone, Mail } from "lucide-react";
 import { useLang } from "../../i18n";
 import { UserRole, FarmDetails } from "../../types";
 import { MAIN_CROPS } from "../../data/crops";
@@ -8,7 +8,6 @@ import { FARM_PROVINCE, MUNICIPALITIES, BARANGAYS_BY_MUNICIPALITY, formatFarmLoc
 import { ISLAND_GROUPS, IslandGroup, PH_PROVINCES } from "../../data/phPlaces";
 import { CropEmoji } from "../../components/CropEmoji";
 import { PickerField } from "../../components/ui/PickerField";
-import { AniSenseLogo } from "../../components/AniSenseLogo";
 import juanPeekBody from "../../assets/juan-peek-body.webp";
 import juanPeekHand from "../../assets/juan-peek-hand.webp";
 import juanMouthHalf from "../../assets/juan-peek-mouth-half.webp";
@@ -171,12 +170,6 @@ export function AuthFormScreen({
   // A real account when the app has a database to put it in; the demo
   // sign-in otherwise, so a build without .env still opens for respondents.
   const live = isSupabaseConfigured && !!onSession;
-  // Short on purpose: it rides the brand row, and "Account ng Magsasaka" would
-  // push it off a 360px screen.
-  const roleLabel = role === "farmer" ? t("role_farmer") : t("role_buyer");
-  const roleIcon = role === "farmer"
-    ? <Wheat size={14} color="#fff" strokeWidth={2.2} />
-    : <ShoppingCart size={14} color="#fff" strokeWidth={2.2} />;
 
   const labelContact = mode === "gmail" ? t("auth_gmail_address") : t("auth_cp_number");
   // The number buyers call: the sign-in number when there is one.
@@ -365,7 +358,7 @@ export function AuthFormScreen({
 
   // Back beside the primary action, as on the earlier steps, so the whole
   // setup is driven from one place under the thumb.
-  const dock = (main: ReactNode, before?: ReactNode) => (
+  const dock = (main: ReactNode, before?: ReactNode, after?: ReactNode) => (
     <div className="a-dock">
       {before}
       <div className="a-dockpair">
@@ -374,16 +367,7 @@ export function AuthFormScreen({
         </button>
         {main}
       </div>
-    </div>
-  );
-
-  // Same lockup as the language and role steps: whose app, and the account
-  // type riding on the brand row where it costs no height.
-  const brand = (
-    <div className="a-brandrow">
-      <span className="a-brandmark"><AniSenseLogo size={26} /></span>
-      <span className="a-brandname">AniSense</span>
-      <span className="a-badge">{roleIcon} {roleLabel}</span>
+      {after}
     </div>
   );
 
@@ -442,16 +426,9 @@ export function AuthFormScreen({
       // A real form, so the keyboard's Go key submits and password managers
       // recognise the sign-in.
       <form className="a-screen a-setup a-askscreen" noValidate onSubmit={e => { e.preventDefault(); next(); }}>
-        {/* The switch to Create account lives up here, not under the primary
-            button: a new user sees it before typing anything, and it's out
-            of reach of a thumb aiming for Sign In. */}
         <div className="a-inkhead a-formhead a-askhead">
-          {brand}
           <div className="a-swap" key="signin">
             <h1 className="a-title on-ink">{t("auth_signin_title")}</h1>
-            <p className="a-switch on-ink">
-              {t("auth_no_account")} <button type="button" className="a-link" onClick={() => go("name")}>{t("auth_sign_up_link")}</button>
-            </p>
           </div>
           {/* Juan greets a returning user, in the bubble beside him. */}
           <Scene role={role} cue="signin">
@@ -482,13 +459,21 @@ export function AuthFormScreen({
           <div style={{ height: 20 }} />
         </div>
 
-        {dock(primary(t("auth_signin_btn")))}
+        {/* The way to Create account sits under Sign In, where phone apps
+            put it: read after the one thing this page is for, and set a
+            little apart from the button so a thumb aiming for Sign In
+            doesn't land on it. */}
+        {dock(primary(t("auth_signin_btn")), undefined, (
+          <p className="a-switch a-dock-switch">
+            {t("auth_no_account")} <button type="button" className="a-link" onClick={() => go("name")}>{t("auth_sign_up_link")}</button>
+          </p>
+        ))}
       </form>
     );
   }
 
   // ── Create account: Juan asks, one question per page ──
-  // The header keeps the brand row and gains a progress bar: "Step 2 of 6"
+  // The header carries a progress bar: "Step 2 of 6"
   // in words for anyone who reads, and a row of segments that fill as each
   // question is answered. The header stays mounted from page to page, so the
   // next segment visibly fills rather than the whole bar being redrawn.
@@ -504,7 +489,6 @@ export function AuthFormScreen({
   const ask = (q: string, why: string | undefined, body: ReactNode, main: ReactNode, onSubmit = next, beforeDock?: ReactNode, plain = false) => (
     <form className="a-screen a-setup a-askscreen" noValidate onSubmit={e => { e.preventDefault(); onSubmit(); }}>
       <div className={`a-inkhead a-formhead a-askhead${plain ? " plain" : ""}`}>
-        {brand}
         {plain ? (
           <div className="a-swap" key={`q-${page}`}>
             <h1 className="a-title on-ink" id="ask-q">{q}</h1>
