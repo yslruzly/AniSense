@@ -42,7 +42,13 @@ export const authCss = `
   /* min-height: 0 on both, or a tall child sets the floor and the column grows
      past the shell rather than handing the overflow to .a-scroll. */
   .a-screen { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; background: var(--paper); }
-  .a-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 22px; }
+  /* The room between the content and the buttons lives here, as bottom
+     padding, not on the dock: a scrolling box cuts off whatever spills past
+     it, and the cards' soft shadows reach about 26px below them. With only
+     a few pixels to fall into, a shadow was sliced into a straight line
+     across the screen, and the buttons looked like they sat on a separate
+     panel. 28px lets every shadow fade out before the box ends. */
+  .a-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 22px 28px; }
   .a-scroll::-webkit-scrollbar { width: 0; }
   .a-title { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-display); line-height: 1.15; letter-spacing: -.02em; }
   .a-title.on-ink { color: #fff; }
@@ -86,7 +92,7 @@ export const authCss = `
   /* No fill and no shadow of its own: the buttons sit on the same ground as
      everything above them. The lift used to draw a line across the screen and
      make the last two buttons look like a separate panel. */
-  .a-dock { padding: 16px 22px calc(26px + var(--safe-bottom)); background: transparent; }
+  .a-dock { padding: 0 22px calc(26px + var(--safe-bottom)); background: transparent; }
   .a-brandrow { display: flex; align-items: center; gap: 10px; }
   /* The mark sits like an app icon on the ink: a tight contact shadow and a
      softer one under it, so it reads as a raised tile, not a white cut-out. */
@@ -134,7 +140,7 @@ export const authCss = `
      white card, a row per answer, and a radio at the end of each row. The
      language and role steps share it, so the two read as one flow. The list
      sits right under the header, in the thumb zone above Continue. */
-  .a-choice-list { flex: 0 1 auto; padding-top: 22px; padding-bottom: 10px; }
+  .a-choice-list { flex: 0 1 auto; padding-top: 22px; }
   .a-choice-group {
     background: var(--card); border-radius: var(--r-lg); overflow: hidden;
     box-shadow:
@@ -890,24 +896,29 @@ export const authCss = `
      always had. */
   .a-askhead.plain { padding-bottom: 24px; }
   .a-askhead.plain .a-progress { margin-top: 18px; }
-  /* As tall as the figure at full size, shrinking (with the figure) down to
-     the bubble's height when room is short. */
+  /* As tall as the figure at full size on a tall phone, and shorter on a
+     shorter one (the figure shrinks with it), so the fields below still fit
+     on the budget phones this audience carries: about 700px of screen once
+     the status and navigation bars are taken off. Never shorter than the
+     bubble. */
   .a-askscene {
-    flex: 0 1 237px; min-height: min-content; margin-top: 18px;
+    --fig-h: clamp(160px, 100dvh - 540px, 237px);
+    flex: 0 1 var(--fig-h); min-height: min-content; margin-top: 18px;
     display: flex; align-items: flex-end; gap: 12px;
   }
-  .a-askscene[data-fig="buyer"] { flex-basis: 196px; }
-  /* The figure's column: exactly as wide as the figure at its full height,
-     so the bubble gets all the rest, and flush with the screen's right edge
-     as on the role step. The figure fills the column's height, so when the
-     scene gives up height it is simply smaller. */
+  .a-askscene[data-fig="buyer"] { --fig-h: clamp(140px, 100dvh - 560px, 196px); }
+  /* The figure's column: exactly as wide as the figure (its height times
+     the drawing's proportions), so the bubble gets all the rest and its
+     point lands right beside him; flush with the screen's right edge as on
+     the role step. */
   .a-askfig {
-    position: relative; flex: 0 0 150px; align-self: stretch; margin-right: -22px;
+    position: relative; flex: 0 0 calc(var(--fig-h) * 400 / 633); align-self: stretch; margin-right: -22px;
     animation: a-stage-in 520ms var(--ease-out) 140ms both;
   }
-  .a-askfig[data-fig="buyer"] { flex-basis: 172px; }
-  .a-askfig .a-cast { right: 0; height: min(100%, 237px); }
-  .a-askfig .a-cast[data-fig="buyer"] { height: min(100%, 196px); }
+  .a-askfig[data-fig="buyer"] { flex-basis: calc(var(--fig-h) * 456 / 520); }
+  /* One size per phone, the same on every question, so he never grows or
+     shrinks between pages: a taller bubble makes the scene taller, not him. */
+  .a-askfig .a-cast { right: 0; height: min(100%, var(--fig-h)); }
   /* A soft pool of light behind the figure, as on the role step. */
   .a-askfig::before {
     content: ""; position: absolute; right: -70px; bottom: -80px; width: 300px; height: 300px;
@@ -944,7 +955,7 @@ export const authCss = `
      hello. */
   @media (max-height: 600px) {
     .a-askfig, .a-asktitle, .a-ask-hi { display: none; }
-    .a-askscene, .a-askscene[data-fig="buyer"] { flex-basis: auto; }
+    .a-askscene { flex-basis: auto; }
     .a-ask { margin-bottom: 18px; }
     .a-ask::after { display: none; }
   }
@@ -953,10 +964,23 @@ export const authCss = `
   .a-ask-body { padding-top: 22px; }
   .a-ask-body > .a-field:first-child, .a-ask-body > .a-cropgrid { margin-top: 0; }
   .a-ask-body .a-switch { margin-top: 14px; }
-  /* Under the dock's buttons (Sign in's way to Create account), a little
-     apart from them; the link keeps a 44px target without adding height. */
-  .a-dock-switch { margin-top: 12px; color: var(--text-muted); font-size: var(--fs-label); }
-  .a-dock-switch .a-link { font-size: var(--fs-label); min-height: 44px; margin: -12px 0; }
+  /* Sign in's second way out, under the Sign In button: a white capsule,
+     the quiet half of a pair, like the welcome screen's two. The question
+     is set lighter than the action, so the words that do something stand
+     out. A touch shorter than Sign In, and 10px apart from it. */
+  .a-btn-quiet {
+    min-height: 54px; gap: 6px; font-size: var(--fs-body); color: var(--tanim);
+    background: var(--card);
+    box-shadow: 0 0 0 1px rgba(22,33,27,.14), 0 1px 2px rgba(22,33,27,.06);
+  }
+  .a-btn-quiet:active { background: #F2F4F3; }
+  .a-btn-lead { color: var(--text-muted); font-weight: 500; }
+  .a-dock-alt { margin-top: 10px; }
+  /* A label with an action at its far end ("Password ... Forgot your
+     password?"). The link keeps a 44px target without making the row
+     taller. */
+  .a-lbl-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .a-lbl-row .a-link { min-height: 44px; margin: -12px -4px -12px 0; font-size: var(--fs-label); }
   /* A one-line answer is typed large, like a reply, not like a form field. */
   .a-inp-lg {
     min-height: 64px; font-family: var(--font-display); font-weight: 500;

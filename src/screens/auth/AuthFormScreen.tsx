@@ -3,7 +3,7 @@ import { haptic } from "../../lib/platform";
 import { ChevronLeft, Check, AlertCircle, MapPin, Smartphone, Mail } from "lucide-react";
 import { useLang } from "../../i18n";
 import { UserRole, FarmDetails } from "../../types";
-import { MAIN_CROPS } from "../../data/crops";
+import { CROPS, MAIN_CROPS } from "../../data/crops";
 import { FARM_PROVINCE, MUNICIPALITIES, BARANGAYS_BY_MUNICIPALITY, formatFarmLocation } from "../../data/locations";
 import { ISLAND_GROUPS, IslandGroup, PH_PROVINCES } from "../../data/phPlaces";
 import { CropEmoji } from "../../components/CropEmoji";
@@ -373,7 +373,9 @@ export function AuthFormScreen({
 
   // CP number or Gmail, both visible at once, then the field for the one
   // picked. Shared by Sign in and the "how can we reach you" question.
-  const contactInput = (autoFocus: boolean, labelled: boolean) => (
+  // The switch says which one the field is for, so the field has no label
+  // of its own on screen; it is read out with it.
+  const contactInput = (autoFocus: boolean) => (
     <>
       <div className="a-seg" role="radiogroup" aria-label={t("auth_contact_method")} data-mode={mode}>
         <span className="a-seg-thumb" aria-hidden="true" />
@@ -390,13 +392,12 @@ export function AuthFormScreen({
           </button>
         ))}
       </div>
-      {labelled && <label className="a-lbl" htmlFor="f-contact">{labelContact}</label>}
       {mode === "gmail" ? (
         <input id="f-contact" className={`a-inp ${bad("contact")}`} type="email"
           placeholder="juan@gmail.com" autoComplete={page === "signin" ? "username" : "email"} autoCapitalize="none" spellCheck={false}
           enterKeyHint="next" onKeyDown={page === "signin" ? focusNext("f-password") : undefined} autoFocus={autoFocus}
-          aria-label={labelled ? undefined : labelContact}
-          {...errProps("contact", "f-contact-help")}
+          aria-label={labelContact}
+          {...errProps("contact", page === "signin" ? undefined : "f-contact-help")}
           value={contact} onChange={e => { setContact(e.target.value.trim()); clear(); }} />
       ) : (
         <div className="a-prefix-row">
@@ -404,13 +405,15 @@ export function AuthFormScreen({
           <input id="f-contact" className={`a-inp num ${bad("contact")}`} type="tel"
             inputMode="numeric" autoComplete={page === "signin" ? "username" : "tel-national"} placeholder="9XX XXX XXXX" maxLength={13}
             enterKeyHint="next" onKeyDown={page === "signin" ? focusNext("f-password") : undefined} autoFocus={autoFocus}
-            aria-label={labelled ? undefined : labelContact}
-            {...errProps("contact", "f-contact-help")}
+            aria-label={labelContact}
+            {...errProps("contact", page === "signin" ? undefined : "f-contact-help")}
             value={fmtPhone(contact)}
             onChange={e => { setContact(digits(e.target.value)); clear(); }} />
         </div>
       )}
-      {errField === "contact" ? fieldErr("contact") : <p className="a-help" id="f-contact-help">{t("auth_help_cp")}</p>}
+      {/* The "we'll send your confirmation here" line is about a new
+          account, so Sign in doesn't show it. */}
+      {errField === "contact" ? fieldErr("contact") : page !== "signin" && <p className="a-help" id="f-contact-help">{t("auth_help_cp")}</p>}
     </>
   );
 
@@ -422,24 +425,53 @@ export function AuthFormScreen({
 
   // ── Sign in: one short page ──
   if (page === "signin") {
+    // A greeting for the time of day, the way people here greet each other,
+    // rather than a stock "welcome back".
+    const hour = new Date().getHours();
+    const greeting = t(hour >= 5 && hour < 12 ? "signin_morning" : hour >= 12 && hour < 18 ? "signin_afternoon" : "signin_evening");
+    // And a reason to sign in, from today's prices: for a farmer the crop
+    // that rose the most (good news for a seller), for a buyer the one that
+    // fell the most (a deal). If nothing moved that way, Juan just says hi.
+    const byChange = [...CROPS].sort((a, b) => b.change - a.change);
+    const pick = role === "buyer" ? byChange[byChange.length - 1] : byChange[0];
+    const news = pick && (role === "buyer" ? pick.change < 0 : pick.change > 0) ? pick : null;
+    const fill = (key: string) => t(key)
+      .replace("{crop}", tn(news!.name))
+      .replace("{pct}", Math.abs(news!.change).toFixed(1))
+      .replace("{price}", String(Math.round(news!.pricePerKg * 100) / 100));
+    const up = role !== "buyer";
     return (
       // A real form, so the keyboard's Go key submits and password managers
       // recognise the sign-in.
       <form className="a-screen a-setup a-askscreen" noValidate onSubmit={e => { e.preventDefault(); next(); }}>
         <div className="a-inkhead a-formhead a-askhead">
           <div className="a-swap" key="signin">
-            <h1 className="a-title on-ink">{t("auth_signin_title")}</h1>
+            <h1 className="a-title on-ink">{greeting}</h1>
+            <p className="a-sub on-ink">{t("auth_signin_title")}</p>
           </div>
-          {/* Juan greets a returning user, in the bubble beside him. */}
           <Scene role={role} cue="signin">
-            <div className="a-ask a-ask-hi"><p className="a-ask-q">{t("ask_signin_say")}</p></div>
+            <div className="a-ask a-ask-hi">
+              {news ? (
+                <>
+                  <p className="a-ask-q">{fill(up ? "signin_up_q" : "signin_down_q")}</p>
+                  <p className="a-ask-why">{fill(up ? "signin_up_why" : "signin_down_why")}</p>
+                </>
+              ) : <p className="a-ask-q">{t("ask_signin_say")}</p>}
+            </div>
           </Scene>
         </div>
 
         <div className="a-scroll a-step" data-anim={anim} key="signin">
-          <div className="a-field">{contactInput(false, true)}</div>
+          {/* No label over the field: the switch right above it already says
+              "CP Number" or "Gmail". It is still read out with the field. */}
+          <div className="a-field">{contactInput(false)}</div>
           <div className="a-field">
-            <label className="a-lbl" htmlFor="f-password">{t("auth_password")}</label>
+            {/* "Forgot?" sits on the password's own label row, where the need
+                arises, instead of on a line of its own below. */}
+            <div className="a-lbl-row">
+              <label className="a-lbl" htmlFor="f-password">{t("auth_password")}</label>
+              <button type="button" className="a-link">{t("auth_forgot")}</button>
+            </div>
             <div className="a-pwrow">
               <input id="f-password" className={`a-inp ${bad("password")}`}
                 type={showPw ? "text" : "password"} placeholder={t("auth_password_ph")}
@@ -450,23 +482,20 @@ export function AuthFormScreen({
             </div>
             {fieldErr("password")}
           </div>
-          <div style={{ marginTop: 6 }}>
-            <button type="button" className="a-link">{t("auth_forgot")}</button>
-          </div>
           {/* Errors about one field sit under that field. This is for the
               rest: no signal, too many tries, things no field can fix. */}
           {!errField && alert()}
-          <div style={{ height: 20 }} />
         </div>
 
-        {/* The way to Create account sits under Sign In, where phone apps
-            put it: read after the one thing this page is for, and set a
-            little apart from the button so a thumb aiming for Sign In
-            doesn't land on it. */}
+        {/* Someone who lands here without an account (they tapped the wrong
+            button on the welcome screen) gets a real button, not a line of
+            small print: the same pair as the welcome screen, the filled one
+            to sign in and a white one under it to start an account, in
+            plain words. */}
         {dock(primary(t("auth_signin_btn")), undefined, (
-          <p className="a-switch a-dock-switch">
-            {t("auth_no_account")} <button type="button" className="a-link" onClick={() => go("name")}>{t("auth_sign_up_link")}</button>
-          </p>
+          <button type="button" className="a-btn a-btn-quiet a-dock-alt" onClick={() => go("name")}>
+            <span className="a-btn-lead">{t("signin_new_q")}</span>{t("signin_new_btn")}
+          </button>
         ))}
       </form>
     );
@@ -523,7 +552,6 @@ export function AuthFormScreen({
       <div className="a-scroll a-step" data-anim={anim} key={`a-${page}`}>
         <div className="a-ask-body">{body}</div>
         {!errField && alert()}
-        <div style={{ height: 8 }} />
       </div>
 
       {dock(main, beforeDock)}
@@ -600,7 +628,7 @@ export function AuthFormScreen({
     return ask(
       t("ask_contact").replace("{name}", firstName),
       t("ask_contact_why"),
-      contactInput(true, false),
+      contactInput(true),
       onward,
     );
   }

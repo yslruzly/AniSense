@@ -86,7 +86,7 @@ export const translations: Dict = {
   },
 
   // ── Auth form ─────────────────────────────────────────────────────────────
-  auth_signin_title: { en: "Welcome back", tl: "Maligayang pagbabalik" },
+  auth_signin_title: { en: "Welcome back to AniSense.", tl: "Maligayang pagbabalik sa AniSense." },
   auth_farmer_account: { en: "Farmer Account", tl: "Account ng Magsasaka" },
   auth_buyer_account: { en: "Buyer Account", tl: "Account ng Mamimili" },
   auth_sign_in_with: { en: "Sign in with", tl: "Mag-sign in gamit ang" },
@@ -100,8 +100,6 @@ export const translations: Dict = {
   auth_create_btn: { en: "Create Account", tl: "Gumawa ng Account" },
   auth_signin_btn: { en: "Sign In", tl: "Mag-sign In" },
   auth_have_account: { en: "Already have an account?", tl: "May account ka na ba?" },
-  auth_no_account: { en: "Don't have an account?", tl: "Wala ka pang account?" },
-  auth_sign_up_link: { en: "Sign Up", tl: "Mag-sign Up" },
   auth_or: { en: "or", tl: "o" },
 
   // ── Crop picker ───────────────────────────────────────────────────────────
@@ -1024,6 +1022,21 @@ export const translations: Dict = {
   // ── Create account: Juan asks, one question per page ──────────────────────
   ask_title: { en: "Create your account", tl: "Gumawa ng account" },
   ask_step: { en: "Step {n} of {total}", tl: "Hakbang {n} sa {total}" },
+  signin_morning: { en: "Good morning!", tl: "Magandang umaga!" },
+  signin_afternoon: { en: "Good afternoon!", tl: "Magandang hapon!" },
+  signin_evening: { en: "Good evening!", tl: "Magandang gabi!" },
+  signin_up_q: { en: "{crop} is up {pct}% today!", tl: "Tumaas ng {pct}% ang {crop} ngayon!" },
+  signin_up_why: {
+    en: "₱{price} a kilo. Sign in to see all of today's prices.",
+    tl: "₱{price} kada kilo. Mag-sign in para makita ang lahat ng presyo ngayon.",
+  },
+  signin_down_q: { en: "{crop} is down {pct}% today!", tl: "Bumaba ng {pct}% ang {crop} ngayon!" },
+  signin_down_why: {
+    en: "Just ₱{price} a kilo. Sign in to buy it fresh from farmers.",
+    tl: "₱{price} na lang kada kilo. Mag-sign in para mabili ito nang sariwa sa magsasaka.",
+  },
+  signin_new_q: { en: "New here?", tl: "Bago ka?" },
+  signin_new_btn: { en: "Create an account", tl: "Gumawa ng account" },
   ask_signin_say: { en: "Good to see you again! 👋", tl: "Masaya akong makita ka ulit! 👋" },
   ask_name: { en: "First, what's your name?", tl: "Una, ano ang pangalan mo?" },
   ask_name_why: {
