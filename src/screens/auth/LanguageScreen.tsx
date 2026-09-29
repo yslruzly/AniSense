@@ -48,7 +48,7 @@ export function LanguageScreen({ onDone, onBack }: { onDone: () => void; onBack?
   };
 
   return (
-    <div className="a-screen a-lang">
+    <div className="a-screen a-lang a-setup">
       {/* Same ink header as the role step, so the two setup screens read as
           one flow. Juan greets in whichever language is picked: the header
           answers the tap in the language the app is about to use. */}
@@ -60,7 +60,7 @@ export function LanguageScreen({ onDone, onBack }: { onDone: () => void; onBack?
         {/* Keyed by language, so when the app switches the heading swaps
             with a short blur: one line turning into the other, rather than
             text jumping in place. */}
-        <div className="a-rolehead-copy a-lang-swap" key={lang}>
+        <div className="a-rolehead-copy a-swap" key={lang}>
           <h1 className="a-title on-ink" id="lang-title">{t("lang_title")}</h1>
           <p className="a-sub on-ink">{t("lang_sub")}</p>
         </div>
@@ -76,30 +76,30 @@ export function LanguageScreen({ onDone, onBack }: { onDone: () => void; onBack?
         />
       </div>
 
-      <div className="a-scroll a-stagger a-lang-list">
+      <div className="a-scroll a-stagger a-choice-list">
         {/* One card, two rows: a single question with two answers, rather
             than two separate things to weigh. A radio group, so a screen
             reader says "1 of 2, checked". */}
-        <div className="a-lang-group" role="radiogroup" aria-labelledby="lang-title">
+        <div className="a-choice-group" role="radiogroup" aria-labelledby="lang-title">
           {options.map(o => (
             <button
               key={o.id}
               type="button"
               role="radio"
               aria-checked={choice === o.id}
-              className={`a-lang-row ${choice === o.id ? "on" : ""}`}
+              className={`a-choice-row ${choice === o.id ? "on" : ""}`}
               onClick={() => pick(o.id)}
             >
               <span className="a-lang-flag">{o.flag}</span>
-              <span className="a-lang-copy">
-                <span className="a-lang-t">{o.title}</span>
-                <span className="a-lang-d">{o.desc}</span>
+              <span className="a-choice-copy">
+                <span className="a-choice-t">{o.title}</span>
+                <span className="a-choice-d">{o.desc}</span>
               </span>
-              <span className="a-lang-radio"><Check size={18} color="#fff" strokeWidth={3.2} /></span>
+              <span className="a-choice-radio"><Check size={18} color="#fff" strokeWidth={3.2} /></span>
             </button>
           ))}
         </div>
-        <p className="a-lang-foot"><span className="a-lang-swap" key={lang}>{t("lang_change_later")}</span></p>
+        <p className="a-choice-foot"><span className="a-swap" key={lang}>{t("lang_change_later")}</span></p>
       </div>
 
       {/* Back lives in the dock, beside Continue: both steps of the decision sit
@@ -113,7 +113,7 @@ export function LanguageScreen({ onDone, onBack }: { onDone: () => void; onBack?
             </button>
           )}
           <button className="a-btn a-btn-green" onClick={confirm}>
-            <span className="a-lang-swap" key={lang}>{t("continue")}</span>
+            <span className="a-swap" key={lang}>{t("continue")}</span>
           </button>
         </div>
       </div>

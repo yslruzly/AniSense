@@ -60,7 +60,7 @@ export const authCss = `
   /* Press snaps, release relaxes. Symmetric timing makes a button feel rubbery,
      and the app sheet already does it this way. */
   .a-btn:active, .a-iconbtn:active,
-  .a-role:active, .a-crop:active, .a-reveal:active { transition-duration: 100ms; }
+  .a-crop:active, .a-reveal:active { transition-duration: 100ms; }
   .a-btn-gold  { background: var(--palay); color: #1B1403; }
   .a-btn-green { background: var(--tanim); color: #fff; }
   .a-btn-ghost-ink { background: transparent; color: #fff; box-shadow: inset 0 0 0 2px rgba(255,255,255,.34); }
@@ -123,9 +123,8 @@ export const authCss = `
   @media (prefers-reduced-motion: reduce) {
     .a-stagger > * { animation: a-fade 260ms ease forwards; transform: none; }
     @keyframes a-fade { to { opacity: 1; } }
-    .a-btn, .a-iconbtn, .a-role, .a-crop, .a-reveal { transition: background-color 140ms ease; }
-    .a-btn:active, .a-iconbtn:active, .a-role:active, .a-crop:active, .a-reveal:active { transform: none; }
-    .a-screen .a-role.on .a-role-ico > * { transform: none; }
+    .a-btn, .a-iconbtn, .a-crop, .a-reveal { transition: background-color 140ms ease; }
+    .a-btn:active, .a-iconbtn:active, .a-crop:active, .a-reveal:active { transform: none; }
     .a-seg .a-seg-thumb { transition: none; }
     .a-screen .a-err, .a-screen .a-hint-in { animation: a-fade-in 160ms ease; }
     .a-screen .a-alert { animation: a-fade-in 160ms ease; }
@@ -136,12 +135,13 @@ export const authCss = `
     @keyframes a-fade-in { from { opacity: 0; } to { opacity: 1; } }
   }
 
-  /* ── Language gate ─────────────────────────────────────────────────────── */
+  /* ── Setup choices: language and role ──────────────────────────────────── */
   /* An inset grouped list, the way iOS Settings asks one question: a single
      white card, a row per answer, and a radio at the end of each row. The
-     list sits right under the header, in the thumb zone above Continue. */
-  .a-lang-list { flex: 0 1 auto; padding-top: 22px; padding-bottom: 10px; }
-  .a-lang-group {
+     language and role steps share it, so the two read as one flow. The list
+     sits right under the header, in the thumb zone above Continue. */
+  .a-choice-list { flex: 0 1 auto; padding-top: 22px; padding-bottom: 10px; }
+  .a-choice-group {
     background: var(--card); border-radius: var(--r-lg); overflow: hidden;
     box-shadow:
       0 0 0 1px rgba(22,33,27,.05),
@@ -151,14 +151,20 @@ export const authCss = `
   /* A row answers the press the way an iOS list row does, by lighting up
      rather than shrinking: the whole row is the target, and a row that
      scales inside its card looks loose. On at once, fading out on release. */
-  .a-lang-row {
+  .a-choice-row {
     position: relative; width: 100%; min-height: 80px; padding: 14px 18px 14px 16px;
     display: flex; align-items: center; gap: 16px; text-align: left; color: var(--ink);
     background: transparent; border: none; cursor: pointer;
     transition: background-color 260ms ease;
     touch-action: manipulation; -webkit-tap-highlight-color: transparent;
   }
-  .a-lang-row:active { background: #EDEFF0; transition-duration: 0ms; }
+  .a-choice-row:active { background: #EDEFF0; transition-duration: 0ms; }
+  .a-choice-copy { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+  .a-choice-t {
+    font-family: var(--font-display); font-weight: 600; font-size: var(--fs-lead);
+    line-height: 1.2; letter-spacing: -.012em;
+  }
+  .a-choice-d { font-family: var(--font-body); font-size: var(--fs-label); line-height: 1.35; color: var(--text-faint); }
 
   /* The flag is framed like a small printed card: a hairline so a white
      stripe never bleeds into the white row, a faint sheen from above, and a
@@ -173,68 +179,75 @@ export const authCss = `
     background: linear-gradient(180deg, rgba(255,255,255,.2) 0%, rgba(255,255,255,0) 48%, rgba(0,0,0,.06) 100%);
     box-shadow: inset 0 0 0 1px rgba(22,33,27,.12);
   }
-  .a-lang-copy { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-  .a-lang-t {
-    font-family: var(--font-display); font-weight: 600; font-size: var(--fs-lead);
-    line-height: 1.2; letter-spacing: -.012em;
+
+  /* A role's icon on a coloured tile, like the icons down the side of iOS
+     Settings: a white glyph on a gradient, lit along the top edge and resting
+     on a soft shadow. Green for the farmer, the app's own colour; warm amber
+     for the buyer, the colour of the market. The tile is artwork: the name
+     beside it is what's read aloud. */
+  .a-choice-tile {
+    flex: 0 0 52px; width: 52px; height: 52px; border-radius: 15px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.32),
+      inset 0 -1px 0 rgba(0,0,0,.12),
+      0 1px 2px rgba(22,33,27,.18),
+      0 4px 10px -6px rgba(22,33,27,.45);
   }
-  .a-lang-d { font-family: var(--font-body); font-size: var(--fs-label); line-height: 1.35; color: var(--text-faint); }
+  .a-choice-tile.farmer { background: linear-gradient(180deg, #1A9761 0%, var(--tanim) 100%); }
+  .a-choice-tile.buyer  { background: linear-gradient(180deg, #F8B941 0%, #DE8612 100%); }
 
   /* The radio: an empty ring, or a green disc with a white check. The disc
-     pops in slightly past full size and settles (tick-pop, the same pop as
-     the role cards' tick), and the check grows in with it: the one place a
-     little overshoot belongs, since it answers the tap. Leaving is quicker
-     and plain: the old choice gets out of the way. */
-  .a-lang-radio {
+     pops in slightly past full size and settles, and the check grows in with
+     it: the one place a little overshoot belongs, since it answers the tap.
+     Leaving is quicker and plain: the old choice gets out of the way. */
+  .a-choice-radio {
     flex: 0 0 30px; width: 30px; height: 30px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     box-shadow: inset 0 0 0 2px var(--line-strong);
     transition: background-color 160ms ease, box-shadow 160ms ease;
   }
-  .a-lang-row.on .a-lang-radio {
+  .a-choice-row.on .a-choice-radio {
     background: var(--tanim);
     box-shadow: inset 0 0 0 2px var(--tanim), 0 2px 6px -1px rgba(11,107,65,.45);
-    animation: tick-pop 260ms var(--ease-out);
+    animation: a-radio-pop 260ms var(--ease-out);
   }
-  .a-lang-radio svg { opacity: 0; transform: scale(.6); transition: opacity 100ms ease, transform 140ms var(--ease-out); }
-  .a-lang-row.on .a-lang-radio svg {
+  @keyframes a-radio-pop {
+    0%   { transform: scale(.7); }
+    60%  { transform: scale(1.06); }
+    100% { transform: scale(1); }
+  }
+  .a-choice-radio svg { opacity: 0; transform: scale(.6); transition: opacity 100ms ease, transform 140ms var(--ease-out); }
+  .a-choice-row.on .a-choice-radio svg {
     opacity: 1; transform: none;
     transition: opacity 140ms var(--ease-out), transform 180ms var(--ease-out);
   }
   /* Under the card, lined up with the row's padding, like an iOS section
      footer. */
-  .a-lang-foot { padding: 12px 16px 0; font-size: var(--fs-label); line-height: 1.45; color: var(--text-faint); }
+  .a-choice-foot { padding: 12px 16px 0; font-size: var(--fs-label); line-height: 1.45; color: var(--text-faint); }
 
-  /* When the app changes language, each line that changes swaps with a
-     short blur: the eye reads one word turning into the other instead of
-     two strings overlapping. It doubles as the heading's entrance. */
-  .a-lang-swap { animation: a-lang-swap 280ms var(--ease-out) both; }
-  span.a-lang-swap { display: inline-block; }
-  @keyframes a-lang-swap {
+  /* A line whose words change (the heading when the app switches language,
+     Continue when a role is picked) swaps with a short blur: the eye reads
+     one wording turning into the other instead of two overlapping. It
+     doubles as the heading's entrance. */
+  .a-swap { animation: a-swap 280ms var(--ease-out) both; }
+  span.a-swap { display: inline-block; }
+  @keyframes a-swap {
     from { opacity: 0; filter: blur(6px); transform: translateY(4px); }
     to   { opacity: 1; filter: blur(0); transform: none; }
   }
 
   /* One prominent button as a capsule and Back as a round button beside it,
      the shapes iOS uses for a setup step's actions. */
-  .a-lang .a-btn { border-radius: var(--r-pill); }
-  .a-lang .a-dockrow .a-iconbtn { border-radius: 50%; }
+  .a-setup .a-btn { border-radius: var(--r-pill); }
+  .a-setup .a-dockrow .a-iconbtn { border-radius: 50%; }
 
   @media (prefers-reduced-motion: reduce) {
-    .a-lang-swap { animation: a-lang-fade 200ms ease both; }
-    @keyframes a-lang-fade { from { opacity: 0; } to { opacity: 1; } }
-    .a-lang-radio svg, .a-lang-row.on .a-lang-radio svg { transform: none; }
-    .a-lang-row.on .a-lang-radio { animation: none; }
+    .a-swap { animation: a-swap-fade 200ms ease both; }
+    @keyframes a-swap-fade { from { opacity: 0; } to { opacity: 1; } }
+    .a-choice-radio svg, .a-choice-row.on .a-choice-radio svg { transform: none; }
+    .a-choice-row.on .a-choice-radio { animation: none; }
   }
-
-  .a-tick {
-    width: 34px; height: 34px; border-radius: 50%; margin-left: auto; flex: 0 0 34px;
-    box-shadow: inset 0 0 0 2.5px #C7C1B2; display: flex; align-items: center; justify-content: center;
-    transition: box-shadow 160ms ease, background-color 160ms ease;
-  }
-  .a-role.on .a-tick { background: var(--tanim); box-shadow: inset 0 0 0 2.5px var(--tanim); }
-  .a-tick > * { opacity: 0; transform: scale(.6); transition: opacity 140ms var(--ease-out), transform 180ms var(--ease-out); }
-  .a-role.on .a-tick > * { opacity: 1; transform: scale(1); }
 
   .a-help { font-size: var(--fs-label); color: var(--dilim); margin-top: 8px; line-height: 1.45; }
 
@@ -352,25 +365,6 @@ export const authCss = `
     overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
   }
 
-  /* ── Role picker ───────────────────────────────────────────────────────── */
-  .a-role {
-    width: 100%; text-align: left; background: var(--card); border: none; cursor: pointer;
-    box-shadow: inset 0 0 0 2px var(--line); border-radius: var(--r-lg); padding: 20px;
-    display: flex; align-items: center; gap: 16px;
-    transition: transform 180ms var(--ease-out), box-shadow 160ms ease, background-color 160ms ease;
-    touch-action: manipulation; -webkit-tap-highlight-color: transparent;
-  }
-  .a-role:active { transform: scale(.985); }
-  .a-role.on { background: var(--tanim-sk); box-shadow: inset 0 0 0 3px var(--tanim); }
-  .a-role-ico {
-    width: 64px; height: 64px; flex: 0 0 64px; border-radius: 18px; background: #F1EEE5;
-    display: flex; align-items: center; justify-content: center; transition: background-color 160ms ease;
-  }
-  .a-role.on .a-role-ico { background: #fff; }
-  /* The icon answers the tap with a small settle, so the card, the tile and the
-     tick all agree the choice landed. Transform only, under 200ms. */
-  .a-role-ico > * { transition: transform 180ms var(--ease-out); }
-  .a-role.on .a-role-ico > * { transform: scale(1.08); }
   /* ── Role header: brand, question, mascot stage ───────────────────────── */
   /* Grows into whatever height the cards leave; the stage absorbs it. No
      bottom padding: the mascot stands on the header's edge, cut at the waist
@@ -560,16 +554,6 @@ export const authCss = `
   /* Rare, first-run screen: a little delight is allowed here. */
   @keyframes a-stage-in { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
   @keyframes a-bubble-in { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: none; } }
-
-  /* Cards sit right under the header, in the thumb zone above Continue. */
-  .a-rolelist {
-    flex: 0 1 auto; padding-top: 18px; padding-bottom: 18px;
-    display: flex; flex-direction: column; gap: 12px;
-  }
-  .a-rolelist .a-role { box-shadow: inset 0 0 0 2px var(--line), 0 6px 18px -12px rgba(22,33,27,.3); }
-  .a-rolelist .a-role.on { box-shadow: inset 0 0 0 3px var(--tanim), 0 8px 22px -12px rgba(11,107,65,.4); }
-  .a-role-t { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-title); line-height: 1.15; display: block; }
-  .a-role-d { font-size: var(--fs-label); line-height: 1.45; color: var(--dilim); margin-top: 5px; display: block; }
 
   /* ── Form header ───────────────────────────────────────────────────────── */
   /* Same lockup as the setup steps, plus the account type as a pill on the

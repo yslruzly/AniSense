@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { haptic } from "../../lib/platform";
-import { Wheat, ShoppingCart, ArrowLeft, Check } from "lucide-react";
+import { Wheat, ShoppingCart, ChevronLeft, Check } from "lucide-react";
 import { AniSenseLogo } from "../../components/AniSenseLogo";
 import juanPeek from "../../assets/juan-peek.webp";
 import juanPeekBody from "../../assets/juan-peek-body.webp";
@@ -15,30 +15,44 @@ import { useLang } from "../../i18n";
 import { UserRole } from "../../types";
 
 // ─── Role Picker ──────────────────────────────────────────────────────────────
-// Tapping a card never navigates on its own; an accidental brush stays
+// Tapping a row never navigates on its own; an accidental brush stays
 // recoverable. Selection is confirmed with the dock button.
+//
+// Built like the language step before it: the same header, the same inset
+// grouped list with a radio on each row, the same capsule Continue, so the
+// two setup steps read as one flow.
 export function RoleScreen({ onBack, onSelect, flow }: { onBack: () => void; onSelect: (role: UserRole, flow: "signin" | "signup") => void; flow: "signin" | "signup" }) {
   const [role, setRole] = useState<UserRole>(null);
   const { t } = useLang();
 
-  const roles: { id: UserRole; icon: React.ReactNode; title: string; desc: string }[] = [
-    { id: "farmer", icon: <Wheat size={32} color="#0B6B41" />, title: t("role_farmer"), desc: t("role_farmer_desc") },
-    { id: "buyer", icon: <ShoppingCart size={32} color="#0B6B41" />, title: t("role_buyer"), desc: t("role_buyer_desc") },
+  // Each role on its own coloured tile, as in iOS Settings: the farmer in the
+  // app's green, the buyer in the market's amber.
+  const roles: { id: "farmer" | "buyer"; icon: React.ReactNode; title: string; desc: string }[] = [
+    { id: "farmer", icon: <Wheat size={28} color="#fff" strokeWidth={2.2} />, title: t("role_farmer"), desc: t("role_farmer_desc") },
+    { id: "buyer", icon: <ShoppingCart size={27} color="#fff" strokeWidth={2.2} />, title: t("role_buyer"), desc: t("role_buyer_desc") },
   ];
   const picked = roles.find(r => r.id === role);
 
+  // Tapping the row that's already chosen changes nothing, so it gets no
+  // haptic: feedback only for something that happened.
+  const pick = (id: "farmer" | "buyer") => {
+    if (id === role) return;
+    haptic.select();
+    setRole(id);
+  };
+
   return (
-    <div className="a-screen">
+    <div className="a-screen a-setup">
       {/* Three layers, read top to bottom: whose app, what we're asking, who's
-          asking. The header takes the height the cards leave, so the stage
-          grows on tall phones instead of leaving a dead gap above the cards. */}
+          asking. The header takes the height the list leaves, so the stage
+          grows on tall phones instead of leaving a dead gap above the list. */}
       <div className="a-inkhead a-rolehead">
         <div className="a-brandrow">
           <span className="a-brandmark"><AniSenseLogo size={26} /></span>
           <span className="a-brandname">AniSense</span>
         </div>
         <div className="a-rolehead-copy">
-          <h1 className="a-title on-ink">{t("role_title")}</h1>
+          <h1 className="a-title on-ink" id="role-title">{t("role_title")}</h1>
           <p className="a-sub on-ink">{t("role_pick_one")}</p>
         </div>
 
@@ -56,34 +70,43 @@ export function RoleScreen({ onBack, onSelect, flow }: { onBack: () => void; onS
         />
       </div>
 
-      <div className="a-scroll a-stagger a-rolelist">
-        {roles.map(r => (
-          <button
-            key={r.id}
-            className={`a-role ${role === r.id ? "on" : ""}`}
-            aria-pressed={role === r.id}
-            onClick={() => { haptic.select(); setRole(r.id); }}
-          >
-            <span className="a-role-ico">{r.icon}</span>
-            <span style={{ flex: 1 }}>
-              <span className="a-role-t">{r.title}</span>
-              <span className="a-role-d">{r.desc}</span>
-            </span>
-            <span className="a-tick"><Check size={17} color="#fff" strokeWidth={3.4} /></span>
-          </button>
-        ))}
+      <div className="a-scroll a-stagger a-choice-list">
+        {/* One card, two rows: a single question with two answers. A radio
+            group, so a screen reader says "1 of 2, checked". */}
+        <div className="a-choice-group" role="radiogroup" aria-labelledby="role-title">
+          {roles.map(r => (
+            <button
+              key={r.id}
+              type="button"
+              role="radio"
+              aria-checked={role === r.id}
+              className={`a-choice-row ${role === r.id ? "on" : ""}`}
+              onClick={() => pick(r.id)}
+            >
+              <span className={`a-choice-tile ${r.id}`}>{r.icon}</span>
+              <span className="a-choice-copy">
+                <span className="a-choice-t">{r.title}</span>
+                <span className="a-choice-d">{r.desc}</span>
+              </span>
+              <span className="a-choice-radio"><Check size={18} color="#fff" strokeWidth={3.2} /></span>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Back sits beside Continue, as on the language step, so the whole flow
           moves from the same place. Continue names the choice once one is made:
-          the button confirms what will happen, not just that something will. */}
+          the button confirms what will happen, not just that something will.
+          Keyed by the choice, so the new wording swaps in with a short blur. */}
       <div className="a-dock">
         <div className="a-dockrow">
           <button className="a-iconbtn on-paper" onClick={onBack} aria-label={t("back")}>
-            <ArrowLeft size={24} color="var(--ink)" strokeWidth={2.4} />
+            <ChevronLeft size={28} color="var(--ink)" strokeWidth={2.4} />
           </button>
           <button className="a-btn a-btn-green" disabled={!role} onClick={() => role && onSelect(role, flow)}>
-            {picked ? `${t("role_continue_as")} ${picked.title}` : t("continue")}
+            <span className="a-swap" key={role ?? "none"}>
+              {picked ? `${t("role_continue_as")} ${picked.title}` : t("continue")}
+            </span>
           </button>
         </div>
       </div>
