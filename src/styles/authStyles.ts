@@ -897,6 +897,11 @@ export const authCss = `
      could otherwise be squeezed past its brand row and progress). */
   .a-askhead { flex: 0 1 auto; min-height: min-content; display: flex; flex-direction: column; padding-bottom: 0; }
   .a-asktitle + .a-progress { margin-top: 14px; }
+  /* The plain header (the crop question): its title and line under it, then
+     the progress, with the header's own bottom padding, as the form header
+     always had. */
+  .a-askhead.plain { padding-bottom: 24px; }
+  .a-askhead.plain .a-progress { margin-top: 18px; }
   /* As tall as the figure at full size, shrinking (with the figure) down to
      the bubble's height when room is short. */
   .a-askscene {

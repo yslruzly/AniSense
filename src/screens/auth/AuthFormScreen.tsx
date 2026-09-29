@@ -499,13 +499,23 @@ export function AuthFormScreen({
   // The layout, top to bottom: the header, ending in the question (in a
   // bubble on the left) and whoever is asking it (standing on the right);
   // then the answer, right under the header; then Continue, at the bottom.
-  const ask = (q: string, why: string | undefined, body: ReactNode, main: ReactNode, onSubmit = next, beforeDock?: ReactNode) => (
+  //
+  // plain: the question as the header's own title, with no one asking it,
+  // for an answer that needs the room (the crop grid is ten tiles long).
+  const ask = (q: string, why: string | undefined, body: ReactNode, main: ReactNode, onSubmit = next, beforeDock?: ReactNode, plain = false) => (
     <form className="a-screen a-setup a-askscreen" noValidate onSubmit={e => { e.preventDefault(); onSubmit(); }}>
-      <div className="a-inkhead a-formhead a-askhead">
+      <div className={`a-inkhead a-formhead a-askhead${plain ? " plain" : ""}`}>
         {brand}
-        {/* What all these questions add up to. Not a heading: the question
-            in the bubble is this page's heading. */}
-        <p className="a-title on-ink a-asktitle">{t("ask_title")}</p>
+        {plain ? (
+          <div className="a-swap" key={`q-${page}`}>
+            <h1 className="a-title on-ink" id="ask-q">{q}</h1>
+            {why && <p className="a-sub on-ink">{why}</p>}
+          </div>
+        ) : (
+          // What all these questions add up to. Not a heading: the question
+          // in the bubble is this page's heading.
+          <p className="a-title on-ink a-asktitle">{t("ask_title")}</p>
+        )}
         <div className="a-progress" role="progressbar" aria-label={stepLabel}
           aria-valuemin={1} aria-valuemax={pages.length} aria-valuenow={step}>
           <span className="a-progress-t" aria-hidden="true"><span className="a-swap" key={stepLabel}>{stepLabel}</span></span>
@@ -516,12 +526,14 @@ export function AuthFormScreen({
         {/* Keyed by page, so each question pops out of the bubble's point
             afresh as the asker says it. In the header, not the scrolling
             part, so it stays in view while the answer is typed. */}
-        <Scene role={role} cue={page}>
-          <div className="a-ask" key={`q-${page}`}>
-            <h1 className="a-ask-q" id="ask-q">{q}</h1>
-            {why && <p className="a-ask-why">{why}</p>}
-          </div>
-        </Scene>
+        {!plain && (
+          <Scene role={role} cue={page}>
+            <div className="a-ask" key={`q-${page}`}>
+              <h1 className="a-ask-q" id="ask-q">{q}</h1>
+              {why && <p className="a-ask-why">{why}</p>}
+            </div>
+          </Scene>
+        )}
       </div>
 
       {/* Keyed by page: each answer arrives in the direction of travel. */}
@@ -737,7 +749,8 @@ export function AuthFormScreen({
     );
   }
 
-  // ── Last (farmer). What they grow ──
+  // ── Last (farmer). What they grow ── Ten tiles, so the page keeps its
+  // plain header, the question as its title, and gives the grid the room.
   if (page === "crops") {
     return ask(
       t("crops_title"),
@@ -770,6 +783,7 @@ export function AuthFormScreen({
           ? t("crops_none_yet")
           : `${selectedCrops.length} ${t("crops_selected")}`}
       </p>,
+      true,
     );
   }
 
