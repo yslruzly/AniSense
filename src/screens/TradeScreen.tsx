@@ -8,7 +8,7 @@ import { Hdr } from "../components/layout/Hdr";
 import { CropIcon } from "../components/icons";
 import { cropPhotoFor, cropGroupPhoto } from "../data/cropPhotos";
 import marketPoster from "../assets/anisense-poster-market.webp";
-import sellPoster from "../assets/sell-your-ani.webp";
+import sellPoster from "../assets/farmer-market-poster.webp";
 import { CropEmoji } from "../components/CropEmoji";
 import { Sheet } from "../components/ui/Sheet";
 import { useRetained } from "../hooks/usePresence";
@@ -399,14 +399,15 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
       />
       <div className="scroll screen-enter">
         {/* Each side opens on its own poster: buyers on "connect with local
-            farmers", farmers on "sell your ani now" — the thing each of them
-            came here to do, said once, where a line of copy used to be. The
-            header above already names the page. Neither is lazy-loaded: it
-            is the first thing on screen. */}
-        <figure className={`mp-poster${userRole === "buyer" ? "" : " tall"}`}>
+            farmers", farmers on "marketplace for farmers: sell your harvest,
+            reach more buyers" — the thing each of them came here to do, said
+            once, where a line of copy used to be. The header above already
+            names the page. Both are 16:9, so they share one frame. Neither is
+            lazy-loaded: it is the first thing on screen. */}
+        <figure className="mp-poster">
           {userRole === "buyer"
             ? <img src={marketPoster} alt={t("mp_poster_alt")} width={1000} height={562} decoding="async" />
-            : <img src={sellPoster} alt={t("mp_poster_sell_alt")} width={1000} height={667} decoding="async" />}
+            : <img src={sellPoster} alt={t("mp_poster_sell_alt")} width={1000} height={562} decoding="async" />}
         </figure>
 
         {userRole !== "buyer" && (

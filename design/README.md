@@ -10,7 +10,9 @@ a second of loading for a picture that renders 380 pixels wide.
 | `AniSenseWallpaper.png` | `src/assets/anisense-wallpaper.webp` | Welcome screen, full-bleed behind the two sign-up buttons |
 | `AnisensePosterLS.png` | `src/assets/anisense-poster.webp` | Buyer Home, between the price chart and Featured farmers |
 | `AnisensePosterMarket.png` | *(unused — identical to `AnisensePosterLS.png`)* | — |
-| `FarmerMarketSell.png` | `src/assets/farmer-sell.webp` | Marketplace panel, farmer accounts |
+| `FarmerMarketPoster.png` | `src/assets/farmer-market-poster.webp` | Marketplace poster, farmer accounts (16:9, the same frame as the buyers' poster) |
+| `SellYourAniNow.png` | *(replaced by `FarmerMarketPoster.png`; its `sell-your-ani.webp` was removed)* | — |
+| `FarmerMarketSell.png` | `src/assets/farmer-sell.webp` *(not used by any screen)* | — |
 | `Peeking.png` | `src/assets/juan-peek.webp`, split into `juan-peek-body.webp` + `juan-peek-hand.webp` (+ `juan-peek-mouth-half.webp`, `juan-peek-mouth-shut.webp`: drawn half-open mouth and closed smile) | Signup screens (language, role); the hand layer waves from the wrist, and the mouth layers switch in turn so he says each line, then stops |
 | `CarryingBasket.png` (its "transparent" checkerboard was painted in; cut out) | `src/assets/mascot-basket.webp` (+ `-blink`, `-mouth-half`, `-mouth-shut`: drawn closed lids, half-open mouth, closed smile) | Today's market card on Prices; blinks and talks on a loop |
 | `buyersmascot.png` | `src/assets/buyer-mascot.webp` (+ `buyer-mascot-eyes.webp`, `buyer-mascot-mouth.webp`: drawn closed lids and closed smile) | "Fresh from local farms" card, buyer Home; on the role screen he blinks and talks |

@@ -2735,7 +2735,6 @@ export const appCss = `
     border-radius: var(--radius-lg); background: #EAF3E6;
     box-shadow: 0 14px 30px -20px rgba(22,33,27,.4);
   }
-  .mp-poster.tall { aspect-ratio: 1000 / 667; }
   .mp-poster img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .mp-poster::after {
     content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
