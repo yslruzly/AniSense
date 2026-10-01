@@ -12,10 +12,11 @@ import { PRIVACY } from "../../data/privacyPolicy";
 //
 // Under the two buttons, what tapping either one means: the privacy policy,
 // one tap away, before anything at all has been asked for. It opens in a
-// sheet over the poster and closes back to it.
+// sheet over the poster and closes back to it. The policy's name stays in
+// English in both languages, like the policy itself.
 
 export function SplashScreen({ onSignIn, onSignUp }: { onSignIn: () => void; onSignUp: () => void }) {
-  const { t, lang } = useLang();
+  const { t } = useLang();
   const [showPolicy, setShowPolicy] = useState(false);
   const [before, after] = t("splash_consent").split("{link}");
   return (
@@ -33,7 +34,7 @@ export function SplashScreen({ onSignIn, onSignUp }: { onSignIn: () => void; onS
           {t("splash_free")}
           <span className="a-legal-consent">
             {before}
-            <button type="button" className="a-legal-link" onClick={() => setShowPolicy(true)}>{PRIVACY.title[lang]}</button>
+            <button type="button" className="a-legal-link" onClick={() => setShowPolicy(true)}>{PRIVACY.title}</button>
             {after}
           </span>
         </p>

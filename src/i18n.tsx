@@ -670,7 +670,6 @@ export const translations: Dict = {
   prof_language: { en: "Language", tl: "Wika" },
   prof_language_sub: { en: "Filipino / English", tl: "Filipino / English" },
   prof_support: { en: "Support & About", tl: "Suporta at Tungkol Dito" },
-  prof_privacy: { en: "Privacy Policy", tl: "Patakaran sa Privacy" },
   prof_privacy_sub: { en: "What we collect, and your rights", tl: "Ano ang kinukuha namin, at ang mga karapatan mo" },
   pp_sub: { en: "How your information is used", tl: "Paano ginagamit ang impormasyon mo" },
   pp_done: { en: "Got it", tl: "Naintindihan ko" },

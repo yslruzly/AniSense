@@ -163,7 +163,7 @@ Styles are plain CSS held in TypeScript strings (`src/styles/*.ts`) and injected
 
 ### 3.6 Localization
 
-Every interface string is an entry in `src/i18n.tsx` with English and Tagalog text. Components call `t(key)` for strings and `tn(name)` for crop names. A few market terms stay in English by design.
+Every interface string is an entry in `src/i18n.tsx` with English and Tagalog text. Components call `t(key)` for strings and `tn(name)` for crop names. A few market terms stay in English by design. The privacy policy (`src/data/privacyPolicy.ts`) is English only and is never translated.
 
 ## 4. Backend architecture
 

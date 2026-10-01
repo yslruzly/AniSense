@@ -9,6 +9,7 @@ import leafMask from "../assets/anisense-leaf-mask.png";
 import { Achievements } from "../components/profile/Achievements";
 import { Sale } from "../lib/sales";
 import { DeleteAccount } from "../components/profile/DeleteAccount";
+import { PRIVACY } from "../data/privacyPolicy";
 
 // ─── Profile Screen ───────────────────────────────────────────────────────────
 export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignOut, onDeleteAccount, userInitials = "JD", userRole, userPhoto = null, onShowId, onReplayTour, sales = [], memberSince }: {
@@ -273,11 +274,12 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
               </div>
               {/* The policy sits with the app's settings, where people look
                   for it in any app. A real button: it opens the Privacy
-                  screen. */}
+                  screen. Its name is in English in both languages, like
+                  the policy itself. */}
               <button className="setting-row as-btn" onClick={() => onNavigate("privacy")}>
                 <div className="setting-ico" style={{ background: "var(--tanim-sk)" }}><ShieldCheck size={16} color="var(--tanim)" /></div>
                 <div style={{ flex: 1 }}>
-                  <div className="setting-lbl">{t("prof_privacy")}</div>
+                  <div className="setting-lbl" lang="en">{PRIVACY.title}</div>
                   <div className="setting-sub">{t("prof_privacy_sub")}</div>
                 </div>
                 <ChevronRight size={16} color="var(--line-strong)" />
