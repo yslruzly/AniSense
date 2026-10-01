@@ -39,10 +39,15 @@ flowchart TB
 
   Web["Static web pages (docs/)<br/>privacy policy, account deletion"]
 
+  subgraph Build["Development computer"]
+    Csv["Price records<br/>data/historical-prices.csv"]
+    Train["Forecast training<br/>ARIMA and LSTM in Python"]
+  end
+
   subgraph Planned["Planned, not built yet"]
     SMS["SMS provider<br/>phone verification"]
     Prices["Price ingestion<br/>government sources"]
-    Models["Forecast job<br/>ARIMA and LSTM"]
+    Wx["Weather service"]
   end
 
   Farmer --> App
@@ -53,19 +58,26 @@ flowchart TB
   App -->|HTTPS| Storage
   Web -->|HTTPS| Auth
   Web -->|HTTPS| DB
+  Csv --> Train
+  Train -->|bundled in the APK| App
+  Train -.->|seed.sql| DB
   Auth -.-> SMS
   Prices -.-> DB
-  Models -.-> DB
+  Wx -.-> App
 ```
 
 There is no custom application server. The app talks to Supabase directly, and every rule that matters (who can read what, how an order is priced, how stock is reduced) is enforced inside the database.
+
+The forecast models are not part of the running system. They are trained on a development computer from the price records, and only their results travel: inside the APK, and into the database through the seed file.
 
 ## 2. Constraints that shaped the design
 
 | Constraint | Consequence |
 |---|---|
 | Users are 50 to 70 years old, on budget Android phones | One codebase tuned for one platform; large type and targets; no gestures required; English and Tagalog. |
-| Signal in the fields is unreliable | A farmer's own records work offline and sync later; prices are cached on the phone. |
+| Signal in the fields is unreliable | A farmer's own records work offline and sync later; prices, their history and the forecasts ship inside the app. |
+| The price records are monthly | Every price move is worded "from the month before", never "today"; forecasts look three months ahead. |
+| Forecasts can be badly wrong for volatile crops | Each forecast carries its tested error, and above a set error the app gives no sell-or-wait advice. |
 | A small team and no operations budget | A managed backend with no server to run; business rules in SQL, next to the data. |
 | The app must be demonstrable before the backend exists | A demo mode that runs entirely on bundled sample data. |
 | The key shipped in the app is public | Security cannot depend on the client; Row Level Security on every table. |
@@ -97,10 +109,10 @@ flowchart TB
 | App shell | `src/App.tsx` | Authentication state, which screen is showing, session restore, the walkthrough and achievement overlays. Injects the stylesheets. |
 | Screens | `src/screens/` | One file per screen. Compose components and read from the store. |
 | Components | `src/components/` | Reusable UI, grouped by feature (`home`, `analytics`, `profile`, `tour`, `ui`, `layout`). |
-| Market store | `src/lib/market.tsx` | The single data layer. Holds listings, sellers, purchases, expenses, farm records, prices and badges, and exposes actions to change them. |
+| Market store | `src/lib/market.tsx` | The single data layer. Holds listings, sellers, purchases, expenses, farm records, a farmer's incoming orders, prices and badges, and exposes actions to change them. |
 | Services | `src/services/` | One file per domain (`auth`, `listings`, `transactions`, `expenses`, `farmRecords`, `catalog`, `sync`). The only code that calls Supabase. |
 | Infrastructure | `src/lib/` | Supabase client, cache, outbox, platform wrappers (haptics, status bar, keyboard). |
-| Static data | `src/data/` | The crop catalog, Philippine locations, the privacy policy, and sample data for demo mode. |
+| Static data | `src/data/` | The crop catalog, the price records and forecasts, Philippine locations, the privacy policy, and sample data for demo mode. |
 
 **Dependency rule:** screens and components never import the Supabase client. They read and write through the store, which decides whether to call a service or use sample data. This keeps the live and demo modes from leaking into the UI.
 
@@ -121,7 +133,7 @@ State lives in React, with no external state library:
 
 - **`App.tsx`** owns authentication and navigation state.
 - **`MarketContext`** provides the market store to every screen.
-- **`ViewerContext`** provides who is looking (role and location) to components that vary by role.
+- **`ViewerContext`** provides who is looking (role and location) and what is waiting for them (price alerts, plantings, incoming orders) to the header, which every screen shares.
 - **`LanguageProvider`** provides the language and the translation functions.
 
 ### 3.4 Navigation
@@ -165,6 +177,25 @@ Styles are plain CSS held in TypeScript strings (`src/styles/*.ts`) and injected
 
 Every interface string is an entry in `src/i18n.tsx` with English and Tagalog text. Components call `t(key)` for strings and `tn(name)` for crop names. A few market terms stay in English by design. The privacy policy (`src/data/privacyPolicy.ts`) is English only and is never translated.
 
+### 3.7 Prices and forecasts
+
+| File | Role |
+|---|---|
+| `src/data/priceHistory.ts` | The monthly price records, generated from `data/historical-prices.csv`. Bundled. |
+| `src/data/priceRecords.ts` | Reads the records: a variety's history, its newest price, and the change from the month before. Lays the database's records over the bundled ones when they arrive. |
+| `src/data/forecasts.json` | The finished forecasts and each model's tested error, written by `ml/train_forecasts.py`. Bundled. |
+| `src/data/forecast.ts` | Reads the forecasts. Hides a forecast month once a real record exists for it, and marks a forecast as unreliable when its tested error is above `RELIABLE_MAPE` (20%). |
+
+- The catalog in `src/data/crops.ts` takes the price of the study's five varieties from the records as it loads. The other 19 varieties have no records, and their prices are sample values.
+- The LSTM forecast drives the price charts; the ARIMA forecast drives the sell-or-wait advice and the Home card.
+- The phone runs no model and holds no machine-learning library.
+
+### 3.8 Alerts
+
+The bell in the header counts alerts derived from data the app already holds (`src/data/alerts.ts`): a farmer's incoming orders, plantings that are due, price targets that were met, rain, and the sharpest price moves. Buyers get a different set.
+
+An incoming order is the only alert with actions: it shows the buyer's name and number, a Call button that opens the dialer, and a Confirm button. **It is a mockup**: two sample orders in demo mode (`src/data/orders.ts`), none on a real account, and not connected to checkout.
+
 ## 4. Backend architecture
 
 Supabase provides four things:
@@ -186,6 +217,8 @@ Server-side functions:
 | `set_my_crops` | Replaces the crops a farmer grows. |
 | `delete_my_account` | Deletes the caller's own account; takes no argument, so it cannot target anyone else. |
 | Award triggers | Grant badges when a profile, first listing or first sale appears. |
+
+The catalog section holds the price records (`crop_prices`) and the forecasts (`crop_forecasts`). Both are written by the seed file, never by the app, and are readable by any signed-in account.
 
 The full table and relationship reference is in [supabase/README.md](supabase/README.md).
 
@@ -303,6 +336,16 @@ sequenceDiagram
 
 The same function is called by the web page in `docs/`, for someone who no longer has the app.
 
+### 5.6 A new month of prices
+
+1. A row is added to `data/historical-prices.csv` (or a newer PDF is imported with `ml/import_pdf.py`).
+2. `npm run prices` rebuilds the bundled history.
+3. `npm run forecasts` trains and tests both models again and rewrites the forecasts and the report.
+4. `npm run seed` rewrites the database's copy, which is then run in the SQL Editor.
+5. A new APK carries the update to phones. A phone signed in to a real account also picks it up from the database the next time it is online.
+
+There is no upload inside the app. The steps are in [ml/README.md](ml/README.md).
+
 ## 6. Offline design
 
 | Mechanism | File | Role |
@@ -313,6 +356,7 @@ The same function is called by the web page in `docs/`, for someone who no longe
 
 Design points:
 
+- **Bundled data.** The price records and the forecasts are part of the APK, so prices, their charts and the forecasts show on a phone that has never been online.
 - **Storage.** Both use Capacitor Preferences, which is native storage on Android. WebView `localStorage` can be cleared by the system under storage pressure.
 - **Scoped per account.** Every cache key and queued operation carries the account id, so two accounts on one phone never see or send each other's data.
 - **Idempotent sync.** Farm-record lists are saved by replacing the whole list on the server, so replaying an operation twice is harmless.
@@ -365,14 +409,19 @@ flowchart LR
 | Create the account at the last sign-up step | Create on the first page | Avoids half-complete accounts. |
 | Keep orders when an account is deleted, with the name removed | Delete orders with the account | An order is also the other party's record of a sale. |
 | One source for the privacy policy | Separate app and web copies | The two can never disagree. |
+| Privacy policy in English only | English and Tagalog | The owner's decision: one text, so there is never a question of which version is binding. |
+| Train the models on a computer and ship the forecasts as data | Run the model on the phone (TensorFlow.js); train in the cloud | The forecast is the same for every user, so it is worked out once. The app stays small, needs no machine-learning library, and works offline. Training takes about a minute on a laptop. |
+| Show each model's tested error, and give no advice above 20% | Show every forecast the same way | Onion and calamansi forecasts were 28 to 52% off in testing; a farmer should not hold a harvest on them. |
+| Word prices by the month | Keep "today" and "yesterday" | The records are monthly; daily wording would be false. |
 
 ## 10. Known limitations and planned work
 
 | Area | Current state | Plan |
 |---|---|---|
 | Crop prices | Monthly records for five varieties, added to a CSV by hand; sample values for the other 19 | Records for the remaining varieties; ingestion from government sources on a schedule. |
-| Price forecasts | Fixed sample values in `src/data/forecast.ts` | Train ARIMA and LSTM models offline on historical prices and store their output in the database; the app only reads results, so it keeps working offline. |
-| Weather | Sample values in `src/data/weather.ts` | Connect a forecast service. |
+| Price forecasts | ARIMA and LSTM trained on the five varieties' records. The ARIMA search picks the differencing order by AIC, which is not the right tool for it; the LSTM's settings were not tuned; neither model can foresee a price shock. | Choose the differencing order with a stationarity test; tune the LSTM with a small grid scored inside the training months; test a seasonal ARIMA; consider extra inputs (weather, costs) as later work. |
+| Order alerts | A mockup with sample orders, in demo mode only | Read a farmer's incoming orders and the buyer's contact from the database, save the confirmation, and send a push notification. |
+| Weather | Sample values in `src/data/weather.ts` | Connect a forecast service. PAGASA's TenDay API needs a token that PAGASA approves on request, and it gives daily forecasts, not current conditions. |
 | Phone verification | Not enabled | SMS codes through a provider, sent by a server-side hook. |
 | Password reset | Not implemented | Email reset for Gmail accounts; SMS code for mobile-number accounts. |
 | Automated tests | None in the repository | Add unit tests for the services and the store, and database tests for the SQL functions. |

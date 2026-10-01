@@ -41,6 +41,33 @@ The last 12 months of each variety are held back. Each model is fitted on the mo
 
 The app uses that result. Each forecast is shown with how far off the model was on average, and where that is more than 20% (`RELIABLE_MAPE` in `src/data/forecast.ts`), the app says the forecast is too uncertain to call and gives no sell-or-wait advice from it.
 
+## What the test showed
+
+Average miss as a percentage of the real price (MAPE), on the last 12 months. The full table is in `REPORT.md`.
+
+| Variety | ARIMA | LSTM | Same as last month |
+|---|---|---|---|
+| Special Rice | 4.5% | 3.1% | 4.1% |
+| Well Milled Rice | 7.4% | 8.8% | 8.5% |
+| Native Garlic | 4.8% | 10.7% | 3.1% |
+| Red Onion | 28.3% | 51.8% | 33.1% |
+| Calamansi | 48.9% | 36.9% | 31.2% |
+
+Rice is forecast well. For garlic and calamansi neither model beats "same as last month". Onion and calamansi are above the app's 20% line, so the app marks them as too uncertain to call.
+
+## Known limits
+
+- **The differencing order (d) is chosen by AIC.** AIC is a sound guide for p and q but not for d, because differencing changes the data the score is computed on. The usual practice is a stationarity test (ADF or KPSS) for d, then AIC for p and q. This should be fixed before the results are published.
+- **The LSTM is not tuned.** Its settings (6-month window, 16 units, 400 passes, learning rate 0.01, weight decay 0.0001) were set once to small, common values. No other settings were compared.
+- **The LSTM has no dropout.** A weight penalty is used instead. PyTorch's built-in LSTM dropout has no effect on a one-layer network.
+- **Both models see only past prices.** Neither can foresee a typhoon, an import decision or a supply problem. They react only after the shocked price is on record.
+- **The data is small.** 69 monthly points at most, 46 for calamansi.
+- **No seasonal model was tested,** although crop prices follow harvest seasons.
+
+## Libraries
+
+Python 3.13, statsmodels 0.15 (ARIMA), PyTorch 2.14 CPU (LSTM), pandas, numpy, and pypdf for reading the PDF. There is no TensorFlow. The app itself contains no machine-learning library: it reads `src/data/forecasts.json`.
+
 ## Where each model is used in the app
 
 | Screen | Model |

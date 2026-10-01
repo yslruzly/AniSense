@@ -181,7 +181,9 @@ erDiagram
 **3. Market.**
 - `listings`: harvests for sale. `quantity_kg` goes down as orders come in.
 - `orders`: one per checkout.
-- `order_items`: one line per listing bought. Price, crop and seller are copied at the moment of sale, so history never changes.
+- `order_items`: one line per listing bought. Price, crop and seller are copied at the moment of sale, so history never changes. Its `status` starts at `placed`; the farmer may move it to `confirmed` or `completed`.
+
+> The app's order alert for farmers (name, number, Call, Confirm) is still a mockup with sample orders. It does not read or change these tables yet. When it is connected, a new order is an `order_items` row with `status = 'placed'` for that farmer, the buyer's name and number come from `profiles` (which a farmer may read for buyers who ordered from them), and Confirm sets the status to `confirmed`.
 
 **4. Farm records.** Private to each farmer.
 - `expenses`: costs by category and crop.

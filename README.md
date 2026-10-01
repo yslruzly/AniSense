@@ -1,6 +1,6 @@
 # AniSense
 
-**Ani mo, alam mo.** A mobile app that gives farmers in Nueva Ecija, Philippines, the day's crop prices, a direct marketplace, expense and profit tracking, and weather for fieldwork, and lets buyers anywhere in the country buy straight from those farmers.
+**Ani mo, alam mo.** A mobile app that gives farmers in Nueva Ecija, Philippines, current crop prices and price forecasts, a direct marketplace, expense and profit tracking, and weather for fieldwork, and lets buyers anywhere in the country buy straight from those farmers.
 
 ![Platform](https://img.shields.io/badge/platform-Android%207.0%2B-3DDC84)
 ![React](https://img.shields.io/badge/React-18-61DAFB)
@@ -16,26 +16,19 @@
 - [Tech stack](#tech-stack)
 - [Architecture](#architecture)
 - [Getting started](#getting-started)
-- [Configuration](#configuration)
-- [Database](#database)
-- [Building the Android app](#building-the-android-app)
-- [Scripts](#scripts)
-- [Project structure](#project-structure)
-- [Offline behavior](#offline-behavior)
-- [Security](#security)
-- [Localization and accessibility](#localization-and-accessibility)
-- [Roadmap](#roadmap)
-- [Contributing](#contributing)
+- [Further reading](#further-reading)
 - [License](#license)
 
 ## Overview
 
-Farmers often sell without knowing the day's market price, and buyers rarely reach farmers directly. AniSense puts both on one app:
+Farmers often sell without knowing the market price, and buyers rarely reach farmers directly. AniSense puts both on one app:
 
 - **Farmers** see the latest prices for their crops, post harvests for sale, record expenses and sales, and check the weather before fieldwork.
 - **Buyers** browse fresh harvests, compare them against market prices, and order directly from the farmer who grew them.
 
 The app is designed for users aged 50 to 70 on budget Android phones: text is 16px or larger, every control is at least 52px tall, the interface is available in English and Tagalog, and the core screens keep working without a signal.
+
+The study behind the app focuses on four crops: rice, onion, garlic and calamansi. These are the crops with real price records and forecasts.
 
 ## Features
 
@@ -43,12 +36,13 @@ The app is designed for users aged 50 to 70 on budget Android phones: text is 16
 
 | Feature | Description |
 |---|---|
-| Prices | Monthly retail prices with the change from the month before. Five varieties (Special Rice, Well Milled Rice, Red Onion, Native Garlic, Calamansi) come from the study's records, 2021 to 2026, with a 12-month history. |
-| Marketplace | Post a harvest with a photo, price and quantity; edit or remove it; see who ordered. |
+| Prices | Monthly retail prices with the change from the month before. The study's five varieties (Special Rice, Well Milled Rice, Red Onion, Native Garlic, Calamansi) come from real records, 2021 to 2026, and are pinned at the top of the list as "AniSense focus crops". Each opens a chart of the current year from January, followed by a 3-month forecast. |
+| Marketplace | Post a harvest with a photo, price and quantity; edit or remove it. |
+| Order alerts | A buyer's order appears under the bell with the buyer's name and phone number, a Call button and a Confirm button. See [Project status](#project-status). |
 | Expenses and profit | Record costs by category and crop, record sales, and see estimated and final profit. |
 | Crop tracker | Log plantings and count down to harvest. |
 | Price alerts | Set a target price for a crop and get notified in the app when it is reached. |
-| Price outlook | Sell-now-or-wait advice and a 7-day price chart per crop. See [Project status](#project-status). |
+| Price outlook | A 3-month forecast chart (LSTM) and sell-now-or-wait advice (ARIMA) for the focus crops. Each forecast shows how far off the model was when tested; where that error is above 20%, the app says the forecast is too uncertain and gives no advice. |
 | Weather | Current conditions, hourly and 5-day outlook, and the best window for fieldwork. See [Project status](#project-status). |
 | Achievements | Badges for joining, a first listing, a first sale, and Farmer of the Week, Month and Year. |
 
@@ -68,7 +62,8 @@ The app is designed for users aged 50 to 70 on budget Android phones: text is 16
 - Conversational sign-up: one question per screen, with a progress bar.
 - A guided first-run walkthrough, replayable from the in-app guide.
 - A member ID card generated at sign-up.
-- English and Tagalog throughout.
+- English and Tagalog throughout. The privacy policy is the one exception: it is English only.
+- Profile has a Manage account section with the privacy policy and account deletion.
 
 ## Project status
 
@@ -79,9 +74,11 @@ The app is feature-complete on the client. Some data sources are still sample da
 | Accounts, profiles, listings, orders, expenses, farm records, achievements | Live on Supabase once a project is configured. |
 | Demo mode | Without a `.env` file the app runs on built-in sample data, so a build without keys still works for demonstrations. |
 | Crop prices | **Real monthly retail prices** for the study's five varieties (`data/historical-prices.csv`, January 2021 to September 2026), bundled in the app and loaded into the database by the seed file. The other 19 varieties still show **sample values**. |
-| Price forecasts (ARIMA, LSTM) | Trained on the price records by `ml/train_forecasts.py` (statsmodels and PyTorch, run locally, free). Three months ahead for the five varieties, each with its tested error; results in `ml/REPORT.md`. |
+| Price forecasts (ARIMA, LSTM) | Trained on the price records by `ml/train_forecasts.py` (statsmodels and PyTorch, run locally, free). Three months ahead for the five varieties. Tested on the last 12 months: rice is 3 to 9% off on average; onion and calamansi are 28 to 52% off. Results are in `ml/REPORT.md`, known limits in `ml/README.md`. The phone runs no model: it reads the finished forecasts. |
 | Weather | **Sample values.** No forecast service is connected yet. |
-| Account deletion | In the app (Profile) and on a web page (`docs/delete-account.html`), as Google Play requires. |
+| Order alerts for farmers | **Sample data.** Two invented orders, shown to the demo farmer only. Not yet connected to checkout or the database, and there are no push notifications. |
+| Privacy policy | A draft, English only, in the app (Welcome screen and Profile → Manage account) and at `docs/privacy-policy.html`. Not yet reviewed by a lawyer. |
+| Account deletion | In the app (Profile → Manage account) and on a web page (`docs/delete-account.html`), as Google Play requires. |
 | Mobile-number verification by SMS | Not enabled. Numbers are not verified. |
 | Password reset | Not implemented. |
 | Automated tests | None yet. `npm run build` type-checks the project. |
@@ -97,6 +94,7 @@ The app is feature-complete on the client. Some data sources are still sample da
 | Icons | lucide-react |
 | Styling | CSS-in-TypeScript stylesheets with shared design tokens |
 | Image tooling | sharp (development only) |
+| Forecast models | Python with statsmodels (ARIMA) and PyTorch (LSTM), run on a development computer. Not part of the app. |
 
 Capacitor plugins in use: App, Filesystem, Haptics, Keyboard, Preferences, Share, Splash Screen, Status Bar.
 
@@ -147,6 +145,28 @@ Key design decisions:
 | JDK | 21 | Android builds |
 | Android Studio and Android SDK | SDK Platform 36 | Android builds and emulators |
 | Supabase account | Free tier | Live data (optional for demo mode) |
+| Python | 3.11 or newer | Only to retrain the forecasts (see `ml/README.md`) |
+
+### Commands
+
+| Command | What it does |
+|---|---|
+| `npm run dev` | Runs the app in a browser for development. |
+| `npm run build` | Type-checks and builds the web app into `dist/`. |
+| `npm run check:db` | Checks that the Supabase project in `.env` is set up correctly. |
+| `npm run prices` | Rebuilds the bundled price history from `data/historical-prices.csv`. |
+| `npm run forecasts` | Trains and tests ARIMA and LSTM again and rewrites the forecasts. |
+| `npm run seed` | Rewrites `supabase/seed.sql` from the crop catalog, the price records and the forecasts. |
+
+## Further reading
+
+| Document | What it covers |
+|---|---|
+| [ARCHITECTURE.md](ARCHITECTURE.md) | How the app is built and why. |
+| [SETUP_DATABASE.md](SETUP_DATABASE.md) | Connecting a Supabase project, step by step. |
+| [supabase/README.md](supabase/README.md) | The database tables, functions and everyday admin. |
+| [ml/README.md](ml/README.md) | The forecast models: setup, retraining, testing and limits. |
+| [ml/REPORT.md](ml/REPORT.md) | The models' test results. Generated. |
 
 
 ## License

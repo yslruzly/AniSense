@@ -22,7 +22,10 @@ Without `.env` the app runs exactly as before on the built-in sample data, so
 an APK built without keys still works for demos.
 
 **Still kept on the phone only:** the ID photo, and which achievements have
-already been celebrated. **Still built in:** weather and the price forecasts.
+already been celebrated. **Still sample data:** weather, the prices of the 19
+varieties with no records, and the farmer's order alerts (two invented orders,
+shown in the demo only; a real account sees none until that feature is
+connected to the database).
 
 The database is organized in five sections (catalog, accounts, market, farm
 records, rewards). The table diagram and what each table holds are in
@@ -49,8 +52,10 @@ Two files, in this order, each in its own query:
    This creates the 16 tables, the security rules, the functions (checkout,
    sign-up, farm-record sync, badges) and the `listing-photos` storage bucket.
 2. **New query** again. Open `supabase/seed.sql`, copy all of it, paste,
-   **Run**. This fills the catalog: 10 crop types, 24 varieties, today's
-   prices and the 6 badges.
+   **Run**. This fills the catalog: 10 crop types, 24 varieties, 320 monthly
+   price records for the study's five varieties (January 2021 to September
+   2026), one sample price for each of the other 19 varieties, 30 forecasts
+   and the 6 badges.
 
 Both are safe to run again. If anything went wrong, or a file changes later,
 just paste and run it again.
@@ -102,7 +107,7 @@ checks that:
 - Confirm email is off
 - all 16 tables exist, section by section
 - every database function exists
-- the catalog is filled (seed.sql ran)
+- the catalog, the price records and the forecasts are loaded (seed.sql ran)
 - the photo bucket exists
 
 Anything wrong is listed with its fix.
@@ -136,7 +141,9 @@ The APK is at `android/app/build/outputs/apk/debug/app-debug.apk`.
 - [ ] Farmer adds an expense in airplane mode: it shows at once; turn the internet back on and it appears in **expenses**
 - [ ] Two farmer accounts each see only their own expenses
 - [ ] Farmer records a sale, adds a planting and a price alert: rows appear in **sales**, **plantings** and **price_alerts**; they are still there after reinstalling the app
-- [ ] Change a price in **crop_prices** (today's row), reopen Prices: the app shows the new price
+- [ ] Prices shows the same numbers as the newest rows in **crop_prices** (Special Rice ₱57.20 for September 2026), and a crop's chart shows its forecast from **crop_forecasts**
+- [ ] Change the newest price of a variety in **crop_prices**, reopen Prices: the app shows the new price
+- [ ] Add next month's row for Special Rice (dated the 1st), reopen Prices: the new month is the price shown, and the chart gains it
 - [ ] Airplane mode, posting a listing or checking out: a clear "No internet" message, and the cart is kept
 - [ ] Profile → Manage account → Delete my account, as a buyer who has ordered: the buyer disappears from **Authentication → Users** and **profiles**; the order stays in **orders** with an empty `buyer_id`, and the farmer still sees the sale
 - [ ] Delete my account, as a farmer with a listing photo: their rows are gone from **listings**, **expenses**, **sales**, and their folder is gone from **Storage → listing-photos**
@@ -203,8 +210,11 @@ CP-number sign-ups are then asked to use Gmail instead. For more than a few
 emails an hour, add SMTP (Resend, Brevo, or a Gmail app password) under
 **Project Settings → Auth → SMTP Settings**.
 
-**Verify CP numbers by SMS.** This costs per text. The easiest route is
-Twilio: **Authentication → Sign In / Providers → Phone**, then paste the
-Twilio details. Semaphore is cheaper in the Philippines, but needs a small
-Edge Function as a "Send SMS hook". `sendPhoneCode` and `verifyPhoneCode` in
-`src/services/auth.ts` are ready for it.
+**Verify CP numbers by SMS.** This costs per text. The provider chosen for
+AniSense is Semaphore, which is cheaper in the Philippines. It needs a small
+Edge Function as a "Send SMS hook", with the Semaphore API key kept in
+Supabase's secrets, never in the app. `sendPhoneCode` and `verifyPhoneCode`
+in `src/services/auth.ts` are ready for it. (Twilio works without an Edge
+Function: **Authentication → Sign In / Providers → Phone**.)
+
+**Add a new month of prices.** See "Everyday admin" in `supabase/README.md`.
