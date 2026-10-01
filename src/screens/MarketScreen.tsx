@@ -2,13 +2,13 @@ import { useRef, useState } from "react";
 import { EmptyState, ErrorState, SkeletonList } from "../components/states";
 import { useResource } from "../hooks/useResource";
 import { fetchPrices, PriceItem } from "../services/prices";
-import { ArrowDownRight, ArrowUpRight, ArrowRight, Search, ChevronRight, X } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, ArrowRight, Search, ChevronRight, X, Star } from "lucide-react";
 import { haptic } from "../lib/platform";
 import { useLang } from "../i18n";
 import { UserRole } from "../types";
 import { CROP_FAMILIES, FAMILY_GROUPS } from "../data/crops";
 import { forecastOf } from "../data/forecast";
-import { historyOf, latestMonth, monthLabel } from "../data/priceRecords";
+import { hasRecords, historyOf, latestMonth, monthLabel } from "../data/priceRecords";
 import { Hdr } from "../components/layout/Hdr";
 import { CropIcon } from "../components/icons";
 import { cropPhoto, cropGroupPhoto } from "../data/cropPhotos";
@@ -26,6 +26,11 @@ import basketMouthShut from "../assets/mascot-basket-mouth-shut.webp";
 //   3. What's my crop at?        → search, filter, the full list
 // Every crop opens a sheet with its price story: the past 12 months of
 // records and the next 3 where the forecast has them.
+//
+// The list opens with AniSense's focus crops, the ones the study covers and
+// keeps real records for (rice, onion, garlic, calamansi), pinned above the
+// families. They stay in their families below as well, so the full list is
+// still complete and nothing has moved from where it was.
 //
 // Prices are monthly records, so every move here is "from the month before",
 // and the card at the top names the month the prices are for.
@@ -172,6 +177,48 @@ export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userIn
     const matchSearch = !q || c.name.toLowerCase().includes(q) || c.group.toLowerCase().includes(q) || tn(c.group).toLowerCase().includes(q);
     return matchFam && matchSearch;
   });
+
+  // The focus crops: the varieties with price records, grouped by crop in
+  // the same order as the families below. They follow the search and the
+  // family switch like everything else in the list.
+  const focusGroups = CROP_FAMILIES.flatMap(f => FAMILY_GROUPS[f] ?? [])
+    .map(g => ({ name: g, items: filtered.filter(c => c.group === g && hasRecords(c.id)) }))
+    .filter(g => g.items.length > 0);
+
+  // One crop: its photo, how many varieties and the range they sell in, then
+  // the varieties as rows.
+  const groupCard = (g: { name: string; items: PriceItem[] }) => {
+    const kgs = g.items.map(c => c.pricePerKg);
+    const lo = Math.min(...kgs), hi = Math.max(...kgs);
+    const photo = cropGroupPhoto(g.name);
+    return (
+      <div className="pr-grp" key={g.name}>
+        <div className="pr-grp-head">
+          <span className="pr-grp-photo">
+            {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropIcon crop={g.name} size={22} />}
+          </span>
+          <span className="pr-grp-body">
+            <span className="pr-grp-name">{tn(g.name)}</span>
+            <span className="pr-grp-sub">
+              {g.items.length === 1 ? t("mkt_variety_one") : t("mkt_varieties").replace("{n}", String(g.items.length))}
+              {" · "}
+              {lo === hi ? peso(lo, 0) : `${peso(lo, 0)}–${peso(hi, 0).replace("₱", "")}`}{t("per_kg_short")}
+            </span>
+          </span>
+        </div>
+        <div className="pr-grp-rows">
+          {g.items.map(c => (
+            <button className="pr-vrow" key={c.id} onClick={() => setOpen(c)}>
+              <span className="pr-vrow-name">{c.name}</span>
+              <span className="pr-vrow-price">{peso(c.pricePerKg)}<small>{t("per_kg_short")}</small></span>
+              <Change value={c.change} />
+              <ChevronRight size={18} className="pr-row-chev" aria-hidden="true" />
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   const up = ALL_ITEMS.filter(c => c.change > 0).length;
   const down = ALL_ITEMS.filter(c => c.change < 0).length;
@@ -325,6 +372,18 @@ export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userIn
               narrows it and must not flash on every keystroke. */}
           {prices.status === "ready" && filtered.length > 0 && (
             <div className="pr-fams content-in" key={fam}>
+              {/* AniSense's focus crops first: the ones with real records. */}
+              {focusGroups.length > 0 && (
+                <section className="pr-fam focus" aria-labelledby="pr-focus-t">
+                  <h3 className="pr-fam-t" id="pr-focus-t">
+                    <Star size={14} strokeWidth={0} fill="currentColor" className="pr-fam-star" aria-hidden="true" />
+                    {t("mkt_focus")}
+                    <span className="pr-fam-n">{focusGroups.length}</span>
+                  </h3>
+                  <p className="pr-fam-s">{t("mkt_focus_sub")}</p>
+                  {focusGroups.map(groupCard)}
+                </section>
+              )}
               {CROP_FAMILIES.map(family => {
                 const groups = (FAMILY_GROUPS[family] ?? [])
                   .map(g => ({ name: g, items: filtered.filter(c => c.group === g) }))
@@ -338,38 +397,7 @@ export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userIn
                       {family}
                       <span className="pr-fam-n">{groups.length}</span>
                     </h3>
-                    {groups.map(g => {
-                      const kgs = g.items.map(c => c.pricePerKg);
-                      const lo = Math.min(...kgs), hi = Math.max(...kgs);
-                      const photo = cropGroupPhoto(g.name);
-                      return (
-                        <div className="pr-grp" key={g.name}>
-                          <div className="pr-grp-head">
-                            <span className="pr-grp-photo">
-                              {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropIcon crop={g.name} size={22} />}
-                            </span>
-                            <span className="pr-grp-body">
-                              <span className="pr-grp-name">{tn(g.name)}</span>
-                              <span className="pr-grp-sub">
-                                {g.items.length === 1 ? t("mkt_variety_one") : t("mkt_varieties").replace("{n}", String(g.items.length))}
-                                {" · "}
-                                {lo === hi ? peso(lo, 0) : `${peso(lo, 0)}–${peso(hi, 0).replace("₱", "")}`}{t("per_kg_short")}
-                              </span>
-                            </span>
-                          </div>
-                          <div className="pr-grp-rows">
-                            {g.items.map(c => (
-                              <button className="pr-vrow" key={c.id} onClick={() => setOpen(c)}>
-                                <span className="pr-vrow-name">{c.name}</span>
-                                <span className="pr-vrow-price">{peso(c.pricePerKg)}<small>{t("per_kg_short")}</small></span>
-                                <Change value={c.change} />
-                                <ChevronRight size={18} className="pr-row-chev" aria-hidden="true" />
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })}
+                    {groups.map(groupCard)}
                   </section>
                 );
               })}

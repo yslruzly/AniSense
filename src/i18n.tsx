@@ -194,6 +194,8 @@ export const translations: Dict = {
   mkt_same: { en: "no change", tl: "walang galaw" },
   mkt_movers: { en: "Biggest moves", tl: "Pinakamalaking galaw" },
   mkt_all: { en: "All prices", tl: "Lahat ng presyo" },
+  mkt_focus: { en: "AniSense focus crops", tl: "Pangunahing pananim ng AniSense" },
+  mkt_focus_sub: { en: "The crops AniSense studies, with real monthly prices and a forecast.", tl: "Ang mga pananim na pinag-aaralan ng AniSense, may totoong buwanang presyo at taya." },
   // Buyer price-moves chart on Home.
   mv_verdict_up: { en: "Most prices went up", tl: "Karamihan ng presyo ay tumaas" },
   mv_verdict_down: { en: "Most prices went down", tl: "Karamihan ng presyo ay bumaba" },
@@ -1337,7 +1339,7 @@ export const translations: Dict = {
   gd_prices_s: { en: "Twelve months back, three months forward", tl: "Labindalawang buwan pabalik, tatlong buwan pasulong" },
   gd_prices_1: { en: "Tap Prices in the bar at the bottom.", tl: "Pindutin ang Presyo sa bar sa ibaba." },
   gd_prices_2: { en: "The dark card at the top says how many prices went up from the month before.", tl: "Sinasabi ng maitim na card sa itaas kung ilang presyo ang tumaas mula sa nakaraang buwan." },
-  gd_prices_3: { en: "Search for a crop, or tap one in the list.", tl: "Maghanap ng pananim, o pindutin ang isa sa listahan." },
+  gd_prices_3: { en: "Search for a crop, or tap one in the list. AniSense's focus crops are at the top.", tl: "Maghanap ng pananim, o pindutin ang isa sa listahan. Nasa itaas ang mga pangunahing pananim ng AniSense." },
   gd_prices_4: { en: "Inside you get the past 12 months and the next three as the model expects them.", tl: "Sa loob makikita mo ang nakaraang 12 buwan at ang susunod na tatlo ayon sa modelo." },
   gd_prices_note: {
     en: "A forecast is a guide, not a guarantee. Weigh it against what traders are actually paying you this week.",

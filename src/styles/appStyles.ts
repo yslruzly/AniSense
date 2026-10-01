@@ -1267,6 +1267,13 @@ export const appCss = `
   .pr-fam-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--tanim); }
   .pr-fam.crops .pr-fam-dot { background: #B07A16; }
   .pr-fam.fruits .pr-fam-dot { background: #D0532F; }
+  /* AniSense's focus crops, pinned above the families: a gold star in place
+     of the family dot, the heading in the app's green, one line saying what
+     sets them apart, and a green edge on their cards. */
+  .pr-fam.focus .pr-fam-t { color: var(--tanim); }
+  .pr-fam-star { flex-shrink: 0; color: #D19B27; }
+  .pr-fam-s { margin: -4px 2px 0; font-size: var(--fs-label); line-height: 1.4; color: var(--text-muted); }
+  .pr-fam.focus .pr-grp { box-shadow: inset 0 0 0 1.5px rgba(11,107,65,.3), 0 10px 20px -18px rgba(22,33,27,.45); }
   .pr-fam-n {
     margin-left: 2px; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 99px;
     display: inline-flex; align-items: center; justify-content: center;
