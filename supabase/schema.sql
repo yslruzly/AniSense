@@ -128,12 +128,21 @@ create table if not exists public.listings (
   updated_at    timestamptz not null default now()
 );
 
+-- buyer_id empties (it does not cascade) when a buyer deletes their account:
+-- the order is also the farmer's record of a sale, so it stays, with no name
+-- on it.
 create table if not exists public.orders (
   id            uuid primary key default gen_random_uuid(),
-  buyer_id      uuid not null references public.profiles(id) on delete cascade,
+  buyer_id      uuid references public.profiles(id) on delete set null,
   total_amount  numeric(12,2) not null default 0,
   created_at    timestamptz not null default now()
 );
+-- For a database made before the line above changed: the same rule, applied
+-- to the table that already exists. Safe to run again.
+alter table public.orders alter column buyer_id drop not null;
+alter table public.orders drop constraint if exists orders_buyer_id_fkey;
+alter table public.orders add constraint orders_buyer_id_fkey
+  foreign key (buyer_id) references public.profiles(id) on delete set null;
 
 -- Price, crop, seller and place are copied from the listing at the moment of
 -- sale, so editing or removing a listing never rewrites what was bought.
@@ -566,6 +575,29 @@ begin
 end;
 $$;
 
+-- ─── Delete my account ──────────────────────────────────────────────────────
+-- A signed-in person removes their own account, and only their own: it takes
+-- no argument, so there is no id to tamper with. Deleting the sign-in row
+-- takes the profile with it, and the profile takes everything that is theirs
+-- alone: their crops, listings, expenses, sales, plantings, price alerts,
+-- harvest plans and badges.
+--
+-- What other people still need is kept, with this person's name gone from
+-- it: an order a buyer placed stays in the farmer's sales (buyer_id empties),
+-- and a line a farmer sold stays in the buyer's purchases (seller_id empties).
+--
+-- Listing photos are files, not rows; the app removes them through Storage
+-- before calling this.
+create or replace function public.delete_my_account()
+returns void language plpgsql security definer set search_path = '' as $$
+declare
+  uid uuid := auth.uid();
+begin
+  if uid is null then raise exception 'NOT_SIGNED_IN'; end if;
+  delete from auth.users where id = uid;
+end;
+$$;
+
 -- ─── Setup check ────────────────────────────────────────────────────────────
 -- How much of the catalog is loaded, as counts only. Open to the setup
 -- checker (npm run check:db), which has no account: it reveals nothing but
@@ -590,6 +622,7 @@ revoke all on function public.replace_my_sales(jsonb)           from public, ano
 revoke all on function public.replace_my_plantings(jsonb)       from public, anon;
 revoke all on function public.replace_my_price_alerts(jsonb)    from public, anon;
 revoke all on function public.replace_my_harvest_plans(jsonb)   from public, anon;
+revoke all on function public.delete_my_account()               from public, anon;
 grant execute on function public.can_see_order(uuid)             to authenticated;
 grant execute on function public.is_my_buyer(uuid)               to authenticated;
 grant execute on function public.set_my_crops(text[])            to authenticated;
@@ -598,6 +631,7 @@ grant execute on function public.replace_my_sales(jsonb)         to authenticate
 grant execute on function public.replace_my_plantings(jsonb)     to authenticated;
 grant execute on function public.replace_my_price_alerts(jsonb)  to authenticated;
 grant execute on function public.replace_my_harvest_plans(jsonb) to authenticated;
+grant execute on function public.delete_my_account()             to authenticated;
 
 
 -- ═══ 8. STORAGE: listing photos ══════════════════════════════════════════════
@@ -618,6 +652,13 @@ create policy "farmers upload own listing photos"
 drop policy if exists "farmers replace own listing photos" on storage.objects;
 create policy "farmers replace own listing photos"
   on storage.objects for update to authenticated
+  using (bucket_id = 'listing-photos' and (storage.foldername(name))[1] = auth.uid()::text);
+-- Listing their own folder. Storage only removes a file the caller can also
+-- see, so without this the delete rule below would never find anything, and
+-- deleting an account would leave its photos behind.
+drop policy if exists "farmers see own listing photos" on storage.objects;
+create policy "farmers see own listing photos"
+  on storage.objects for select to authenticated
   using (bucket_id = 'listing-photos' and (storage.foldername(name))[1] = auth.uid()::text);
 drop policy if exists "farmers delete own listing photos" on storage.objects;
 create policy "farmers delete own listing photos"

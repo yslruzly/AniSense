@@ -16,6 +16,7 @@ and the APK is rebuilt, AniSense runs on the database:
 | Sales typed in, crop tracker, price alerts, expected harvests | Yes, and they work offline too |
 | Crop catalog and today's prices | Yes: every screen shows the database's newest prices |
 | Achievements | Yes: Newbie, First harvest and First sale are awarded by the database itself; Farmer of the Month and Year can be granted from the dashboard |
+| Deleting an account | Yes: from Profile in the app, or from the web page in `docs/` (see "Before the Play Store") |
 
 Without `.env` the app runs exactly as before on the built-in sample data, so
 an APK built without keys still works for demos.
@@ -137,6 +138,8 @@ The APK is at `android/app/build/outputs/apk/debug/app-debug.apk`.
 - [ ] Farmer records a sale, adds a planting and a price alert: rows appear in **sales**, **plantings** and **price_alerts**; they are still there after reinstalling the app
 - [ ] Change a price in **crop_prices** (today's row), reopen Prices: the app shows the new price
 - [ ] Airplane mode, posting a listing or checking out: a clear "No internet" message, and the cart is kept
+- [ ] Profile → Delete my account, as a buyer who has ordered: the buyer disappears from **Authentication → Users** and **profiles**; the order stays in **orders** with an empty `buyer_id`, and the farmer still sees the sale
+- [ ] Delete my account, as a farmer with a listing photo: their rows are gone from **listings**, **expenses**, **sales**, and their folder is gone from **Storage → listing-photos**
 
 ## How the security works
 
@@ -150,6 +153,23 @@ database itself (Row Level Security in `schema.sql`), not by the app:
 - Orders can only be created through `place_order()`, which takes the price
   from the listing and refuses to sell more than is left.
 - Photos can only be uploaded into the uploader's own folder.
+- Anyone can delete their own account, and only their own. Orders stay in the
+  other person's history with the name removed.
+
+## Before the Play Store
+
+Google Play asks every app with accounts for a web address where someone can
+delete their account without the app. That page is `docs/delete-account.html`.
+
+1. Open `docs/config.js` and fill in the Project URL, the **publishable** key
+   (the same two values as `.env`) and a support email address.
+2. Put the `docs/` folder online. The simplest way is GitHub Pages: in the
+   repository, **Settings → Pages → Deploy from a branch → `main` / `docs`**.
+   The page is then at `https://<your-username>.github.io/<repository>/delete-account.html`.
+   (GitHub Pages needs a public repository on the free plan; Netlify and
+   Cloudflare Pages host a folder for free from a private one.)
+3. In Play Console, paste that address under **App content → Data safety →
+   Delete account URL**.
 
 ## Good to know
 

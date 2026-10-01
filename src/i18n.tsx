@@ -679,6 +679,30 @@ export const translations: Dict = {
   prof_version: { en: "Version 1.0.0", tl: "Bersyon 1.0.0" },
   prof_sign_out: { en: "Sign Out", tl: "Mag-sign Out" },
 
+  // ── Delete account ────────────────────────────────────────────────────────
+  del_link: { en: "Delete my account", tl: "Burahin ang account ko" },
+  del_title: { en: "Delete your account?", tl: "Burahin ang account mo?" },
+  del_body: {
+    en: "This removes your AniSense account for good. It can't be undone.",
+    tl: "Mabubura nang tuluyan ang AniSense account mo. Hindi na ito maibabalik.",
+  },
+  del_gone_profile: { en: "Your profile and member ID", tl: "Ang profile at member ID mo" },
+  del_gone_listings: { en: "Your listings and their photos", tl: "Ang mga paninda mo at ang mga litrato nito" },
+  del_gone_records: { en: "Your expenses, sales and farm records", tl: "Ang mga gastos, benta at tala ng bukid mo" },
+  del_gone_badges: { en: "Your badges", tl: "Ang mga badge mo" },
+  del_gone_buyer: { en: "Your saved location and contact details", tl: "Ang naka-save mong lokasyon at contact" },
+  del_kept: {
+    en: "Orders you placed or received stay in the other person's history, without your name.",
+    tl: "Mananatili sa history ng kabilang panig ang mga order mo, pero wala na ang pangalan mo.",
+  },
+  del_sure: { en: "I understand this can't be undone", tl: "Naiintindihan kong hindi na ito maibabalik" },
+  del_btn: { en: "Delete account", tl: "Burahin" },
+  del_busy: { en: "Deleting…", tl: "Binubura…" },
+  del_failed: {
+    en: "We couldn't delete your account. Please try again.",
+    tl: "Hindi nabura ang account mo. Pakisubukan ulit.",
+  },
+
   // ── Extra: shared ─────────────────────────────────────────────────────────
   please_wait: { en: "Please wait…", tl: "Sandali lang…" },
   save_changes: { en: "Save Changes", tl: "I-save ang Pagbabago" },

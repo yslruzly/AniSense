@@ -7,7 +7,8 @@
 //   ✓ the project answers
 //   ✓ "Confirm email" is OFF (CP-number accounts have no inbox)
 //   ✓ all 15 tables and the price view exist (schema.sql ran)
-//   ✓ every database function exists (checkout, farm-record sync, crops)
+//   ✓ every database function exists (checkout, farm-record sync, crops,
+//     account deletion)
 //   ✓ the crop catalog, prices and badges are loaded (seed.sql ran)
 //   ✓ the listing-photos bucket exists
 
@@ -111,6 +112,7 @@ const FUNCTIONS = {
   replace_my_plantings: { items: [] },
   replace_my_price_alerts: { items: [] },
   replace_my_harvest_plans: { plans: {} },
+  delete_my_account: {},
 };
 const noFn = [];
 for (const [fn, args] of Object.entries(FUNCTIONS)) {
@@ -118,7 +120,7 @@ for (const [fn, args] of Object.entries(FUNCTIONS)) {
   if (r.body?.code === "PGRST202" || r.status === 404) noFn.push(fn);
 }
 if (noFn.length) bad(`Missing functions: ${noFn.join(", ")}`, "Run the latest supabase/schema.sql again (safe to re-run).");
-else ok("Functions: checkout, crop list, and farm-record sync");
+else ok("Functions: checkout, crop list, farm-record sync, and account deletion");
 
 // 3b. Starter data. catalog_status() only counts rows, so it answers without
 //     an account: were the crops, prices and badges loaded?

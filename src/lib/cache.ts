@@ -18,6 +18,14 @@ export function setCacheScope(accountId: string | null): void {
 }
 export const cacheScope = () => scope;
 
+/** Removes everything this phone saved for one account: its cached lists and
+ *  the note of which badges it was shown. Every such key carries the
+ *  account's id, so nothing of another account on the same phone is touched. */
+export async function wipeAccountData(accountId: string): Promise<void> {
+  const { keys } = await Preferences.keys();
+  await Promise.all(keys.filter(k => k.includes(accountId)).map(key => Preferences.remove({ key })));
+}
+
 interface CacheEntry<T> {
   data: T;
   updatedAt: string; // ISO timestamp of the successful fetch

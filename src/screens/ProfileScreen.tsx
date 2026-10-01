@@ -8,14 +8,17 @@ import { AniSenseLogo } from "../components/AniSenseLogo";
 import leafMask from "../assets/anisense-leaf-mask.png";
 import { Achievements } from "../components/profile/Achievements";
 import { Sale } from "../lib/sales";
+import { DeleteAccount } from "../components/profile/DeleteAccount";
 
 // ─── Profile Screen ───────────────────────────────────────────────────────────
-export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignOut, userInitials = "JD", userRole, userPhoto = null, onShowId, onReplayTour, sales = [], memberSince }: {
+export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignOut, onDeleteAccount, userInitials = "JD", userRole, userPhoto = null, onShowId, onReplayTour, sales = [], memberSince }: {
   onNavigate: (s: Screen) => void;
   onBack: () => void;
   profile: FarmerProfile;
   setProfile: (p: FarmerProfile) => void;
   onSignOut: () => void;
+  /** Deletes this account for good; rejects with the reason if it couldn't. */
+  onDeleteAccount?: () => Promise<void>;
   userInitials?: string;
   userRole?: UserRole;
   userPhoto?: string | null;
@@ -293,6 +296,10 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
             <button className="signout-btn" onClick={onSignOut} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
               <LogOut size={18} strokeWidth={2.4} aria-hidden="true" /> {t("prof_sign_out")}
             </button>
+
+            {/* Under Sign Out and quieter than it: leaving for good is rare,
+                and should never be what a thumb aiming for Sign Out lands on. */}
+            {onDeleteAccount && <DeleteAccount role={userRole} onDelete={onDeleteAccount} />}
 
             <div className="version-txt">AniSense v1.0.0 · Ani mo, alam mo.</div>
           </>

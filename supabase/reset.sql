@@ -52,6 +52,7 @@ drop function if exists
   public.replace_my_plantings(jsonb),
   public.replace_my_price_alerts(jsonb),
   public.replace_my_harvest_plans(jsonb),
+  public.delete_my_account(),
   public.catalog_status()
 cascade;
 

@@ -3933,6 +3933,40 @@ export const appCss = `
   .setting-arr { font-size: 15px; color: var(--line-strong); }
 
   .signout-btn { width: 100%; padding: 16px; background: var(--error-sk); color: var(--red); border: none; border-radius: var(--radius); font-family: inherit; font-size: var(--fs-label); font-weight: 700; cursor: pointer; }
+  /* ── Delete account ─────────────────────────────────────────────────────
+     The door is a quiet line of text, a full 52px tall but with no fill, so
+     it reads as the lesser of the two under it and above it. */
+  .del-link {
+    width: 100%; min-height: 52px; border: none; background: none; cursor: pointer;
+    font-family: inherit; font-size: var(--fs-label); font-weight: 600; color: var(--text-muted);
+    text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 5px;
+    text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
+    transition: opacity 140ms ease; -webkit-tap-highlight-color: transparent;
+  }
+  .del-link:active { opacity: .55; transition-duration: 0ms; }
+  .del-sheet { max-height: 92%; overflow-y: auto; }
+  .del-ico {
+    width: 56px; height: 56px; border-radius: 18px; margin: 0 auto 14px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--error-sk); color: var(--error);
+  }
+  .del-title { margin: 0; text-align: center; font-family: var(--font-display); font-size: var(--fs-title); font-weight: 700; letter-spacing: -.015em; color: var(--text); }
+  .del-body { margin: 8px 0 0; text-align: center; font-size: var(--fs-body); line-height: 1.5; color: var(--text-muted); }
+  /* What goes, one line each, marked with the same red cross. */
+  .del-list { list-style: none; margin: 18px 0 0; padding: 14px 16px; border-radius: 16px; background: var(--error-sk); display: flex; flex-direction: column; gap: 10px; }
+  .del-list li { display: flex; align-items: flex-start; gap: 10px; font-size: var(--fs-body); line-height: 1.35; font-weight: 600; color: var(--text); }
+  .del-list svg { flex-shrink: 0; margin-top: 3px; color: var(--error); }
+  .del-kept { margin: 12px 4px 0; font-size: var(--fs-label); line-height: 1.5; color: var(--text-muted); }
+  /* The tick that arms the button: the whole row is the target, 52px tall. */
+  .del-check {
+    display: flex; align-items: center; gap: 12px; min-height: 52px; margin-top: 14px; padding: 0 4px; cursor: pointer;
+    font-size: var(--fs-body); font-weight: 600; color: var(--text); -webkit-tap-highlight-color: transparent;
+  }
+  .del-check input { width: 24px; height: 24px; flex-shrink: 0; accent-color: var(--error); }
+  .del-actions { display: flex; gap: 12px; margin-top: 16px; }
+  .del-actions > * { flex: 1; }
+  .del-actions .btn-danger:disabled { background: var(--paper-alt); color: var(--text-faint); cursor: default; box-shadow: none; background-image: none; }
+
   .version-txt { text-align: center; font-size: var(--fs-label); color: var(--text-faint); padding: 8px 0 12px; }
 
   /* ── Home / Summary Screen (Senior-friendly) ── */

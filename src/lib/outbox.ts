@@ -62,6 +62,13 @@ export async function enqueue(type: string, payload: Record<string, unknown>): P
 
 const mine = (op: OutboxOp) => (op.owner ?? "") === cacheScope();
 
+/** Drops every change one account was still waiting to send. For an account
+ *  being deleted: there is nowhere left to send them. */
+export async function dropOutboxFor(accountId: string): Promise<void> {
+  const ops = await load();
+  await save(ops.filter(op => (op.owner ?? "") !== `${accountId}_`));
+}
+
 /** Changes of the signed-in account still waiting to reach the server. */
 export async function pendingCount(): Promise<number> {
   return (await load()).filter(mine).length;

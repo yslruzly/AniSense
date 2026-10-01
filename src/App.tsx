@@ -31,7 +31,7 @@ import { loadTourSeen, saveTourSeen } from "./lib/tour";
 import { ViewerContext } from "./lib/viewer";
 import { isSupabaseConfigured } from "./lib/supabase";
 import {
-  getSession, onAuthChange, signOut, getMyProfile, updateMyProfile,
+  getSession, onAuthChange, signOut, deleteMyAccount, getMyProfile, updateMyProfile,
   toFarmerProfile, accountFromSession, memberIdFor, toE164Phone,
 } from "./services/auth";
 import { FarmerProfile } from "./types";
@@ -40,6 +40,9 @@ import { MarketContext, useMarketStore } from "./lib/market";
 import { AchievementId, earnedAchievements, loadSeenAchievements, saveSeenAchievements } from "./lib/achievements";
 import { AchievementUnlocked } from "./components/profile/AchievementUnlocked";
 import { useRetained } from "./hooks/usePresence";
+import { Preferences } from "@capacitor/preferences";
+import { requireOnline, wipeAccountData } from "./lib/cache";
+import { dropOutboxFor } from "./lib/outbox";
 
 // The bottom-nav destinations. Anything else is a page opened from one of them.
 const TABS: Screen[] = ["home", "market", "trade", "expenses", "profile"];
@@ -356,6 +359,22 @@ export default function App() {
     resetToSplash();
   };
 
+  // Deleting the account: the server first (it throws if it can't, and the
+  // sheet says so), then what this phone kept for it, then out to the welcome
+  // screen. In the demo there is no server account, so it clears the demo's
+  // records from this phone.
+  const handleDeleteAccount = async () => {
+    if (isSupabaseConfigured && accountId) {
+      requireOnline("Deleting your account");
+      await deleteMyAccount();
+      await Promise.all([wipeAccountData(accountId), dropOutboxFor(accountId)]).catch(() => {});
+    } else {
+      await Promise.all(["sales", "plantings", "price_alerts", "harvest-plans", "ach_seen:demo"]
+        .map(key => Preferences.remove({ key }))).catch(() => {});
+    }
+    resetToSplash();
+  };
+
   const resetToSplash = () => {
     setIsAuthed(false);
     setAuthScreen("splash");
@@ -449,7 +468,7 @@ export default function App() {
       case "trade": return <TradeScreen onProfile={openProfile} onBack={goHome} userName={userName} userInitials={initials} userRole={userRole} intent={tradeIntent ?? undefined} />;
       case "guide": return <GuideScreen onBack={goHome} onReplay={replayTour} />;
       case "weather": return <WeatherScreen onProfile={openProfile} onBack={goHome} userInitials={initials} userRole={userRole} />;
-      case "profile": return <ProfileScreen onNavigate={navigate} onBack={goBack} profile={farmerProfile} setProfile={saveProfile} onSignOut={handleSignOut} userInitials={initials} userRole={userRole} userPhoto={userPhoto} onShowId={() => { setIdMode("view"); setShowWelcome(true); }} onReplayTour={replayTour} sales={allSales} memberSince={welcome?.since} />;
+      case "profile": return <ProfileScreen onNavigate={navigate} onBack={goBack} profile={farmerProfile} setProfile={saveProfile} onSignOut={handleSignOut} onDeleteAccount={handleDeleteAccount} userInitials={initials} userRole={userRole} userPhoto={userPhoto} onShowId={() => { setIdMode("view"); setShowWelcome(true); }} onReplayTour={replayTour} sales={allSales} memberSince={welcome?.since} />;
     }
   };
 

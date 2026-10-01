@@ -203,6 +203,30 @@ export async function signOut() {
   if (error) throw error;
 }
 
+/**
+ * Deletes the signed-in account for good: the sign-in, the profile, and
+ * everything that is this person's alone (see delete_my_account() in
+ * schema.sql for exactly what goes and what other people keep).
+ *
+ * Listing photos are files in Storage, which the database function can't
+ * reach, so they are removed first. If that step fails the account is still
+ * deleted: a person asking to leave is not kept because a photo wouldn't go.
+ */
+export async function deleteMyAccount(): Promise<void> {
+  const { data: u } = await supabase.auth.getUser();
+  if (!u.user) throw new Error("NOT_SIGNED_IN");
+  const uid = u.user.id;
+  try {
+    const bucket = supabase.storage.from("listing-photos");
+    const { data: files } = await bucket.list(uid, { limit: 1000 });
+    if (files?.length) await bucket.remove(files.map(f => `${uid}/${f.name}`));
+  } catch { /* the account goes regardless */ }
+  const { error } = await supabase.rpc("delete_my_account");
+  if (error) throw error;
+  // The session on this phone now belongs to nobody.
+  await supabase.auth.signOut({ scope: "local" }).catch(() => {});
+}
+
 // ─── Profile (the profiles table row) ─────────────────────────────────────────
 
 export interface ProfileRow {

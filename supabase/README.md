@@ -88,7 +88,7 @@ erDiagram
   }
   orders {
     uuid id PK
-    uuid buyer_id FK
+    uuid buyer_id FK "empties if the buyer deletes their account"
     numeric total_amount
     timestamptz created_at
   }
@@ -189,6 +189,7 @@ erDiagram
 | `set_my_crops(names)` | Replaces the farmer's crop list |
 | `replace_my_sales / plantings / price_alerts / harvest_plans` | Saves one of the farmer's lists in one step (used by the app, also after being offline) |
 | `award…` triggers | Awards Newbie on sign-up, First harvest on a first listing, First sale on a first sale |
+| `delete_my_account()` | Deletes the caller's own account and everything that is theirs alone. Orders stay in the other party's history, with the name removed |
 | `catalog_status()` | Counts only, for `npm run check:db` |
 
 ## Security
@@ -200,6 +201,7 @@ Row Level Security is on for every table; the database enforces it, not the app.
 - Orders can only be made through `place_order()`.
 - Nobody can edit their own rating or sales count.
 - Farmers can move their own order lines to confirmed or completed, and change nothing else about them.
+- Anyone can delete their own account, and only their own, through `delete_my_account()`.
 
 ## Everyday admin
 

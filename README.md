@@ -81,6 +81,7 @@ The app is feature-complete on the client. Some data sources are still sample da
 | Crop prices | Read from the database. The seed file loads sample prices; ingestion from government sources is planned. |
 | Price forecasts (ARIMA, LSTM) | **Sample values.** The screens exist; the models are not trained yet. See [Roadmap](#roadmap). |
 | Weather | **Sample values.** No forecast service is connected yet. |
+| Account deletion | In the app (Profile) and on a web page (`docs/delete-account.html`), as Google Play requires. |
 | Mobile-number verification by SMS | Not enabled. Numbers are not verified. |
 | Password reset | Not implemented. |
 | Automated tests | None yet. `npm run build` type-checks the project. |

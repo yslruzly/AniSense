@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Delete your AniSense account</title>
+  <meta name="description" content="How to delete your AniSense account and the data that goes with it.">
+  <meta name="robots" content="noindex">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@500;600;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    /* The app's own colours and type, so the page is recognisably AniSense.
+       Text never smaller than 16px; every control at least 52px tall. */
+    :root { --ink: #16211B; --paper: #F2F3F4; --card: #fff; --line: #D9DBDE; --tanim: #0B6B41; --tanim-sk: #D7EADD;
+            --muted: #474B4F; --error: #A5231B; --error-sk: #FBEAE8; }
+    * { box-sizing: border-box; margin: 0; }
+    body { background: var(--paper); color: var(--ink); font: 17px/1.55 "Source Sans 3", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    main { max-width: 560px; margin: 0 auto; padding: 28px 20px 56px; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 26px; }
+    .brand { font: 700 20px Lexend, sans-serif; letter-spacing: -.01em; }
+    .lang { display: flex; padding: 3px; border-radius: 12px; background: rgba(118,118,128,.13); }
+    .lang button { min-height: 40px; padding: 0 14px; border: 0; border-radius: 9px; background: none; font: 600 16px Lexend, sans-serif; color: var(--muted); cursor: pointer; }
+    .lang button[aria-pressed="true"] { background: var(--card); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.14); }
+    h1 { font: 700 30px/1.15 Lexend, sans-serif; letter-spacing: -.02em; }
+    h2 { font: 700 21px/1.25 Lexend, sans-serif; letter-spacing: -.01em; margin-bottom: 10px; }
+    .lead { margin-top: 10px; color: var(--muted); font-size: 18px; }
+    section { background: var(--card); border-radius: 22px; padding: 22px; margin-top: 18px;
+              box-shadow: 0 0 0 1px rgba(22,33,27,.05), 0 1px 2px rgba(22,33,27,.06), 0 14px 30px -20px rgba(22,33,27,.3); }
+    ol, ul { padding-left: 22px; }
+    li { margin-top: 6px; }
+    .note { margin-top: 12px; color: var(--muted); font-size: 16px; }
+    label { display: block; font: 600 17px Lexend, sans-serif; margin: 16px 0 8px; }
+    input[type=text], input[type=password], input[type=tel], input[type=email] {
+      width: 100%; min-height: 56px; padding: 0 16px; border: 0; border-radius: 14px; font: inherit; font-size: 18px; color: var(--ink);
+      background: var(--card); box-shadow: 0 0 0 1px rgba(22,33,27,.2); }
+    input:focus { outline: none; box-shadow: 0 0 0 2px var(--tanim), 0 0 0 6px rgba(11,107,65,.14); }
+    .seg { display: grid; grid-template-columns: 1fr 1fr; padding: 3px; border-radius: 14px; background: rgba(118,118,128,.13); }
+    .seg button { min-height: 48px; border: 0; border-radius: 11px; background: none; font: 600 16px Lexend, sans-serif; color: var(--muted); cursor: pointer; }
+    .seg button[aria-pressed="true"] { background: var(--card); color: var(--ink); box-shadow: 0 2px 6px rgba(0,0,0,.12); }
+    .btn { width: 100%; min-height: 56px; margin-top: 18px; border: 0; border-radius: 999px; font: 600 18px Lexend, sans-serif; cursor: pointer; }
+    .btn.go { background: var(--tanim); color: #fff; }
+    .btn.danger { background: var(--error); color: #fff; }
+    .btn.quiet { background: rgba(118,118,128,.13); color: var(--ink); }
+    .btn:disabled { background: #E3E5E3; color: #8B9089; cursor: default; }
+    .check { display: flex; align-items: center; gap: 12px; min-height: 52px; margin-top: 14px; font-weight: 600; cursor: pointer; }
+    .check input { width: 24px; height: 24px; accent-color: var(--error); flex-shrink: 0; }
+    .gone { list-style: none; padding: 14px 16px; margin-top: 12px; border-radius: 16px; background: var(--error-sk); font-weight: 600; }
+    .gone li::before { content: "✕"; color: var(--error); margin-right: 10px; font-weight: 700; }
+    .gone li:first-child { margin-top: 0; }
+    .msg { margin-top: 14px; padding: 12px 14px; border-radius: 14px; font-weight: 600; }
+    .msg.bad { background: var(--error-sk); color: var(--error); }
+    .msg.good { background: var(--tanim-sk); color: var(--tanim); }
+    a { color: var(--tanim); font-weight: 600; }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="brand">AniSense</div>
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" data-lang="en" aria-pressed="true">English</button>
+      <button type="button" data-lang="tl" aria-pressed="false">Tagalog</button>
+    </div>
+  </header>
+
+  <h1 data-t="title"></h1>
+  <p class="lead" data-t="lead"></p>
+
+  <section>
+    <h2 data-t="inAppTitle"></h2>
+    <ol>
+      <li data-t="inApp1"></li>
+      <li data-t="inApp2"></li>
+      <li data-t="inApp3"></li>
+    </ol>
+  </section>
+
+  <!-- Shown only once config.js has the project's address and key. -->
+  <section id="web" hidden>
+    <h2 data-t="webTitle"></h2>
+    <p data-t="webLead"></p>
+
+    <form id="signin" novalidate>
+      <div class="seg" role="group" style="margin-top:16px">
+        <button type="button" data-mode="phone" aria-pressed="true" data-t="cp"></button>
+        <button type="button" data-mode="gmail" aria-pressed="false">Gmail</button>
+      </div>
+      <label for="contact" id="contactLbl"></label>
+      <input id="contact" type="tel" inputmode="numeric" autocomplete="username" placeholder="09XX XXX XXXX">
+      <label for="password" data-t="password"></label>
+      <input id="password" type="password" autocomplete="current-password">
+      <button class="btn go" type="submit" data-t="signIn"></button>
+    </form>
+
+    <div id="confirm" hidden>
+      <p class="msg good" id="who"></p>
+      <ul class="gone">
+        <li data-t="gone1"></li>
+        <li data-t="gone2"></li>
+        <li data-t="gone3"></li>
+        <li data-t="gone4"></li>
+      </ul>
+      <p class="note" data-t="kept"></p>
+      <label class="check"><input id="sure" type="checkbox"><span data-t="sure"></span></label>
+      <button class="btn danger" id="del" type="button" disabled data-t="delBtn"></button>
+      <button class="btn quiet" id="cancel" type="button" data-t="cancel"></button>
+    </div>
+
+    <p class="msg bad" id="err" role="alert" hidden></p>
+  </section>
+
+  <section id="done" hidden>
+    <h2 data-t="doneTitle"></h2>
+    <p data-t="doneBody"></p>
+  </section>
+
+  <section>
+    <h2 data-t="whatTitle"></h2>
+    <ul>
+      <li data-t="what1"></li>
+      <li data-t="what2"></li>
+      <li data-t="what3"></li>
+    </ul>
+    <p class="note" id="support" hidden></p>
+  </section>
+</main>
+
+<script src="config.js"></script>
+<script type="module">
+  // ── Words ──────────────────────────────────────────────────────────────────
+  const T = {
+    en: {
+      title: "Delete your AniSense account",
+      lead: "You can delete your account and its data at any time, in the app or on this page.",
+      inAppTitle: "In the app",
+      inApp1: "Open AniSense and go to Profile.",
+      inApp2: "Scroll to the bottom and tap “Delete my account”.",
+      inApp3: "Tick the box to confirm, then tap “Delete account”.",
+      webTitle: "On this page",
+      webLead: "No longer have the app? Sign in here with the same details and delete the account.",
+      cp: "CP Number", cpLbl: "CP number", gmailLbl: "Gmail address",
+      password: "Password", signIn: "Sign in",
+      who: "Signed in as {name}.",
+      gone1: "Your profile and member ID",
+      gone2: "Your listings and their photos",
+      gone3: "Your expenses, sales and farm records",
+      gone4: "Your badges",
+      kept: "Orders you placed or received stay in the other person's history, without your name.",
+      sure: "I understand this can't be undone",
+      delBtn: "Delete account", deleting: "Deleting…", cancel: "Cancel",
+      doneTitle: "Your account has been deleted",
+      doneBody: "Thank you for using AniSense. You can close this page.",
+      whatTitle: "What is deleted, and what is kept",
+      what1: "Deleted right away: your sign-in, profile, listings and their photos, expenses, sales records, crop tracker, price alerts and badges.",
+      what2: "Kept without your name: orders you placed or received, because they are also the other person's record of the sale.",
+      what3: "Copies in routine backups are removed within 30 days.",
+      support: "Can't sign in, or have a question about your data? Write to {email}.",
+      errNeed: "Enter your CP number or Gmail, and your password.",
+      errWrong: "That number or password isn't right.",
+      errNet: "No internet. Connect and try again.",
+      errFail: "We couldn't delete the account. Please try again.",
+    },
+    tl: {
+      title: "Burahin ang AniSense account mo",
+      lead: "Puwede mong burahin ang account at datos mo anumang oras, sa app o sa pahinang ito.",
+      inAppTitle: "Sa app",
+      inApp1: "Buksan ang AniSense at pumunta sa Profile.",
+      inApp2: "Mag-scroll sa pinakababa at pindutin ang “Burahin ang account ko”.",
+      inApp3: "Lagyan ng tsek ang kahon, tapos pindutin ang “Burahin”.",
+      webTitle: "Sa pahinang ito",
+      webLead: "Wala na sa iyo ang app? Mag-sign in dito gamit ang parehong detalye at burahin ang account.",
+      cp: "CP Number", cpLbl: "CP number", gmailLbl: "Gmail address",
+      password: "Password", signIn: "Mag-sign in",
+      who: "Naka-sign in bilang {name}.",
+      gone1: "Ang profile at member ID mo",
+      gone2: "Ang mga paninda mo at ang mga litrato nito",
+      gone3: "Ang mga gastos, benta at tala ng bukid mo",
+      gone4: "Ang mga badge mo",
+      kept: "Mananatili sa history ng kabilang panig ang mga order mo, pero wala na ang pangalan mo.",
+      sure: "Naiintindihan kong hindi na ito maibabalik",
+      delBtn: "Burahin ang account", deleting: "Binubura…", cancel: "Kanselahin",
+      doneTitle: "Nabura na ang account mo",
+      doneBody: "Salamat sa paggamit ng AniSense. Puwede mo nang isara ang pahinang ito.",
+      whatTitle: "Ano ang nabubura, at ano ang natitira",
+      what1: "Nabubura agad: ang sign-in, profile, mga paninda at litrato nito, gastos, tala ng benta, crop tracker, price alert at badge mo.",
+      what2: "Natitira nang wala ang pangalan mo: ang mga order mo, dahil tala rin ito ng benta ng kabilang panig.",
+      what3: "Ang mga kopya sa regular na backup ay nabubura sa loob ng 30 araw.",
+      support: "Hindi makapag-sign in, o may tanong tungkol sa datos mo? Sumulat sa {email}.",
+      errNeed: "Ilagay ang CP number o Gmail mo, at ang password.",
+      errWrong: "Mali ang number o password.",
+      errNet: "Walang internet. Kumonekta at subukan ulit.",
+      errFail: "Hindi nabura ang account. Pakisubukan ulit.",
+    },
+  };
+  const cfg = window.ANISENSE || {};
+  const $ = id => document.getElementById(id);
+  let lang = navigator.language?.toLowerCase().startsWith("tl") || navigator.language?.toLowerCase().startsWith("fil") ? "tl" : "en";
+  let mode = "phone", who = "", lastErr = "";
+  const t = k => T[lang][k];
+
+  function paint() {
+    document.documentElement.lang = lang === "tl" ? "fil" : "en";
+    document.title = t("title");
+    document.querySelectorAll("[data-t]").forEach(el => { el.textContent = t(el.dataset.t); });
+    document.querySelectorAll("[data-lang]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
+    document.querySelectorAll("[data-mode]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === mode)));
+    $("contactLbl").textContent = t(mode === "phone" ? "cpLbl" : "gmailLbl");
+    const c = $("contact");
+    c.type = mode === "phone" ? "tel" : "email";
+    c.inputMode = mode === "phone" ? "numeric" : "email";
+    c.placeholder = mode === "phone" ? "09XX XXX XXXX" : "juan@gmail.com";
+    if (who) $("who").textContent = t("who").replace("{name}", who);
+    if (lastErr) $("err").textContent = t(lastErr);
+    if (cfg.supportEmail) {
+      const [a, b] = t("support").split("{email}");
+      $("support").replaceChildren(a, Object.assign(document.createElement("a"), { href: `mailto:${cfg.supportEmail}`, textContent: cfg.supportEmail }), b);
+      $("support").hidden = false;
+    }
+  }
+  const fail = key => { lastErr = key; $("err").textContent = t(key); $("err").hidden = false; };
+  const clear = () => { lastErr = ""; $("err").hidden = true; };
+
+  document.querySelectorAll("[data-lang]").forEach(b => b.onclick = () => { lang = b.dataset.lang; paint(); });
+  document.querySelectorAll("[data-mode]").forEach(b => b.onclick = () => { mode = b.dataset.mode; $("contact").value = ""; clear(); paint(); });
+  paint();
+
+  // ── The web deletion, once the project is configured ────────────────────────
+  if (cfg.supabaseUrl && cfg.supabaseKey) {
+    $("web").hidden = false;
+    const { createClient } = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
+    // Nothing is kept in the browser: the sign-in lives only as long as the page.
+    const db = createClient(cfg.supabaseUrl, cfg.supabaseKey, { auth: { persistSession: false, autoRefreshToken: false } });
+
+    // A CP-number account signs in at an address nobody types, the same one
+    // the app builds: 639171234567@phone.anisense.app.
+    const phoneEmail = raw => {
+      let d = raw.replace(/\D/g, "");
+      d = d.startsWith("63") ? d : d.startsWith("0") ? "63" + d.slice(1) : "63" + d;
+      return `${d}@phone.anisense.app`;
+    };
+
+    $("signin").onsubmit = async e => {
+      e.preventDefault(); clear();
+      const contact = $("contact").value.trim(), password = $("password").value;
+      if (!contact || !password) return fail("errNeed");
+      const email = mode === "phone" ? phoneEmail(contact) : contact.toLowerCase();
+      const btn = e.target.querySelector("button[type=submit]");
+      btn.disabled = true;
+      try {
+        const { data, error } = await db.auth.signInWithPassword({ email, password });
+        if (error) return fail(/fetch|network/i.test(error.message) ? "errNet" : "errWrong");
+        const { data: p } = await db.from("profiles").select("full_name").eq("id", data.user.id).maybeSingle();
+        who = p?.full_name || contact;
+        $("who").textContent = t("who").replace("{name}", who);
+        $("signin").hidden = true; $("confirm").hidden = false;
+      } catch { fail("errNet"); }
+      finally { btn.disabled = false; }
+    };
+
+    $("sure").onchange = () => { $("del").disabled = !$("sure").checked; };
+    $("cancel").onclick = async () => {
+      await db.auth.signOut().catch(() => {});
+      who = ""; $("sure").checked = false; $("del").disabled = true; $("password").value = "";
+      $("confirm").hidden = true; $("signin").hidden = false; clear();
+    };
+    $("del").onclick = async () => {
+      clear();
+      $("del").disabled = true; $("cancel").disabled = true; $("sure").disabled = true;
+      $("del").textContent = t("deleting");
+      try {
+        const { data: u } = await db.auth.getUser();
+        // Photos are files, which the database function can't reach.
+        try {
+          const bucket = db.storage.from("listing-photos");
+          const { data: files } = await bucket.list(u.user.id, { limit: 1000 });
+          if (files?.length) await bucket.remove(files.map(f => `${u.user.id}/${f.name}`));
+        } catch { /* the account goes regardless */ }
+        const { error } = await db.rpc("delete_my_account");
+        if (error) throw error;
+        await db.auth.signOut().catch(() => {});
+        $("web").hidden = true; $("done").hidden = false;
+        $("done").scrollIntoView({ behavior: "smooth" });
+      } catch (err) {
+        fail(navigator.onLine ? "errFail" : "errNet");
+        $("del").disabled = false; $("cancel").disabled = false; $("sure").disabled = false;
+        $("del").textContent = t("delBtn");
+      }
+    };
+  }
+</script>
+</body>
+</html>
