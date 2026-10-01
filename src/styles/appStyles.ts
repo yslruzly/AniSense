@@ -1370,7 +1370,7 @@ export const appCss = `
   .pr-next { fill: none; stroke: currentColor; stroke-width: 2.5; stroke-dasharray: 5 6; stroke-linecap: round; }
   .pr-dot { fill: currentColor; stroke: var(--paper); stroke-width: 3; }
   @keyframes pr-show { to { opacity: 1; } }
-  .pr-axis { position: relative; height: 18px; margin-top: 4px; font-size: 12.5px; color: var(--text-faint); text-transform: capitalize; }
+  .pr-axis { position: relative; height: 20px; margin-top: 4px; font-size: 14px; font-weight: 600; color: var(--text-faint); text-transform: capitalize; }
   .pr-axis span { position: absolute; top: 0; white-space: nowrap; }
   .pr-axis .now { font-weight: 700; color: var(--text-muted); }
   .pr-facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }

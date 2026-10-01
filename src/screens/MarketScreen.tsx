@@ -99,6 +99,15 @@ function PriceStory({ item }: { item: PriceItem }) {
   const end = next.length ? next[next.length - 1] : past[ti];
   const dir = dirOf(end - past[ti]);
   const lastMonth = run ? run.next[run.next.length - 1].month : records[ti].month;
+  // Every month drawn, recorded then forecast, and which of them get a label
+  // under the chart when it shows the year: the start of each quarter (Jan,
+  // Apr, Jul, Oct) and the last month. A quarter's label right beside the
+  // last one is dropped, so two never touch.
+  const plotted = [...records.map(p => p.month), ...(run ? run.next.map(p => p.month) : [])];
+  const lastPoint = plotted.length - 1;
+  const ticks = wholeYear
+    ? plotted.map((_, i) => i).filter(i => i === lastPoint || (Number(plotted[i].slice(5)) % 3 === 1 && lastPoint - i > 1))
+    : null;
 
   return (
     <div className="pr-story">
@@ -123,12 +132,24 @@ function PriceStory({ item }: { item: PriceItem }) {
         {run && <path d={nextD} className="pr-next" />}
         <circle cx={x(ti)} cy={y(past[ti])} r={5.5} className="pr-dot" />
       </svg>
-      {/* Three anchors, not twelve labels: where it started, the newest
-          record, where it's headed. */}
       <div className="pr-axis" aria-hidden="true">
-        <span style={{ left: 0 }}>{monthLabel(records[0].month, lang, "short", true)}</span>
-        {run && <span style={{ left: `${(x(ti) / W) * 100}%`, transform: "translateX(-50%)" }} className="now">{monthLabel(records[ti].month, lang)}</span>}
-        <span style={{ right: 0 }} className={run ? "" : "now"}>{monthLabel(lastMonth, lang, "short", !run)}</span>
+        {ticks ? (
+          // The year at a glance: Jan, Apr, Jul, Oct and the last month, each
+          // under its own point. No year on them: the title already says it.
+          ticks.map(i => (
+            <span key={i} style={i === 0 ? { left: 0 } : i === lastPoint ? { right: 0 } : { left: `${(x(i) / W) * 100}%`, transform: "translateX(-50%)" }}>
+              {monthLabel(plotted[i], lang, "short", !plotted[i].startsWith(year))}
+            </span>
+          ))
+        ) : (
+          // The last 12 months cross two years, so three anchors with the
+          // year: where it started, the newest record, where it's headed.
+          <>
+            <span style={{ left: 0 }}>{monthLabel(records[0].month, lang, "short", true)}</span>
+            {run && <span style={{ left: `${(x(ti) / W) * 100}%`, transform: "translateX(-50%)" }} className="now">{monthLabel(records[ti].month, lang)}</span>}
+            <span style={{ right: 0 }} className={run ? "" : "now"}>{monthLabel(lastMonth, lang, "short", !run)}</span>
+          </>
+        )}
       </div>
       <div className="pr-facts">
         <div><span>{lowLabel}</span><strong>{peso(lo)}</strong></div>
