@@ -15,7 +15,9 @@ import { fetchMyPurchases, fetchMySales, placeOrder as sendOrder } from "../serv
 import { fetchExpenses, addExpense, updateExpense, deleteExpense as dropExpense, ExpenseForm } from "../services/expenses";
 import { syncNow } from "../services/sync";
 import { fetchFarmRecords, saveSales as storeSales, savePlantings as storePlantings, saveAlerts as storeAlerts, savePlans as storePlans } from "../services/farmRecords";
-import { fetchLatestPrices, fetchMyAwards } from "../services/catalog";
+import { fetchLatestPrices, fetchPriceHistory, fetchForecasts, fetchMyAwards } from "../services/catalog";
+import { applyHistory } from "../data/priceRecords";
+import { applyForecasts } from "../data/forecast";
 
 // ─── The market store ─────────────────────────────────────────────────────────
 // One place for what the marketplace and the money screens show: listings and
@@ -24,12 +26,14 @@ import { fetchLatestPrices, fetchMyAwards } from "../services/catalog";
 // none of them knows whether it is talking to the database.
 //
 // It also holds a farmer's own records (sales typed in by hand, plantings,
-// price alerts, expected harvests), today's prices and the badges on record.
+// price alerts, expected harvests), the newest prices with their history and
+// forecasts, and the badges on record.
 //
 // Two modes, picked by whether a real account is signed in:
 //   live  Supabase. Reads are cached for offline; expenses and farm records
 //         also queue writes offline; listings and checkout need a connection
-//         and say so. Today's prices come from the database's catalog.
+//         and say so. Prices, their history and the forecasts come from
+//         the database, laid over the copy the app shipped with.
 //   demo  No .env yet, or the demo sign-in: the built-in sample data, changed
 //         in memory, and farm records kept on this phone, exactly as the app
 //         behaved before the database.
@@ -62,7 +66,7 @@ export interface Market {
   setHarvestPlans: (next: HarvestPlans) => void;
   /** Badges on record in the database (live only): self-awarded and admin-granted. */
   awards: AchievementId[];
-  /** Bumped when today's prices arrive from the database, so screens redraw. */
+  /** Bumped when prices, price history or forecasts arrive from the database, so screens redraw. */
   pricesVersion: number;
   isMine: (l: Listing) => boolean;
   sellerKeyOf: (l: Listing) => string;
@@ -123,9 +127,19 @@ export function useMarketStore({ accountId, role, name, initials }: {
   const loadAll = useCallback(async () => {
     const g = gen.current;
     const jobs: Promise<boolean>[] = [loadMarket()];
-    // Today's prices, from the database's catalog, into every screen.
+    // The newest prices, from the database's catalog, into every screen.
     jobs.push(fetchLatestPrices().then(r => {
       if (g === gen.current && r.data.length) { applyPrices(r.data); setPricesVersion(v => v + 1); }
+      return r.fromCache;
+    }));
+    // The price records and the forecasts, over the copy the app shipped
+    // with: a month added to the database shows without a new APK.
+    jobs.push(fetchPriceHistory().then(r => {
+      if (g === gen.current && r.data.length) { applyHistory(r.data); setPricesVersion(v => v + 1); }
+      return r.fromCache;
+    }));
+    jobs.push(fetchForecasts().then(r => {
+      if (g === gen.current && r.data.length) { applyForecasts(r.data); setPricesVersion(v => v + 1); }
       return r.fromCache;
     }));
     if (role === "buyer") {

@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "check:db": "node scripts/check-supabase.mjs"
+    "check:db": "node scripts/check-supabase.mjs",
+    "prices": "node scripts/build-prices.mjs",
+    "forecasts": "ml\\.venv\\Scripts\\python ml/train_forecasts.py",
+    "seed": "node scripts/build-seed.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.3.4",

@@ -1,6 +1,8 @@
 // ─── Catalog & rewards service ────────────────────────────────────────────────
-// Today's prices (crop_prices_latest) and the badges the database has awarded
-// this account (user_achievements). Both cached, so they still show offline.
+// The newest prices (crop_prices_latest), the price records behind them
+// (crop_prices), the forecasts (crop_forecasts), and the badges the database
+// has awarded this account (user_achievements). All cached, so they still
+// show offline.
 
 import { supabase } from "../lib/supabase";
 import { cachedFetch, FetchResult } from "../lib/cache";
@@ -14,6 +16,40 @@ export async function fetchLatestPrices(): Promise<FetchResult<PriceRow[]>> {
     const { data, error } = await supabase.from("crop_prices_latest").select("crop_id, price_per_kg, change_pct, price_date");
     if (error) throw error;
     return (data ?? []) as PriceRow[];
+  });
+}
+
+export interface HistoryRow { crop_id: string; price_date: string; price_per_kg: number }
+
+/** "2024-10-01": the 1st of the month, `months` months before this one. */
+const monthsAgo = (months: number) => {
+  const d = new Date();
+  const m = d.getFullYear() * 12 + d.getMonth() - months;
+  return `${Math.floor(m / 12)}-${String((m % 12) + 1).padStart(2, "0")}-01`;
+};
+
+/** The last two years of price records (never the sample prices of
+ *  varieties that have none). The charts show one year; the rest is margin. The phone already carries the full history it shipped with,
+ *  and these are laid over it. */
+export async function fetchPriceHistory(): Promise<FetchResult<HistoryRow[]>> {
+  return cachedFetch("price_history", async () => {
+    const { data, error } = await supabase.from("crop_prices")
+      .select("crop_id, price_date, price_per_kg").eq("is_sample", false).gte("price_date", monthsAgo(24)).order("price_date");
+    if (error) throw error;
+    return (data ?? []) as HistoryRow[];
+  });
+}
+
+export interface ForecastRow { crop_id: string; model: string; target_month: string; price_per_kg: number; low_per_kg: number; high_per_kg: number; mape: number }
+
+/** The models' forecasts for this month onward (and a few months back, in
+ *  case the newest record is behind). */
+export async function fetchForecasts(): Promise<FetchResult<ForecastRow[]>> {
+  return cachedFetch("price_forecasts", async () => {
+    const { data, error } = await supabase.from("crop_forecasts")
+      .select("crop_id, model, target_month, price_per_kg, low_per_kg, high_per_kg, mape").gte("target_month", monthsAgo(6)).order("target_month");
+    if (error) throw error;
+    return (data ?? []) as ForecastRow[];
   });
 }
 

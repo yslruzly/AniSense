@@ -1,20 +1,28 @@
 import { useRef, useState, type PointerEvent } from "react";
 import { ArrowUpRight, ArrowDownRight, ArrowRight } from "lucide-react";
 import { translations } from "../../i18n";
-import { LSTM_DATA } from "../../data/forecast";
+import { forecastForGroup } from "../../data/forecast";
+import { monthLabel } from "../../data/priceRecords";
 import { haptic } from "../../lib/platform";
 
 // ─── Price forecast ───────────────────────────────────────────────────────────
 // The page's centrepiece, answered in the order a farmer asks: which crop,
-// what is it today, what will it be in a week, and how sure are we.
+// what is it now, what will it be in three months, and how sure are we.
 //
-// One price line per crop: solid for the days that happened, dashed for the
-// forecast, with the shaded band showing where the price will likely land.
-// The line is always the same blue; whether the week is good news is said by
-// the chip above it (arrow, sign and colour), so a falling forecast is never
-// drawn in "good" green or a rising one in alarm red.
+// The prices are monthly records and the forecast is the LSTM's, trained on
+// them (src/data/forecast.ts). One price line per crop: solid for the last
+// twelve recorded months, dashed for the forecast, with the shaded band
+// showing where the price will likely land. The line is always the same
+// blue; whether the months ahead are good news is said by the chip above it
+// (arrow, sign and colour), so a falling forecast is never drawn in "good"
+// green or a rising one in alarm red.
 //
-// Touch and slide along the chart to read any day. The page still scrolls
+// How sure: under the chart, how far off the model was when tested on the
+// last year of prices. Where that is a lot (onion and calamansi swing by
+// half in a month), the chip stops saying "expected to rise" and says the
+// forecast is too uncertain to call.
+//
+// Touch and slide along the chart to read any month. The page still scrolls
 // vertically through it (touch-action: pan-y).
 //
 // Only the farmer's own crops, in the order they chose them: a forecast for
@@ -40,8 +48,8 @@ export function ForecastHero({ farmerCrops = [] }: { farmerCrops?: string[] }) {
   // names included: the market's words, the same on every phone.
   const t = en;
   const tn = (crop: string) => crop;
-  const crops = farmerCrops.filter(c => LSTM_DATA[c]);
-  const without = farmerCrops.filter(c => !LSTM_DATA[c]);
+  const crops = farmerCrops.filter(c => forecastForGroup(c, "lstm"));
+  const without = farmerCrops.filter(c => !forecastForGroup(c, "lstm"));
   const [picked, setPicked] = useState(() => crops[0] ?? "");
   // Follows the profile: if the crop on show is no longer one of theirs,
   // the first of theirs takes its place.
@@ -58,21 +66,27 @@ export function ForecastHero({ farmerCrops = [] }: { farmerCrops?: string[] }) {
       <section className="fc" aria-labelledby="fc-t">
         <div className="fc-head">
           <h2 className="fc-t" id="fc-t">{t("ana_forecast")}</h2>
-          <span className="fc-s">{t("ana_next7")}</span>
+          <span className="fc-s">{t("ana_next_months").replace("{n}", "3")}</span>
         </div>
         <p className="fc-none">{t("ana_fc_none").replace("{crops}", listOf(farmerCrops))}</p>
       </section>
     );
   }
 
-  const data = LSTM_DATA[crop];
-  const s = data.series;
+  const run = forecastForGroup(crop, "lstm")!;
+  // The recorded months, then the forecast ones. A recorded month has no
+  // range: it happened.
+  const s = [
+    ...run.past.map(p => ({ month: p.month, price: p.price, lower: p.price, upper: p.price })),
+    ...run.next,
+  ];
   const n = s.length;
-  const nowIdx = Math.max(0, s.findIndex(d => d.day === "Now"));
-  const value = (i: number) => (i <= nowIdx ? (s[i].actual ?? s[i].predicted) : s[i].predicted);
+  const nowIdx = run.past.length - 1;
+  const value = (i: number) => s[i].price;
+  const month = (i: number, form: "short" | "long" = "short", year = false) => monthLabel(s[i].month, "en", form, year);
 
-  const today = data.current;
-  const next = s[n - 1].predicted;
+  const today = run.current.price;
+  const next = s[n - 1].price;
   const diff = next - today;
   const pct = (diff / today) * 100;
   const dir = Math.abs(pct) < 0.5 ? "flat" : diff > 0 ? "up" : "down";
@@ -97,7 +111,7 @@ export function ForecastHero({ farmerCrops = [] }: { farmerCrops?: string[] }) {
     "Z",
   ].join(" ");
 
-  // Scrubbing: the nearest day to the finger.
+  // Scrubbing: the nearest month to the finger.
   const pick = (clientX: number) => {
     const r = svgRef.current?.getBoundingClientRect();
     if (!r) return;
@@ -109,13 +123,7 @@ export function ForecastHero({ farmerCrops = [] }: { farmerCrops?: string[] }) {
   const onMove = (e: PointerEvent<SVGSVGElement>) => { if (hover !== null || e.pointerType === "mouse") pick(e.clientX); };
   const onEnd = () => setHover(null);
 
-  const when = (i: number) => {
-    const d = i - nowIdx;
-    if (d === 0) return t("ana_today");
-    if (d === -1) return t("ana_yesterday");
-    if (d === 1) return t("ana_tomorrow");
-    return (d < 0 ? t("ana_days_ago") : t("ana_in_days")).replace("{n}", String(Math.abs(d)));
-  };
+  const when = (i: number) => month(i, "long", true);
   const pickCrop = (c: string) => {
     if (c === crop) return;
     haptic.select();
@@ -131,8 +139,9 @@ export function ForecastHero({ farmerCrops = [] }: { farmerCrops?: string[] }) {
     <section className="fc" aria-labelledby="fc-t">
       <div className="fc-head">
         <h2 className="fc-t" id="fc-t">{t("ana_forecast")}</h2>
-        {/* One crop: its name here, instead of a switch with one choice. */}
-        <span className="fc-s">{crops.length === 1 ? `${tn(crop)} · ` : ""}{t("ana_next7")}</span>
+        {/* Which variety the records are for: "Rice" is read from Special
+            Rice, "Onions" from Red Onion. */}
+        <span className="fc-s">{run.name} · {t("ana_next_months").replace("{n}", String(run.next.length))}</span>
       </div>
 
       {/* The crop switch: the same sliding pill as the marketplace's, on ink,
@@ -151,24 +160,26 @@ export function ForecastHero({ farmerCrops = [] }: { farmerCrops?: string[] }) {
         </div>
       )}
 
-      {/* Today → in 7 days: two labelled numbers, then what it means. */}
+      {/* The newest record → the last forecast month: two labelled numbers,
+          then what it means. */}
       <div className="fc-read" key={`r-${crop}`}>
         <div className="fc-col">
-          <span className="fc-k">{t("ana_today")}</span>
+          <span className="fc-k">{month(nowIdx, "long")}</span>
           <span className="fc-v">{peso(today)}</span>
         </div>
         <ArrowRight size={20} strokeWidth={2.4} className="fc-to" aria-hidden="true" />
         <div className="fc-col">
-          <span className="fc-k">{t("ana_in_7_days")}</span>
+          <span className="fc-k">{month(n - 1, "long")}</span>
           <span className="fc-v">{peso(next)}</span>
         </div>
       </div>
       <div className="fc-verdict">
-        <span className={`fc-chip ${dir}`}>
+        <span className={`fc-chip ${run.reliable ? dir : "flat"}`}>
           <Arrow size={16} strokeWidth={2.6} aria-hidden="true" />
           {diff >= 0 ? "+" : "−"}{peso(Math.abs(diff))} · {pct >= 0 ? "+" : "−"}{Math.abs(pct).toFixed(1)}%
         </span>
-        <span className="fc-say">{t(dir === "up" ? "ana_exp_rise" : dir === "down" ? "ana_exp_fall" : "ana_exp_flat")}</span>
+        {/* A forecast that tested badly makes no promise about direction. */}
+        <span className="fc-say">{t(!run.reliable ? "ana_exp_unsure" : dir === "up" ? "ana_exp_rise" : dir === "down" ? "ana_exp_fall" : "ana_exp_flat")}</span>
       </div>
 
       <div className="fc-chart">
@@ -184,7 +195,7 @@ export function ForecastHero({ farmerCrops = [] }: { farmerCrops?: string[] }) {
           viewBox={`0 0 ${W} ${H}`}
           className="fc-svg"
           role="img"
-          aria-label={`${tn(crop)}: ${t("ana_today")} ${peso(today)}, ${t("ana_in_7_days")} ${peso(next)}`}
+          aria-label={`${run.name}: ${when(nowIdx)} ${peso(today)}, ${when(n - 1)} ${peso(next)}`}
           onPointerDown={onDown}
           onPointerMove={onMove}
           onPointerUp={onEnd}
@@ -198,14 +209,14 @@ export function ForecastHero({ farmerCrops = [] }: { farmerCrops?: string[] }) {
               <text x={P.l - 6} y={y(v) + 3.5} className="fc-axis" textAnchor="end">₱{Math.round(v)}</text>
             </g>
           ))}
-          {/* Today, as a divider the eye can hang the story on. */}
+          {/* The newest record, as a divider the eye can hang the story on. */}
           <line x1={x(nowIdx)} x2={x(nowIdx)} y1={P.t - 10} y2={H - P.b} className="fc-now" />
 
           <g className={`fc-plot ${switched ? "swap" : "first"}`} key={crop}>
             <path d={band} className="fc-band" fill={LINE} />
             <path d={line(nowIdx, n - 1)} className="fc-future" stroke={LINE} />
             <path d={line(0, nowIdx)} className="fc-past" stroke={LINE} pathLength={1} />
-            {/* Today's dot, ringed in the surface colour so it sits on the line. */}
+            {/* The newest record's dot, ringed in the surface colour so it sits on the line. */}
             <circle cx={x(nowIdx)} cy={y(today)} r={4.5} className="fc-dot" fill="#fff" />
             <g className="fc-end">
               <circle cx={x(n - 1)} cy={y(next)} r={4} fill={LINE} className="fc-dot" />
@@ -220,9 +231,9 @@ export function ForecastHero({ farmerCrops = [] }: { farmerCrops?: string[] }) {
             </g>
           )}
 
-          <text x={x(0)} y={H - 7} className="fc-axis" textAnchor="start">{t("ana_last_week")}</text>
-          <text x={x(nowIdx)} y={H - 7} className="fc-axis now" textAnchor="middle">{t("ana_today")}</text>
-          <text x={x(n - 1)} y={H - 7} className="fc-axis" textAnchor="end">{t("ana_next_week")}</text>
+          <text x={x(0)} y={H - 7} className="fc-axis" textAnchor="start">{month(0, "short", true)}</text>
+          <text x={x(nowIdx)} y={H - 7} className="fc-axis now" textAnchor="middle">{month(nowIdx)}</text>
+          <text x={x(n - 1)} y={H - 7} className="fc-axis" textAnchor="end">{month(n - 1)}</text>
         </svg>
       </div>
 
@@ -233,6 +244,11 @@ export function ForecastHero({ farmerCrops = [] }: { farmerCrops?: string[] }) {
         <span><i className="band" style={{ background: LINE }} />{t("ana_leg_range")}</span>
       </div>
       <p className="fc-hint">{t("ana_scrub_hint")}</p>
+      {/* How sure: the model's average miss on the last year of prices. */}
+      <p className="fc-hint">
+        {t("ana_fc_tested").replace("{pct}", String(Math.round(run.mape)))}
+        {!run.reliable && ` ${t("ana_fc_swings")}`}
+      </p>
       {without.length > 0 && (
         <p className="fc-hint">{t("ana_fc_missing").replace("{crops}", listOf(without))}</p>
       )}

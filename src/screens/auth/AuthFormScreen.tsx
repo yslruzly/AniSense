@@ -4,6 +4,7 @@ import { ChevronLeft, Check, AlertCircle, MapPin, Smartphone, Mail } from "lucid
 import { useLang } from "../../i18n";
 import { UserRole, FarmDetails } from "../../types";
 import { CROPS, MAIN_CROPS } from "../../data/crops";
+import { hasRecords } from "../../data/priceRecords";
 import { FARM_PROVINCE, MUNICIPALITIES, BARANGAYS_BY_MUNICIPALITY, formatFarmLocation } from "../../data/locations";
 import { ISLAND_GROUPS, IslandGroup, PH_PROVINCES } from "../../data/phPlaces";
 import { CropEmoji } from "../../components/CropEmoji";
@@ -428,10 +429,12 @@ export function AuthFormScreen({
     // rather than a stock "welcome back".
     const hour = new Date().getHours();
     const greeting = t(hour >= 5 && hour < 12 ? "signin_morning" : hour >= 12 && hour < 18 ? "signin_afternoon" : "signin_evening");
-    // And a reason to sign in, from today's prices: for a farmer the crop
-    // that rose the most (good news for a seller), for a buyer the one that
-    // fell the most (a deal). If nothing moved that way, Juan just says hi.
-    const byChange = [...CROPS].sort((a, b) => b.change - a.change);
+    // And a reason to sign in, from the price records: for a farmer the crop
+    // that rose the most from the month before (good news for a seller), for
+    // a buyer the one that fell the most (a deal). Only crops with real
+    // records make the news; a sample price is never announced. If nothing
+    // moved that way, Juan just says hi.
+    const byChange = CROPS.filter(c => hasRecords(c.id)).sort((a, b) => b.change - a.change);
     const pick = role === "buyer" ? byChange[byChange.length - 1] : byChange[0];
     const news = pick && (role === "buyer" ? pick.change < 0 : pick.change > 0) ? pick : null;
     const fill = (key: string) => t(key)

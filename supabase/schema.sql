@@ -13,6 +13,7 @@
 --
 --    0. Types          the fixed lists: roles, crop families, statuses
 --    1. Catalog        crop_groups ─< crops ─< crop_prices   (+ crop_prices_latest)
+--                                           └─< crop_forecasts
 --    2. Accounts       profiles ─< profile_crops >─ crop_groups
 --    3. Market         listings ─< order_items >─ orders
 --    4. Farm records   expenses · sales · plantings · price_alerts · harvest_plans
@@ -65,17 +66,39 @@ create table if not exists public.crops (
   sort_order  int not null default 0
 );
 
--- One price per variety per day: the market's history.
+-- The price records: one retail price per variety per date. The study's varieties
+-- have one record a month from 2021 (dated the 1st of the month), loaded by
+-- seed.sql from data/historical-prices.csv.
 create table if not exists public.crop_prices (
   id            bigint generated always as identity primary key,
   crop_id       text not null references public.crops(id) on delete cascade,
   price_date    date not null default current_date,
   price_per_kg  numeric(10,2) not null check (price_per_kg > 0),
-  change_pct    numeric(5,2) not null default 0,          -- against the day before, in %
+  change_pct    numeric(5,2) not null default 0,          -- against the record before (the month before), in %
+  is_sample     boolean not null default false,           -- a placeholder for a variety with no records yet, not a market price
   unique (crop_id, price_date)
 );
+-- For a database built before price records were kept.
+alter table public.crop_prices add column if not exists is_sample boolean not null default false;
 
--- Today's board: the newest price for each variety.
+-- What the models expect: one row per variety, model and month ahead, with
+-- the range the price will likely land in and how far off that model was
+-- when tested. Written by seed.sql from the training script's output
+-- (ml/train_forecasts.py); never by the app.
+create table if not exists public.crop_forecasts (
+  id            bigint generated always as identity primary key,
+  crop_id       text not null references public.crops(id) on delete cascade,
+  model         text not null check (model in ('arima', 'lstm')),
+  target_month  date not null,                             -- the 1st of the month forecast
+  price_per_kg  numeric(10,2) not null check (price_per_kg > 0),
+  low_per_kg    numeric(10,2) not null,                    -- likely range, 8 times in 10
+  high_per_kg   numeric(10,2) not null,
+  mape          numeric(6,2) not null,                     -- the model's average miss on its test months, in %
+  generated_on  date not null default current_date,
+  unique (crop_id, model, target_month)
+);
+
+-- The board: the newest price for each variety.
 create or replace view public.crop_prices_latest
   with (security_invoker = true) as
   select distinct on (crop_id) crop_id, price_date, price_per_kg, change_pct
@@ -262,6 +285,7 @@ create index if not exists price_alerts_farmer_idx    on public.price_alerts (fa
 alter table public.crop_groups        enable row level security;
 alter table public.crops              enable row level security;
 alter table public.crop_prices        enable row level security;
+alter table public.crop_forecasts     enable row level security;
 alter table public.profiles           enable row level security;
 alter table public.profile_crops      enable row level security;
 alter table public.listings           enable row level security;
@@ -297,6 +321,8 @@ drop policy if exists "catalog: read" on public.crops;
 create policy "catalog: read" on public.crops for select to authenticated using (true);
 drop policy if exists "catalog: read" on public.crop_prices;
 create policy "catalog: read" on public.crop_prices for select to authenticated using (true);
+drop policy if exists "catalog: read" on public.crop_forecasts;
+create policy "catalog: read" on public.crop_forecasts for select to authenticated using (true);
 drop policy if exists "rewards: read" on public.achievements;
 create policy "rewards: read" on public.achievements for select to authenticated using (true);
 
@@ -608,6 +634,8 @@ returns json language sql stable security definer set search_path = public as $$
     'crop_groups', (select count(*) from crop_groups),
     'crops', (select count(*) from crops),
     'prices', (select count(*) from crop_prices_latest),
+    'price_records', (select count(*) from crop_prices where not is_sample),
+    'forecasts', (select count(*) from crop_forecasts),
     'badges', (select count(*) from achievements)
   );
 $$;

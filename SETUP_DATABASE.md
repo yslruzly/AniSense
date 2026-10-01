@@ -14,7 +14,7 @@ and the APK is rebuilt, AniSense runs on the database:
 | Farmer's expenses | Yes, and they also work offline, syncing when the signal returns |
 | Farmer's marketplace sales | Yes, counted in the profit figures automatically |
 | Sales typed in, crop tracker, price alerts, expected harvests | Yes, and they work offline too |
-| Crop catalog and today's prices | Yes: every screen shows the database's newest prices |
+| Crop catalog, price records and forecasts | Yes: every screen shows the database's newest prices, their history and the forecasts |
 | Achievements | Yes: Newbie, First harvest and First sale are awarded by the database itself; Farmer of the Month and Year can be granted from the dashboard |
 | Deleting an account | Yes: from Profile in the app, or from the web page in `docs/` (see "Before the Play Store") |
 
@@ -46,7 +46,7 @@ Two files, in this order, each in its own query:
 
 1. Sidebar: **SQL Editor → New query**. Open `supabase/schema.sql`, copy
    **all** of it, paste, **Run**. You should see "Success. No rows returned".
-   This creates the 15 tables, the security rules, the functions (checkout,
+   This creates the 16 tables, the security rules, the functions (checkout,
    sign-up, farm-record sync, badges) and the `listing-photos` storage bucket.
 2. **New query** again. Open `supabase/seed.sql`, copy all of it, paste,
    **Run**. This fills the catalog: 10 crop types, 24 varieties, today's
@@ -100,7 +100,7 @@ checks that:
 - the key is the public one
 - the project answers
 - Confirm email is off
-- all 15 tables exist, section by section
+- all 16 tables exist, section by section
 - every database function exists
 - the catalog is filled (seed.sql ran)
 - the photo bucket exists

@@ -1,0 +1,51 @@
+# Forecast models
+
+The two models the study names, ARIMA and LSTM, trained on AniSense's monthly retail price records. Training runs on your own computer with free, open-source Python libraries. There is no subscription, no API key, and nothing is sent anywhere. The phone never trains anything: it only shows the results.
+
+| File | What it does |
+|---|---|
+| `train_forecasts.py` | Trains and tests both models for every variety, then writes the forecasts the app shows and the test report. |
+| `import_pdf.py` | Reads the price tables out of `Historical-Records-Crops-2021-2026.pdf` into `data/historical-prices.csv`. Only needed when a newer PDF replaces the old one. |
+| `REPORT.md` | The test results: each model's error on the last 12 months, per variety, next to the simplest possible forecast. Generated. |
+| `requirements.txt` | The Python libraries used. |
+
+## One-time setup
+
+Python 3.11 or newer.
+
+```
+python -m venv ml/.venv
+ml\.venv\Scripts\python -m pip install -r ml/requirements.txt
+```
+
+The `ml/.venv` folder is large and is not committed to git.
+
+## When a new month of prices comes in
+
+1. Add the month as a new row at the bottom of `data/historical-prices.csv`. Leave a cell empty if there is no record for that variety.
+2. Rebuild everything that is made from it:
+
+```
+npm run prices        src/data/priceHistory.ts   the history the app bundles
+npm run forecasts     src/data/forecasts.json    and ml/REPORT.md
+npm run seed          supabase/seed.sql          the database's copy
+```
+
+3. Run `supabase/seed.sql` in the Supabase SQL Editor, and build a new APK.
+
+Training takes about a minute and gives the same numbers every time it is run on the same data.
+
+## How the models are tested
+
+The last 12 months of each variety are held back. Each model is fitted on the months before them, then asked, month by month, for the next 3 months using only what was known by then. Its answers are compared with what really happened, and with the simplest forecast there is: "next month's price is the same as this month's".
+
+The app uses that result. Each forecast is shown with how far off the model was on average, and where that is more than 20% (`RELIABLE_MAPE` in `src/data/forecast.ts`), the app says the forecast is too uncertain to call and gives no sell-or-wait advice from it.
+
+## Where each model is used in the app
+
+| Screen | Model |
+|---|---|
+| Analytics: the price forecast chart | LSTM |
+| Prices: the chart inside each crop | LSTM |
+| Analytics: "Sell now or wait?" | ARIMA |
+| Home: "Prices in the next 3 months" | ARIMA |

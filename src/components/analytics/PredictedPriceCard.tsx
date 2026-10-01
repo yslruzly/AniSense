@@ -1,14 +1,16 @@
 import { ArrowDownRight, ArrowUpRight, ArrowRight } from "lucide-react";
 import { useLang } from "../../i18n";
-import { CROP_GROUPS, RICE_VARIETIES } from "../../data/crops";
-import { arimaProjection } from "../../data/forecast";
+import { forecastForGroup } from "../../data/forecast";
+import { monthLabel } from "../../data/priceRecords";
 import { CropEmoji } from "../CropEmoji";
 
-// ─── Prices in the next 3 days ────────────────────────────────────────────────
-// The advisor card above says what to do; this one shows how the price gets
-// there, day by day. Each crop: where it ends up and by how much, then a small
-// path from today to day 3 with the weekdays under it, drawn against a dashed
-// line at today's price so "above" and "below" need no reading.
+// ─── Prices in the next 3 months ──────────────────────────────────────────────
+// The advisor card says what to do; this one shows how the price gets there,
+// month by month, from the ARIMA forecast trained on the price records. Each
+// crop: where it ends up and by how much, then a small path from the newest
+// record to the third month with the months under it, drawn against a dashed
+// line at the newest price so "above" and "below" need no reading. Crops
+// with no price records are left out.
 //
 // Not animated. Home is opened many times a day, and a line that draws itself
 // every visit stops being information and starts being a wait.
@@ -36,24 +38,21 @@ function PricePath({ values, dir }: { values: number[]; dir: "up" | "down" | "fl
 
 export function PredictedPriceCard({ farmerCrops = ["Rice", "Corn"] }: { farmerCrops?: string[] }) {
   const { t, tn, lang } = useLang();
-  const locale = lang === "tl" ? "fil-PH" : "en-PH";
-  const groupPriceMap: Record<string, number> = {};
-  CROP_GROUPS.forEach(g => { groupPriceMap[g.group] = g.varieties[0].pricePerKg; });
-  groupPriceMap["Rice"] = RICE_VARIETIES[0].pricePerKg;
 
   const items = farmerCrops.map(cropName => {
-    const current = groupPriceMap[cropName] ?? 0;
-    const proj = arimaProjection(cropName, current);
-    if (!proj) return null;
-    return { name: cropName, current, ...proj };
+    const run = forecastForGroup(cropName, "arima");
+    if (!run) return null;
+    const current = run.current.price;
+    const days = run.next.map(p => p.price);
+    const d3 = days[days.length - 1];
+    // The newest record's month, then the forecast months, under the
+    // matching points.
+    const labels = [run.current.month, ...run.next.map(p => p.month)].map(m => monthLabel(m, lang));
+    return { name: cropName, current, days, d3, change: d3 - current, pct: (d3 / current - 1) * 100, labels };
   }).filter((r): r is NonNullable<typeof r> => r !== null);
 
   if (items.length === 0) return null;
 
-  // Today, then the next three weekdays, under the matching points.
-  const now = new Date();
-  const dayLabels = [0, 1, 2, 3].map(k =>
-    k === 0 ? t("ana_today") : new Date(now.getFullYear(), now.getMonth(), now.getDate() + k).toLocaleDateString(locale, { weekday: "short" }));
   const peso = (n: number) => `₱${n.toLocaleString("en-PH", { maximumFractionDigits: 1 })}`;
 
   return (
@@ -73,7 +72,7 @@ export function PredictedPriceCard({ farmerCrops = ["Rice", "Corn"] }: { farmerC
                 <span className="adv-ico"><CropEmoji crop={r.name} size={22} /></span>
                 <div className="pp-id">
                   <div className="adv-name">{tn(r.name)}</div>
-                  <div className="pp-now">{t("ana_today")} {peso(r.current)}/kg</div>
+                  <div className="pp-now">{r.labels[0]} {peso(r.current)}/kg</div>
                 </div>
                 <div className="pp-end">
                   <div className="pp-target">{peso(r.d3)}</div>
@@ -88,10 +87,10 @@ export function PredictedPriceCard({ farmerCrops = ["Rice", "Corn"] }: { farmerC
 
               <div className="pp-chart"
                 role="img"
-                aria-label={`${tn(r.name)}: ${[r.current, ...r.days].map((v, i) => `${dayLabels[i]} ${peso(v)}`).join(", ")}`}>
+                aria-label={`${tn(r.name)}: ${[r.current, ...r.days].map((v, i) => `${r.labels[i]} ${peso(v)}`).join(", ")}`}>
                 <PricePath values={[r.current, ...r.days]} dir={dir} />
                 <div className="pp-days" aria-hidden="true">
-                  {dayLabels.map((l, i) => <span key={i}>{l}</span>)}
+                  {r.labels.map((l, i) => <span key={i}>{l}</span>)}
                 </div>
               </div>
             </div>

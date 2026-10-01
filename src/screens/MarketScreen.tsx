@@ -7,7 +7,8 @@ import { haptic } from "../lib/platform";
 import { useLang } from "../i18n";
 import { UserRole } from "../types";
 import { CROP_FAMILIES, FAMILY_GROUPS } from "../data/crops";
-import { LSTM_DATA } from "../data/forecast";
+import { forecastOf } from "../data/forecast";
+import { historyOf, latestMonth, monthLabel } from "../data/priceRecords";
 import { Hdr } from "../components/layout/Hdr";
 import { CropIcon } from "../components/icons";
 import { cropPhoto, cropGroupPhoto } from "../data/cropPhotos";
@@ -20,11 +21,14 @@ import basketMouthShut from "../assets/mascot-basket-mouth-shut.webp";
 
 // ─── Prices ───────────────────────────────────────────────────────────────────
 // Reads top to bottom as three questions:
-//   1. How's the market today?   → one line and a bar: how many went up
+//   1. How's the market?         → one line and a bar: how many went up
 //   2. What moved the most?      → a swipeable row of photo cards
 //   3. What's my crop at?        → search, filter, the full list
-// Every crop opens a sheet with its price story: last 7 days and the next 3
-// where the forecast has it. The chevrons used to promise that and do nothing.
+// Every crop opens a sheet with its price story: the past 12 months of
+// records and the next 3 where the forecast has them.
+//
+// Prices are monthly records, so every move here is "from the month before",
+// and the card at the top names the month the prices are for.
 
 const dirOf = (change: number) => (change > 0 ? "up" : change < 0 ? "down" : "flat");
 const peso = (n: number, digits = 2) => `₱${n.toLocaleString("en-PH", { minimumFractionDigits: digits, maximumFractionDigits: digits })}`;
@@ -50,20 +54,20 @@ function Thumb({ item, className }: { item: PriceItem; className: string }) {
 }
 
 // ── Price story chart ─────────────────────────────────────────────────────────
-// The LSTM run is per crop group and at its own price level; its shape is
-// scaled onto this variety's price so the line ends exactly at today's number.
+// The variety's own records: up to the last 12 months, solid, then the LSTM's
+// forecast for the months after, dashed. A variety with no records says so
+// and draws nothing: no line is better than an invented one.
 function PriceStory({ item }: { item: PriceItem }) {
   const { t, lang } = useLang();
-  const locale = lang === "tl" ? "fil-PH" : "en-PH";
-  const run = LSTM_DATA[item.group];
-  if (!run) return <p className="pr-story-none">{t("mkt_no_history")}</p>;
+  const records = historyOf(item.id).slice(-12);
+  if (records.length < 3) return <p className="pr-story-none">{t("mkt_no_history")}</p>;
 
-  const now = run.series.find(p => p.day === "Now")?.actual ?? run.current;
-  const k = item.pricePerKg / now;
-  const past = run.series.filter(p => p.actual !== null).map(p => (p.actual as number) * k);   // D-6 … Now
-  const next = run.series.filter(p => p.actual === null).slice(0, 3).map(p => p.predicted * k); // +1 … +3
+  const run = forecastOf(item.id, "lstm");
+  const past = records.map(p => p.price);
+  const next = run ? run.next.map(p => p.price) : [];
   const all = [...past, ...next];
   const lo = Math.min(...past), hi = Math.max(...past);
+  const months = String(records.length);
 
   const W = 320, H = 118, PX = 8, PY = 14;
   const min = Math.min(...all), max = Math.max(...all), span = max - min || 1;
@@ -73,24 +77,21 @@ function PriceStory({ item }: { item: PriceItem }) {
   const ti = past.length - 1;
   const nextD = [past[ti], ...next].map((v, i) => `${i ? "L" : "M"}${x(ti + i).toFixed(1)} ${y(v).toFixed(1)}`).join(" ");
   const area = `${pastD} L${x(ti).toFixed(1)} ${H} L${x(0)} ${H} Z`;
-  const dir = dirOf(next[next.length - 1] - past[ti]);
-
-  const day = (offset: number) => {
-    const d = new Date(); d.setDate(d.getDate() + offset);
-    return d.toLocaleDateString(locale, { weekday: "short" });
-  };
+  const end = next.length ? next[next.length - 1] : past[ti];
+  const dir = dirOf(end - past[ti]);
+  const lastMonth = run ? run.next[run.next.length - 1].month : records[ti].month;
 
   return (
     <div className="pr-story">
       <div className="pr-story-head">
-        <span className="pr-story-title">{t("mkt_history")}</span>
+        <span className="pr-story-title">{t(run ? "mkt_history" : "mkt_history_only").replace("{n}", months)}</span>
         <span className="pr-legend">
           <span className="pr-key solid" /> {t("mkt_actual")}
-          <span className="pr-key dashed" /> {t("mkt_forecast")}
+          {run && <><span className="pr-key dashed" /> {t("mkt_forecast")}</>}
         </span>
       </div>
       <svg className={`pr-chart ${dir}`} viewBox={`0 0 ${W} ${H}`} role="img"
-        aria-label={`${item.name}: ${past.map(v => peso(v)).join(", ")}; ${t("mkt_forecast")} ${next.map(v => peso(v)).join(", ")}`}>
+        aria-label={`${item.name}: ${records.map(p => `${monthLabel(p.month, lang, "short", true)} ${peso(p.price)}`).join(", ")}${run ? `; ${t("mkt_forecast")} ${run.next.map(p => `${monthLabel(p.month, lang, "short", true)} ${peso(p.price)}`).join(", ")}` : ""}`}>
         <defs>
           <linearGradient id="pr-fill" x1="0" x2="0" y1="0" y2="1">
             <stop offset="0" stopColor="currentColor" stopOpacity=".18" />
@@ -100,28 +101,38 @@ function PriceStory({ item }: { item: PriceItem }) {
         <line className="pr-today" x1={x(ti)} x2={x(ti)} y1={4} y2={H} />
         <path d={area} fill="url(#pr-fill)" className="pr-area" />
         <path d={pastD} className="pr-line" pathLength={1} />
-        <path d={nextD} className="pr-next" />
+        {run && <path d={nextD} className="pr-next" />}
         <circle cx={x(ti)} cy={y(past[ti])} r={5.5} className="pr-dot" />
       </svg>
-      {/* Three anchors, not ten labels: where it started, today, where it's headed. */}
+      {/* Three anchors, not fifteen labels: where it started, the newest
+          record, where it's headed. */}
       <div className="pr-axis" aria-hidden="true">
-        <span style={{ left: 0 }}>{day(-6)}</span>
-        <span style={{ left: `${(x(ti) / W) * 100}%`, transform: "translateX(-50%)" }} className="now">{t("ana_today")}</span>
-        <span style={{ right: 0 }}>{day(3)}</span>
+        <span style={{ left: 0 }}>{monthLabel(records[0].month, lang, "short", true)}</span>
+        {run && <span style={{ left: `${(x(ti) / W) * 100}%`, transform: "translateX(-50%)" }} className="now">{monthLabel(records[ti].month, lang)}</span>}
+        <span style={{ right: 0 }} className={run ? "" : "now"}>{monthLabel(lastMonth, lang, "short", !run)}</span>
       </div>
       <div className="pr-facts">
-        <div><span>{t("mkt_low")}</span><strong>{peso(lo)}</strong></div>
-        <div><span>{t("mkt_high")}</span><strong>{peso(hi)}</strong></div>
-        <div><span>{t("mkt_in_3")}</span><strong className={dir}>{peso(next[next.length - 1])}</strong></div>
+        <div><span>{t("mkt_low").replace("{n}", months)}</span><strong>{peso(lo)}</strong></div>
+        <div><span>{t("mkt_high").replace("{n}", months)}</span><strong>{peso(hi)}</strong></div>
+        {run && <div><span>{monthLabel(lastMonth, lang, "long")}</span><strong className={run.reliable ? dir : ""}>{peso(end)}</strong></div>}
       </div>
-      <p className="pr-note">{t("mkt_chart_note")}</p>
+      {/* Who made the forecast and how far off it has been, said plainly. */}
+      {run && (
+        <p className="pr-note">
+          {t("mkt_chart_note")} {t("mkt_chart_acc").replace("{pct}", String(Math.round(run.mape)))}
+          {!run.reliable && ` ${t("mkt_chart_swings")}`}
+        </p>
+      )}
     </div>
   );
 }
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userInitials = "JD", userRole }: { onProfile: () => void; isOffline: boolean; lastUpdated: string; onBack: () => void; userInitials?: string; userRole?: UserRole }) {
-  const { t, tn } = useLang();
+  const { t, tn, lang } = useLang();
+  // The month the records run to, named on the card at the top.
+  const priceMonth = latestMonth();
+  const pulseLabel = priceMonth ? t("mkt_pulse_label").replace("{month}", monthLabel(priceMonth, lang, "long", true)) : t("mkt_pulse_latest");
   // Prices arrive through a resource, so this screen has a real loading path,
   // a real failure path, and a real offline path.
   const prices = useResource(fetchPrices, []);
@@ -166,8 +177,8 @@ export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userIn
   const down = ALL_ITEMS.filter(c => c.change < 0).length;
   const flat = ALL_ITEMS.length - up - down;
   const movers = [...ALL_ITEMS].sort((a, b) => Math.abs(b.change) - Math.abs(a.change)).slice(0, 6);
-  // Whether today's market is good news for the person reading it: rising
-  // prices are a good day to sell, falling ones a good day to buy. How the
+  // Whether the market is good news for the person reading it: rising
+  // prices are a good time to sell, falling ones a good time to buy. How the
   // farmer arrives says which, so the same numbers read right for both.
   const goodDay = userRole === "buyer" ? down > up : up > down;
   const [headA, headB = ""] = t("mkt_pulse_head").split("{up}");
@@ -177,9 +188,9 @@ export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userIn
       <Hdr title={t("market_title")} onBack={onBack} />
       <div className="scroll screen-enter">
 
-        {/* 1 ── Today's market ── */}
-        <section className={`pr-pulse ${prices.status === "ready" ? "has-mascot" : ""}`} aria-label={t("mkt_pulse_label")}>
-          <div className="pr-pulse-lbl">{t("mkt_pulse_label")} · Nueva Ecija</div>
+        {/* 1 ── The market, and the month its prices are for ── */}
+        <section className={`pr-pulse ${prices.status === "ready" ? "has-mascot" : ""}`} aria-label={pulseLabel}>
+          <div className="pr-pulse-lbl">{pulseLabel} · Nueva Ecija</div>
           {prices.status === "ready" ? (
             <>
               {/* The count that answers the question, in the colour of its
@@ -387,7 +398,7 @@ export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userIn
                 <span className="pr-big">{peso(shown.pricePerKg)}<small>{t("per_kg_short")}</small></span>
                 <Change value={shown.change} big />
               </div>
-              <div className="pr-sheet-sub">{t("mkt_change_today")}</div>
+              <div className="pr-sheet-sub">{t("mkt_change_month")}</div>
               <PriceStory item={shown} />
             </div>
           </>

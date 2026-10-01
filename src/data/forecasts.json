@@ -1,0 +1,346 @@
+{
+  "generated": "2026-10-01",
+  "horizon": 3,
+  "testMonths": 12,
+  "crops": {
+    "rice-special": {
+      "months": 69,
+      "from": "2021-01",
+      "to": "2026-09",
+      "filled": [],
+      "arima": {
+        "order": [
+          1,
+          0,
+          3
+        ],
+        "mae": 2.61,
+        "rmse": 3.18,
+        "mape": 4.5,
+        "forecast": [
+          {
+            "month": "2026-10",
+            "price": 57.17,
+            "lower": 55.18,
+            "upper": 59.22
+          },
+          {
+            "month": "2026-11",
+            "price": 57.33,
+            "lower": 54.87,
+            "upper": 59.89
+          },
+          {
+            "month": "2026-12",
+            "price": 56.77,
+            "lower": 53.88,
+            "upper": 59.81
+          }
+        ]
+      },
+      "lstm": {
+        "window": 6,
+        "mae": 1.8,
+        "rmse": 2.07,
+        "mape": 3.1,
+        "forecast": [
+          {
+            "month": "2026-10",
+            "price": 57.37,
+            "lower": 55.52,
+            "upper": 59.3
+          },
+          {
+            "month": "2026-11",
+            "price": 57.21,
+            "lower": 54.76,
+            "upper": 59.78
+          },
+          {
+            "month": "2026-12",
+            "price": 56.66,
+            "lower": 53.25,
+            "upper": 60.28
+          }
+        ]
+      },
+      "naive": {
+        "mae": 2.41,
+        "rmse": 3.21,
+        "mape": 4.1
+      }
+    },
+    "rice-well-milled": {
+      "months": 69,
+      "from": "2021-01",
+      "to": "2026-09",
+      "filled": [],
+      "arima": {
+        "order": [
+          3,
+          0,
+          2
+        ],
+        "mae": 3.88,
+        "rmse": 5.58,
+        "mape": 7.4,
+        "forecast": [
+          {
+            "month": "2026-10",
+            "price": 49.06,
+            "lower": 45.78,
+            "upper": 52.58
+          },
+          {
+            "month": "2026-11",
+            "price": 46.81,
+            "lower": 42.89,
+            "upper": 51.1
+          },
+          {
+            "month": "2026-12",
+            "price": 46.65,
+            "lower": 41.4,
+            "upper": 52.57
+          }
+        ]
+      },
+      "lstm": {
+        "window": 6,
+        "mae": 4.54,
+        "rmse": 6.46,
+        "mape": 8.8,
+        "forecast": [
+          {
+            "month": "2026-10",
+            "price": 46.69,
+            "lower": 41.38,
+            "upper": 52.69
+          },
+          {
+            "month": "2026-11",
+            "price": 45.98,
+            "lower": 39.23,
+            "upper": 53.91
+          },
+          {
+            "month": "2026-12",
+            "price": 44.87,
+            "lower": 36.08,
+            "upper": 55.8
+          }
+        ]
+      },
+      "naive": {
+        "mae": 4.4,
+        "rmse": 6.15,
+        "mape": 8.5
+      }
+    },
+    "garlic-native": {
+      "months": 69,
+      "from": "2021-01",
+      "to": "2026-09",
+      "filled": [
+        "2025-01"
+      ],
+      "arima": {
+        "order": [
+          0,
+          1,
+          1
+        ],
+        "mae": 16.74,
+        "rmse": 25.21,
+        "mape": 4.8,
+        "forecast": [
+          {
+            "month": "2026-10",
+            "price": 349.56,
+            "lower": 304.16,
+            "upper": 401.75
+          },
+          {
+            "month": "2026-11",
+            "price": 349.56,
+            "lower": 299.97,
+            "upper": 407.35
+          },
+          {
+            "month": "2026-12",
+            "price": 349.56,
+            "lower": 296.19,
+            "upper": 412.56
+          }
+        ]
+      },
+      "lstm": {
+        "window": 6,
+        "mae": 37.16,
+        "rmse": 42.58,
+        "mape": 10.7,
+        "forecast": [
+          {
+            "month": "2026-10",
+            "price": 350.29,
+            "lower": 297.18,
+            "upper": 412.91
+          },
+          {
+            "month": "2026-11",
+            "price": 350.53,
+            "lower": 296.56,
+            "upper": 414.32
+          },
+          {
+            "month": "2026-12",
+            "price": 350.76,
+            "lower": 294.8,
+            "upper": 417.35
+          }
+        ]
+      },
+      "naive": {
+        "mae": 10.61,
+        "rmse": 23.19,
+        "mape": 3.1
+      }
+    },
+    "onion-red": {
+      "months": 69,
+      "from": "2021-01",
+      "to": "2026-09",
+      "filled": [
+        "2025-01"
+      ],
+      "arima": {
+        "order": [
+          3,
+          0,
+          2
+        ],
+        "mae": 29.43,
+        "rmse": 36.63,
+        "mape": 28.3,
+        "forecast": [
+          {
+            "month": "2026-10",
+            "price": 99.01,
+            "lower": 76.0,
+            "upper": 128.99
+          },
+          {
+            "month": "2026-11",
+            "price": 113.52,
+            "lower": 78.83,
+            "upper": 163.46
+          },
+          {
+            "month": "2026-12",
+            "price": 106.85,
+            "lower": 70.69,
+            "upper": 161.51
+          }
+        ]
+      },
+      "lstm": {
+        "window": 6,
+        "mae": 53.15,
+        "rmse": 63.46,
+        "mape": 51.8,
+        "forecast": [
+          {
+            "month": "2026-10",
+            "price": 132.21,
+            "lower": 74.41,
+            "upper": 234.91
+          },
+          {
+            "month": "2026-11",
+            "price": 141.82,
+            "lower": 71.22,
+            "upper": 282.42
+          },
+          {
+            "month": "2026-12",
+            "price": 121.29,
+            "lower": 57.06,
+            "upper": 257.86
+          }
+        ]
+      },
+      "naive": {
+        "mae": 32.65,
+        "rmse": 45.38,
+        "mape": 33.1
+      }
+    },
+    "cala-regular": {
+      "months": 46,
+      "from": "2022-12",
+      "to": "2026-09",
+      "filled": [],
+      "arima": {
+        "order": [
+          2,
+          0,
+          1
+        ],
+        "mae": 42.57,
+        "rmse": 47.12,
+        "mape": 48.9,
+        "forecast": [
+          {
+            "month": "2026-10",
+            "price": 59.29,
+            "lower": 39.71,
+            "upper": 88.52
+          },
+          {
+            "month": "2026-11",
+            "price": 59.85,
+            "lower": 37.89,
+            "upper": 94.53
+          },
+          {
+            "month": "2026-12",
+            "price": 61.78,
+            "lower": 37.94,
+            "upper": 100.6
+          }
+        ]
+      },
+      "lstm": {
+        "window": 6,
+        "mae": 35.36,
+        "rmse": 45.28,
+        "mape": 36.9,
+        "forecast": [
+          {
+            "month": "2026-10",
+            "price": 40.24,
+            "lower": 21.01,
+            "upper": 77.06
+          },
+          {
+            "month": "2026-11",
+            "price": 38.81,
+            "lower": 16.74,
+            "upper": 89.95
+          },
+          {
+            "month": "2026-12",
+            "price": 92.26,
+            "lower": 37.29,
+            "upper": 228.22
+          }
+        ]
+      },
+      "naive": {
+        "mae": 27.95,
+        "rmse": 37.86,
+        "mape": 31.2
+      }
+    }
+  }
+}

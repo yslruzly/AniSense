@@ -1,112 +1,91 @@
-import { LSTMPoint } from "../types";
+import bundled from "./forecasts.json";
+import { CROP_GROUPS, RICE_VARIETIES } from "./crops";
+import { MonthPrice, historyOf } from "./priceRecords";
 
-// ─── LSTM Forecast Data ───────────────────────────────────────────────────────
-export const LSTM_DATA: Record<string, { current: number; trend: "up" | "down" | "stable"; series: LSTMPoint[] }> = {
-  Rice: {
-    current: 51, trend: "up",
-    series: [
-      { day: "D-6", actual: 48, predicted: 48.1, lower: 46.8, upper: 49.4 },
-      { day: "D-5", actual: 49, predicted: 49.3, lower: 48.0, upper: 50.6 },
-      { day: "D-4", actual: 50, predicted: 49.8, lower: 48.5, upper: 51.1 },
-      { day: "D-3", actual: 49, predicted: 49.5, lower: 48.2, upper: 50.8 },
-      { day: "D-2", actual: 50, predicted: 50.2, lower: 48.9, upper: 51.5 },
-      { day: "D-1", actual: 51, predicted: 51.0, lower: 49.7, upper: 52.3 },
-      { day: "Now", actual: 51, predicted: 51.0, lower: 49.7, upper: 52.3 },
-      { day: "+1", actual: null, predicted: 52.3, lower: 50.8, upper: 53.8 },
-      { day: "+2", actual: null, predicted: 53.1, lower: 51.4, upper: 54.8 },
-      { day: "+3", actual: null, predicted: 53.8, lower: 51.9, upper: 55.7 },
-      { day: "+4", actual: null, predicted: 54.2, lower: 52.1, upper: 56.3 },
-      { day: "+5", actual: null, predicted: 54.9, lower: 52.6, upper: 57.2 },
-      { day: "+6", actual: null, predicted: 55.5, lower: 53.0, upper: 58.0 },
-      { day: "+7", actual: null, predicted: 55.8, lower: 53.2, upper: 58.4 },
-    ],
-  },
-  Onions: {
-    current: 45, trend: "down",
-    series: [
-      { day: "D-6", actual: 50, predicted: 49.8, lower: 48.2, upper: 51.4 },
-      { day: "D-5", actual: 49, predicted: 49.1, lower: 47.5, upper: 50.7 },
-      { day: "D-4", actual: 48, predicted: 48.2, lower: 46.6, upper: 49.8 },
-      { day: "D-3", actual: 47, predicted: 47.4, lower: 45.8, upper: 49.0 },
-      { day: "D-2", actual: 46, predicted: 46.5, lower: 44.9, upper: 48.1 },
-      { day: "D-1", actual: 45, predicted: 45.6, lower: 44.0, upper: 47.2 },
-      { day: "Now", actual: 45, predicted: 45.0, lower: 43.4, upper: 46.6 },
-      { day: "+1", actual: null, predicted: 44.2, lower: 42.4, upper: 46.0 },
-      { day: "+2", actual: null, predicted: 43.6, lower: 41.7, upper: 45.5 },
-      { day: "+3", actual: null, predicted: 43.1, lower: 41.1, upper: 45.1 },
-      { day: "+4", actual: null, predicted: 42.8, lower: 40.7, upper: 44.9 },
-      { day: "+5", actual: null, predicted: 42.4, lower: 40.2, upper: 44.6 },
-      { day: "+6", actual: null, predicted: 42.0, lower: 39.8, upper: 44.2 },
-      { day: "+7", actual: null, predicted: 41.8, lower: 39.5, upper: 44.1 },
-    ],
-  },
-  Calamansi: {
-    current: 160, trend: "up",
-    series: [
-      { day: "D-6", actual: 150, predicted: 151.0, lower: 148.0, upper: 154.0 },
-      { day: "D-5", actual: 153, predicted: 153.5, lower: 150.5, upper: 156.5 },
-      { day: "D-4", actual: 155, predicted: 154.8, lower: 151.8, upper: 157.8 },
-      { day: "D-3", actual: 157, predicted: 156.2, lower: 153.2, upper: 159.2 },
-      { day: "D-2", actual: 158, predicted: 157.5, lower: 154.5, upper: 160.5 },
-      { day: "D-1", actual: 160, predicted: 159.0, lower: 156.0, upper: 162.0 },
-      { day: "Now", actual: 160, predicted: 160.0, lower: 157.0, upper: 163.0 },
-      { day: "+1", actual: null, predicted: 162.5, lower: 159.0, upper: 166.0 },
-      { day: "+2", actual: null, predicted: 164.0, lower: 160.5, upper: 167.5 },
-      { day: "+3", actual: null, predicted: 165.5, lower: 161.5, upper: 169.5 },
-      { day: "+4", actual: null, predicted: 166.8, lower: 162.8, upper: 170.8 },
-      { day: "+5", actual: null, predicted: 168.0, lower: 163.5, upper: 172.5 },
-      { day: "+6", actual: null, predicted: 169.2, lower: 164.5, upper: 173.9 },
-      { day: "+7", actual: null, predicted: 170.0, lower: 165.0, upper: 175.0 },
-    ],
-  },
-  Corn: {
-    current: 70, trend: "stable",
-    series: [
-      { day: "D-6", actual: 66, predicted: 66.2, lower: 64.5, upper: 67.9 },
-      { day: "D-5", actual: 67, predicted: 67.1, lower: 65.4, upper: 68.8 },
-      { day: "D-4", actual: 68, predicted: 67.8, lower: 66.1, upper: 69.5 },
-      { day: "D-3", actual: 69, predicted: 68.9, lower: 67.2, upper: 70.6 },
-      { day: "D-2", actual: 69, predicted: 69.2, lower: 67.5, upper: 70.9 },
-      { day: "D-1", actual: 70, predicted: 69.8, lower: 68.1, upper: 71.5 },
-      { day: "Now", actual: 70, predicted: 70.0, lower: 68.3, upper: 71.7 },
-      { day: "+1", actual: null, predicted: 70.2, lower: 68.3, upper: 72.1 },
-      { day: "+2", actual: null, predicted: 70.5, lower: 68.5, upper: 72.5 },
-      { day: "+3", actual: null, predicted: 70.3, lower: 68.2, upper: 72.4 },
-      { day: "+4", actual: null, predicted: 70.6, lower: 68.4, upper: 72.8 },
-      { day: "+5", actual: null, predicted: 70.4, lower: 68.1, upper: 72.7 },
-      { day: "+6", actual: null, predicted: 70.7, lower: 68.3, upper: 73.1 },
-      { day: "+7", actual: null, predicted: 70.8, lower: 68.4, upper: 73.2 },
-    ],
-  },
-};
+// ─── Forecasts ────────────────────────────────────────────────────────────────
+// The next three months of each variety in the study, from the two models the
+// study names: ARIMA and LSTM. Both are trained on the price records by
+// ml/train_forecasts.py, which writes forecasts.json; the app only reads
+// the result, so forecasts show with no signal. Signed in to a real account,
+// the database's forecasts replace the bundled ones (applyForecasts).
+//
+// Each model also carries how it did when tested on the last 12 months
+// (`mape`: its average miss, as a percentage of the real price). Where that
+// miss is large, the screens say the forecast is uncertain and give no
+// sell-or-wait advice from it.
 
-// ─── ARIMA Data & AI Advisor ──────────────────────────────────────────────────
-export const ARIMA_DATA: Record<string, { d1: number; d2: number; d3: number }> = {
-  Rice: { d1: 51.8, d2: 52.4, d3: 52.9 },
-  Corn: { d1: 34.3, d2: 34.5, d3: 34.4 },
-  Onions: { d1: 44.5, d2: 44.0, d3: 43.6 },
-  Tomatoes: { d1: 38.9, d2: 39.6, d3: 40.2 },
-  Calamansi: { d1: 60.8, d2: 61.3, d3: 61.9 },
-  Mango: { d1: 73.1, d2: 74.2, d3: 74.8 },
-  Garlic: { d1: 27.8, d2: 27.5, d3: 27.2 },
-  Squash: { d1: 21.5, d2: 21.2, d3: 20.8 },
-};
+export type ModelName = "arima" | "lstm";
+export interface ForecastPoint { month: string; price: number; lower: number; upper: number }
+interface ModelRun { mape: number; forecast: ForecastPoint[] }
 
-/**
- * The ARIMA runs above were fitted when prices were different (calamansi was
- * ~₱61, it's ₱160 now), so subtracting today's price from d3 produced
- * nonsense like "drops ₱98/kg in 3 days". Read each run as a rate instead:
- * the model supplies the shape and speed, today's market the level.
- *
- * The run's own "today" is back-filled one step before d1 (d1 minus a day's
- * average move), and every forecast day is scaled from that to today's price.
- * `days` is the full path, so a chart and a headline number always agree.
- */
-export function arimaProjection(crop: string, current: number) {
-  const a = ARIMA_DATA[crop];
-  if (!a || current <= 0) return null;
-  const d0 = a.d1 - (a.d3 - a.d1) / 2;
-  const days = [a.d1, a.d2, a.d3].map(v => current * (v / d0));
-  const d3 = days[2];
-  return { days, d3, change: d3 - current, pct: (d3 / current - 1) * 100 };
+/** Above this average miss on the test months, a forecast is shown as
+ *  uncertain and is not turned into advice. */
+export const RELIABLE_MAPE = 20;
+
+const runs: Record<string, Partial<Record<ModelName, ModelRun>>> = {};
+for (const [id, c] of Object.entries(bundled.crops as Record<string, Record<ModelName, ModelRun>>)) {
+  runs[id] = {
+    arima: { mape: c.arima.mape, forecast: c.arima.forecast },
+    lstm: { mape: c.lstm.mape, forecast: c.lstm.forecast },
+  };
+}
+
+/** Replaces the bundled forecasts with the database's, per variety and model. */
+export function applyForecasts(rows: { crop_id: string; model: string; target_month: string; price_per_kg: number | string; low_per_kg: number | string; high_per_kg: number | string; mape: number | string }[]) {
+  const fresh: Record<string, Partial<Record<ModelName, ModelRun>>> = {};
+  for (const r of rows) {
+    if (r.model !== "arima" && r.model !== "lstm") continue;
+    const run = ((fresh[r.crop_id] ??= {})[r.model] ??= { mape: Number(r.mape), forecast: [] });
+    run.forecast.push({ month: r.target_month.slice(0, 7), price: Number(r.price_per_kg), lower: Number(r.low_per_kg), upper: Number(r.high_per_kg) });
+  }
+  for (const [id, models] of Object.entries(fresh)) {
+    for (const [model, run] of Object.entries(models) as [ModelName, ModelRun][]) {
+      run.forecast.sort((a, b) => a.month.localeCompare(b.month));
+      (runs[id] ??= {})[model] = run;
+    }
+  }
+}
+
+export interface ForecastRun {
+  /** The variety forecast: "rice-special". */
+  id: string;
+  /** Its name: "Special Rice". */
+  name: string;
+  model: ModelName;
+  /** The newest record: the month the forecast starts from. */
+  current: MonthPrice;
+  /** Up to the last 12 recorded months, oldest first, ending with `current`. */
+  past: MonthPrice[];
+  /** The months after `current`, nearest first. Never empty. */
+  next: ForecastPoint[];
+  /** The model's average miss on the test months, in percent. */
+  mape: number;
+  /** Whether that miss is small enough to act on. */
+  reliable: boolean;
+}
+
+/** A variety's forecast from one model, or null when there is none: no
+ *  records, or records that have already caught up with every forecast month
+ *  (new prices came in and the models have not been run again yet). */
+export function forecastOf(cropId: string, model: ModelName): ForecastRun | null {
+  const run = runs[cropId]?.[model];
+  const history = historyOf(cropId);
+  const current = history[history.length - 1];
+  if (!run || !current) return null;
+  const next = run.forecast.filter(p => p.month > current.month);
+  if (next.length === 0) return null;
+  const name = [...RICE_VARIETIES, ...CROP_GROUPS.flatMap(g => g.varieties)].find(v => v.id === cropId)?.name ?? cropId;
+  return { id: cropId, name, model, current, past: history.slice(-12), next, mape: run.mape, reliable: run.mape <= RELIABLE_MAPE };
+}
+
+/** A crop's forecast: that of its first variety that has one. A farmer picks
+ *  crops ("Rice"), the records are per variety ("Special Rice"), so Rice is
+ *  read from Special Rice, Onions from Red Onion, and so on. */
+export function forecastForGroup(group: string, model: ModelName): ForecastRun | null {
+  const varieties = group === "Rice" ? RICE_VARIETIES : CROP_GROUPS.find(g => g.group === group)?.varieties ?? [];
+  for (const v of varieties) {
+    const run = forecastOf(v.id, model);
+    if (run) return run;
+  }
+  return null;
 }

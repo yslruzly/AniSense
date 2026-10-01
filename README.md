@@ -32,7 +32,7 @@
 
 Farmers often sell without knowing the day's market price, and buyers rarely reach farmers directly. AniSense puts both on one app:
 
-- **Farmers** see today's prices for their crops, post harvests for sale, record expenses and sales, and check the weather before fieldwork.
+- **Farmers** see the latest prices for their crops, post harvests for sale, record expenses and sales, and check the weather before fieldwork.
 - **Buyers** browse fresh harvests, compare them against market prices, and order directly from the farmer who grew them.
 
 The app is designed for users aged 50 to 70 on budget Android phones: text is 16px or larger, every control is at least 52px tall, the interface is available in English and Tagalog, and the core screens keep working without a signal.
@@ -43,7 +43,7 @@ The app is designed for users aged 50 to 70 on budget Android phones: text is 16
 
 | Feature | Description |
 |---|---|
-| Today's prices | Prices for 10 crop types and 24 varieties, with the day's change. |
+| Prices | Monthly retail prices with the change from the month before. Five varieties (Special Rice, Well Milled Rice, Red Onion, Native Garlic, Calamansi) come from the study's records, 2021 to 2026, with a 12-month history. |
 | Marketplace | Post a harvest with a photo, price and quantity; edit or remove it; see who ordered. |
 | Expenses and profit | Record costs by category and crop, record sales, and see estimated and final profit. |
 | Crop tracker | Log plantings and count down to harvest. |
@@ -78,8 +78,8 @@ The app is feature-complete on the client. Some data sources are still sample da
 |---|---|
 | Accounts, profiles, listings, orders, expenses, farm records, achievements | Live on Supabase once a project is configured. |
 | Demo mode | Without a `.env` file the app runs on built-in sample data, so a build without keys still works for demonstrations. |
-| Crop prices | Read from the database. The seed file loads sample prices; ingestion from government sources is planned. |
-| Price forecasts (ARIMA, LSTM) | **Sample values.** The screens exist; the models are not trained yet. See [Roadmap](#roadmap). |
+| Crop prices | **Real monthly retail prices** for the study's five varieties (`data/historical-prices.csv`, January 2021 to September 2026), bundled in the app and loaded into the database by the seed file. The other 19 varieties still show **sample values**. |
+| Price forecasts (ARIMA, LSTM) | Trained on the price records by `ml/train_forecasts.py` (statsmodels and PyTorch, run locally, free). Three months ahead for the five varieties, each with its tested error; results in `ml/REPORT.md`. |
 | Weather | **Sample values.** No forecast service is connected yet. |
 | Account deletion | In the app (Profile) and on a web page (`docs/delete-account.html`), as Google Play requires. |
 | Mobile-number verification by SMS | Not enabled. Numbers are not verified. |
@@ -114,7 +114,7 @@ flowchart LR
 
   subgraph Supabase
     Auth["Auth"]
-    DB["PostgreSQL<br/>15 tables, RLS on all"]
+    DB["PostgreSQL<br/>16 tables, RLS on all"]
     RPC["Functions<br/>place_order, replace_my_*"]
     Storage["Storage<br/>listing-photos"]
   end

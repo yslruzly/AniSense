@@ -24,6 +24,10 @@ android/app/src/main/assets/public/
 *.keystore
 *.jks
 
+# Python environment for the forecast models (ml/README.md)
+ml/.venv/
+__pycache__/
+
 # Editors
 .idea/
 *.iml

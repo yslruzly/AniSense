@@ -31,6 +31,7 @@ drop table if exists
   public.listings,
   public.profile_crops,
   public.profiles,
+  public.crop_forecasts,
   public.crop_prices,
   public.crops,
   public.crop_groups

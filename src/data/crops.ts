@@ -1,17 +1,28 @@
-import { CropPrice, CropGroup, PricePoint } from "../types";
+import { CropPrice, CropGroup } from "../types";
+import { latestOf } from "./priceRecords";
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
+// The catalog: every crop and variety, with its retail price per kilo and how
+// far that moved from the month before, in percent.
+//
+// Five varieties are the study's and have real monthly records (Special
+// Rice, Well Milled, Red Onion, Regular Calamansi, Native Garlic). Their
+// price and change below are replaced, as this file loads, by the newest
+// month in the records (priceRecords.ts), so the numbers written here for
+// them are only a fallback. Every other variety has no records yet: its
+// numbers are SAMPLE values, not market prices.
+
 // Rice varieties (Philippine)
 export const RICE_VARIETIES: CropPrice[] = [
-  { id: "rice-special", name: "Special Rice", pricePerKg: 65, change: 2.5, volume: 14.2, color: "#2f9e63" },
-  { id: "rice-well-milled", name: "Well Milled", pricePerKg: 52, change: 1.8, volume: 18.6, color: "#2f9e63" },
+  { id: "rice-special", name: "Special Rice", pricePerKg: 57.2, change: -3.2, volume: 14.2, color: "#2f9e63" },
+  { id: "rice-well-milled", name: "Well Milled", pricePerKg: 47, change: -3.9, volume: 18.6, color: "#2f9e63" },
   { id: "rice-regular-milled", name: "Regular Milled", pricePerKg: 42, change: 0.2, volume: 22.4, color: "#2f9e63" },
 ];
 export const CROP_GROUPS: CropGroup[] = [
   {
     group: "Onions",
     varieties: [
-      { id: "onion-red", name: "Red Onion", pricePerKg: 45, change: -0.8, volume: 80, color: "#d4553f" },
+      { id: "onion-red", name: "Red Onion", pricePerKg: 92.5, change: 2.8, volume: 80, color: "#d4553f" },
       { id: "onion-white", name: "Yellow/White Onion", pricePerKg: 38, change: 1.2, volume: 50, color: "#2f9e63" },
       { id: "onion-yellow", name: "Shallots Onion", pricePerKg: 35, change: 0.5, volume: 28, color: "#2f9e63" },
       { id: "onion-spring", name: "Spring Onion", pricePerKg: 20, change: -1.0, volume: 15, color: "#d4553f" },
@@ -20,7 +31,7 @@ export const CROP_GROUPS: CropGroup[] = [
   {
     group: "Calamansi",
     varieties: [
-      { id: "cala-regular", name: "Regular Calamansi", pricePerKg: 160, change: 1.8, volume: 1.2, color: "#2f9e63" },
+      { id: "cala-regular", name: "Regular Calamansi", pricePerKg: 55, change: -15.4, volume: 1.2, color: "#2f9e63" },
     ],
   },
   {
@@ -35,7 +46,7 @@ export const CROP_GROUPS: CropGroup[] = [
   {
     group: "Garlic",
     varieties: [
-      { id: "garlic-native", name: "Native Garlic", pricePerKg: 150, change: 1.2, volume: 2.0, color: "#2f9e63" },
+      { id: "garlic-native", name: "Native Garlic", pricePerKg: 350, change: 0, volume: 2.0, color: "#2f9e63" },
     ],
   },
   {
@@ -77,15 +88,12 @@ export const CROP_GROUPS: CropGroup[] = [
 // crop at once. Rice leads because it is the crop this app exists for; leaving
 // it out is what had Home counting 17 while Market counted 20.
 export const CROPS: CropPrice[] = [...RICE_VARIETIES, ...CROP_GROUPS.flatMap(g => g.varieties)];
-export const PRICE_HISTORY: PricePoint[] = [
-  { day: "Mon", rice: 27, corn: 30, vegetables: 28 },
-  { day: "Tue", rice: 26, corn: 31, vegetables: 29 },
-  { day: "Wed", rice: 25, corn: 32, vegetables: 30 },
-  { day: "Thu", rice: 24, corn: 33, vegetables: 32 },
-  { day: "Fri", rice: 23, corn: 33, vegetables: 31 },
-  { day: "Sat", rice: 22, corn: 34, vegetables: 33 },
-  { day: "Sun", rice: 21, corn: 34, vegetables: 34 },
-];
+// The study's varieties take their price from the records: the newest month,
+// and its move from the month before.
+for (const c of CROPS) {
+  const now = latestOf(c.id);
+  if (now) { c.pricePerKg = now.price; c.change = now.change; }
+}
 export const CROP_ICONS_LEGACY: Record<string, string> = {
   "Rice (All Varieties)": "Rice", "Special Rice": "Rice", "Well Milled": "Rice", "Regular Milled": "Rice",
   Corn: "Corn", Onions: "Onions", Tomatoes: "Tomatoes",
@@ -162,7 +170,9 @@ export function cropIdOf(name: string): string | undefined {
 }
 
 /** Writes the database's newest prices into the catalog every screen reads,
- *  so Home, Prices, Analytics and the forecasts all show the same numbers. */
+ *  so Home, Prices, Analytics and the forecasts all show the same numbers.
+ *  `change_pct` is against the record before: the month before, for the
+ *  study's varieties. */
 export function applyPrices(rows: { crop_id: string; price_per_kg: number | string; change_pct: number | string }[]) {
   for (const r of rows) {
     const c = CROPS.find(x => x.id === r.crop_id);

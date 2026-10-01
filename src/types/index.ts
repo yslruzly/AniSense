@@ -12,7 +12,6 @@ export interface CropPrice {
   id: string; name: string; pricePerKg: number; change: number;
   volume: number; color: string;
 }
-export interface PricePoint { day: string; rice: number; corn: number; vegetables: number; }
 export interface Expense { id: string; category: string; description: string; amount: number; date: string; icon: string; crop: string; }
 export interface BuyerTransaction { id: string; crop: string; variety: string; kg: number; amount: number; date: string; seller: string; sellerInitials: string; location: string; }
 export interface Listing {
@@ -37,5 +36,4 @@ export interface SellerDetail {
   yearsfarming: number; rating: number; totalSales: number; crops: string[]; bio: string;
 }
 export interface CropGroup { group: string; varieties: CropPrice[]; }
-export interface LSTMPoint { day: string; actual: number | null; predicted: number; lower: number; upper: number; }
 export type FarmerProfile = { name: string; phone: string; email: string; location: string; experience: string; crops: string[]; };

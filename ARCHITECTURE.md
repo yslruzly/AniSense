@@ -172,7 +172,7 @@ Supabase provides four things:
 | Service | Use |
 |---|---|
 | Auth | Accounts and sessions. A mobile-number account is stored as an email alias until SMS verification is added. |
-| PostgreSQL | 15 tables in five sections: catalog, accounts, market, farm records, rewards. |
+| PostgreSQL | 16 tables in five sections: catalog, accounts, market, farm records, rewards. |
 | Functions (PL/pgSQL) | Operations that must be atomic or must not trust the client. |
 | Storage | One public bucket for listing photos, written only by the owner. |
 
@@ -338,10 +338,17 @@ flowchart LR
   Env[".env"] -.->|baked in at build| Dist
   Policy["src/data/privacyPolicy.ts"] -->|build-privacy.mjs| DocsPage["docs/privacy-policy.html"]
   Crops["src/data/crops.ts"] -->|build-seed.mjs| Seed["supabase/seed.sql"]
+  Csv["data/historical-prices.csv"] -->|build-prices.mjs| History["src/data/priceHistory.ts"]
+  Csv -->|ml/train_forecasts.py| Forecasts["src/data/forecasts.json"]
+  History -->|build-seed.mjs| Seed
+  Forecasts -->|build-seed.mjs| Seed
+  History -.->|bundled| Dist
+  Forecasts -.->|bundled| Dist
 ```
 
 - Environment values are compiled into the bundle, so a build made without `.env` is a demo build.
-- Two generators keep derived files in step with their source: the database seed is generated from the crop catalog, and the web privacy policy from the text the app shows.
+- Generators keep derived files in step with their source: the database seed is generated from the crop catalog, the price records and the forecasts, and the web privacy policy from the text the app shows.
+- Prices follow one path: `data/historical-prices.csv` holds the monthly records. From it come the history the app bundles (so prices show offline), the ARIMA and LSTM forecasts (trained locally in Python, never on the phone), and the database's copy. Signed in, the app lays the database's records and forecasts over the bundled ones, so a new month reaches phones without a new APK.
 - `docs/` is a static site (privacy policy and account deletion) that can be served by any static host.
 
 ## 9. Decision log
@@ -363,7 +370,7 @@ flowchart LR
 
 | Area | Current state | Plan |
 |---|---|---|
-| Crop prices | Seeded sample prices in the database | Ingest from government sources on a schedule. |
+| Crop prices | Monthly records for five varieties, added to a CSV by hand; sample values for the other 19 | Records for the remaining varieties; ingestion from government sources on a schedule. |
 | Price forecasts | Fixed sample values in `src/data/forecast.ts` | Train ARIMA and LSTM models offline on historical prices and store their output in the database; the app only reads results, so it keeps working offline. |
 | Weather | Sample values in `src/data/weather.ts` | Connect a forecast service. |
 | Phone verification | Not enabled | SMS codes through a provider, sent by a server-side hook. |

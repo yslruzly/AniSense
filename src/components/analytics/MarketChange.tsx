@@ -1,8 +1,8 @@
 import { translations } from "../../i18n";
 import { CROP_GROUPS, RICE_VARIETIES } from "../../data/crops";
 
-// ─── Price change today ───────────────────────────────────────────────────────
-// Every crop on one diverging scale: up to the right, down to the left, from a
+// ─── Monthly price change ─────────────────────────────────────────────────────
+// Every crop's move from the month before, on one diverging scale: up to the right, down to the left, from a
 // zero line in the middle, biggest rise first. The job is polarity, so two
 // hues and a neutral zero; the sign on every value and the side of the line
 // carry it as well, so it never rests on red against green alone (the pair is

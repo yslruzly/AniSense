@@ -6,10 +6,11 @@
 //   ✓ the key is the public one (never the secret / service_role key)
 //   ✓ the project answers
 //   ✓ "Confirm email" is OFF (CP-number accounts have no inbox)
-//   ✓ all 15 tables and the price view exist (schema.sql ran)
+//   ✓ all 16 tables and the price view exist (schema.sql ran)
 //   ✓ every database function exists (checkout, farm-record sync, crops,
 //     account deletion)
-//   ✓ the crop catalog, prices and badges are loaded (seed.sql ran)
+//   ✓ the crop catalog, price records, forecasts and badges are loaded
+//     (seed.sql ran)
 //   ✓ the listing-photos bucket exists
 
 import { readFileSync, existsSync } from "node:fs";
@@ -78,7 +79,7 @@ if (settings.body?.disable_signup) bad("New sign-ups are disabled", "Authenticat
 // 2. Tables, section by section. With no one signed in, row security returns
 //    an empty list: that still proves the table is there.
 const SECTIONS = {
-  Catalog: ["crop_groups", "crops", "crop_prices", "crop_prices_latest"],
+  Catalog: ["crop_groups", "crops", "crop_prices", "crop_prices_latest", "crop_forecasts"],
   Accounts: ["profiles", "profile_crops"],
   Market: ["listings", "orders", "order_items"],
   "Farm records": ["expenses", "sales", "plantings", "price_alerts", "harvest_plans"],
@@ -130,7 +131,10 @@ if (status.status !== 200) bad("Can't read the catalog status", "Run the latest 
 else if (!c.crop_groups || !c.crops || !c.prices || !c.badges)
   bad(`Starter data missing (crop groups ${c.crop_groups ?? 0}, varieties ${c.crops ?? 0}, prices ${c.prices ?? 0}, badges ${c.badges ?? 0})`,
     "SQL Editor → paste all of supabase/seed.sql → Run.");
-else ok(`Starter data: ${c.crop_groups} crop groups, ${c.crops} varieties, ${c.prices} prices, ${c.badges} badges`);
+else if (!c.forecasts || !c.price_records)
+  bad(`Price records or forecasts missing (price records ${c.price_records ?? 0}, forecasts ${c.forecasts ?? 0})`,
+    "Run the latest supabase/schema.sql, then supabase/seed.sql again (both safe to re-run).");
+else ok(`Starter data: ${c.crop_groups} crop groups, ${c.crops} varieties, ${c.price_records} price records, ${c.forecasts} forecasts, ${c.badges} badges`);
 
 // 4. Photo bucket. Asking for a file that isn't there says whether the
 //    bucket itself exists.
