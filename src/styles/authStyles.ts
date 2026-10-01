@@ -358,7 +358,19 @@ export const authCss = `
       background-color: #1E3A2A; background-image: none;
     }
   }
-  .a-legal { text-align: center; font-size: var(--fs-label); color: rgba(255,255,255,.78); margin-top: 14px; text-shadow: 0 1px 6px rgba(0,0,0,.35); }
+  .a-legal { text-align: center; font-size: var(--fs-label); line-height: 1.5; color: rgba(255,255,255,.78); margin-top: 14px; text-shadow: 0 1px 6px rgba(0,0,0,.35); }
+  /* What tapping either button means, on its own line under "Free": the
+     policy as a link, white and underlined so it reads as tappable on the
+     poster, with a 44px target that adds no height to the line. */
+  .a-legal-consent { display: block; margin-top: 2px; }
+  .a-legal-link {
+    display: inline-flex; align-items: center; min-height: 44px; margin: -11px 0; padding: 0 3px;
+    border: none; background: none; cursor: pointer; font: inherit; font-weight: 600; color: #fff;
+    text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 4px;
+    text-decoration-color: rgba(255,255,255,.6); text-shadow: inherit;
+    transition: opacity 140ms ease; -webkit-tap-highlight-color: transparent;
+  }
+  .a-legal-link:active { opacity: .6; transition-duration: 0ms; }
   /* For screen readers only: the poster's words are in the picture. */
   .a-sr {
     position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
@@ -799,10 +811,6 @@ export const authCss = `
      target without making the line taller. */
   .a-switch { text-align: center; font-size: var(--fs-body); color: var(--text-muted); margin-top: 18px; }
   .a-switch .a-link { min-height: 44px; margin: -10px 0; }
-  /* What Create Account means, under that button on the last question:
-     smaller and quieter than the button, with the policy as a link. */
-  .a-consent { text-align: center; margin: 14px 4px 0; font-size: var(--fs-label); line-height: 1.45; color: var(--text-faint); text-wrap: balance; }
-  .a-consent .a-link { min-height: 44px; margin: -10px 0; font-size: var(--fs-label); }
 
   /* ── Crop picker ───────────────────────────────────────────────────────── */
   /* White tiles on the grey page, like the setup card: a hairline and a soft

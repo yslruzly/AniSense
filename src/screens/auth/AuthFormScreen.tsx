@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { haptic } from "../../lib/platform";
-import { ChevronLeft, Check, AlertCircle, MapPin, Smartphone, Mail, X } from "lucide-react";
+import { ChevronLeft, Check, AlertCircle, MapPin, Smartphone, Mail } from "lucide-react";
 import { useLang } from "../../i18n";
 import { UserRole, FarmDetails } from "../../types";
 import { CROPS, MAIN_CROPS } from "../../data/crops";
@@ -8,9 +8,6 @@ import { FARM_PROVINCE, MUNICIPALITIES, BARANGAYS_BY_MUNICIPALITY, formatFarmLoc
 import { ISLAND_GROUPS, IslandGroup, PH_PROVINCES } from "../../data/phPlaces";
 import { CropEmoji } from "../../components/CropEmoji";
 import { PickerField } from "../../components/ui/PickerField";
-import { Sheet } from "../../components/ui/Sheet";
-import { PrivacyPolicy } from "../../components/PrivacyPolicy";
-import { PRIVACY } from "../../data/privacyPolicy";
 import juanPeekBody from "../../assets/juan-peek-body.webp";
 import juanPeekHand from "../../assets/juan-peek-hand.webp";
 import juanMouthHalf from "../../assets/juan-peek-mouth-half.webp";
@@ -146,8 +143,7 @@ export function AuthFormScreen({
     return () => { alive = false; };
   }, [role, page, phBarangays]);
   const [farmPhone, setFarmPhone] = useState("");
-  const [showPolicy, setShowPolicy] = useState(false);
-  const { t, tn, lang } = useLang();
+  const { t, tn } = useLang();
 
   // The questions, in order. A farmer who signs up with a CP number has
   // already given the number buyers should call, so they aren't asked twice;
@@ -362,7 +358,7 @@ export function AuthFormScreen({
 
   // Back beside the primary action, as on the earlier steps, so the whole
   // setup is driven from one place under the thumb.
-  const dock = (main: ReactNode, before?: ReactNode, after?: ReactNode) => (
+  const dock = (main: ReactNode, before?: ReactNode) => (
     <div className="a-dock">
       {before}
       <div className="a-dockpair">
@@ -371,34 +367,7 @@ export function AuthFormScreen({
         </button>
         {main}
       </div>
-      {after}
     </div>
-  );
-
-  // What tapping Create Account means, right under that button, on the last
-  // question only: the place every app puts it, and the moment it is true.
-  // Nothing has left the phone before that tap. The policy is one tap away,
-  // because agreeing to something you can't read is not agreeing.
-  const consent = (
-    <p className="a-consent">
-      {t("ask_consent").split("{link}")[0]}
-      <button type="button" className="a-link" onClick={() => setShowPolicy(true)}>{PRIVACY.title[lang]}</button>
-      {t("ask_consent").split("{link}")[1]}
-    </p>
-  );
-  const policySheet = (
-    <Sheet open={showPolicy} onClose={() => setShowPolicy(false)} className="pp-sheet" label={PRIVACY.title[lang]}>
-      <div className="pp-sheet-head">
-        <h2 className="pp-sheet-title">{PRIVACY.title[lang]}</h2>
-        <button type="button" className="pp-sheet-close" onClick={() => setShowPolicy(false)} aria-label={t("close")}>
-          <X size={20} strokeWidth={2.4} />
-        </button>
-      </div>
-      <div className="pp-sheet-body"><PrivacyPolicy /></div>
-      <div className="pp-sheet-foot">
-        <button type="button" className="pp-done" onClick={() => setShowPolicy(false)}>{t("pp_done")}</button>
-      </div>
-    </Sheet>
   );
 
   // CP number or Gmail, both visible at once, then the field for the one
@@ -581,8 +550,7 @@ export function AuthFormScreen({
         {!errField && alert()}
       </div>
 
-      {dock(main, beforeDock, at === pages.length - 1 && page !== "verify" ? consent : undefined)}
-      {policySheet}
+      {dock(main, beforeDock)}
     </form>
   );
 

@@ -73,12 +73,6 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
       label: t("prof_help"), sub: t("prof_help_sub"),
       go: (() => onNavigate("guide")) as (() => void) | undefined,
     },
-    // After the two ways to get help, before the version: where people look
-    // for it in any app.
-    {
-      ico: <ShieldCheck size={16} color="var(--tanim)" />, bg: "var(--tanim-sk)", label: t("prof_privacy"), sub: t("prof_privacy_sub"),
-      go: (() => onNavigate("privacy")) as (() => void) | undefined,
-    },
     { ico: <Settings size={16} color="var(--ink-2)" />, bg: "var(--paper-alt)", label: t("prof_about"), sub: t("prof_version"), go: undefined as (() => void) | undefined },
   ];
 
@@ -277,6 +271,17 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
                 </div>
                 <LanguageToggle />
               </div>
+              {/* The policy sits with the app's settings, where people look
+                  for it in any app. A real button: it opens the Privacy
+                  screen. */}
+              <button className="setting-row as-btn" onClick={() => onNavigate("privacy")}>
+                <div className="setting-ico" style={{ background: "var(--tanim-sk)" }}><ShieldCheck size={16} color="var(--tanim)" /></div>
+                <div style={{ flex: 1 }}>
+                  <div className="setting-lbl">{t("prof_privacy")}</div>
+                  <div className="setting-sub">{t("prof_privacy_sub")}</div>
+                </div>
+                <ChevronRight size={16} color="var(--line-strong)" />
+              </button>
             </div>
 
             <div className="card">

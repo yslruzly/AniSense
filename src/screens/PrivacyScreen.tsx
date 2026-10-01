@@ -7,14 +7,17 @@ import { PRIVACY } from "../data/privacyPolicy";
 // ─── Privacy ──────────────────────────────────────────────────────────────────
 // The policy, reachable from Profile at any time. Google Play asks for it
 // inside the app as well as on the web, and the Data Privacy Act asks that
-// people can always find out what is held about them.
+// people can always find out what is held about them. One white page of
+// text on the app's grey ground.
 export function PrivacyScreen({ onBack }: { onBack: () => void }) {
   const { t, lang } = useLang();
   return (
     <div className="screen">
       <Hdr icon={<ShieldCheck size={20} color="var(--tanim)" />} title={PRIVACY.title[lang]} sub={t("pp_sub")} onBack={onBack} />
       <div className="scroll screen-enter">
-        <PrivacyPolicy />
+        <div className="card pp-page">
+          <PrivacyPolicy />
+        </div>
       </div>
     </div>
   );

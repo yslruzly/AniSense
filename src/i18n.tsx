@@ -673,9 +673,6 @@ export const translations: Dict = {
   prof_privacy: { en: "Privacy Policy", tl: "Patakaran sa Privacy" },
   prof_privacy_sub: { en: "What we collect, and your rights", tl: "Ano ang kinukuha namin, at ang mga karapatan mo" },
   pp_sub: { en: "How your information is used", tl: "Paano ginagamit ang impormasyon mo" },
-  pp_hero_t: { en: "Your information, in plain words", tl: "Ang impormasyon mo, sa simpleng salita" },
-  pp_more: { en: "The full policy", tl: "Ang buong patakaran" },
-  pp_mail: { en: "Email us about your privacy", tl: "Mag-email tungkol sa privacy mo" },
   pp_done: { en: "Got it", tl: "Naintindihan ko" },
   prof_help: { en: "Help & Support", tl: "Tulong at Suporta" },
   prof_help_sub: { en: "How to use AniSense, step by step", tl: "Paano gamitin ang AniSense, hakbang-hakbang" },
@@ -1019,6 +1016,7 @@ export const translations: Dict = {
   },
   splash_have_account: { en: "I already have an account", tl: "Mayroon na akong account" },
   splash_free: { en: "Free. No paid account.", tl: "Libre. Walang bayad na account." },
+  splash_consent: { en: "By continuing, you agree to our {link}.", tl: "Sa pagpapatuloy, sumasang-ayon ka sa aming {link}." },
   splash_sr: {
     en: "AniSense. Real farmers, real produce, a stronger tomorrow. Prices, marketplace, expenses and weather in one place.",
     tl: "AniSense. Totoong magsasaka, totoong ani, mas matibay na bukas. Presyo, bentahan, gastos at panahon sa iisang lugar.",
@@ -1052,7 +1050,6 @@ export const translations: Dict = {
   // ── Create account: Juan asks, one question per page ──────────────────────
   ask_title: { en: "Create your account", tl: "Gumawa ng account" },
   ask_step: { en: "Step {n} of {total}", tl: "Hakbang {n} sa {total}" },
-  ask_consent: { en: "By creating an account, you agree to our {link}.", tl: "Sa paggawa ng account, sumasang-ayon ka sa aming {link}." },
   signin_morning: { en: "Good morning!", tl: "Magandang umaga!" },
   signin_afternoon: { en: "Good afternoon!", tl: "Magandang hapon!" },
   signin_evening: { en: "Good evening!", tl: "Magandang gabi!" },

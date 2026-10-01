@@ -26,10 +26,10 @@ const body = (lang) => `
     <div class="doc" data-doc="${lang}" lang="${lang === "tl" ? "fil" : "en"}">
       <h1>${esc(PRIVACY.title[lang])}</h1>
       <p class="date">${esc(PRIVACY.effectiveLabel[lang].replace("{date}", date(lang)))}</p>
-${PRIVACY.sections.map(s => `      <section id="${lang}-${s.id}">
-        <h2>${esc(s.title[lang])}</h2>
+${PRIVACY.sections.map((s, i) => `      <section id="${lang}-${s.id}"${i === 0 ? ' class="summary"' : ""}>
+        <h2>${i === 0 ? "" : `<span class="num">${i}.</span> `}${esc(s.title[lang])}</h2>
 ${s.body.map(b => b.p
-  ? `        <p>${text(b.p[lang])}</p>`
+  ? `        <p${b.p[lang].endsWith(":") ? ' class="sub"' : ""}>${text(b.p[lang])}</p>`
   : `        <ul>\n${b.list[lang].map(li => `          <li>${text(li)}</li>`).join("\n")}\n        </ul>`).join("\n")}
       </section>`).join("\n")}
       <p class="foot"><a href="delete-account.html">${lang === "tl" ? "Paano burahin ang account mo" : "How to delete your account"}</a></p>
@@ -59,12 +59,18 @@ const html = `<!doctype html>
            box-shadow: 0 0 0 1px rgba(22,33,27,.05), 0 1px 2px rgba(22,33,27,.06), 0 14px 30px -20px rgba(22,33,27,.3); }
     h1 { font: 700 30px/1.15 Lexend, sans-serif; letter-spacing: -.02em; color: var(--ink); }
     .date { margin-top: 8px; font-size: 16px; font-weight: 600; color: var(--faint); }
-    section { margin-top: 26px; }
-    h2 { font: 700 20px/1.25 Lexend, sans-serif; letter-spacing: -.012em; color: var(--ink); margin-bottom: 8px; }
-    p + p, ul + p, p + ul, ul + ul { margin-top: 10px; }
+    section { margin-top: 26px; padding-top: 24px; border-top: 1px solid #D9DBDE; }
+    section.summary { margin-top: 16px; padding: 16px 18px 18px; border: 0; border-left: 3px solid var(--tanim); border-radius: 14px; background: #F3F9F5; }
+    section.summary + section { border-top: 0; padding-top: 4px; }
+    h2 { font: 700 20px/1.3 Lexend, sans-serif; letter-spacing: -.012em; color: var(--ink); margin-bottom: 10px; }
+    .num { color: var(--tanim); }
+    p + p, ul + p, p + ul, ul + ul { margin-top: 12px; }
+    p.sub { font-weight: 600; color: var(--ink); margin-top: 18px; }
+    h2 + p.sub { margin-top: 0; }
+    p.sub + ul { margin-top: 8px; }
     ul { padding-left: 22px; }
     li + li { margin-top: 8px; }
-    li::marker { color: var(--tanim); }
+    li::marker { color: var(--faint); }
     a { color: var(--tanim); font-weight: 600; overflow-wrap: anywhere; }
     .foot { margin-top: 28px; padding-top: 18px; border-top: 1px solid #D9DBDE; }
     /* With scripts on, one language at a time. */

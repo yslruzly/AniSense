@@ -71,98 +71,53 @@ export const sheetCss = `
   }
 
   /* ── Privacy policy ─────────────────────────────────────────────────────
-     Used on the Privacy screen and in the sheet at sign-up, so it lives in
-     the stylesheet both load. Built from the same parts as the How to use
-     page: a tinted card that says what this is, then white rows that open. */
-  .pp { display: flex; flex-direction: column; gap: 18px; color: var(--text-soft); font-size: var(--fs-body); line-height: 1.55; }
+     Used on the Privacy screen and in the sheet on the welcome screen, so it
+     lives in the stylesheet both load.
 
-  /* What this is and since when: a shield on the app's green, like the icon
-     tiles elsewhere, on a card washed with the same green. */
-  .pp-hero {
-    display: flex; align-items: center; gap: 14px; padding: 18px; border-radius: var(--radius);
-    background: linear-gradient(160deg, #E2F0E6 0%, #F3F9F5 58%, #FFFFFF 100%);
-    box-shadow: inset 0 0 0 1px rgba(11,107,65,.14), 0 10px 24px -20px rgba(15,53,36,.5);
-  }
-  .pp-hero-ico {
-    flex-shrink: 0; width: 52px; height: 52px; border-radius: 16px; color: #fff;
-    display: flex; align-items: center; justify-content: center;
-    background: linear-gradient(180deg, #16895B 0%, var(--tanim) 55%, #07522F 100%);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.24), inset 0 -1px 0 rgba(0,0,0,.18), 0 6px 12px -8px rgba(11,107,65,.6);
-  }
-  .pp-hero-t { margin: 0; font-family: var(--font-display); font-size: var(--fs-title); font-weight: 700; letter-spacing: -.015em; line-height: 1.2; color: var(--text); }
-  .pp-hero-s { margin: 4px 0 0; font-size: var(--fs-label); font-weight: 600; color: var(--text-muted); }
+     A document: the date, a summary set apart, then numbered sections. The
+     type does the work. Body at 17px on 1.6 leading for slow readers;
+     headings in the display face, a clear step above the text; a hairline
+     and generous room between sections so the eye always knows where one
+     ends. No icons and nothing to tap open. */
+  .pp { color: var(--text-soft); font-size: var(--fs-body); line-height: 1.6; }
+  .pp-date { margin: 0; font-size: var(--fs-label); font-weight: 600; color: var(--text-faint); }
 
-  .pp-label { margin: 0 2px 10px; font-family: var(--font-display); font-size: var(--fs-lead); font-weight: 700; letter-spacing: -.012em; color: var(--text); }
+  /* The summary: the five points most people want, on a pale wash of the
+     app's green with a rule down its edge, the way a document sets off its
+     key points. */
+  .pp-summary {
+    margin-top: 14px; padding: 16px 18px 18px; border-radius: 14px;
+    background: #F3F9F5; box-shadow: inset 3px 0 0 var(--tanim);
+  }
+  .pp-summary-t { margin: 0; font-family: var(--font-display); font-size: var(--fs-lead); font-weight: 700; letter-spacing: -.012em; line-height: 1.25; color: var(--text); }
+  .pp-summary .pp-ul { margin-top: 10px; color: var(--text); }
 
-  /* The five promises: one card, a green tick on each, a hairline between. */
-  .pp-promises {
-    list-style: none; margin: 0; padding: 4px 16px; border-radius: var(--radius);
-    background: var(--card); box-shadow: inset 0 0 0 1px var(--line);
-  }
-  .pp-promises li { display: flex; align-items: flex-start; gap: 12px; padding: 13px 0; line-height: 1.45; color: var(--text); }
-  .pp-promises li + li { box-shadow: 0 -1px 0 var(--line); }
-  .pp-tick {
-    flex-shrink: 0; width: 24px; height: 24px; margin-top: 1px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center; background: var(--tanim-sk); color: var(--tanim);
-  }
-
-  /* Every other section is a row that opens. The whole row is the button,
-     64px tall; it lights up under the thumb, and its chevron turns a quarter
-     as the text unfolds under it. */
-  .pp-items { display: flex; flex-direction: column; gap: 10px; }
-  .pp-item { background: var(--card); border-radius: var(--radius); box-shadow: inset 0 0 0 1px var(--line); overflow: hidden; }
-  .pp-head {
-    width: 100%; min-height: 64px; padding: 11px 14px; border: none; background: none; cursor: pointer;
-    display: flex; align-items: center; gap: 12px; text-align: left; font: inherit; color: inherit;
-    transition: background-color var(--dur-fast) ease;
-    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-  }
-  .pp-head:active { background: var(--paper-alt); transition-duration: var(--dur-press); }
-  .pp-ico {
-    flex-shrink: 0; width: 42px; height: 42px; border-radius: 13px;
-    display: flex; align-items: center; justify-content: center; background: var(--tanim-sk); color: var(--tanim);
-    transition: background-color 200ms ease, color 200ms ease;
-  }
-  .pp-item.on .pp-ico { background: var(--tanim); color: #fff; }
-  .pp-head-t { flex: 1; min-width: 0; font-family: var(--font-display); font-size: var(--fs-body); font-weight: 600; line-height: 1.3; color: var(--text); }
-  .pp-chev { flex-shrink: 0; color: var(--text-faint); transition: transform 200ms var(--ease-io); }
-  .pp-item.on .pp-chev { transform: rotate(90deg); }
-  .pp .autoh { overflow: hidden; transition: height 240ms var(--ease-out); }
-  .pp .autoh-in { display: flow-root; }
-
-  .pp-body { padding: 2px 16px 18px; }
-  .pp-body > :first-child { margin-top: 0; }
+  .pp-sec { margin-top: 26px; padding-top: 24px; box-shadow: 0 -1px 0 var(--line); }
+  .pp-summary + .pp-sec { box-shadow: none; padding-top: 4px; }
+  .pp-h { margin: 0 0 10px; font-family: var(--font-display); font-size: var(--fs-lead); font-weight: 700; letter-spacing: -.012em; line-height: 1.3; color: var(--text); }
+  /* The number, in the app's green: the one touch of colour in the text. */
+  .pp-num { color: var(--tanim); font-variant-numeric: tabular-nums; }
   .pp-p { margin: 12px 0 0; }
+  .pp-h + .pp-p, .pp-h + .pp-sub, .pp-h + .pp-ul { margin-top: 0; }
   /* A line that introduces the list under it reads as that list's heading. */
-  .pp-sub { margin: 16px 0 0; font-weight: 700; color: var(--text); }
-  .pp-ul { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
-  .pp-ul li { position: relative; padding-left: 20px; }
-  .pp-ul li::before { content: ""; position: absolute; left: 4px; top: .62em; width: 7px; height: 7px; border-radius: 50%; background: var(--tanim); }
-  .pp a { color: var(--tanim); font-weight: 600; overflow-wrap: anywhere; }
+  .pp-sub { margin: 18px 0 0; font-weight: 700; color: var(--text); }
+  .pp-ul { margin: 8px 0 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; }
+  .pp-ul li::marker { color: var(--text-faint); }
+  .pp a { color: var(--tanim); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1.5px; overflow-wrap: anywhere; }
 
-  /* Writing to us, as a full-width tonal button: green on pale green, so it
-     is clearly pressable without competing with a screen's main action. */
-  .pp-mail {
-    display: flex; align-items: center; justify-content: center; gap: 9px; min-height: 56px; padding: 0 16px;
-    border-radius: 16px; text-decoration: none; text-align: center;
-    background: #E4F1E8; box-shadow: inset 0 0 0 1px rgba(11,107,65,.18);
-    font-family: var(--font-display); font-size: var(--fs-body); font-weight: 600; color: var(--tanim);
-    transition: transform 160ms var(--ease-out), background-color 140ms ease;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .pp a.pp-mail { color: var(--tanim); }
-  .pp-mail:active { transform: scale(.98); background: #D6E9DC; transition-duration: 90ms; }
+  /* On the Privacy screen it is one white page, with a page's margins. */
+  .pp-page { padding: 22px 20px 26px; }
 
-  /* The same policy at sign-up, in a tall sheet on the page's grey so its
-     white cards stand off it: a title bar that stays put, the policy
-     scrolling under it, and one button at the foot to go back. */
+  /* The same policy from the welcome screen, in a tall white sheet: a title
+     bar that stays put with a 48px Close, the document scrolling under it,
+     and one button at the foot to go back. */
   .pp-sheet {
-    width: 100%; height: 90%; background: var(--paper); border-radius: 24px 24px 0 0;
+    width: 100%; height: 90%; background: var(--card); border-radius: 24px 24px 0 0;
     display: flex; flex-direction: column; overflow: hidden;
   }
   .pp-sheet-head {
     flex: none; display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    padding: 16px 14px 14px 22px; background: var(--card); box-shadow: 0 1px 0 var(--line);
+    padding: 16px 14px 14px 22px; box-shadow: 0 1px 0 var(--line);
   }
   .pp-sheet-title { margin: 0; font-family: var(--font-display); font-size: var(--fs-title); font-weight: 700; letter-spacing: -.015em; color: var(--text); }
   .pp-sheet-close {
@@ -171,8 +126,8 @@ export const sheetCss = `
     transition: transform 160ms var(--ease-out); -webkit-tap-highlight-color: transparent;
   }
   .pp-sheet-close:active { transform: scale(.94); transition-duration: 90ms; }
-  .pp-sheet-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 18px 16px 24px; }
-  .pp-sheet-foot { flex: none; padding: 12px 22px calc(18px + var(--safe-bottom)); background: var(--card); box-shadow: 0 -1px 0 var(--line); }
+  .pp-sheet-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 20px 22px 28px; }
+  .pp-sheet-foot { flex: none; padding: 12px 22px calc(18px + var(--safe-bottom)); box-shadow: 0 -1px 0 var(--line); }
   .pp-done {
     width: 100%; min-height: 56px; border: none; border-radius: 999px; cursor: pointer;
     font-family: var(--font-display); font-size: var(--fs-lead); font-weight: 600; color: #fff;
@@ -183,7 +138,6 @@ export const sheetCss = `
   .pp-done:active { transform: scale(.975); transition-duration: 90ms; }
 
   @media (prefers-reduced-motion: reduce) {
-    .pp .autoh, .pp-chev { transition: none; }
-    .pp-mail:active, .pp-done:active, .pp-sheet-close:active { transform: none; }
+    .pp-done:active, .pp-sheet-close:active { transform: none; }
   }
 `;
