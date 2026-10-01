@@ -247,6 +247,56 @@ export const appCss = `
   .alert-row.gold  .alert-chip { background: var(--gold-sk); color: var(--gold-text); }
   .alert-row.red   .alert-chip { background: var(--error-sk); color: var(--error); }
   .alert-row.blue  .alert-chip { background: #DCEAF8; color: #2F6FA8; }
+  /* An order from a buyer: the one alert with something to do, so it is a
+     taller card. The same top line as every alert (tile, label, headline,
+     the total in the chip), then the buyer's number and town written out,
+     one line saying what to do, and the two steps as two full-width buttons
+     a thumb cannot miss: Call, filled, because it comes first; Confirm,
+     outlined, under it. Text here is 16px and up: these are words a farmer
+     reads to act on, not a headline to glance at. */
+  .alert-row.alert-order { flex-direction: column; align-items: stretch; gap: 12px; padding: 14px; }
+  .ord-top { display: flex; align-items: center; gap: 12px; }
+  .ord-name { font-family: var(--font-display); font-size: 18px; font-weight: 700; letter-spacing: -.01em; color: var(--text); line-height: 1.25; }
+  .ord-what { font-size: var(--fs-label); color: var(--text-soft); line-height: 1.35; }
+  .ord-facts { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border-radius: 14px; background: var(--paper); }
+  .ord-fact { display: flex; align-items: center; gap: 10px; font-size: var(--fs-label); color: var(--text-soft); line-height: 1.3; }
+  .ord-fact svg { flex-shrink: 0; color: var(--tanim); }
+  .ord-phone { font-family: var(--font-display); font-size: 18px; font-weight: 700; letter-spacing: .01em; color: var(--text); font-variant-numeric: tabular-nums; user-select: text; -webkit-user-select: text; }
+  .ord-hint { margin: 0 2px; font-size: var(--fs-label); line-height: 1.4; color: var(--text-muted); }
+  .ord-actions { display: flex; flex-direction: column; gap: 10px; }
+  .ord-btn {
+    width: 100%; min-height: 54px; padding: 0 16px; border: none; border-radius: 14px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 9px; text-decoration: none;
+    font-family: var(--font-display); font-size: 17px; font-weight: 700; letter-spacing: -.005em;
+    transition: transform 190ms var(--ease-out), background-color 160ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .ord-btn:active { transform: scale(.975); transition-duration: var(--dur-press); }
+  .ord-btn.call {
+    color: #fff;
+    background-image: linear-gradient(180deg, #14875A 0%, var(--tanim) 54%, #075232 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.26), inset 0 -1px 0 rgba(0,0,0,.24), 0 1px 2px rgba(6,38,23,.3);
+  }
+  .ord-btn.confirm, .ord-btn.call.quiet {
+    color: var(--tanim); background: var(--card); background-image: none;
+    box-shadow: inset 0 0 0 1.5px var(--tanim);
+  }
+  .ord-btn.confirm:active, .ord-btn.call.quiet:active { background: var(--tanim-sk); }
+  /* Confirmed: where the button was, a settled line with a tick. It arrives
+     with a small rise, once, so the change under the thumb is seen. */
+  .ord-done {
+    min-height: 54px; padding: 0 16px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center; gap: 9px;
+    font-family: var(--font-display); font-size: 17px; font-weight: 700; color: var(--tanim-deep);
+    background: var(--tanim-sk);
+    animation: ord-done-in 260ms var(--ease-out) both;
+  }
+  @keyframes ord-done-in { from { opacity: 0; transform: translateY(4px) scale(.98); } to { opacity: 1; transform: none; } }
+  .alert-order.done .ord-name, .alert-order.done .ord-what { color: var(--text-muted); }
+  @media (prefers-reduced-motion: reduce) {
+    .ord-done { animation: none; }
+    .ord-btn:active { transform: none; }
+  }
   .alerts-empty { padding: 30px 12px 12px; text-align: center; display: flex; flex-direction: column; align-items: center; }
   .alerts-empty-ico {
     width: 60px; height: 60px; border-radius: 50%; margin-bottom: 12px;

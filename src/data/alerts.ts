@@ -4,6 +4,7 @@ import { LISTINGS } from "./marketplace";
 import { UserRole } from "../types";
 import { PriceAlert, alertHit } from "../lib/priceAlerts";
 import { Planting, daysLeft } from "../lib/plantings";
+import { IncomingOrder } from "./orders";
 
 // ─── Alerts ───────────────────────────────────────────────────────────────────
 // What the bell in the header is counting. Derived from the data already on
@@ -15,7 +16,7 @@ import { Planting, daysLeft } from "../lib/plantings";
 // for the one buying; rain is a harvest deadline for one and nothing for the
 // other. One list for both was always wrong for somebody.
 
-export type AlertKind = "price-up" | "price-down" | "weather" | "new-listing" | "price-target" | "harvest-due";
+export type AlertKind = "order" | "price-up" | "price-down" | "weather" | "new-listing" | "price-target" | "harvest-due";
 
 export interface Alert {
   id: string;
@@ -33,6 +34,8 @@ export interface Alert {
   target?: number;
   /** For a planting that has come due: the crop's day count. */
   dayCount?: number;
+  /** For an order a buyer placed with this farmer. */
+  order?: IncomingOrder;
 }
 
 const WET = ["Rainy", "Stormy", "LightRain"];
@@ -100,12 +103,28 @@ function harvestAlerts(plantings: Planting[]): Alert[] {
     .map(p => ({ id: "hrv-" + p.id, kind: "harvest-due" as const, crop: p.crop, dayCount: p.days }));
 }
 
+/** Orders buyers have placed with this farmer. They lead the list: a person
+ *  is waiting for a call, which outranks anything the market is doing.
+ *  Newest at the top, and a confirmed order keeps its place: the card the
+ *  farmer has just tapped must not jump out from under their thumb, and the
+ *  buyer's number stays there to call again. */
+function orderAlerts(orders: IncomingOrder[]): Alert[] {
+  return [...orders]
+    .sort((a, b) => b.placedAt.localeCompare(a.placedAt))
+    .map(o => ({ id: "ord-" + o.id, kind: "order" as const, order: o }));
+}
+
+/** How many alerts still ask for attention: everything but the orders the
+ *  farmer has already confirmed. This is the number on the bell. */
+export const openAlerts = (alerts: Alert[]) => alerts.filter(a => a.order?.status !== "confirmed").length;
+
 export function buildAlerts(
   role: UserRole = "farmer",
   location = "",
   priceAlerts: PriceAlert[] = [],
   plantings: Planting[] = [],
+  orders: IncomingOrder[] = [],
 ): Alert[] {
   if (role === "buyer") return buyerAlerts(location);
-  return [...harvestAlerts(plantings), ...targetAlerts(priceAlerts), ...farmerAlerts()];
+  return [...orderAlerts(orders), ...harvestAlerts(plantings), ...targetAlerts(priceAlerts), ...farmerAlerts()];
 }

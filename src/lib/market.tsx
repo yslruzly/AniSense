@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState } f
 import { BuyerTransaction, CartItem, Expense, Listing, SellerDetail, UserRole } from "../types";
 import { LISTINGS, SELLER_DETAILS } from "../data/marketplace";
 import { EXPENSES, BUYER_TRANSACTIONS } from "../data/expenses";
+import { IncomingOrder, sampleIncomingOrders } from "../data/orders";
 import { CROPS, CROP_GROUP_BY_ID, applyPrices } from "../data/crops";
 import { isSupabaseConfigured } from "./supabase";
 import { setCacheScope } from "./cache";
@@ -55,6 +56,11 @@ export interface Market {
   expenses: Expense[];
   /** What this farmer sold through the marketplace (live only). */
   marketSales: Sale[];
+  /** Orders buyers have placed with this farmer, newest first. A mockup for
+   *  now: sample orders in the demo, none on a real account (data/orders.ts). */
+  incomingOrders: IncomingOrder[];
+  /** The farmer has spoken to the buyer and takes the order. */
+  confirmOrder: (id: string) => void;
   /** A farmer's own records, and how to change them (saved for them). */
   sales: Sale[];
   setSales: (next: Sale[]) => void;
@@ -102,6 +108,7 @@ export function useMarketStore({ accountId, role, name, initials }: {
   const [purchases, setPurchases] = useState<BuyerTransaction[]>(() => [...BUYER_TRANSACTIONS]);
   const [expenses, setExpenses] = useState<Expense[]>(() => [...EXPENSES]);
   const [marketSales, setMarketSales] = useState<Sale[]>([]);
+  const [incomingOrders, setIncomingOrders] = useState<IncomingOrder[]>([]);
   const [sales, setSalesState] = useState<Sale[]>([]);
   const [plantings, setPlantingsState] = useState<Planting[]>([]);
   const [priceAlerts, setAlertsState] = useState<PriceAlert[]>([]);
@@ -209,6 +216,17 @@ export function useMarketStore({ accountId, role, name, initials }: {
     return () => window.removeEventListener("online", back);
   }, [live, accountId, loadAll]);
 
+  // Orders waiting for a farmer. Until the database serves them, the demo
+  // farmer gets two sample orders and a real account gets none: an invented
+  // buyer must never appear on a real farmer's phone.
+  useEffect(() => {
+    setIncomingOrders(!live && role === "farmer" ? sampleIncomingOrders() : []);
+  }, [live, role, accountId]);
+
+  const confirmOrder = useCallback((id: string) => {
+    setIncomingOrders(os => os.map(o => (o.id === id ? { ...o, status: "confirmed" } : o)));
+  }, []);
+
   const refresh = useCallback(async () => {
     if (!live) return;
     try { setFromCache(await loadMarket()); } catch { /* the list on screen stands */ }
@@ -293,6 +311,7 @@ export function useMarketStore({ accountId, role, name, initials }: {
   return {
     live, loading, fromCache,
     listings, sellers, purchases, expenses, marketSales,
+    incomingOrders, confirmOrder,
     sales, setSales, plantings, setPlantings, priceAlerts, setPriceAlerts, harvestPlans, setHarvestPlans,
     awards, pricesVersion,
     isMine, sellerKeyOf,

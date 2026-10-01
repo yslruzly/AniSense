@@ -482,7 +482,7 @@ export default function App() {
       <style>{pickerCss}</style>
       <style>{buttonCss}</style>
       <style>{tourCss}</style>
-      <ViewerContext.Provider value={{ role: userRole, location: farmerProfile.location, priceAlerts, plantings }}>
+      <ViewerContext.Provider value={{ role: userRole, location: farmerProfile.location, priceAlerts, plantings, orders: market.incomingOrders, confirmOrder: market.confirmOrder }}>
       <MarketContext.Provider value={market}>
       <div className="outer">
         <div className="shell" data-nav={nav} data-revisit={revisit || undefined}>

@@ -1,10 +1,75 @@
 import React, { useState } from "react";
-import { ArrowLeft, Bell, BellRing, BellOff, TrendingUp, TrendingDown, CloudRain, X, Sprout, Scissors } from "lucide-react";
+import { ArrowLeft, Bell, BellRing, BellOff, TrendingUp, TrendingDown, CloudRain, X, Sprout, Scissors, ShoppingBag, Phone, Check, MapPin } from "lucide-react";
 import { useLang } from "../../i18n";
 import { haptic } from "../../lib/platform";
-import { buildAlerts, Alert } from "../../data/alerts";
+import { buildAlerts, openAlerts, Alert } from "../../data/alerts";
+import { IncomingOrder } from "../../data/orders";
 import { Sheet } from "../ui/Sheet";
 import { useViewer } from "../../lib/viewer";
+
+// ─── An order from a buyer ────────────────────────────────────────────────────
+// The one alert that asks the farmer to do something, so it is the one alert
+// with buttons. It reads in the order the farmer acts: who ordered and what
+// (the name, the kilos, the total), their number in full, then the two steps
+// as two full-width buttons: call the buyer, then confirm the order. Call is
+// the filled one, because it comes first; nothing is agreed until they have
+// spoken.
+//
+// Confirmed, the card settles: a tick and "You confirmed this order" where
+// Confirm was, and Call stays, quieter, in case the farmer needs the buyer
+// again. It no longer counts on the bell.
+function OrderAlert({ order, onConfirm }: { order: IncomingOrder; onConfirm: (id: string) => void }) {
+  const { t, lang } = useLang();
+  const done = order.status === "confirmed";
+  const tel = order.phone.replace(/[^\d+]/g, "");
+  const peso = `₱${order.amount.toLocaleString("en-PH", { maximumFractionDigits: 2 })}`;
+  // "12 min ago", "2 hr ago", then the date.
+  const mins = Math.max(0, Math.round((Date.now() - new Date(order.placedAt).getTime()) / 60_000));
+  const when = mins < 1 ? t("ord_just_now")
+    : mins < 60 ? t("ord_min_ago").replace("{n}", String(mins))
+    : mins < 24 * 60 ? t("ord_hr_ago").replace("{n}", String(Math.round(mins / 60)))
+    : new Date(order.placedAt).toLocaleDateString(lang === "tl" ? "fil-PH" : "en-PH", { month: "short", day: "numeric" });
+  return (
+    <div className={`alert-row alert-order green ${done ? "done" : ""}`}>
+      <div className="ord-top">
+        <span className="alert-ico" aria-hidden="true">
+          {done ? <Check size={22} strokeWidth={2.8} /> : <ShoppingBag size={20} strokeWidth={2.4} />}
+        </span>
+        <span className="alert-txt">
+          <span className="alert-kind">{t(done ? "alert_kind_order_done" : "alert_kind_order")} · {when}</span>
+          <span className="ord-name">{order.buyer}</span>
+          <span className="ord-what">{order.kg} kg {order.crop}</span>
+        </span>
+        <span className="alert-chip">{peso}</span>
+      </div>
+
+      {/* The buyer's number and town, written out: the farmer may want to
+          read the number, save it, or call from another phone. */}
+      <div className="ord-facts">
+        <span className="ord-fact"><Phone size={17} strokeWidth={2.4} aria-hidden="true" /><span className="ord-phone">{order.phone}</span></span>
+        <span className="ord-fact"><MapPin size={17} strokeWidth={2.4} aria-hidden="true" />{order.location}</span>
+      </div>
+
+      {!done && <p className="ord-hint">{t("ord_hint")}</p>}
+
+      <div className="ord-actions">
+        <a className={`ord-btn call ${done ? "quiet" : ""}`} href={`tel:${tel}`} onClick={() => haptic.tap()}
+          aria-label={`${t("ord_call")}: ${order.buyer}, ${order.phone}`}>
+          <Phone size={20} strokeWidth={2.4} aria-hidden="true" /> {t("ord_call")}
+        </a>
+        {done ? (
+          <div className="ord-done" role="status">
+            <Check size={20} strokeWidth={2.8} aria-hidden="true" /> {t("ord_confirmed")}
+          </div>
+        ) : (
+          <button type="button" className="ord-btn confirm" onClick={() => { haptic.success(); onConfirm(order.id); }}>
+            <Check size={20} strokeWidth={2.6} aria-hidden="true" /> {t("ord_confirm")}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
 
 // The bell rings once per session, on the first screen that shows it with
 // unread alerts: enough to say "something's waiting", and never again, so it
@@ -18,13 +83,14 @@ let bellRung = false;
 export function Hdr({ icon, title, sub, onBack, extra, center }: { icon?: React.ReactNode; title: string; sub?: string; onBack?: () => void; extra?: React.ReactNode; center?: boolean }) {
   const { t, tn } = useLang();
   const [showAlerts, setShowAlerts] = useState(false);
-  const { role, location, priceAlerts, plantings } = useViewer();
+  const { role, location, priceAlerts, plantings, orders, confirmOrder } = useViewer();
   const isBuyer = role === "buyer";
-  const alerts = buildAlerts(role, location, priceAlerts, plantings);
+  const alerts = buildAlerts(role, location, priceAlerts, plantings, orders);
 
   // The badge counts what the sheet can actually show. A hardcoded "3" over an
-  // empty sheet is the kind of small lie that costs trust.
-  const count = alerts.length;
+  // empty sheet is the kind of small lie that costs trust. An order the
+  // farmer has confirmed stays in the sheet but stops counting: it is done.
+  const count = openAlerts(alerts);
   const [ring] = useState(() => {
     if (bellRung || count === 0) return false;
     bellRung = true;
@@ -136,7 +202,7 @@ export function Hdr({ icon, title, sub, onBack, extra, center }: { icon?: React.
           <div className="alerts-head-txt">
             <div className="alerts-head-t">
               {t("alerts_title")}
-              {alerts.length > 0 && <span className="alerts-count">{t("alerts_count").replace("{n}", String(alerts.length))}</span>}
+              {count > 0 && <span className="alerts-count">{t("alerts_count").replace("{n}", String(count))}</span>}
             </div>
             <div className="alerts-head-s">{t(isBuyer ? "alerts_sub_buyer" : "alerts_sub")}</div>
           </div>
@@ -157,6 +223,7 @@ export function Hdr({ icon, title, sub, onBack, extra, center }: { icon?: React.
               <div className="alerts-empty-s">{t(isBuyer ? "alerts_none_sub_buyer" : "alerts_none_sub")}</div>
             </div>
           ) : alerts.map(a => {
+            if (a.order) return <OrderAlert key={a.id} order={a.order} onConfirm={confirmOrder} />;
             const r = row(a);
             return (
               <div key={a.id} className={`alert-row ${r.tone}`}>
