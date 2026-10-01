@@ -1,6 +1,6 @@
 // ─── Privacy policy ───────────────────────────────────────────────────────────
-// The one copy of the policy. The app shows it (Profile, in the settings
-// card, and from the welcome screen), and `node scripts/build-privacy.mjs` writes the web page Google
+// The one copy of the policy. The app shows it (Profile, under Manage
+// account, and from the welcome screen), and `node scripts/build-privacy.mjs` writes the web page Google
 // Play links to (docs/privacy-policy.html) from this same file, so the two
 // can never say different things.
 //
@@ -161,7 +161,7 @@ export const PRIVACY = {
       id: "delete",
       title: "Deleting your account",
       body: [
-        { p: "In the app, go to Profile, scroll to the bottom and tap “Delete my account”. If you no longer have the app, you can delete your account from our website, or write to {email}." },
+        { p: "In the app, go to Profile and, under Manage account, tap “Delete my account”. If you no longer have the app, you can delete your account from our website, or write to {email}." },
       ],
     },
     {

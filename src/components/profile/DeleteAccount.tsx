@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AlertTriangle, X } from "lucide-react";
+import { AlertTriangle, ChevronRight, Trash2, X } from "lucide-react";
 import { Sheet } from "../ui/Sheet";
 import { useLang } from "../../i18n";
 import { isNetworkError } from "../../lib/cache";
@@ -11,7 +11,8 @@ import { UserRole } from "../../types";
 //
 // It is the one action here that can't be undone, so it is built to be hard
 // to do by accident and easy to back out of:
-//   · the door to it is a quiet line under Sign Out, not a button
+//   · the door to it is the last row of Manage account on Profile, well
+//     away from Sign Out, and all it does is open the sheet
 //   · the sheet says in plain words what goes and what other people keep
 //   · the red button stays off until the box is ticked
 //   · Cancel comes first, on the side the thumb rests
@@ -52,7 +53,16 @@ export function DeleteAccount({ role, onDelete }: {
 
   return (
     <>
-      <button type="button" className="del-link" onClick={() => setOpen(true)}>{t("del_link")}</button>
+      {/* A settings row like the ones above it, in red so it is never
+          mistaken for one of them. */}
+      <button type="button" className="setting-row as-btn del-row" onClick={() => setOpen(true)}>
+        <div className="setting-ico" style={{ background: "var(--error-sk)" }}><Trash2 size={16} color="var(--error)" /></div>
+        <div style={{ flex: 1 }}>
+          <div className="setting-lbl del-row-lbl">{t("del_link")}</div>
+          <div className="setting-sub">{t("del_row_sub")}</div>
+        </div>
+        <ChevronRight size={16} color="var(--line-strong)" />
+      </button>
 
       <Sheet open={open} onClose={close} className="confirm-sheet del-sheet" label={t("del_title")} dismissible={!busy}>
         <div className="del-ico" aria-hidden="true"><AlertTriangle size={26} strokeWidth={2.2} /></div>

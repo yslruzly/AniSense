@@ -667,6 +667,7 @@ export const translations: Dict = {
   prof_experience: { en: "Experience", tl: "Karanasan" },
   prof_crop_spec: { en: "Crop Specialization", tl: "Espesyalisasyon sa Pananim" },
   prof_preferences: { en: "Preferences", tl: "Mga Kagustuhan" },
+  prof_manage: { en: "Manage account", tl: "Pamahalaan ang account" },
   prof_notifications: { en: "Notifications", tl: "Mga Abiso" },
   prof_notifications_sub: {
     en: "Price alerts & market updates",
@@ -687,6 +688,7 @@ export const translations: Dict = {
 
   // ── Delete account ────────────────────────────────────────────────────────
   del_link: { en: "Delete my account", tl: "Burahin ang account ko" },
+  del_row_sub: { en: "Remove your account and your data for good", tl: "Tuluyang burahin ang account at datos mo" },
   del_title: { en: "Delete your account?", tl: "Burahin ang account mo?" },
   del_body: {
     en: "This removes your AniSense account for good. It can't be undone.",

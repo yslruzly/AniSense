@@ -3991,16 +3991,9 @@ export const appCss = `
 
   .signout-btn { width: 100%; padding: 16px; background: var(--error-sk); color: var(--red); border: none; border-radius: var(--radius); font-family: inherit; font-size: var(--fs-label); font-weight: 700; cursor: pointer; }
   /* ── Delete account ─────────────────────────────────────────────────────
-     The door is a quiet line of text, a full 52px tall but with no fill, so
-     it reads as the lesser of the two under it and above it. */
-  .del-link {
-    width: 100%; min-height: 52px; border: none; background: none; cursor: pointer;
-    font-family: inherit; font-size: var(--fs-label); font-weight: 600; color: var(--text-muted);
-    text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 5px;
-    text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
-    transition: opacity 140ms ease; -webkit-tap-highlight-color: transparent;
-  }
-  .del-link:active { opacity: .55; transition-duration: 0ms; }
+     The door is the last row of Manage account: a settings row like the
+     others, with its label in red so it is never taken for one of them. */
+  .del-row-lbl { color: var(--error); }
   .del-sheet { max-height: 92%; overflow-y: auto; }
   .del-ico {
     width: 56px; height: 56px; border-radius: 18px; margin: 0 auto 14px;

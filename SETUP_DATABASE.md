@@ -138,7 +138,7 @@ The APK is at `android/app/build/outputs/apk/debug/app-debug.apk`.
 - [ ] Farmer records a sale, adds a planting and a price alert: rows appear in **sales**, **plantings** and **price_alerts**; they are still there after reinstalling the app
 - [ ] Change a price in **crop_prices** (today's row), reopen Prices: the app shows the new price
 - [ ] Airplane mode, posting a listing or checking out: a clear "No internet" message, and the cart is kept
-- [ ] Profile → Delete my account, as a buyer who has ordered: the buyer disappears from **Authentication → Users** and **profiles**; the order stays in **orders** with an empty `buyer_id`, and the farmer still sees the sale
+- [ ] Profile → Manage account → Delete my account, as a buyer who has ordered: the buyer disappears from **Authentication → Users** and **profiles**; the order stays in **orders** with an empty `buyer_id`, and the farmer still sees the sale
 - [ ] Delete my account, as a farmer with a listing photo: their rows are gone from **listings**, **expenses**, **sales**, and their folder is gone from **Storage → listing-photos**
 
 ## How the security works

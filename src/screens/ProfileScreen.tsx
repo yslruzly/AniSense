@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ArrowLeft, Camera, Bell, IdCard, Award, Sprout, Wheat, SlidersHorizontal, Info, ChevronRight, Globe, ShieldCheck, HelpCircle, PlayCircle, Settings, LogOut, Phone, Mail, MapPin, Calendar } from "lucide-react";
+import { ArrowLeft, Camera, Bell, IdCard, Award, Sprout, Wheat, SlidersHorizontal, Info, ChevronRight, Globe, ShieldCheck, UserCog, HelpCircle, PlayCircle, Settings, LogOut, Phone, Mail, MapPin, Calendar } from "lucide-react";
 import { useLang, LanguageToggle } from "../i18n";
 import { Screen, UserRole, FarmerProfile } from "../types";
 import { CropEmoji } from "../components/CropEmoji";
@@ -252,7 +252,27 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
         {/* Settings */}
         {!editing && (
           <>
-            <div className="card">
+            {/* Manage account: the two things about the account itself, in
+                one place above the app's switches. What is kept about you
+                (the privacy policy), and the way to take it all back
+                (deleting the account), which is the last row and only opens
+                a sheet that asks again. */}
+            <div className="card" data-card="manage">
+              {head("tint-slate", <UserCog size={20} strokeWidth={2.2} />, t("prof_manage"))}
+              {/* A real button: it opens the Privacy screen. The policy's
+                  name is in English in both languages, like the policy. */}
+              <button className="setting-row as-btn" onClick={() => onNavigate("privacy")}>
+                <div className="setting-ico" style={{ background: "var(--tanim-sk)" }}><ShieldCheck size={16} color="var(--tanim)" /></div>
+                <div style={{ flex: 1 }}>
+                  <div className="setting-lbl" lang="en">{PRIVACY.title}</div>
+                  <div className="setting-sub">{t("prof_privacy_sub")}</div>
+                </div>
+                <ChevronRight size={16} color="var(--line-strong)" />
+              </button>
+              {onDeleteAccount && <DeleteAccount role={userRole} onDelete={onDeleteAccount} />}
+            </div>
+
+            <div className="card" data-card="preferences">
               {head("tint-slate", <SlidersHorizontal size={20} strokeWidth={2.2} />, t("prof_preferences"))}
               <div className="setting-row">
                 <div className="setting-ico" style={{ background: "var(--gold-sk)" }}><Bell size={16} color="var(--gold-text)" /></div>
@@ -272,18 +292,6 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
                 </div>
                 <LanguageToggle />
               </div>
-              {/* The policy sits with the app's settings, where people look
-                  for it in any app. A real button: it opens the Privacy
-                  screen. Its name is in English in both languages, like
-                  the policy itself. */}
-              <button className="setting-row as-btn" onClick={() => onNavigate("privacy")}>
-                <div className="setting-ico" style={{ background: "var(--tanim-sk)" }}><ShieldCheck size={16} color="var(--tanim)" /></div>
-                <div style={{ flex: 1 }}>
-                  <div className="setting-lbl" lang="en">{PRIVACY.title}</div>
-                  <div className="setting-sub">{t("prof_privacy_sub")}</div>
-                </div>
-                <ChevronRight size={16} color="var(--line-strong)" />
-              </button>
             </div>
 
             <div className="card">
@@ -308,10 +316,6 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
             <button className="signout-btn" onClick={onSignOut} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
               <LogOut size={18} strokeWidth={2.4} aria-hidden="true" /> {t("prof_sign_out")}
             </button>
-
-            {/* Under Sign Out and quieter than it: leaving for good is rare,
-                and should never be what a thumb aiming for Sign Out lands on. */}
-            {onDeleteAccount && <DeleteAccount role={userRole} onDelete={onDeleteAccount} />}
 
             <div className="version-txt">AniSense v1.0.0 · Ani mo, alam mo.</div>
           </>

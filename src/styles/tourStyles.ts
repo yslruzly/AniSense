@@ -195,7 +195,11 @@ export const tourCss = `
     width: 100%; border: none; background: none; font: inherit; color: inherit;
     text-align: left; cursor: pointer;
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+    /* The same hairline under it as a row that is not a button, so a card
+       of button rows is divided like every other card. */
+    border-bottom: 1px solid var(--border);
   }
+  .setting-row.as-btn:last-child { border-bottom: none; }
   .setting-row.as-btn:active { background: var(--paper-alt); }
 
   /* ── The guide page ──────────────────────────────────────────────────────
