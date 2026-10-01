@@ -158,8 +158,14 @@ database itself (Row Level Security in `schema.sql`), not by the app:
 
 ## Before the Play Store
 
-Google Play asks every app with accounts for a web address where someone can
-delete their account without the app. That page is `docs/delete-account.html`.
+Google Play asks every app with accounts for two web addresses: a privacy
+policy, and a page where someone can delete their account without the app.
+Both are in `docs/`:
+
+- `docs/privacy-policy.html` is generated from the same text the app shows
+  (`src/data/privacyPolicy.ts`). After editing the policy, run
+  `node scripts/build-privacy.mjs` to rewrite the page.
+- `docs/delete-account.html` is the deletion page.
 
 1. Open `docs/config.js` and fill in the Project URL, the **publishable** key
    (the same two values as `.env`) and a support email address.
@@ -168,8 +174,13 @@ delete their account without the app. That page is `docs/delete-account.html`.
    The page is then at `https://<your-username>.github.io/<repository>/delete-account.html`.
    (GitHub Pages needs a public repository on the free plan; Netlify and
    Cloudflare Pages host a folder for free from a private one.)
-3. In Play Console, paste that address under **App content → Data safety →
-   Delete account URL**.
+3. In Play Console, paste the two addresses:
+   - `…/privacy-policy.html` under **App content → Privacy policy**
+   - `…/delete-account.html` under **App content → Data safety → Delete
+     account URL**
+
+The policy is a draft. Have a lawyer or a data protection officer read it
+before the release.
 
 ## Good to know
 

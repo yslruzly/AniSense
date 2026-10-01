@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ArrowLeft, Camera, Bell, IdCard, Award, Sprout, Wheat, SlidersHorizontal, Info, ChevronRight, Globe, Lock, HelpCircle, PlayCircle, Settings, LogOut, Phone, Mail, MapPin, Calendar } from "lucide-react";
+import { ArrowLeft, Camera, Bell, IdCard, Award, Sprout, Wheat, SlidersHorizontal, Info, ChevronRight, Globe, ShieldCheck, HelpCircle, PlayCircle, Settings, LogOut, Phone, Mail, MapPin, Calendar } from "lucide-react";
 import { useLang, LanguageToggle } from "../i18n";
 import { Screen, UserRole, FarmerProfile } from "../types";
 import { CropEmoji } from "../components/CropEmoji";
@@ -68,11 +68,16 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
       label: t("gd_replay_t"), sub: t("prof_tour_sub"),
       go: onReplayTour as (() => void) | undefined,
     }] : []),
-    { ico: <Lock size={16} color="var(--text-soft)" />, bg: "var(--paper-alt)", label: t("prof_privacy"), sub: t("prof_privacy_sub"), go: undefined as (() => void) | undefined },
     {
       ico: <HelpCircle size={16} color="var(--tanim)" />, bg: "var(--tanim-sk)",
       label: t("prof_help"), sub: t("prof_help_sub"),
       go: (() => onNavigate("guide")) as (() => void) | undefined,
+    },
+    // After the two ways to get help, before the version: where people look
+    // for it in any app.
+    {
+      ico: <ShieldCheck size={16} color="var(--tanim)" />, bg: "var(--tanim-sk)", label: t("prof_privacy"), sub: t("prof_privacy_sub"),
+      go: (() => onNavigate("privacy")) as (() => void) | undefined,
     },
     { ico: <Settings size={16} color="var(--ink-2)" />, bg: "var(--paper-alt)", label: t("prof_about"), sub: t("prof_version"), go: undefined as (() => void) | undefined },
   ];

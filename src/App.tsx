@@ -24,6 +24,7 @@ import { AnalyticsScreen } from "./screens/AnalyticsScreen";
 import { TradeScreen } from "./screens/TradeScreen";
 import { WeatherScreen } from "./screens/WeatherScreen";
 import { GuideScreen } from "./screens/GuideScreen";
+import { PrivacyScreen } from "./screens/PrivacyScreen";
 import { ProfileScreen } from "./screens/ProfileScreen";
 import { WelcomeID, WelcomeInfo, makeMemberId } from "./components/WelcomeID";
 import { Tour } from "./components/tour/Tour";
@@ -467,6 +468,7 @@ export default function App() {
       case "analytics": return <AnalyticsScreen onProfile={openProfile} onBack={goHome} userInitials={initials} farmerCrops={farmerProfile.crops} />;
       case "trade": return <TradeScreen onProfile={openProfile} onBack={goHome} userName={userName} userInitials={initials} userRole={userRole} intent={tradeIntent ?? undefined} />;
       case "guide": return <GuideScreen onBack={goHome} onReplay={replayTour} />;
+      case "privacy": return <PrivacyScreen onBack={openProfile} />;
       case "weather": return <WeatherScreen onProfile={openProfile} onBack={goHome} userInitials={initials} userRole={userRole} />;
       case "profile": return <ProfileScreen onNavigate={navigate} onBack={goBack} profile={farmerProfile} setProfile={saveProfile} onSignOut={handleSignOut} onDeleteAccount={handleDeleteAccount} userInitials={initials} userRole={userRole} userPhoto={userPhoto} onShowId={() => { setIdMode("view"); setShowWelcome(true); }} onReplayTour={replayTour} sales={allSales} memberSince={welcome?.since} />;
     }

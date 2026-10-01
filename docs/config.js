@@ -9,5 +9,5 @@
 window.ANISENSE = {
   supabaseUrl: "",       // https://xxxxxxxx.supabase.co
   supabaseKey: "",       // sb_publishable_...
-  supportEmail: "",      // where a deletion or privacy request can be sent
+  supportEmail: "AniSense2026@gmail.com",   // where a deletion or privacy request can be sent
 };

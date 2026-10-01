@@ -799,6 +799,10 @@ export const authCss = `
      target without making the line taller. */
   .a-switch { text-align: center; font-size: var(--fs-body); color: var(--text-muted); margin-top: 18px; }
   .a-switch .a-link { min-height: 44px; margin: -10px 0; }
+  /* What Create Account means, under that button on the last question:
+     smaller and quieter than the button, with the policy as a link. */
+  .a-consent { text-align: center; margin: 14px 4px 0; font-size: var(--fs-label); line-height: 1.45; color: var(--text-faint); text-wrap: balance; }
+  .a-consent .a-link { min-height: 44px; margin: -10px 0; font-size: var(--fs-label); }
 
   /* ── Crop picker ───────────────────────────────────────────────────────── */
   /* White tiles on the grey page, like the setup card: a hairline and a soft
