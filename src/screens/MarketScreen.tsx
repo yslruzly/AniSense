@@ -24,8 +24,8 @@ import basketMouthShut from "../assets/mascot-basket-mouth-shut.webp";
 //   1. How's the market?         → one line and a bar: how many went up
 //   2. What moved the most?      → a swipeable row of photo cards
 //   3. What's my crop at?        → search, filter, the full list
-// Every crop opens a sheet with its price story: the past 12 months of
-// records and the next 3 where the forecast has them.
+// Every crop opens a sheet with its price story: this year's records from
+// January, and the next 3 months where the forecast has them.
 //
 // The list opens with AniSense's focus crops, the ones the study covers and
 // keeps real records for (rice, onion, garlic, calamansi), pinned above the
@@ -59,12 +59,20 @@ function Thumb({ item, className }: { item: PriceItem; className: string }) {
 }
 
 // ── Price story chart ─────────────────────────────────────────────────────────
-// The variety's own records: up to the last 12 months, solid, then the LSTM's
-// forecast for the months after, dashed. A variety with no records says so
-// and draws nothing: no line is better than an invented one.
+// The variety's own records for the year, solid, then the LSTM's forecast
+// for the months after, dashed. The chart starts at January of the year the
+// newest record is in, so with the forecast it reads as one calendar year:
+// January to September recorded, October to December expected. Early in a
+// year, before three of its months are on record, there is too little to
+// draw, so it shows the last 12 months instead. A variety with no records
+// says so and draws nothing: no line is better than an invented one.
 function PriceStory({ item }: { item: PriceItem }) {
   const { t, lang } = useLang();
-  const records = historyOf(item.id).slice(-12);
+  const history = historyOf(item.id);
+  const year = history.length ? history[history.length - 1].month.slice(0, 4) : "";
+  const thisYear = history.filter(p => p.month.startsWith(year));
+  const wholeYear = thisYear.length >= 3;
+  const records = wholeYear ? thisYear : history.slice(-12);
   if (records.length < 3) return <p className="pr-story-none">{t("mkt_no_history")}</p>;
 
   const run = forecastOf(item.id, "lstm");
@@ -73,6 +81,12 @@ function PriceStory({ item }: { item: PriceItem }) {
   const all = [...past, ...next];
   const lo = Math.min(...past), hi = Math.max(...past);
   const months = String(records.length);
+  // "2026 prices and forecast", or "Past 12 months and forecast" early in a year.
+  const title = wholeYear
+    ? t(run ? "mkt_history_year" : "mkt_history_year_only").replace("{year}", year)
+    : t(run ? "mkt_history" : "mkt_history_only").replace("{n}", months);
+  const lowLabel = wholeYear ? t("mkt_low_year").replace("{year}", year) : t("mkt_low").replace("{n}", months);
+  const highLabel = wholeYear ? t("mkt_high_year").replace("{year}", year) : t("mkt_high").replace("{n}", months);
 
   const W = 320, H = 118, PX = 8, PY = 14;
   const min = Math.min(...all), max = Math.max(...all), span = max - min || 1;
@@ -89,7 +103,7 @@ function PriceStory({ item }: { item: PriceItem }) {
   return (
     <div className="pr-story">
       <div className="pr-story-head">
-        <span className="pr-story-title">{t(run ? "mkt_history" : "mkt_history_only").replace("{n}", months)}</span>
+        <span className="pr-story-title">{title}</span>
         <span className="pr-legend">
           <span className="pr-key solid" /> {t("mkt_actual")}
           {run && <><span className="pr-key dashed" /> {t("mkt_forecast")}</>}
@@ -109,7 +123,7 @@ function PriceStory({ item }: { item: PriceItem }) {
         {run && <path d={nextD} className="pr-next" />}
         <circle cx={x(ti)} cy={y(past[ti])} r={5.5} className="pr-dot" />
       </svg>
-      {/* Three anchors, not fifteen labels: where it started, the newest
+      {/* Three anchors, not twelve labels: where it started, the newest
           record, where it's headed. */}
       <div className="pr-axis" aria-hidden="true">
         <span style={{ left: 0 }}>{monthLabel(records[0].month, lang, "short", true)}</span>
@@ -117,8 +131,8 @@ function PriceStory({ item }: { item: PriceItem }) {
         <span style={{ right: 0 }} className={run ? "" : "now"}>{monthLabel(lastMonth, lang, "short", !run)}</span>
       </div>
       <div className="pr-facts">
-        <div><span>{t("mkt_low").replace("{n}", months)}</span><strong>{peso(lo)}</strong></div>
-        <div><span>{t("mkt_high").replace("{n}", months)}</span><strong>{peso(hi)}</strong></div>
+        <div><span>{lowLabel}</span><strong>{peso(lo)}</strong></div>
+        <div><span>{highLabel}</span><strong>{peso(hi)}</strong></div>
         {run && <div><span>{monthLabel(lastMonth, lang, "long")}</span><strong className={run.reliable ? dir : ""}>{peso(end)}</strong></div>}
       </div>
       {/* Who made the forecast and how far off it has been, said plainly. */}

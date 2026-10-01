@@ -339,6 +339,10 @@ export const translations: Dict = {
   yp_other: { en: "Other", tl: "Iba pa" },
   mkt_history: { en: "Past {n} months and forecast", tl: "Nakaraang {n} buwan at taya" },
   mkt_history_only: { en: "Past {n} months", tl: "Nakaraang {n} buwan" },
+  mkt_history_year: { en: "{year} prices and forecast", tl: "Presyo ng {year} at taya" },
+  mkt_history_year_only: { en: "{year} prices", tl: "Presyo ng {year}" },
+  mkt_low_year: { en: "{year} low", tl: "Pinakamababa sa {year}" },
+  mkt_high_year: { en: "{year} high", tl: "Pinakamataas sa {year}" },
   mkt_no_history: { en: "No price history for this crop yet.", tl: "Wala pang kasaysayan ng presyo para rito." },
   mkt_low: { en: "{n}-month low", tl: "Pinakamababa sa {n} buwan" },
   mkt_high: { en: "{n}-month high", tl: "Pinakamataas sa {n} buwan" },
@@ -1157,8 +1161,8 @@ export const translations: Dict = {
   },
   tour_prices_t: { en: "Latest prices", tl: "Pinakabagong presyo" },
   tour_prices_b: {
-    en: "The retail price of the crops you grow, and whether it rose or fell from the month before. Tap one to open Prices and see its past 12 months.",
-    tl: "Ang presyong tingi ng mga tinatanim mo, at kung tumaas o bumaba mula sa nakaraang buwan. Pindutin ang isa para buksan ang Presyo at makita ang nakaraang 12 buwan.",
+    en: "The retail price of the crops you grow, and whether it rose or fell from the month before. Tap one to open Prices and see its prices this year.",
+    tl: "Ang presyong tingi ng mga tinatanim mo, at kung tumaas o bumaba mula sa nakaraang buwan. Pindutin ang isa para buksan ang Presyo at makita ang presyo nito ngayong taon.",
   },
   tour_featured_t: { en: "What's selling", tl: "Ang mabenta" },
   tour_featured_b: {
@@ -1336,11 +1340,11 @@ export const translations: Dict = {
   },
 
   gd_prices_t: { en: "Read the latest prices", tl: "Basahin ang pinakabagong presyo" },
-  gd_prices_s: { en: "Twelve months back, three months forward", tl: "Labindalawang buwan pabalik, tatlong buwan pasulong" },
+  gd_prices_s: { en: "This year so far, and three months forward", tl: "Ngayong taon, at tatlong buwan pasulong" },
   gd_prices_1: { en: "Tap Prices in the bar at the bottom.", tl: "Pindutin ang Presyo sa bar sa ibaba." },
   gd_prices_2: { en: "The dark card at the top says how many prices went up from the month before.", tl: "Sinasabi ng maitim na card sa itaas kung ilang presyo ang tumaas mula sa nakaraang buwan." },
   gd_prices_3: { en: "Search for a crop, or tap one in the list. AniSense's focus crops are at the top.", tl: "Maghanap ng pananim, o pindutin ang isa sa listahan. Nasa itaas ang mga pangunahing pananim ng AniSense." },
-  gd_prices_4: { en: "Inside you get the past 12 months and the next three as the model expects them.", tl: "Sa loob makikita mo ang nakaraang 12 buwan at ang susunod na tatlo ayon sa modelo." },
+  gd_prices_4: { en: "Inside you get this year's prices from January, and the next three months as the model expects them.", tl: "Sa loob makikita mo ang presyo ngayong taon mula Enero, at ang susunod na tatlong buwan ayon sa modelo." },
   gd_prices_note: {
     en: "A forecast is a guide, not a guarantee. Weigh it against what traders are actually paying you this week.",
     tl: "Ang hula ay gabay, hindi garantiya. Timbangin ito sa aktuwal na binabayad sa iyo ngayong linggo.",
@@ -1408,7 +1412,7 @@ export const translations: Dict = {
   gdb_prices_1: { en: "Tap Prices in the bar at the bottom.", tl: "Pindutin ang Presyo sa bar sa ibaba." },
   gdb_prices_2: { en: "The dark card at the top says how many prices went up or down from the month before.", tl: "Sinasabi ng maitim na card sa itaas kung ilang presyo ang tumaas o bumaba mula sa nakaraang buwan." },
   gdb_prices_3: { en: "Biggest moves shows what changed the most; All prices lists every crop, grouped by kind.", tl: "Ipinapakita ng Pinakamalaking galaw ang pinakamalaking pagbabago; nakalista sa Lahat ng presyo ang bawat pananim, ayon sa uri." },
-  gdb_prices_4: { en: "Tap a crop to see its past 12 months and the next three.", tl: "Pindutin ang isang pananim para makita ang nakaraang 12 buwan at ang susunod na tatlo." },
+  gdb_prices_4: { en: "Tap a crop to see its prices this year and the next three months.", tl: "Pindutin ang isang pananim para makita ang presyo nito ngayong taon at ang susunod na tatlong buwan." },
   gdb_prices_note: {
     en: "Cheapest today on Home shows the listings asking less than today's market price.",
     tl: "Ipinapakita ng Pinakamura ngayon sa Home ang mga listing na mas mababa sa presyo ng merkado ngayon.",
