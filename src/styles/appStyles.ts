@@ -1947,6 +1947,11 @@ export const appCss = `
   .hm-crop:active { background: var(--paper); transition-duration: 0ms; }
   .hm-crop + .hm-crop::before { content: ""; position: absolute; top: 0; left: 70px; right: 8px; height: 1px; background: var(--line); }
   .hm-crop:active::before, .hm-crop:active + .hm-crop::before { opacity: 0; }
+  /* A row that is only read (Cheapest today): the same row, with nothing
+     that says "tap me". No pointer, and no change under a finger. */
+  .hm-crop.still { cursor: default; }
+  .hm-crop.still:active { background: none; }
+  .hm-crop.still:active::before, .hm-crop.still:active + .hm-crop::before { opacity: 1; }
   .hm-crop-photo {
     width: 50px; height: 50px; flex: 0 0 50px; border-radius: 13px; overflow: hidden;
     background: var(--tanim-sk); display: flex; align-items: center; justify-content: center;

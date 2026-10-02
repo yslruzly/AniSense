@@ -193,7 +193,8 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
 
         {/* The cheapest kilos on the marketplace right now, straight after
             the featured harvests: the two "what to buy today" blocks together,
-            before the invitation to browse everything. */}
+            before the invitation to browse everything. A list to read, not
+            to tap: the rows are plain rows and go nowhere. */}
         {isBuyer && (
           <section className="hm-card tint-green" data-tour="b-deals">
             <div className="hm-card-head">
@@ -210,7 +211,7 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
                 {deals.map(({ l, save }) => {
                   const photo = cropPhotoFor(l.crop, l.variety);
                   return (
-                    <button key={l.id} className="hm-crop" onClick={() => shop({ search: l.variety || l.crop })}>
+                    <div key={l.id} className="hm-crop still">
                       <span className="hm-crop-photo">
                         {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropIcon crop={l.crop} size={22} />}
                       </span>
@@ -227,7 +228,7 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
                             it was squeezing the seller's name off the line. */}
                         {save > 0 && <span className="pr-chg up">−₱{save} {t("home_below")}</span>}
                       </span>
-                    </button>
+                    </div>
                   );
                 })}
               </div>

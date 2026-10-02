@@ -1248,8 +1248,8 @@ export const translations: Dict = {
     tl: "Pinakamura ngayon",
   },
   tour_b_deals_b: {
-    en: "The lowest prices in the Market right now, and how far each one is below today's market price. Tap one to see it in the Market.",
-    tl: "Ang pinakamababang presyo sa Merkado ngayon, at kung gaano ito kababa sa presyo ng merkado. Pindutin ang isa para makita ito sa Merkado.",
+    en: "The lowest prices in the Market right now, and how far each one is below the market price. Open the Market to buy.",
+    tl: "Ang pinakamababang presyo sa Merkado ngayon, at kung gaano ito kababa sa presyo ng merkado. Buksan ang Merkado para bumili.",
   },
   tour_b_moves_t: { en: "Which prices moved", tl: "Aling presyo ang gumalaw" },
   tour_b_moves_b: {
