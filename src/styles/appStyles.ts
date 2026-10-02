@@ -1601,67 +1601,42 @@ export const appCss = `
   }
   .mp-sell-btn:active { transform: scale(.97); transition-duration: 90ms; }
 
-  /* The crop tiles. Three columns, "All crops" two wide, so eleven choices
-     close in four even rows. Each is a white tile held off the page by a
-     hairline and a soft shadow rather than a drawn border, with the crop in
-     a soft circle of its own colour (wheat for rice, red for tomatoes), so
-     they read like a set of app icons and tell apart at a glance. Names at
-     16px, the app's floor. */
+  /* The filters: the family switch, then the chosen family's crops as a
+     wrapping row of pills, each with its crop's picture. White pills held
+     off the page by a hairline and a soft shadow; 52px tall, names at 16px,
+     the app's floors. They wrap rather than scroll: nothing here needs a
+     swipe. */
   .mp-filters { display: flex; flex-direction: column; gap: 12px; }
-  .mp-cats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-  .mp-cat {
-    position: relative; min-width: 0; min-height: 80px; padding: 10px 3px 9px; border-radius: 20px; cursor: pointer;
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  .mp-crops { display: flex; flex-wrap: wrap; gap: 8px; animation: mp-vars-in 220ms var(--ease-out); }
+  .mp-chip {
+    min-height: 52px; padding: 0 16px 0 10px; border-radius: 999px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 8px; white-space: nowrap;
     border: none; background: var(--card); color: var(--text);
-    box-shadow: 0 0 0 1px rgba(22,33,27,.06), 0 1px 2px rgba(22,33,27,.06), 0 8px 18px -14px rgba(22,33,27,.35);
-    font-family: var(--font-display); font-size: var(--fs-label); font-weight: 600; line-height: 1.15;
-    letter-spacing: -.01em; text-align: center;
+    box-shadow: 0 0 0 1px rgba(22,33,27,.07), 0 1px 2px rgba(22,33,27,.06), 0 8px 16px -14px rgba(22,33,27,.35);
+    font-family: var(--font-display); font-size: var(--fs-label); font-weight: 600; letter-spacing: -.01em;
     transition: transform 160ms var(--ease-out), background-color 180ms ease, color 180ms ease, box-shadow 200ms var(--ease-out);
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
-  .mp-cat-ico {
-    width: 40px; height: 40px; flex-shrink: 0; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center; color: var(--tanim);
-    background: radial-gradient(circle at 35% 28%, #FFFFFF 0%, var(--tint, #EEF0F1) 72%);
-    box-shadow: inset 0 0 0 1px rgba(22,33,27,.05);
+  /* "All" has no picture, so it is padded evenly. */
+  .mp-chip.all { padding: 0 20px; }
+  .mp-chip-ico {
+    width: 34px; height: 34px; flex-shrink: 0; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--paper); box-shadow: inset 0 0 0 1px rgba(22,33,27,.05);
     transition: opacity 180ms ease, filter 180ms ease;
   }
-  .mp-cat[data-crop="all"]        { --tint: #D6ECDD; }
-  .mp-cat[data-crop="rice"]       { --tint: #F4E4B8; }
-  .mp-cat[data-crop="onions"]     { --tint: #F2DAE6; }
-  .mp-cat[data-crop="calamansi"]  { --tint: #E3F0C2; }
-  .mp-cat[data-crop="corn"]       { --tint: #F9EAAE; }
-  .mp-cat[data-crop="mango"]      { --tint: #FBD9B6; }
-  .mp-cat[data-crop="garlic"]     { --tint: #E9E2F4; }
-  .mp-cat[data-crop="tomatoes"]   { --tint: #F9D2CD; }
-  .mp-cat[data-crop="squash"]     { --tint: #FAD8BD; }
-  .mp-cat[data-crop="ampalaya"]   { --tint: #D4EBCD; }
-  .mp-cat[data-crop="watermelon"] { --tint: #F9D5DB; }
-  .mp-cat-lbl { max-width: 100%; overflow-wrap: break-word; }
-  /* Nothing for sale in it right now: the tile goes quiet (still tappable;
+  /* Nothing for sale in it right now: the pill goes quiet (still tappable;
      the list then says so). */
-  .mp-cat.none:not(.on) { color: var(--text-faint); }
-  .mp-cat.none:not(.on) .mp-cat-ico { opacity: .5; filter: saturate(.35); }
-  .mp-cat:active { transform: scale(.97); transition-duration: 90ms; }
-  /* Chosen: a green ring closes round the tile and it takes a green wash,
-     the same as a chosen crop in sign-up, and its circle pops once, slightly
-     past full size, as the answer to the tap. */
-  .mp-cat.on {
+  .mp-chip.none:not(.on) { color: var(--text-faint); }
+  .mp-chip.none:not(.on) .mp-chip-ico { opacity: .5; filter: saturate(.35); }
+  .mp-chip:active { transform: scale(.96); transition-duration: 90ms; }
+  /* Chosen: a green ring and a green wash, the same as a chosen variety
+     below and a chosen crop in sign-up. */
+  .mp-chip.on {
     background: #F2F9F5; color: var(--tanim);
-    box-shadow: 0 0 0 2px var(--tanim), 0 1px 2px rgba(11,107,65,.12), 0 10px 20px -14px rgba(11,107,65,.5);
+    box-shadow: 0 0 0 2px var(--tanim), 0 1px 2px rgba(11,107,65,.12), 0 10px 18px -14px rgba(11,107,65,.5);
   }
-  .mp-cat.on .mp-cat-ico {
-    box-shadow: inset 0 0 0 1px rgba(11,107,65,.12), 0 0 0 3px #fff;
-    animation: mp-cat-pop 280ms var(--ease-out);
-  }
-  @keyframes mp-cat-pop { 0% { transform: scale(.88); } 60% { transform: scale(1.06); } 100% { transform: scale(1); } }
-  /* "All crops", two columns wide: its circle beside the words. */
-  .mp-cat.all {
-    grid-column: span 2; flex-direction: row; justify-content: flex-start; gap: 12px;
-    padding: 12px 14px; text-align: left;
-  }
-  .mp-cat.all .mp-cat-ico { width: 44px; height: 44px; }
-  .mp-cat.all .mp-cat-lbl { font-size: var(--fs-body); }
+  .mp-chip.on .mp-chip-ico { background: #fff; }
 
   /* Varieties arrive under the crops in two even columns: long names like
      "Shallots (Sibuyas Tagalog)" get room to wrap instead of being cut.
@@ -1680,9 +1655,9 @@ export const appCss = `
   .mp-var:active { transform: scale(.96); transition-duration: 90ms; }
   .mp-var.on { background: #F2F9F5; color: var(--tanim); box-shadow: 0 0 0 2px var(--tanim), 0 1px 2px rgba(11,107,65,.1); }
 
-  /* Facts on the left, sort on the right, on one line: the count and the
-     going rate are read together, and wrapping split them apart. */
-  .mp-list-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  /* The head of the list: the sort button, at the right-hand end where it
+     has always been. */
+  .mp-list-head { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
   /* ── Family switch ──────────────────────────────────────────────────────
      Four segments in one track, with a pill that slides to the one you
      picked. The whole control is always visible, so the choices are a fact
@@ -1691,13 +1666,10 @@ export const appCss = `
      One pill that travels, not a highlight that blinks between labels: the
      eye follows the move and keeps its place. A transition rather than an
      animation, so a second tap mid-slide retargets from where it is. */
-  /* Its own line, full width. Sharing the row with the sort menu squeezed
-     "Vegetables" into "Veg…", and a label a reader has to decode is not a
-     label. */
-  /* The switch takes the first line; the sort button keeps the right-hand
-     end of the second, where it has always been. */
-  .mp-list-head:has(.fseg) { flex-wrap: wrap; row-gap: 10px; justify-content: flex-end; }
-  .mp-list-head .fseg { flex: 0 0 100%; order: -1; }
+  /* Its own line, full width, at the top of the filters. Sharing a row with
+     the sort menu squeezed "Vegetables" into "Veg…", and a label a reader
+     has to decode is not a label. */
+  .mp-filters .fseg { flex: none; }
   /* The same object as the Expenses switch: a well pressed into the page,
      and the app's raised green sliding inside it, so every "pick one of
      these" in the app is one thing. */
@@ -1872,8 +1844,8 @@ export const appCss = `
   .btn-details { gap: 8px; }
 
   @media (prefers-reduced-motion: reduce) {
-    .mp-vars, .mp-quick-ico, .mp-cat.on .mp-cat-ico { animation: none; }
-    .mp-card:has(.mp-card-main:active), .mp-quick:active, .mp-cat:active, .mp-var:active, .mp-sell-btn:active, .mp-seller:active { transform: none; }
+    .mp-vars, .mp-crops, .mp-quick-ico { animation: none; }
+    .mp-card:has(.mp-card-main:active), .mp-quick:active, .mp-chip:active, .mp-var:active, .mp-sell-btn:active, .mp-seller:active { transform: none; }
   }
 
   /* ── Home ────────────────────────────────────────────────────────────────── */

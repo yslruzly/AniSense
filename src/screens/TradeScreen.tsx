@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
-import { ShoppingCart, Plus, Minus, X, Check, Search, Pencil, Trash2, ChevronRight, Package, Calendar, Star, MapPin, Phone, ShoppingBag, CreditCard, AlertTriangle, Wheat, Sprout, ArrowUpDown, Camera, ImageOff, LayoutGrid } from "lucide-react";
+import { ShoppingCart, Plus, Minus, X, Check, Search, Pencil, Trash2, ChevronRight, Package, Calendar, Star, MapPin, Phone, ShoppingBag, CreditCard, AlertTriangle, Wheat, Sprout, ArrowUpDown, Camera, ImageOff } from "lucide-react";
 import { haptic } from "../lib/platform";
 import { useLang, translations } from "../i18n";
 import { UserRole, CartItem, SellerDetail, TradeIntent, Listing } from "../types";
-import { CROP_FILTER_MAP, CROP_CATEGORIES, CROP_FAMILIES, ALL_RICE_NAMES, RICE_VARIETY_LIST, familyCropNames, FAMILY_GROUPS, CROP_GROUPS, RICE_VARIETIES } from "../data/crops";
+import { CROP_FILTER_MAP, CROP_FAMILIES, ALL_RICE_NAMES, RICE_VARIETY_LIST, familyCropNames, FAMILY_GROUPS, CROP_GROUPS, RICE_VARIETIES } from "../data/crops";
 import { Hdr } from "../components/layout/Hdr";
 import { CropIcon } from "../components/icons";
 import { cropPhotoFor, cropGroupPhoto } from "../data/cropPhotos";
@@ -48,11 +48,13 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
   // The listing open in the detail sheet. Held by id, so an edit or a cart
   // change shows in the sheet straight away.
   const [openId, setOpenId] = useState<string | null>(null);
-  const [category, setCategory] = useState(intent?.category ?? "All Crops");
-  // The seller's coarse view of their own market: everything, or one family.
+  // The filter is two steps, the second inside the first: a family (All,
+  // Crops, Vegetables, Fruits), then one crop of that family, or all of it.
   // Home's Crops / Fruits / Vegetables cards open the marketplace already on
-  // that family.
-  const [family, setFamily] = useState(intent?.family ?? "All");
+  // that family; arriving for one crop opens on that crop's family.
+  const [category, setCategory] = useState(intent?.category ?? "All Crops");
+  const [family, setFamily] = useState(intent?.family
+    ?? CROP_FAMILIES.find(f => (FAMILY_GROUPS[f] ?? []).includes(intent?.category ?? "")) ?? "All");
   const [variety, setVariety] = useState("All");
   const [sortBy, setSortBy] = useState<"default" | "price-asc" | "price-desc" | "rating">("default");
   const [showModal, setShowModal] = useState(false);
@@ -161,12 +163,12 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
   }, []);
   const pendingDelete = useRetained(confirmDelete);
 
-  // When category changes, reset variety
-  // The two controls answer each other: picking a crop widens the family
-  // back to All, and picking a family drops any single crop. Two filters
-  // silently fighting is how a page ends up empty for no visible reason.
-  const selectCategory = (cat: string) => { setCategory(cat); setVariety("All"); setFamily("All"); };
+  // A crop is always one of the chosen family's, so the two never disagree:
+  // picking a family starts again at "all of it", and picking a crop keeps
+  // the family and starts again at all its varieties.
+  const selectCategory = (cat: string) => { haptic.select(); setCategory(cat); setVariety("All"); };
   const selectFamily = (fam: string) => { haptic.select(); setFamily(fam); setCategory("All Crops"); setVariety("All"); };
+  const clearFilters = () => { setSearch(""); setFamily("All"); setCategory("All Crops"); setVariety("All"); };
 
   // ── Cart helpers ──
   // Once a listing is in the cart, the cart owns its quantity: the picker on
@@ -261,10 +263,9 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
     if (!inCategory(l, category)) return false;
     return variety === "All" || l.crop === variety || l.variety === variety;
   });
-  // How many are for sale under each crop tile, by the same rules as the
-  // list itself (and whatever has been searched), so a tile only goes quiet
-  // when the list would really be empty. Not narrowed by Crops / Vegetables /
-  // Fruits: picking a crop clears that anyway.
+  // How many are for sale under each crop, by the same rules as the list
+  // itself (and whatever has been searched), so a crop only goes quiet when
+  // the list would really be empty.
   const searched = listings.filter(matchesSearch);
   const countOf = (cat: string) => searched.filter(l => inCategory(l, cat)).length;
 
@@ -441,55 +442,13 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
           </button>
         </div>
 
-        {/* Filters: every crop as a tile, all visible, nothing to swipe.
-            Eleven choices in three columns would leave a ragged last row, so
-            "All crops" takes two columns and the grid closes in four even
-            rows. A crop with nothing for sale right now is quieter, so a
-            farmer or buyer sees where to tap before tapping. Varieties appear
-            under the grid, in two columns, only once a crop is chosen. */}
+        {/* Filters, one step at a time. First the kind: All, Crops,
+            Vegetables or Fruits, four words on one switch. Only then, and
+            only for the kind chosen, its crops as a short row of pills: two
+            to five choices instead of a wall of eleven tiles before the first
+            harvest is in sight. Varieties follow the same way, once a crop
+            is chosen. Nothing to swipe: the pills wrap. */}
         <div className="mp-filters">
-          <div className="mp-cats" role="radiogroup" aria-label={t("trade_select_category")}>
-            {CROP_CATEGORIES.map(cat => {
-              const all = cat === "All Crops";
-              const none = !all && countOf(cat) === 0;
-              return (
-                <button key={cat} role="radio" aria-checked={category === cat}
-                  data-crop={all ? "all" : cat.toLowerCase()}
-                  className={`mp-cat${all ? " all" : ""}${category === cat ? " on" : ""}${none ? " none" : ""}`}
-                  onClick={() => selectCategory(cat)}>
-                  {/* Each crop in a soft circle of its own colour, like an
-                      app's icon: the tiles tell apart at a glance. */}
-                  <span className="mp-cat-ico" aria-hidden="true">
-                    {all ? <LayoutGrid size={22} strokeWidth={2.2} /> : <CropEmoji crop={cat} size={24} />}
-                  </span>
-                  <span className="mp-cat-lbl">{all ? t("mp_all_crops") : tn(cat)}</span>
-                </button>
-              );
-            })}
-          </div>
-          {subVarieties.length > 0 && (
-            <div className="mp-vars" role="radiogroup" aria-label={t("trade_select_variety")} key={category}>
-              <button role="radio" aria-checked={variety === "All"} className={`mp-var ${variety === "All" ? "on" : ""}`} onClick={() => setVariety("All")}>
-                {t("all")}
-              </button>
-              {subVarieties.map(v => (
-                <button key={v} role="radio" aria-checked={variety === v} className={`mp-var ${variety === v ? "on" : ""}`} onClick={() => setVariety(v)}>
-                  {varietyLabel(v)}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* The count, the going rate for what's shown, and how it's sorted,
-            on one line: what the old four-box stat strip was trying to say. */}
-        <div className="mp-list-head" ref={resultsRef}>
-          {/* The two facts as chips: how many, and what they go for. Green
-              for the count, gold for money, the same pairing as Home. */}
-          {/* Both sides get the same cut: what kind of thing am I looking
-              at. It replaced the listing count and the average price, which
-              were facts nobody asked for and which the page already shows —
-              the listings are right there, and each one carries its price. */}
           <div className="fseg" role="tablist" aria-label={t("mp_family")}>
             {/* The pill is one element that slides between the labels, not a
                 highlight that blinks off one and on the next: the eye follows
@@ -515,7 +474,39 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
               </button>
             ))}
           </div>
+          {family !== "All" && (
+            <div className="mp-crops" role="radiogroup" aria-label={t("trade_select_category")} key={family}>
+              <button role="radio" aria-checked={category === "All Crops"} className={`mp-chip all ${category === "All Crops" ? "on" : ""}`} onClick={() => selectCategory("All Crops")}>
+                {t("all")}
+              </button>
+              {(FAMILY_GROUPS[family] ?? []).map(cat => (
+                // A crop with nothing for sale right now is quieter, so a
+                // farmer or buyer sees where to tap before tapping.
+                <button key={cat} role="radio" aria-checked={category === cat}
+                  className={`mp-chip${category === cat ? " on" : ""}${countOf(cat) === 0 ? " none" : ""}`}
+                  onClick={() => selectCategory(cat)}>
+                  <span className="mp-chip-ico" aria-hidden="true"><CropEmoji crop={cat} size={22} /></span>
+                  {tn(cat)}
+                </button>
+              ))}
+            </div>
+          )}
+          {subVarieties.length > 0 && (
+            <div className="mp-vars" role="radiogroup" aria-label={t("trade_select_variety")} key={category}>
+              <button role="radio" aria-checked={variety === "All"} className={`mp-var ${variety === "All" ? "on" : ""}`} onClick={() => setVariety("All")}>
+                {t("all")}
+              </button>
+              {subVarieties.map(v => (
+                <button key={v} role="radio" aria-checked={variety === v} className={`mp-var ${variety === v ? "on" : ""}`} onClick={() => setVariety(v)}>
+                  {varietyLabel(v)}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
+        {/* How the list is sorted, at the head of the list it sorts. */}
+        <div className="mp-list-head" ref={resultsRef}>
           {/* Four options, so a plain menu under the button: the sheet we use
               for long lists was a lot of machinery between a tap and an
               answer, and it misbehaved here. */}
@@ -535,7 +526,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
         </div>
 
         {sorted.length > 0 ? (
-          <div className="mp-grid stagger-list" key={`${category}-${variety}-${sortBy}`}>
+          <div className="mp-grid stagger-list" key={`${family}-${category}-${variety}-${sortBy}`}>
             {sorted.map(l => {
               const photo = photoOf(l);
               const mine = market.isMine(l);
@@ -583,7 +574,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
             title={t("trade_no_listings")}
             body={t("state_no_match_body")}
             action={t("state_show_all")}
-            onAction={() => { setSearch(""); selectCategory("All Crops"); }}
+            onAction={clearFilters}
           />
         )}
       </div>

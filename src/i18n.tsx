@@ -35,7 +35,6 @@ export const translations: Dict = {
   close: { en: "Close", tl: "Isara" },
   search: { en: "Search", tl: "Maghanap" },
   all: { en: "All", tl: "Lahat" },
-  mp_all_crops: { en: "All crops", tl: "Lahat ng pananim" },
   online: { en: "Online", tl: "Online" },
   offline: { en: "Offline", tl: "Offline" },
   per_kg: { en: "per kg", tl: "kada kilo" },
@@ -1393,7 +1392,7 @@ export const translations: Dict = {
     tl: "Sa Home, i-type sa search bar sa itaas ang pananim tulad ng bigas, o pangalan ng magsasaka, tapos pindutin ang berdeng search key.",
   },
   gdb_find_2: { en: "Or tap Crops, Fruits or Vegetables under Browse marketplace. The Market opens showing only that kind.", tl: "O pindutin ang Crops, Fruits o Vegetables sa ilalim ng Browse marketplace. Bubukas ang Merkado na iyon lang ang ipinapakita." },
-  gdb_find_3: { en: "In the Market, the All / Crops / Vegetables / Fruits switch and the crop tiles narrow the list; the sort button beside them puts the cheapest or the best-rated first.", tl: "Sa Merkado, pinapakitid ng All / Crops / Vegetables / Fruits at ng mga tile ng pananim ang listahan; inuuna naman ng pang-ayos sa tabi nila ang pinakamura o ang may pinakamataas na rating." },
+  gdb_find_3: { en: "In the Market, tap All, Crops, Vegetables or Fruits, then pick a crop under it to narrow the list. The sort button puts the cheapest or the best-rated first.", tl: "Sa Merkado, pindutin ang All, Crops, Vegetables o Fruits, tapos pumili ng pananim sa ilalim nito para paikliin ang listahan. Inuuna ng pang-ayos ang pinakamura o ang may pinakamataas na rating." },
 
   gdb_order_t: { en: "Order a harvest", tl: "Mag-order ng ani" },
   gdb_order_s: { en: "From a listing to your cart", tl: "Mula sa listing papunta sa cart mo" },
