@@ -1,5 +1,7 @@
 import { CloudSun, CloudMoon, BarChart2, BookOpen, PlayCircle, CheckCircle, AlertTriangle, Bot, ChevronRight, ArrowUpRight, ArrowDownRight, ArrowRight, Sprout, Wallet, Megaphone, Store, Tag, MapPin, Search } from "lucide-react";
+import { useState } from "react";
 import { useLang } from "../i18n";
+import { haptic } from "../lib/platform";
 import { Screen, UserRole, TradeIntent } from "../types";
 import { ShopByCrop, FeaturedProducts, FeaturedFarmers, YourPurchases, PriceMoves } from "../components/home/BuyerHome";
 import { YourHarvest } from "../components/home/FarmerHome";
@@ -17,6 +19,8 @@ import { Sparkline } from "../components/charts/Micro";
 import { cropPhoto } from "../data/cropPhotos";
 import { CropIcon } from "../components/icons";
 import { useMarket } from "../lib/market";
+import { PriceSheet } from "../components/PriceSheet";
+import { PriceItem } from "../services/prices";
 import { AIAdvisorCard } from "../components/analytics/AIAdvisorCard";
 import { PredictedPriceCard } from "../components/analytics/PredictedPriceCard";
 import { Hdr } from "../components/layout/Hdr";
@@ -86,6 +90,8 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
 
   // Farmers see their own crops (each group's lead variety); buyers, who
   // don't grow anything, see the day's biggest moves instead.
+  // The crop whose price sheet is open: the same sheet the Prices page opens.
+  const [openCrop, setOpenCrop] = useState<PriceItem | null>(null);
   const myCrops = farmerCrops
     .map(g => CROPS.find(c => CROP_GROUP_BY_ID[c.id] === g))
     .filter((c): c is NonNullable<typeof c> => !!c);
@@ -236,8 +242,11 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
           </section>
         )}
 
-        {/* 2 ── Your crops today, farmer only. A short vertical list: no
-            swiping to find your own crop among twenty. */}
+        {/* 2 ── Your crops' prices, farmer only. A short vertical list: no
+            swiping to find your own crop among twenty. Tapping one opens its
+            price sheet right here (this year's prices and the forecast), the
+            same one the Prices page opens; "All prices" in the corner is the
+            way to the full page. */}
         {!isBuyer && (
         <section className="hm-card tint-green" data-tour="prices">
           <div className="hm-card-head">
@@ -258,7 +267,8 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
               const photo = cropPhoto(c.id);
               const group = CROP_GROUP_BY_ID[c.id] || "";
               return (
-                <button key={c.id} className="hm-crop" onClick={() => onNavigate("market")}>
+                <button key={c.id} className="hm-crop"
+                  onClick={() => { haptic.select(); setOpenCrop({ id: c.id, name: c.name, pricePerKg: c.pricePerKg, change: c.change, group }); }}>
                   <span className="hm-crop-photo">
                     {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropIcon crop={group || c.name} size={22} />}
                   </span>
@@ -424,6 +434,9 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
 
         <div className="version-txt">AniSense v1.0.0 · Ani mo, alam mo.</div>
       </div>
+
+      {/* A farmer's own crop, opened from "Your crops' prices". */}
+      <PriceSheet item={openCrop} onClose={() => setOpenCrop(null)} />
     </div>
   );
 }

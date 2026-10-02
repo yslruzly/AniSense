@@ -1172,8 +1172,8 @@ export const translations: Dict = {
   },
   tour_prices_t: { en: "Latest prices", tl: "Pinakabagong presyo" },
   tour_prices_b: {
-    en: "The retail price of the crops you grow, and whether it rose or fell from the month before. Tap one to open Prices and see its prices this year.",
-    tl: "Ang presyong tingi ng mga tinatanim mo, at kung tumaas o bumaba mula sa nakaraang buwan. Pindutin ang isa para buksan ang Presyo at makita ang presyo nito ngayong taon.",
+    en: "The retail price of the crops you grow, and whether it rose or fell from the month before. Tap one to see its prices this year and the forecast.",
+    tl: "Ang presyong tingi ng mga tinatanim mo, at kung tumaas o bumaba mula sa nakaraang buwan. Pindutin ang isa para makita ang presyo nito ngayong taon at ang taya.",
   },
   tour_featured_t: { en: "What's selling", tl: "Ang mabenta" },
   tour_featured_b: {
