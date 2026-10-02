@@ -20,6 +20,7 @@ import { cropPhoto } from "../data/cropPhotos";
 import { CropIcon } from "../components/icons";
 import { useMarket } from "../lib/market";
 import { PriceSheet } from "../components/PriceSheet";
+import { SkeletonMediaRows } from "../components/states";
 import { PriceItem } from "../services/prices";
 import { AIAdvisorCard } from "../components/analytics/AIAdvisorCard";
 import { PredictedPriceCard } from "../components/analytics/PredictedPriceCard";
@@ -79,7 +80,7 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
   const isNight = useIsNight();
   // The marketplace and the farmer's expenses, from the database for a real
   // account and from the sample data otherwise.
-  const { listings, expenses } = useMarket();
+  const { listings, expenses, loadPhase } = useMarket();
   const isBuyer = userRole === "buyer";
   const now = new Date();
   const dateStr = now.toLocaleDateString(locale, { weekday: "long", month: "long", day: "numeric" });
@@ -210,7 +211,10 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
                 <div className="hm-sub">{t("home_deals_sub")}</div>
               </div>
             </div>
-            {deals.length === 0 ? (
+            {loadPhase !== "ready" ? (
+              // Still loading: rows in the list's shape, not "no deals".
+              loadPhase === "skeleton" ? <SkeletonMediaRows rows={3} label={t("state_loading_listings")} /> : null
+            ) : deals.length === 0 ? (
               <p className="hm-empty">{t("home_no_deals")}</p>
             ) : (
               <div className="stagger-list">

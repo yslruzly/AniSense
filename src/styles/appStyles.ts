@@ -4191,6 +4191,22 @@ export const appCss = `
   }
   @keyframes skel-sweep { to { transform: translateX(100%); } }
 
+  /* Skeletons shaped like what they stand in for. A row with a picture (a
+     tile, two lines, a price block), the Marketplace's cards, and Home's
+     shelf: each takes the room the real thing will, so nothing jumps when
+     the data lands. */
+  .skel-rows { display: flex; flex-direction: column; }
+  .skel-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; }
+  .skel-row + .skel-row { border-top: 1px solid var(--line); }
+  .skel-row-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 9px; }
+  .skel-row-end { display: flex; flex-direction: column; align-items: flex-end; gap: 9px; }
+  .mp-card.is-skel .mp-card-body, .fp-card.is-skel .fp-body { gap: 9px; }
+  .fp-card.is-skel { cursor: default; }
+  .fp-row.is-skel { overflow: hidden; }
+  /* On the dark hero of Expenses and Orders: a lighter bar, a softer sweep. */
+  .skel.on-ink { background: rgba(255,255,255,.2); }
+  .skel.on-ink::after { background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.28) 50%, transparent 100%); }
+
   /* Reduced motion: an infinite sweep is exactly the kind of perpetual movement
      this setting exists to stop. The block still reads as a placeholder. */
   @media (prefers-reduced-motion: reduce) {

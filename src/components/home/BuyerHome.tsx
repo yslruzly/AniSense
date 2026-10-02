@@ -5,6 +5,7 @@ import familyCrops from "../../assets/families/family-crops.webp";
 import familyFruits from "../../assets/families/family-fruits.webp";
 import familyVegetables from "../../assets/families/family-vegetables.webp";
 import { useMarket } from "../../lib/market";
+import { SkeletonShelf, SkeletonMediaRows } from "../states";
 import { rankSellers, farmerOfTheWeek } from "../../lib/featured";
 import { cropPhoto, cropPhotoFor, cropGroupPhoto } from "../../data/cropPhotos";
 import { CropEmoji } from "../CropEmoji";
@@ -161,7 +162,7 @@ export function PriceMoves({ onOpen }: { onOpen: () => void }) {
 
 export function FeaturedProducts({ onShop }: { onShop: Shop }) {
   const { t, tn } = useLang();
-  const { listings } = useMarket();
+  const { listings, loadPhase } = useMarket();
   // Best-rated first, but one per crop: ranking alone filled the shelf with
   // four sacks of rice, because the top-rated sellers here all grow rice.
   // A featured shelf that shows the same thing four times is a shelf of one.
@@ -177,6 +178,17 @@ export function FeaturedProducts({ onShop }: { onShop: Shop }) {
       return true;
     })
     .slice(0, 8);
+  // Still loading: the shelf's own shape under its title, so the page does
+  // not jump when the harvests land.
+  if (loadPhase !== "ready") {
+    return loadPhase === "skeleton" ? (
+      <section className="hm-sec" aria-labelledby="fp-t" data-tour="b-featured">
+        <div className="hm-sec-row"><h2 className="hm-sec-title" id="fp-t">{t("fp_title")}</h2></div>
+        <p className="hm-sec-sub">{t("fp_sub")}</p>
+        <SkeletonShelf count={3} label={t("state_loading_listings")} />
+      </section>
+    ) : null;
+  }
   // A new marketplace has nothing to feature yet: no shelf rather than an
   // empty one.
   if (picks.length === 0) return null;
@@ -239,9 +251,21 @@ export function FeaturedFarmers({ onShop, buyerLocation }: { onShop: Shop; buyer
   // Everyone with something on sale, best-rated first. Keyed the way the
   // marketplace finds a seller again: account id, or initials in the demo.
   // The spotlight is the same pick that awards the Profile achievement.
-  const { sellers } = useMarket();
+  const { sellers, loadPhase } = useMarket();
   const ranked = rankSellers(sellers);
   const spot = farmerOfTheWeek(sellers);
+  // Still loading: three farmers' rows under the title.
+  if (loadPhase !== "ready") {
+    return loadPhase === "skeleton" ? (
+      <section className="hm-sec" aria-labelledby="ff-t" data-tour="b-farmers">
+        <h2 className="hm-sec-title" id="ff-t">{en("ff_title")}</h2>
+        <p className="hm-sec-sub">{en("ff_sub")}</p>
+        <div className="card" style={{ marginTop: 14 }}>
+          <SkeletonMediaRows rows={3} tile={46} round end={false} label={en("state_loading_farmers")} />
+        </div>
+      </section>
+    ) : null;
+  }
   if (!spot) return null;
 
   // Then three more: anyone growing in the buyer's own town first (tagged, so

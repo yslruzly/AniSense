@@ -1148,6 +1148,9 @@ export const translations: Dict = {
   },
   state_retry: { en: "Try again", tl: "Subukan ulit" },
   state_loading_prices: { en: "Loading prices", tl: "Kinukuha ang presyo" },
+  state_loading_listings: { en: "Loading harvests", tl: "Kinukuha ang mga ani" },
+  state_loading_farmers: { en: "Loading farmers", tl: "Kinukuha ang mga magsasaka" },
+  state_loading_records: { en: "Loading your records", tl: "Kinukuha ang mga tala mo" },
 
   // ── Guided tour, farmer ─────────────────────────────────────────
   // Every line is read once, by someone holding the phone for the first time.

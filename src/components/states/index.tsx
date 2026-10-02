@@ -62,11 +62,11 @@ export function ErrorState({
 
 /** A single shimmering block. Width may be a % or px string. */
 export function Skeleton({
-  w = "100%", h = 16, radius = 8, style,
-}: { w?: string | number; h?: number; radius?: number; style?: React.CSSProperties }) {
+  w = "100%", h = 16, radius = 8, style, className = "",
+}: { w?: string | number; h?: number; radius?: number; style?: React.CSSProperties; className?: string }) {
   return (
     <span
-      className="skel"
+      className={`skel ${className}`}
       aria-hidden="true"
       style={{ width: w, height: h, borderRadius: radius, ...style }}
     />
@@ -103,6 +103,82 @@ export function SkeletonList({ rows = 5, label }: { rows?: number; label: string
     <div className="list-stack" role="status" aria-busy="true">
       <span className="sr-only">{label}</span>
       {Array.from({ length: rows }, (_, i) => <SkeletonRow key={i} />)}
+    </div>
+  );
+}
+
+/**
+ * Rows with a picture: a tile, two lines, and a price block at the end. The
+ * shape of a Home row, a harvest row and a purchase or expense row, so the
+ * list keeps its place when the real rows land.
+ */
+export function SkeletonMediaRows({ rows = 3, tile = 50, round = false, end = true, label }: {
+  rows?: number;
+  /** The picture tile's size, in px. */
+  tile?: number;
+  /** A round tile, for a person. */
+  round?: boolean;
+  /** Whether the row ends in a price block. */
+  end?: boolean;
+  label: string;
+}) {
+  return (
+    <div className="skel-rows" role="status" aria-busy="true">
+      <span className="sr-only">{label}</span>
+      {Array.from({ length: rows }, (_, i) => (
+        <div className="skel-row" key={i} aria-hidden="true">
+          <Skeleton w={tile} h={tile} radius={round ? tile / 2 : 13} style={{ flex: `0 0 ${tile}px` }} />
+          <div className="skel-row-body">
+            <Skeleton w={i % 2 ? "48%" : "62%"} h={16} />
+            <Skeleton w={i % 2 ? "34%" : "42%"} h={13} />
+          </div>
+          {end && (
+            <div className="skel-row-end">
+              <Skeleton w={58} h={17} />
+              <Skeleton w={40} h={13} />
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** Marketplace cards: the same two-column grid, photo on top, three lines. */
+export function SkeletonCards({ count = 6, label }: { count?: number; label: string }) {
+  return (
+    <div className="mp-grid" role="status" aria-busy="true">
+      <span className="sr-only">{label}</span>
+      {Array.from({ length: count }, (_, i) => (
+        <div className="mp-card is-skel" key={i} aria-hidden="true">
+          <Skeleton h={0} radius={0} style={{ height: "auto", aspectRatio: "4 / 3" }} />
+          <div className="mp-card-body">
+            <Skeleton w="78%" h={15} />
+            <Skeleton w="46%" h={18} />
+            <Skeleton w="66%" h={12} />
+            <Skeleton w="54%" h={12} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** The featured shelf on Home: a row of small cards, photo on top. */
+export function SkeletonShelf({ count = 3, label }: { count?: number; label: string }) {
+  return (
+    <div className="fp-row is-skel" role="status" aria-busy="true">
+      <span className="sr-only">{label}</span>
+      {Array.from({ length: count }, (_, i) => (
+        <div className="fp-card is-skel" key={i} aria-hidden="true">
+          <Skeleton h={114} radius={0} />
+          <div className="fp-body">
+            <Skeleton w="80%" h={15} />
+            <Skeleton w="50%" h={18} />
+            <Skeleton w="64%" h={12} />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

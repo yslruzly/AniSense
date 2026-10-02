@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { EmptyState } from "../components/states";
+import { EmptyState, Skeleton, SkeletonMediaRows } from "../components/states";
 import { PhilippinePeso, PieChart as PieIcon, CalendarDays, MapPin, Pencil, Trash2, X, ChevronRight, Calendar, Calculator, Receipt, Plus, CheckCircle, AlertTriangle, Sprout, Tag, Wheat, FlaskConical, User, Tractor, Waves, Package, ShoppingCart, Filter, Store } from "lucide-react";
 import { useLang } from "../i18n";
 import { Expense, BuyerTransaction } from "../types";
@@ -24,6 +24,11 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
   // Expenses and purchases come from the market store: the account's own
   // rows on the database, or the sample data in the demo.
   const market = useMarket();
+  // While a real account's first load is on its way, the totals and the
+  // lists are drawn in outline: "₱0" and "nothing recorded yet" would both
+  // be false until the records are in.
+  const busy = market.loadPhase !== "ready";
+  const showSkeleton = market.loadPhase === "skeleton";
   const buyerTransactions = market.purchases;
   const ICONS: Record<string, string> = { Seeds: "Seeds", Fertilizer: "Fertilizer", Labor: "Labor", Equipment: "Equipment", Irrigation: "Irrigation", Other: "Other" };
   const cats = ["All", "Seeds", "Fertilizer", "Labor", "Equipment", "Irrigation", "Other"];
@@ -213,8 +218,14 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
           <>
             <div className="exp-hero">
               <div className="exp-total-lbl">{t("exp_total_spent")}</div>
-              <div className="exp-total">₱{buyerTransactions.reduce((s, tx) => s + tx.amount, 0).toLocaleString()}</div>
-              <div style={{ fontSize: "var(--fs-label)", opacity: .7, marginTop: 4 }}>{buyerTransactions.length} {buyerTransactions.length !== 1 ? t("exp_past_txn") : t("exp_past_txn_one")}</div>
+              {busy ? (
+                showSkeleton && <Skeleton className="on-ink" w={170} h={36} style={{ margin: "4px auto 0" }} />
+              ) : (
+                <>
+                  <div className="exp-total">₱{buyerTransactions.reduce((s, tx) => s + tx.amount, 0).toLocaleString()}</div>
+                  <div style={{ fontSize: "var(--fs-label)", opacity: .7, marginTop: 4 }}>{buyerTransactions.length} {buyerTransactions.length !== 1 ? t("exp_past_txn") : t("exp_past_txn_one")}</div>
+                </>
+              )}
             </div>
             {/* Purchase history. One idea per line, read left to right:
                 what you bought, how much of it, who from; the price and the
@@ -224,11 +235,15 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
             <div className="card ph-card">
               <div className="ph-head">
                 <div className="card-title" style={{ margin: 0 }}>{t("exp_purchase_history")}</div>
-                <span className="ph-count">
-                  {buyerTransactions.length} {buyerTransactions.length !== 1 ? t("exp_purchases_n") : t("exp_purchase_one")}
-                </span>
+                {!busy && (
+                  <span className="ph-count">
+                    {buyerTransactions.length} {buyerTransactions.length !== 1 ? t("exp_purchases_n") : t("exp_purchase_one")}
+                  </span>
+                )}
               </div>
-              {buyerTransactions.length === 0
+              {busy
+                ? (showSkeleton ? <SkeletonMediaRows rows={4} tile={46} label={t("state_loading_records")} /> : null)
+                : buyerTransactions.length === 0
                 ? <EmptyState
                     icon={<ShoppingCart size={26} aria-hidden="true" />}
                     title={t("state_no_purchases_title")}
@@ -298,8 +313,8 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
             <div className="exp-hero" style={{ textAlign: "left", padding: "20px 18px" }}>
               <div className="exp-total-lbl">{t("exp_total_month")}</div>
               <div className="exp-total" style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-                ₱{thisMonthTotal.toLocaleString()}
-                {momChangePct !== null && (
+                {busy ? (showSkeleton && <Skeleton className="on-ink" w={170} h={36} />) : <>₱{thisMonthTotal.toLocaleString()}</>}
+                {!busy && momChangePct !== null && (
                   <span style={{ fontSize: "var(--fs-label)", fontWeight: 700, padding: "3px 9px", borderRadius: 99, background: momChangePct <= 0 ? "rgba(255,255,255,0.22)" : "rgba(197,90,58,0.35)" }}>
                     {momChangePct <= 0 ? "▼" : "▲"} {Math.abs(momChangePct)}% {t("exp_vs_last_month")}
                   </span>
@@ -351,9 +366,11 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
                 <div className="card">
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
                     <div style={{ fontSize: "var(--fs-label)", fontWeight: 800, color: "var(--text)" }}>{t("exp_recent")}</div>
-                    <span className="ph-count">{filtered.length} {t("exp_items")}</span>
+                    {!busy && <span className="ph-count">{filtered.length} {t("exp_items")}</span>}
                   </div>
-                  {filtered.length === 0
+                  {busy
+                    ? (showSkeleton ? <SkeletonMediaRows rows={5} tile={44} label={t("state_loading_records")} /> : null)
+                    : filtered.length === 0
                     ? (transactions.length === 0
                         /* Never recorded anything; this is onboarding, so it
                            explains what the screen is for and starts them off. */

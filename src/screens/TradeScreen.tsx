@@ -13,7 +13,7 @@ import { CropEmoji } from "../components/CropEmoji";
 import { Sheet } from "../components/ui/Sheet";
 import { useRetained } from "../hooks/usePresence";
 import { AutoHeight } from "../components/ui/AutoHeight";
-import { EmptyState } from "../components/states";
+import { EmptyState, SkeletonCards } from "../components/states";
 import { downscaleImage } from "../lib/image";
 import { MenuPicker } from "../components/ui/MenuPicker";
 import { Receipt, ReceiptOrder } from "../components/Receipt";
@@ -525,7 +525,11 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
           />
         </div>
 
-        {sorted.length > 0 ? (
+        {/* While a real account's first load is on its way: cards in the
+            list's own shape, never "no listings", which would be false. */}
+        {market.loadPhase !== "ready" ? (
+          market.loadPhase === "skeleton" ? <SkeletonCards count={6} label={t("state_loading_listings")} /> : null
+        ) : sorted.length > 0 ? (
           <div className="mp-grid stagger-list" key={`${family}-${category}-${variety}-${sortBy}`}>
             {sorted.map(l => {
               const photo = photoOf(l);

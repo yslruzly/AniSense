@@ -4,6 +4,7 @@ import { CROPS, CROP_GROUP_BY_ID } from "../../data/crops";
 import { cropPhotoFor } from "../../data/cropPhotos";
 import { CropIcon } from "../icons";
 import { useMarket } from "../../lib/market";
+import { Skeleton, SkeletonMediaRows } from "../states";
 
 // ─── Your harvest ─────────────────────────────────────────────────────────────
 // The farmer's own half of the marketplace, on Home. Everything else on this
@@ -23,7 +24,7 @@ export function YourHarvest({ onPost, onOpenMarket }: {
   onOpenMarket: () => void;
 }) {
   const { t, tn } = useLang();
-  const { listings, isMine } = useMarket();
+  const { listings, isMine, loadPhase } = useMarket();
   const mine = listings.filter(isMine);
   // What the harvest on sale is worth at the price they set: kilos × price.
   // Their asking price, not a forecast, and not a promise that it sells.
@@ -42,7 +43,19 @@ export function YourHarvest({ onPost, onOpenMarket }: {
       </div>
 
       <div className="fh">
-        {mine.length === 0 ? (
+        {loadPhase !== "ready" ? (
+          // Still loading: the total, its line and two harvest rows in
+          // outline. Never "nothing listed", which may not be true.
+          loadPhase === "skeleton" ? (
+            <>
+              <Skeleton w={150} h={34} />
+              <Skeleton w="72%" h={15} style={{ marginTop: 9 }} />
+              <div style={{ marginTop: 14 }}>
+                <SkeletonMediaRows rows={2} tile={46} label={t("state_loading_listings")} />
+              </div>
+            </>
+          ) : null
+        ) : mine.length === 0 ? (
           // Nothing listed: say so plainly and give the one action that fixes
           // it, rather than an empty card with a number of zero in it.
           <div className="fh-empty">

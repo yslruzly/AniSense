@@ -5,6 +5,7 @@ import { EXPENSES, BUYER_TRANSACTIONS } from "../data/expenses";
 import { IncomingOrder, sampleIncomingOrders } from "../data/orders";
 import { CROPS, CROP_GROUP_BY_ID, applyPrices } from "../data/crops";
 import { isSupabaseConfigured } from "./supabase";
+import { LoadPhase, useSkeletonGate } from "../hooks/useSkeletonGate";
 import { setCacheScope } from "./cache";
 import { Planting, localISO, loadPlantings, savePlantings as keepPlantings } from "./plantings";
 import { Sale, loadSales, saveSales as keepSales } from "./sales";
@@ -47,6 +48,11 @@ export interface Market {
   live: boolean;
   /** The first load of a real account is still on its way. */
   loading: boolean;
+  /** What a list should draw during that load: nothing yet ("quiet"), its
+   *  skeleton, or the data ("ready"). Always "ready" in the demo, where
+   *  nothing is fetched. One value for every screen, so their skeletons come
+   *  and go together. */
+  loadPhase: LoadPhase;
   /** Showing the copy saved on the phone because the server couldn't be reached. */
   fromCache: boolean;
   listings: Listing[];
@@ -117,6 +123,8 @@ export function useMarketStore({ accountId, role, name, initials }: {
   const [pricesVersion, setPricesVersion] = useState(0);
   const [loading, setLoading] = useState(false);
   const [fromCache, setFromCache] = useState(false);
+
+  const loadPhase = useSkeletonGate(loading);
 
   // Bumped whenever the account changes, so an answer that arrives after
   // someone else has signed in is thrown away instead of shown to them.
@@ -309,7 +317,7 @@ export function useMarketStore({ accountId, role, name, initials }: {
   const setHarvestPlans = (next: HarvestPlans) => { setPlansState(next); quiet(live ? storePlans(next) : keepPlans(next)); };
 
   return {
-    live, loading, fromCache,
+    live, loading, loadPhase, fromCache,
     listings, sellers, purchases, expenses, marketSales,
     incomingOrders, confirmOrder,
     sales, setSales, plantings, setPlantings, priceAlerts, setPriceAlerts, harvestPlans, setHarvestPlans,
