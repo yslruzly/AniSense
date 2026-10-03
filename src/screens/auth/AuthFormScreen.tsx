@@ -105,11 +105,14 @@ function Scene({ role, cue, children }: { role: UserRole; cue: string; children?
 }
 
 export function AuthFormScreen({
-  flow, role, onBack, onSuccess, onSession,
+  flow, role, onBack, onSuccess, onSession, onCreateAccount,
 }: {
   flow: "signin" | "signup";
   role: UserRole;
   onBack: () => void;
+  /** "Create an account" on Sign in, when the language and role were not
+   *  asked on the way here; without it, the link opens the first question. */
+  onCreateAccount?: () => void;
   /** Demo sign-in, used while no Supabase project is set up in .env.
    *  isNew: the account was just created (not signed in), so the app shows the welcome ID. */
   onSuccess: (name: string, role: UserRole, crops: string[], farmDetails?: FarmDetails, isNew?: boolean) => void;
@@ -600,7 +603,7 @@ export function AuthFormScreen({
               field, the mirror of "Already have an account? Sign In" on the
               first sign-up question, and away from the Sign In button. */}
           <p className="a-switch">
-            {t("signin_new_q")} <button type="button" className="a-link" onClick={() => go("name")}>{t("signin_new_btn")}</button>
+            {t("signin_new_q")} <button type="button" className="a-link" onClick={onCreateAccount ?? (() => go("name"))}>{t("signin_new_btn")}</button>
           </p>
           {/* Errors about one field sit under that field. This is for the
               rest: no signal, too many tries, things no field can fix. */}

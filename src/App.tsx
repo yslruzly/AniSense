@@ -48,17 +48,28 @@ import { dropOutboxFor } from "./lib/outbox";
 // The bottom-nav destinations. Anything else is a page opened from one of them.
 const TABS: Screen[] = ["home", "market", "trade", "expenses", "profile"];
 
+// The role of the last account used on this phone. "I already have an
+// account" goes straight to Sign in, with no language or role step: a real
+// account brings its own role. Until then this only picks who greets them on
+// Sign in, and, in the demo, which sample account opens. Farmer if none yet.
+const LAST_ROLE = "anisense-last-role";
+const lastRole = (): UserRole => localStorage.getItem(LAST_ROLE) === "buyer" ? "buyer" : "farmer";
+
 // ─── App Root ─────────────────────────────────────────────────────────────────
 export default function App() {
   // ── Auth state ──
-  // The welcome board is the root. Language is now the first step of signing in
-  // or signing up rather than a one-time gate ahead of the app.
+  // The welcome board is the root. Language is the first step of signing up
+  // rather than a one-time gate ahead of the app; signing in goes straight to
+  // its page.
   const [authScreen, setAuthScreen] = useState<AuthScreen>("splash");
   const [authFlow, setAuthFlow] = useState<"signin" | "signup">("signup");
   const [selectedRole, setSelectedRole] = useState<UserRole>(null);
   const [isAuthed, setIsAuthed] = useState(false);
   const [userName, setUserName] = useState("Juan Dela Cruz");
   const [userRole, setUserRole] = useState<UserRole>(null);
+  useEffect(() => {
+    if (userRole) localStorage.setItem(LAST_ROLE, userRole);
+  }, [userRole]);
   // The signed-in database account, when there is one. Null in the demo.
   const [accountId, setAccountId] = useState<string | null>(null);
   // The welcome ID: set once, when an account is created, and shown over Home.
@@ -233,7 +244,7 @@ export default function App() {
   // Back during auth walks the flow backwards rather than exiting mid-signup.
   useHardwareBack(() => {
     if (isAuthed) return false;
-    if (authScreen === "signin") { setAuthScreen("role"); return true; }
+    if (authScreen === "signin") { setAuthScreen(authFlow === "signin" ? "splash" : "role"); return true; }
     if (authScreen === "role")   { setAuthScreen("lang"); return true; }
     if (authScreen === "lang")   { setAuthScreen("splash"); return true; }
     return false; // splash is the root, so back exits
@@ -373,6 +384,7 @@ export default function App() {
       await Promise.all(["sales", "plantings", "price_alerts", "harvest-plans", "ach_seen:demo"]
         .map(key => Preferences.remove({ key }))).catch(() => {});
     }
+    localStorage.removeItem(LAST_ROLE);
     resetToSplash();
   };
 
@@ -429,7 +441,7 @@ export default function App() {
             )}
             {authScreen === "splash" && (
               <SplashScreen
-                onSignIn={() => { setAuthFlow("signin"); setAuthScreen("lang"); }}
+                onSignIn={() => { setAuthFlow("signin"); setSelectedRole(lastRole()); setAuthScreen("signin"); }}
                 onSignUp={() => { setAuthFlow("signup"); setAuthScreen("lang"); }}
               />
             )}
@@ -444,7 +456,10 @@ export default function App() {
               <AuthFormScreen
                 flow={authFlow}
                 role={selectedRole}
-                onBack={() => setAuthScreen("role")}
+                onBack={() => setAuthScreen(authFlow === "signin" ? "splash" : "role")}
+                // Straight from the welcome screen there was no language or
+                // role step, so a new account starts with them.
+                onCreateAccount={authFlow === "signin" ? () => { setAuthFlow("signup"); setSelectedRole(null); setAuthScreen("lang"); } : undefined}
                 onSuccess={handleAuthSuccess}
                 onSession={applySession}
               />

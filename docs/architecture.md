@@ -165,7 +165,7 @@ stateDiagram-v2
   In --> Welcome: sign out or delete account
 ```
 
-- Before sign-in, an `authScreen` value steps through welcome, language, role and the account form.
+- Before sign-in, an `authScreen` value steps through welcome, language, role and the account form when creating an account. "I already have an account" goes straight from welcome to the Sign in form: a real account brings its own role, and the role of the last account used on the phone (`anisense-last-role`, farmer if none) only picks who greets them and, in the demo, which sample account opens.
 - After sign-in, an `active` value selects the screen. The five tab screens switch in place; the others are pushed and return on Back.
 - Android's hardware Back is handled by a small stack (`useHardwareBack`): the topmost open sheet closes first, then pushed screens, then the app.
 
