@@ -3,7 +3,7 @@
 // can add/edit/delete expenses; changes apply to the local cache instantly and
 // are queued in the outbox, then synced to Supabase when connectivity returns.
 //
-// Called by the market store (src/lib/market.tsx). RLS guarantees each
+// Called by the market store (src/store/market.tsx). RLS guarantees each
 // farmer only ever sees their own rows.
 
 import { supabase } from "../lib/supabase";

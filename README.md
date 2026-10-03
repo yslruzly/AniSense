@@ -16,6 +16,7 @@
 - [Tech stack](#tech-stack)
 - [Architecture](#architecture)
 - [Getting started](#getting-started)
+- [Project structure](#project-structure)
 - [Further reading](#further-reading)
 - [License](#license)
 
@@ -77,11 +78,11 @@ The app is feature-complete on the client. Some data sources are still sample da
 | Price forecasts (ARIMA, LSTM) | Trained on the price records by `ml/train_forecasts.py` (statsmodels and PyTorch, run locally, free). Three months ahead for the five varieties. Tested on the last 12 months: rice is 3 to 9% off on average; onion and calamansi are 28 to 52% off. Results are in `ml/REPORT.md`, known limits in `ml/README.md`. The phone runs no model: it reads the finished forecasts. |
 | Weather | **Sample values.** No forecast service is connected yet. |
 | Order alerts for farmers | **Sample data.** Two invented orders, shown to the demo farmer only. Not yet connected to checkout or the database, and there are no push notifications. |
-| Privacy policy | A draft, English only, in the app (Welcome screen and Profile → Manage account) and at `docs/privacy-policy.html`. Not yet reviewed by a lawyer. |
-| Account deletion | In the app (Profile → Manage account) and on a web page (`docs/delete-account.html`), as Google Play requires. |
+| Privacy policy | A draft, English only, in the app (Welcome screen and Profile → Manage account) and at `site/privacy-policy.html`. Not yet reviewed by a lawyer. |
+| Account deletion | In the app (Profile → Manage account) and on a web page (`site/delete-account.html`), as Google Play requires. |
 | Mobile-number verification by SMS | Not enabled. Numbers are not verified. |
 | Password reset | Not implemented. |
-| Automated tests | None yet. `npm run build` type-checks the project. |
+| Automated tests | None yet. `npm run build` type-checks the project, and CI runs it on every push. |
 
 ## Tech stack
 
@@ -104,7 +105,7 @@ Capacitor plugins in use: App, Filesystem, Haptics, Keyboard, Preferences, Share
 flowchart LR
   subgraph Phone["Android app (Capacitor WebView)"]
     UI["Screens and components<br/>React + TypeScript"]
-    Store["Market store<br/>src/lib/market.tsx"]
+    Store["Market store<br/>src/store/market.tsx"]
     Services["Services<br/>src/services/*"]
     Cache["On-device cache<br/>src/lib/cache.ts"]
     Outbox["Outbox for offline writes<br/>src/lib/outbox.ts"]
@@ -129,7 +130,7 @@ flowchart LR
 
 Key design decisions:
 
-- **One data layer.** Screens read and write through the market store (`src/lib/market.tsx`). It serves live data when Supabase is configured and sample data otherwise, so screens never branch on the mode.
+- **One data layer.** Screens read and write through the market store (`src/store/market.tsx`). It serves live data when Supabase is configured and sample data otherwise, so screens never branch on the mode.
 - **The database enforces the rules.** Row Level Security is enabled on every table. Checkout runs in a single server function (`place_order`) that takes the price from the listing and refuses to oversell.
 - **Offline first for a farmer's own records.** Reads are cached per account; writes made offline wait in an outbox and sync when the connection returns.
 - **No client-side secrets.** The app ships only the publishable key.
@@ -158,12 +159,48 @@ Key design decisions:
 | `npm run forecasts` | Trains and tests ARIMA and LSTM again and rewrites the forecasts. |
 | `npm run seed` | Rewrites `supabase/seed.sql` from the crop catalog, the price records and the forecasts. |
 
+## Project structure
+
+```
+AniSense/
+├── .github/workflows/   CI build check, and publishing site/ to GitHub Pages
+├── android/             Native Android project (Capacitor)
+├── data/                Price records: historical-prices.csv, and raw/ for the source PDF
+├── design/              Brand files (brand/) and full-size artwork (artwork/); not loaded by the app
+├── docs/                Documentation: architecture, database setup
+├── ml/                  ARIMA and LSTM training (Python) and the test report
+├── scripts/             Build and maintenance scripts (Node)
+├── site/                Public web pages for Google Play: privacy policy, account deletion
+├── src/                 The app (React + TypeScript)
+│   ├── assets/          Images bundled in the app
+│   ├── components/      Reusable UI, grouped by feature
+│   ├── constants/       Shared constant values
+│   ├── data/            Crop catalog, locations, privacy policy text, price records and forecasts
+│   │   ├── demo/        Sample data for demo mode
+│   │   └── generated/   Written by scripts; never edited by hand
+│   ├── hooks/           React hooks
+│   ├── lib/             Supabase client, offline cache and outbox, platform helpers, domain helpers
+│   ├── screens/         One file per screen; auth/ holds sign-up and sign-in
+│   ├── services/        The only code that calls Supabase
+│   ├── store/           App state: the market store and the viewer context
+│   ├── styles/          Stylesheets and design tokens
+│   ├── types/           Shared TypeScript types
+│   ├── App.tsx          App shell
+│   ├── i18n.tsx         English and Tagalog strings
+│   └── main.tsx         Entry point
+├── supabase/            Database schema, seed data, reset script
+├── capacitor.config.ts
+├── index.html
+├── package.json
+└── vite.config.ts
+```
+
 ## Further reading
 
 | Document | What it covers |
 |---|---|
-| [ARCHITECTURE.md](ARCHITECTURE.md) | How the app is built and why. |
-| [SETUP_DATABASE.md](SETUP_DATABASE.md) | Connecting a Supabase project, step by step. |
+| [docs/architecture.md](docs/architecture.md) | How the app is built and why. |
+| [docs/database-setup.md](docs/database-setup.md) | Connecting a Supabase project, step by step. |
 | [supabase/README.md](supabase/README.md) | The database tables, functions and everyday admin. |
 | [ml/README.md](ml/README.md) | The forecast models: setup, retraining, testing and limits. |
 | [ml/REPORT.md](ml/REPORT.md) | The models' test results. Generated. |

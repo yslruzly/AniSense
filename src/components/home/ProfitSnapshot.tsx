@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ArrowDownCircle, ArrowUpCircle, ChevronRight, HandCoins, Minus, Plus, X } from "lucide-react";
 import { useLang } from "../../i18n";
 import { CROPS, CROP_GROUP_BY_ID } from "../../data/crops";
-import { useMarket } from "../../lib/market";
+import { useMarket } from "../../store/market";
 import { CROP_CYCLES } from "../../data/cropCycles";
 import { cropGroupPhoto } from "../../data/cropPhotos";
 import { Sheet } from "../ui/Sheet";

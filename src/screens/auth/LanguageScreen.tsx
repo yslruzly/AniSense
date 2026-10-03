@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import { haptic } from "../../lib/platform";
 import { ChevronLeft, Check } from "lucide-react";
-import { AniSenseLogo } from "../../components/AniSenseLogo";
+import { AniSenseLogo } from "../../components/brand/AniSenseLogo";
 import juanPeek from "../../assets/juan-peek.webp";
 import juanPeekBody from "../../assets/juan-peek-body.webp";
 import juanPeekHand from "../../assets/juan-peek-hand.webp";
 import juanMouthHalf from "../../assets/juan-peek-mouth-half.webp";
 import juanMouthShut from "../../assets/juan-peek-mouth-shut.webp";
 import { MascotStage } from "./MascotStage";
-import { FlagPH, FlagUS } from "../../components/Flags";
+import { FlagPH, FlagUS } from "../../components/icons/Flags";
 import { useLang, Lang } from "../../i18n";
 
 // ─── Language Gate ────────────────────────────────────────────────────────────

@@ -5,7 +5,7 @@ The two models the study names, ARIMA and LSTM, trained on AniSense's monthly re
 | File | What it does |
 |---|---|
 | `train_forecasts.py` | Trains and tests both models for every variety, then writes the forecasts the app shows and the test report. |
-| `import_pdf.py` | Reads the price tables out of `Historical-Records-Crops-2021-2026.pdf` into `data/historical-prices.csv`. Only needed when a newer PDF replaces the old one. |
+| `import_pdf.py` | Reads the price tables out of `data/raw/Historical-Records-Crops-2021-2026.pdf` into `data/historical-prices.csv`. Only needed when a newer PDF replaces the old one. |
 | `REPORT.md` | The test results: each model's error on the last 12 months, per variety, next to the simplest possible forecast. Generated. |
 | `requirements.txt` | The Python libraries used. |
 
@@ -26,8 +26,8 @@ The `ml/.venv` folder is large and is not committed to git.
 2. Rebuild everything that is made from it:
 
 ```
-npm run prices        src/data/priceHistory.ts   the history the app bundles
-npm run forecasts     src/data/forecasts.json    and ml/REPORT.md
+npm run prices        src/data/generated/priceHistory.ts   the history the app bundles
+npm run forecasts     src/data/generated/forecasts.json    and ml/REPORT.md
 npm run seed          supabase/seed.sql          the database's copy
 ```
 
@@ -66,7 +66,7 @@ Rice is forecast well. For garlic and calamansi neither model beats "same as las
 
 ## Libraries
 
-Python 3.13, statsmodels 0.15 (ARIMA), PyTorch 2.14 CPU (LSTM), pandas, numpy, and pypdf for reading the PDF. There is no TensorFlow. The app itself contains no machine-learning library: it reads `src/data/forecasts.json`.
+Python 3.13, statsmodels 0.15 (ARIMA), PyTorch 2.14 CPU (LSTM), pandas, numpy, and pypdf for reading the PDF. There is no TensorFlow. The app itself contains no machine-learning library: it reads `src/data/generated/forecasts.json`.
 
 ## Where each model is used in the app
 

@@ -1,4 +1,4 @@
-import { Expense, BuyerTransaction } from "../types";
+import { Expense, BuyerTransaction } from "../../types";
 
 export const EXPENSES: Expense[] = [
   { id: "1", category: "Seeds", description: "Rice Seeds", amount: 1500, date: "2025-02-20", icon: "Seeds", crop: "Rice" },

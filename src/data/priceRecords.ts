@@ -1,8 +1,8 @@
-import { PRICE_MONTHS, PRICE_SERIES } from "./priceHistory";
+import { PRICE_MONTHS, PRICE_SERIES } from "./generated/priceHistory";
 
 // ─── Price records ────────────────────────────────────────────────────────────
 // The monthly price history of the crops the study covers, per variety id.
-// It starts as the copy bundled with the app (priceHistory.ts, built from
+// It starts as the copy bundled with the app (generated/priceHistory.ts, built from
 // data/historical-prices.csv), so prices and their history show with no
 // signal at all. Signed in to a real account, the database's records are laid
 // over it (applyHistory), so a month added there reaches the phone without a

@@ -26,10 +26,10 @@ import { WeatherScreen } from "./screens/WeatherScreen";
 import { GuideScreen } from "./screens/GuideScreen";
 import { PrivacyScreen } from "./screens/PrivacyScreen";
 import { ProfileScreen } from "./screens/ProfileScreen";
-import { WelcomeID, WelcomeInfo, makeMemberId } from "./components/WelcomeID";
+import { WelcomeID, WelcomeInfo, makeMemberId } from "./components/profile/WelcomeID";
 import { Tour } from "./components/tour/Tour";
 import { loadTourSeen, saveTourSeen } from "./lib/tour";
-import { ViewerContext } from "./lib/viewer";
+import { ViewerContext } from "./store/viewer";
 import { isSupabaseConfigured } from "./lib/supabase";
 import {
   getSession, onAuthChange, signOut, deleteMyAccount, getMyProfile, updateMyProfile,
@@ -37,7 +37,7 @@ import {
 } from "./services/auth";
 import { FarmerProfile } from "./types";
 import { Sale } from "./lib/sales";
-import { MarketContext, useMarketStore } from "./lib/market";
+import { MarketContext, useMarketStore } from "./store/market";
 import { AchievementId, earnedAchievements, loadSeenAchievements, saveSeenAchievements } from "./lib/achievements";
 import { AchievementUnlocked } from "./components/profile/AchievementUnlocked";
 import { useRetained } from "./hooks/usePresence";
@@ -132,7 +132,7 @@ export default function App() {
   // harvest they had just posted disappeared on the way back; and Home
   // cannot show a farmer their own listings from state it cannot see.
   // The store reads the database for a real account, and the sample data
-  // otherwise (src/lib/market.tsx).
+  // otherwise (src/store/market.tsx).
   const initials = userName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
   const market = useMarketStore({ accountId, role: userRole, name: userName, initials });
   // A farmer's own records (price alerts, plantings, sales typed in) live in

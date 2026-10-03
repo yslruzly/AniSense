@@ -3,7 +3,7 @@ import { haptic } from "../../lib/platform";
 import { Home as HomeIcon, Store, TrendingUp, PhilippinePeso, Package, User } from "lucide-react";
 import { useLang } from "../../i18n";
 import { Screen } from "../../types";
-import { useViewer } from "../../lib/viewer";
+import { useViewer } from "../../store/viewer";
 
 // ─── Bottom Navigation ──────────────────────────────────────────────────────
 // A floating glass capsule. One pill sits under the active tab and slides to

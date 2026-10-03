@@ -1,5 +1,5 @@
 // ─── node scripts/build-prices.mjs ────────────────────────────────────────────
-// Writes src/data/priceHistory.ts from data/historical-prices.csv, the price
+// Writes src/data/generated/priceHistory.ts from data/historical-prices.csv, the price
 // records the study is built on (retail prices): one row per month, one column per variety
 // (named by the app's crop id), an empty cell where nothing was recorded.
 //
@@ -12,7 +12,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 
 const CSV = "data/historical-prices.csv";
-const OUT = "src/data/priceHistory.ts";
+const OUT = "src/data/generated/priceHistory.ts";
 
 const lines = readFileSync(CSV, "utf8").split(/\r?\n/).filter(l => l.trim());
 const [head, ...rows] = lines.map(l => l.split(",").map(c => c.trim()));

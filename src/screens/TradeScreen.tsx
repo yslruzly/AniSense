@@ -9,21 +9,21 @@ import { CropIcon } from "../components/icons";
 import { cropPhotoFor, cropGroupPhoto } from "../data/cropPhotos";
 import marketPoster from "../assets/anisense-poster-market.webp";
 import sellPoster from "../assets/farmer-market-poster.webp";
-import { CropEmoji } from "../components/CropEmoji";
+import { CropEmoji } from "../components/icons/CropEmoji";
 import { Sheet } from "../components/ui/Sheet";
 import { useRetained } from "../hooks/usePresence";
 import { AutoHeight } from "../components/ui/AutoHeight";
 import { EmptyState, SkeletonCards } from "../components/states";
 import { downscaleImage } from "../lib/image";
 import { MenuPicker } from "../components/ui/MenuPicker";
-import { Receipt, ReceiptOrder } from "../components/Receipt";
+import { Receipt, ReceiptOrder } from "../components/marketplace/Receipt";
 import { avatarTone as avaTone } from "../lib/avatar";
 import leafMask from "../assets/anisense-leaf-mask.png";
-import { AniSenseLogo } from "../components/AniSenseLogo";
+import { AniSenseLogo } from "../components/brand/AniSenseLogo";
 import { PickerField } from "../components/ui/PickerField";
 import { MUNICIPALITIES } from "../data/locations";
-import { useViewer } from "../lib/viewer";
-import { useMarket, sellerKeyOfDetail } from "../lib/market";
+import { useViewer } from "../store/viewer";
+import { useMarket, sellerKeyOfDetail } from "../store/market";
 import { orderErrorOf } from "../services/transactions";
 
 // A farmer's profile is always in English, whatever language the app is set

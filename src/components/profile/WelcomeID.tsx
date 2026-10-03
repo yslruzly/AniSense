@@ -1,12 +1,12 @@
 import { useRef, useState } from "react";
 import { Camera, MapPin, Download, Check, AlertCircle } from "lucide-react";
-import { useLang } from "../i18n";
-import { haptic, saveImage } from "../lib/platform";
-import { renderMemberId } from "../lib/memberIdImage";
-import { downscaleImage } from "../lib/image";
-import { UserRole } from "../types";
-import { Sheet } from "./ui/Sheet";
-import { AniSenseLogo } from "./AniSenseLogo";
+import { useLang } from "../../i18n";
+import { haptic, saveImage } from "../../lib/platform";
+import { renderMemberId } from "../../lib/memberIdImage";
+import { downscaleImage } from "../../lib/image";
+import { UserRole } from "../../types";
+import { Sheet } from "../ui/Sheet";
+import { AniSenseLogo } from "../brand/AniSenseLogo";
 
 // ─── Welcome ID ───────────────────────────────────────────────────────────────
 // Shown once, right after an account is created: the new member's AniSense

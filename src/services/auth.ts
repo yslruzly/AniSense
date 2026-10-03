@@ -25,7 +25,7 @@ export function toE164Phone(phRaw: string): string {
 // types: 639171234567@phone.anisense.app. Supabase's own phone sign-in needs
 // an SMS provider, which costs per text, and the app does not text anyone
 // yet. The number itself is kept on the profile, where buyers can call it.
-// When SMS is added (SETUP_DATABASE.md Step 5), these accounts can be moved to
+// When SMS is added (docs/database-setup.md Step 5), these accounts can be moved to
 // real phone auth without anyone losing their login.
 //
 // Because nothing is ever sent to that address, email confirmation must be
@@ -120,7 +120,7 @@ export function authErrorKey(err: unknown): string {
 
 // ─── Sign up (email + password) ───────────────────────────────────────────────
 // Sends the user a 6-digit code by email (after you set up the email template in
-// SETUP_DATABASE.md Step 4). The profiles row is auto-created by the DB trigger.
+// docs/database-setup.md Step 4). The profiles row is auto-created by the DB trigger.
 export async function signUpWithEmail(opts: {
   name: string;
   role: UserRole;
@@ -163,7 +163,7 @@ export async function signInWithEmail(email: string, password: string) {
 }
 
 // ─── Phone (SMS) verification ─────────────────────────────────────────────────
-// Requires an SMS provider connected in Supabase (SETUP_DATABASE.md Step 5).
+// Requires an SMS provider connected in Supabase (docs/database-setup.md Step 5).
 // Flow: sendPhoneCode() texts a 6-digit code → user types it → verifyPhoneCode().
 
 export async function sendPhoneCode(phRaw: string) {

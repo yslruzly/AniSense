@@ -27,7 +27,7 @@ longer on disk; `src/assets/anisense-poster-market.webp` is the only copy of it.
 Drop the full-size file here, then convert it into `src/assets/` before using it:
 
 ```bash
-python -c "from PIL import Image; im=Image.open('design/NEW.png').convert('RGB'); w=1000; im.resize((w, round(im.height*w/im.width)), Image.LANCZOS).save('src/assets/new.webp','WEBP',quality=84,method=6)"
+python -c "from PIL import Image; im=Image.open('design/artwork/NEW.png').convert('RGB'); w=1000; im.resize((w, round(im.height*w/im.width)), Image.LANCZOS).save('src/assets/new.webp','WEBP',quality=84,method=6)"
 ```
 
 1000 px wide is sharp on a phone (about 2.6× a 380 px slot) and lands around

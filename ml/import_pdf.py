@@ -2,7 +2,7 @@
 
     ml/.venv/Scripts/python ml/import_pdf.py
 
-The PDF (Historical-Records-Crops-2021-2026.pdf, in the project root) holds
+The PDF (data/raw/Historical-Records-Crops-2021-2026.pdf) holds
 monthly retail prices, one table per year: a row per variety, a column per month, and a dash where
 nothing was recorded. The CSV has one row per month and one column per
 variety, named by the app's crop ids, with an empty cell where the PDF has a
@@ -22,7 +22,7 @@ from pathlib import Path
 from pypdf import PdfReader
 
 ROOT = Path(__file__).resolve().parent.parent
-PDF = ROOT / "Historical-Records-Crops-2021-2026.pdf"
+PDF = ROOT / "data" / "raw" / "Historical-Records-Crops-2021-2026.pdf"
 OUT = ROOT / "data" / "historical-prices.csv"
 
 # The PDF's row names, and the app's id for each (src/data/crops.ts).

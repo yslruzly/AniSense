@@ -1,0 +1,33 @@
+# Type-checks and builds the app on every push to main and every pull request,
+# so a change that breaks the build is caught before it reaches a phone.
+#
+# It builds without .env, which is the demo build: no keys are needed or used.
+# The Android APK is not built here; that still happens on the developer's
+# computer (see README.md).
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Type-check and build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      # tsc, then vite build (see "build" in package.json).
+      - run: npm run build

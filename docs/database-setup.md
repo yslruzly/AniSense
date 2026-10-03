@@ -16,7 +16,7 @@ and the APK is rebuilt, AniSense runs on the database:
 | Sales typed in, crop tracker, price alerts, expected harvests | Yes, and they work offline too |
 | Crop catalog, price records and forecasts | Yes: every screen shows the database's newest prices, their history and the forecasts |
 | Achievements | Yes: Newbie, First harvest and First sale are awarded by the database itself; Farmer of the Month and Year can be granted from the dashboard |
-| Deleting an account | Yes: from Profile in the app, or from the web page in `docs/` (see "Before the Play Store") |
+| Deleting an account | Yes: from Profile in the app, or from the web page in `site/` (see "Before the Play Store") |
 
 Without `.env` the app runs exactly as before on the built-in sample data, so
 an APK built without keys still works for demos.
@@ -167,20 +167,23 @@ database itself (Row Level Security in `schema.sql`), not by the app:
 
 Google Play asks every app with accounts for two web addresses: a privacy
 policy, and a page where someone can delete their account without the app.
-Both are in `docs/`:
+Both are in `site/`:
 
-- `docs/privacy-policy.html` is generated from the same text the app shows
+- `site/privacy-policy.html` is generated from the same text the app shows
   (`src/data/privacyPolicy.ts`). After editing the policy, run
   `node scripts/build-privacy.mjs` to rewrite the page.
-- `docs/delete-account.html` is the deletion page.
+- `site/delete-account.html` is the deletion page.
 
-1. Open `docs/config.js` and fill in the Project URL, the **publishable** key
+1. Open `site/config.js` and fill in the Project URL, the **publishable** key
    (the same two values as `.env`) and a support email address.
-2. Put the `docs/` folder online. The simplest way is GitHub Pages: in the
-   repository, **Settings → Pages → Deploy from a branch → `main` / `docs`**.
-   The page is then at `https://<your-username>.github.io/<repository>/delete-account.html`.
-   (GitHub Pages needs a public repository on the free plan; Netlify and
-   Cloudflare Pages host a folder for free from a private one.)
+2. Put the `site/` folder online. With GitHub Pages: in the repository,
+   **Settings → Pages → Build and deployment → Source: GitHub Actions**. The
+   workflow in `.github/workflows/pages.yml` then publishes `site/` whenever
+   a change to it reaches `main`; to publish the first time, open
+   **Actions → Publish site → Run workflow**. The page is then at
+   `https://<your-username>.github.io/<repository>/delete-account.html`.
+   (GitHub Pages needs a public repository on the free plan. Netlify and
+   Cloudflare Pages can host the `site/` folder for free from a private one.)
 3. In Play Console, paste the two addresses:
    - `…/privacy-policy.html` under **App content → Privacy policy**
    - `…/delete-account.html` under **App content → Data safety → Delete

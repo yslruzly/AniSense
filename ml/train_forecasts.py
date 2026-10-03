@@ -4,7 +4,7 @@ app shows.
     ml/.venv/Scripts/python ml/train_forecasts.py
 
 Reads   data/historical-prices.csv      monthly retail prices, one column per variety
-Writes  src/data/forecasts.json         the next 3 months, per variety and model
+Writes  src/data/generated/forecasts.json       the next 3 months, per variety and model
         ml/REPORT.md                    how well each model did, for the study
 
 Two models per variety, the two the study names:
@@ -41,7 +41,7 @@ from torch import nn
 
 ROOT = Path(__file__).resolve().parent.parent
 CSV = ROOT / "data" / "historical-prices.csv"
-OUT = ROOT / "src" / "data" / "forecasts.json"
+OUT = ROOT / "src" / "data" / "generated" / "forecasts.json"
 REPORT = ROOT / "ml" / "REPORT.md"
 
 HORIZON = 3        # months ahead

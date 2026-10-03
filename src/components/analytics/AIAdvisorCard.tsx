@@ -3,7 +3,7 @@ import { useLang } from "../../i18n";
 import { CROPS } from "../../data/crops";
 import { forecastForGroup } from "../../data/forecast";
 import { monthLabel } from "../../data/priceRecords";
-import { CropEmoji } from "../CropEmoji";
+import { CropEmoji } from "../icons/CropEmoji";
 
 // ─── Sell now or wait? ────────────────────────────────────────────────────────
 // One decision per crop, answered in the order a farmer reads: what to do (the

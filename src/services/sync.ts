@@ -1,5 +1,5 @@
 // ─── Sync Coordinator ─────────────────────────────────────────────────────────
-// Drains the offline outbox. The market store (src/lib/market.tsx) calls
+// Drains the offline outbox. The market store (src/store/market.tsx) calls
 // syncNow() when an account opens and whenever the connection comes back,
 // before it fetches, so a fresh list already includes what was queued.
 //

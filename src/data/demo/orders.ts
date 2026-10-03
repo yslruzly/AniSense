@@ -10,27 +10,10 @@
 // With the database they will come from order_items and the buyer's profile,
 // which a farmer may already read for buyers who have ordered from them
 // (schema.sql, "profiles: read"), and Confirm will move the line from
-// 'placed' to 'confirmed'. The shape below is the one that data will fill.
+// 'placed' to 'confirmed'. The shape is IncomingOrder in src/types.
 
-export interface IncomingOrder {
-  id: string;
-  /** The buyer: who to ask for when calling. */
-  buyer: string;
-  /** As shown to the farmer: "+63 917 020 2001". */
-  phone: string;
-  /** Where the buyer is: "Quezon City, Metro Manila". */
-  location: string;
-  /** The variety ordered: "Special Rice". */
-  crop: string;
-  kg: number;
-  pricePerKg: number;
-  /** kg × pricePerKg, as agreed at checkout. */
-  amount: number;
-  /** When the buyer placed it, ISO date-time. */
-  placedAt: string;
-  /** 'placed' until the farmer confirms it. */
-  status: "placed" | "confirmed";
-}
+import { IncomingOrder } from "../../types";
+
 
 const minutesAgo = (m: number) => new Date(Date.now() - m * 60_000).toISOString();
 

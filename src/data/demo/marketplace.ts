@@ -1,4 +1,4 @@
-import { Listing, SellerDetail } from "../types";
+import { Listing, SellerDetail } from "../../types";
 
 export const LISTINGS: Listing[] = [
   { id: "1", crop: "Special Rice", variety: "Special Rice", desc: "Premium quality rice, freshly harvested", pricePerKg: 65, kg: 230, date: "2025-10-02", seller: "Doroteo Jose", sellerInitials: "DJ", rating: 4.8, location: "Cabanatuan City" },

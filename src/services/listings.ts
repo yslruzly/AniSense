@@ -1,6 +1,6 @@
 // ─── Listings Service ─────────────────────────────────────────────────────────
 // The marketplace on the database: what is for sale, who is selling it, and
-// the seller's own photo of it. The market store (src/lib/market.tsx) is the
+// the seller's own photo of it. The market store (src/store/market.tsx) is the
 // only caller; screens never talk to Supabase directly.
 
 import { supabase } from "../lib/supabase";

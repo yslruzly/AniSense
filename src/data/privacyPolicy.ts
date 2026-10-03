@@ -1,7 +1,7 @@
 // ─── Privacy policy ───────────────────────────────────────────────────────────
 // The one copy of the policy. The app shows it (Profile, under Manage
 // account, and from the welcome screen), and `node scripts/build-privacy.mjs` writes the web page Google
-// Play links to (docs/privacy-policy.html) from this same file, so the two
+// Play links to (site/privacy-policy.html) from this same file, so the two
 // can never say different things.
 //
 // DRAFT: written from what the app actually collects and who can see it, but

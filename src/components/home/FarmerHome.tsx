@@ -3,7 +3,7 @@ import { useLang } from "../../i18n";
 import { CROPS, CROP_GROUP_BY_ID } from "../../data/crops";
 import { cropPhotoFor } from "../../data/cropPhotos";
 import { CropIcon } from "../icons";
-import { useMarket } from "../../lib/market";
+import { useMarket } from "../../store/market";
 import { Skeleton, SkeletonMediaRows } from "../states";
 
 // ─── Your harvest ─────────────────────────────────────────────────────────────

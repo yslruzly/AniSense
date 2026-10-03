@@ -1,8 +1,8 @@
 import { createContext, useContext } from "react";
 import { UserRole } from "../types";
-import { PriceAlert } from "./priceAlerts";
-import { Planting } from "./plantings";
-import { IncomingOrder } from "../data/orders";
+import { PriceAlert } from "../lib/priceAlerts";
+import { Planting } from "../lib/plantings";
+import { IncomingOrder } from "../types";
 
 // ─── Viewer ───────────────────────────────────────────────────────────────────
 // Who is looking at the screen, for the shared pieces that answer differently

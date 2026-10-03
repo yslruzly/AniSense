@@ -6,8 +6,8 @@ import { UserRole, FarmDetails } from "../../types";
 import { CROPS, MAIN_CROPS } from "../../data/crops";
 import { hasRecords } from "../../data/priceRecords";
 import { FARM_PROVINCE, MUNICIPALITIES, BARANGAYS_BY_MUNICIPALITY, formatFarmLocation } from "../../data/locations";
-import { ISLAND_GROUPS, IslandGroup, PH_PROVINCES } from "../../data/phPlaces";
-import { CropEmoji } from "../../components/CropEmoji";
+import { ISLAND_GROUPS, IslandGroup, PH_PROVINCES } from "../../data/generated/phPlaces";
+import { CropEmoji } from "../../components/icons/CropEmoji";
 import { PickerField } from "../../components/ui/PickerField";
 import juanPeekBody from "../../assets/juan-peek-body.webp";
 import juanPeekHand from "../../assets/juan-peek-hand.webp";
@@ -138,7 +138,7 @@ export function AuthFormScreen({
   useEffect(() => {
     if (role !== "buyer" || page !== "where" || phBarangays) return;
     let alive = true;
-    import("../../data/phBarangays.json")
+    import("../../data/generated/phBarangays.json")
       .then(m => { if (alive) setPhBarangays(m.default as Record<string, Record<string, string[]>>); })
       .catch(() => { /* barangay is optional; the field simply stays closed */ });
     return () => { alive = false; };

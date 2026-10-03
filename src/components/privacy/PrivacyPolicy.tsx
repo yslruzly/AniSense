@@ -1,5 +1,5 @@
 import React from "react";
-import { PRIVACY, PrivacySection, fillPrivacy, privacyDate } from "../data/privacyPolicy";
+import { PRIVACY, PrivacySection, fillPrivacy, privacyDate } from "../../data/privacyPolicy";
 
 // ─── Privacy policy ───────────────────────────────────────────────────────────
 // The policy. Shown on the Privacy screen (Profile) and in a sheet from the

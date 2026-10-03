@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLang } from "../../i18n";
-import { PrivacySheet } from "../../components/PrivacySheet";
+import { PrivacySheet } from "../../components/privacy/PrivacySheet";
 import { PRIVACY } from "../../data/privacyPolicy";
 
 // ─── Welcome ──────────────────────────────────────────────────────────────────

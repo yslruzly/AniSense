@@ -1,7 +1,7 @@
 import { ShieldCheck } from "lucide-react";
 import { useLang } from "../i18n";
 import { Hdr } from "../components/layout/Hdr";
-import { PrivacyPolicy } from "../components/PrivacyPolicy";
+import { PrivacyPolicy } from "../components/privacy/PrivacyPolicy";
 import { PRIVACY } from "../data/privacyPolicy";
 
 // ─── Privacy ──────────────────────────────────────────────────────────────────

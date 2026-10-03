@@ -1,12 +1,12 @@
 import { ArrowDownRight, ArrowUpRight, ArrowRight, X } from "lucide-react";
-import { useLang } from "../i18n";
-import { PriceItem } from "../services/prices";
-import { forecastOf } from "../data/forecast";
-import { historyOf, monthLabel } from "../data/priceRecords";
-import { cropPhoto } from "../data/cropPhotos";
-import { CropIcon } from "./icons";
-import { Sheet } from "./ui/Sheet";
-import { useRetained } from "../hooks/usePresence";
+import { useLang } from "../../i18n";
+import { PriceItem } from "../../services/prices";
+import { forecastOf } from "../../data/forecast";
+import { historyOf, monthLabel } from "../../data/priceRecords";
+import { cropPhoto } from "../../data/cropPhotos";
+import { CropIcon } from "../icons";
+import { Sheet } from "../ui/Sheet";
+import { useRetained } from "../../hooks/usePresence";
 
 // ─── A crop's price sheet ─────────────────────────────────────────────────────
 // What opens when a crop is tapped: its photo and name, the price and the

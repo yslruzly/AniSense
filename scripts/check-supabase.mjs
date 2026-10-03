@@ -20,7 +20,7 @@ const bad = (m, fix) => { console.log(`  ✗ ${m}`); if (fix) console.log(`     
 let failures = 0;
 
 if (!existsSync(".env")) {
-  console.log("No .env file yet.\n  → Copy .env.example to .env and paste your Project URL and publishable (anon) key. See SETUP_DATABASE.md, Step 3.");
+  console.log("No .env file yet.\n  → Copy .env.example to .env and paste your Project URL and publishable (anon) key. See docs/database-setup.md, Step 3.");
   process.exit(1);
 }
 const env = Object.fromEntries(
@@ -73,7 +73,7 @@ ok("Project is reachable");
 if (settings.body?.external?.email === false) bad("Email sign-in is turned off", "Authentication → Sign In / Providers → Email: turn it ON.");
 if (settings.body?.mailer_autoconfirm) ok("Confirm email is OFF: people sign up and land on Home");
 else bad("Confirm email is ON: CP-number accounts can't finish signing up",
-  "Authentication → Sign In / Providers → Email: turn “Confirm email” OFF. (SETUP_DATABASE.md, Step 4)");
+  "Authentication → Sign In / Providers → Email: turn “Confirm email” OFF. (docs/database-setup.md, Step 4)");
 if (settings.body?.disable_signup) bad("New sign-ups are disabled", "Authentication → Sign In / Providers: allow new users to sign up.");
 
 // 2. Tables, section by section. With no one signed in, row security returns

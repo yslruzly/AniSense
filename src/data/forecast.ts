@@ -1,11 +1,11 @@
-import bundled from "./forecasts.json";
+import bundled from "./generated/forecasts.json";
 import { CROP_GROUPS, RICE_VARIETIES } from "./crops";
 import { MonthPrice, historyOf } from "./priceRecords";
 
 // ─── Forecasts ────────────────────────────────────────────────────────────────
 // The next three months of each variety in the study, from the two models the
 // study names: ARIMA and LSTM. Both are trained on the price records by
-// ml/train_forecasts.py, which writes forecasts.json; the app only reads
+// ml/train_forecasts.py, which writes generated/forecasts.json; the app only reads
 // the result, so forecasts show with no signal. Signed in to a real account,
 // the database's forecasts replace the bundled ones (applyForecasts).
 //

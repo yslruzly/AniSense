@@ -11,7 +11,7 @@ import { hasRecords, latestMonth, monthLabel } from "../data/priceRecords";
 import { Hdr } from "../components/layout/Hdr";
 import { CropIcon } from "../components/icons";
 import { cropGroupPhoto } from "../data/cropPhotos";
-import { PriceSheet, Change, Thumb, peso } from "../components/PriceSheet";
+import { PriceSheet, Change, Thumb, peso } from "../components/prices/PriceSheet";
 import mascotBasket from "../assets/mascot-basket.webp";
 import basketBlink from "../assets/mascot-basket-blink.webp";
 import basketMouthHalf from "../assets/mascot-basket-mouth-half.webp";
@@ -24,7 +24,7 @@ import basketMouthShut from "../assets/mascot-basket-mouth-shut.webp";
 //   3. What's my crop at?        → search, filter, the full list
 // Every crop opens a sheet with its price story: this year's records from
 // January, and the next 3 months where the forecast has them
-// (components/PriceSheet.tsx, shared with Home).
+// (components/prices/PriceSheet.tsx, shared with Home).
 //
 // The list opens with AniSense's focus crops, the ones the study covers and
 // keeps real records for (rice, onion, garlic, calamansi), pinned above the

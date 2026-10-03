@@ -2,9 +2,9 @@
 // Builds the buyer's location lists from the Philippine Standard Geographic
 // Code (PSGC), psgc.gitlab.io — the same source as src/data/locations.ts.
 //
-//   src/data/phPlaces.ts         every province and city/municipality, by
+//   src/data/generated/phPlaces.ts         every province and city/municipality, by
 //                                island group (small; part of the app)
-//   src/data/phBarangays.json    every barangay, by province and place
+//   src/data/generated/phBarangays.json    every barangay, by province and place
 //                                (≈0.5 MB; loaded only when a buyer opens
 //                                the barangay picker)
 //
@@ -107,7 +107,7 @@ export const PH_PROVINCES: PhProvince[] = [
 ${all.map(p => `  { name: ${JSON.stringify(p.name)}, region: ${JSON.stringify(p.region)}, island: ${JSON.stringify(p.island)}, places: ${JSON.stringify(p.places)} },`).join("\n")}
 ];
 `;
-writeFileSync("src/data/phPlaces.ts", ts);
-writeFileSync("src/data/phBarangays.json", JSON.stringify(brgy));
+writeFileSync("src/data/generated/phPlaces.ts", ts);
+writeFileSync("src/data/generated/phBarangays.json", JSON.stringify(brgy));
 console.log(`provinces ${all.length}, places ${all.reduce((n, p) => n + p.places.length, 0)}, barangays ${barangays.length}`);
 console.log(`phPlaces.ts ${(ts.length / 1024).toFixed(0)} KB, phBarangays.json ${(JSON.stringify(brgy).length / 1024).toFixed(0)} KB`);

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { haptic } from "../../lib/platform";
 import { Wheat, ShoppingCart, ChevronLeft, Check } from "lucide-react";
-import { AniSenseLogo } from "../../components/AniSenseLogo";
+import { AniSenseLogo } from "../../components/brand/AniSenseLogo";
 import juanPeek from "../../assets/juan-peek.webp";
 import juanPeekBody from "../../assets/juan-peek-body.webp";
 import juanPeekHand from "../../assets/juan-peek-hand.webp";

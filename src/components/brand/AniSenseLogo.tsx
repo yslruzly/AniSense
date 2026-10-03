@@ -1,4 +1,4 @@
-import logoSrc from "../assets/AnisenseLogoIn.png";
+import logoSrc from "../../assets/AnisenseLogoIn.png";
 
 // ─── AniSense Logo ────────────────────────────────────────────────────────────
 // The brand mark, shipped as artwork rather than drawn in code. It is square, so

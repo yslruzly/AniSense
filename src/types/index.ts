@@ -37,3 +37,30 @@ export interface SellerDetail {
 }
 export interface CropGroup { group: string; varieties: CropPrice[]; }
 export type FarmerProfile = { name: string; phone: string; email: string; location: string; experience: string; crops: string[]; };
+
+/** Sunny · PartlyCloudy · Cloudy · LightRain · Rainy · Stormy */
+export type WxIcon = "Sunny" | "PartlyCloudy" | "Cloudy" | "LightRain" | "Rainy" | "Stormy";
+
+/** An order a buyer has placed with a farmer, as the farmer's alert shows it:
+ *  who ordered, how to reach them, and what they want. Sample orders fill it
+ *  for now (data/demo/orders.ts); with the database, order_items and the
+ *  buyer's profile will. */
+export interface IncomingOrder {
+  id: string;
+  /** The buyer: who to ask for when calling. */
+  buyer: string;
+  /** As shown to the farmer: "+63 917 020 2001". */
+  phone: string;
+  /** Where the buyer is: "Quezon City, Metro Manila". */
+  location: string;
+  /** The variety ordered: "Special Rice". */
+  crop: string;
+  kg: number;
+  pricePerKg: number;
+  /** kg × pricePerKg, as agreed at checkout. */
+  amount: number;
+  /** When the buyer placed it, ISO date-time. */
+  placedAt: string;
+  /** 'placed' until the farmer confirms it. */
+  status: "placed" | "confirmed";
+}

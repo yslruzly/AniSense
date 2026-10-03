@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Check } from "lucide-react";
-import { AniSenseLogo } from "../AniSenseLogo";
+import { AniSenseLogo } from "../brand/AniSenseLogo";
 import mascotBody from "../../assets/mascot-wave-body.webp";
 import mascotHand from "../../assets/mascot-wave-hand.webp";
 import mascotEyes from "../../assets/mascot-wave-eyes.webp";

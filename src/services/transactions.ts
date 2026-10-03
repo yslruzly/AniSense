@@ -1,7 +1,7 @@
 // ─── Orders Service ───────────────────────────────────────────────────────────
 // Checkout, the buyer's purchase history, and the farmer's side of the same
 // orders (what they sold through the marketplace). Called only by the market
-// store (src/lib/market.tsx).
+// store (src/store/market.tsx).
 
 import { supabase } from "../lib/supabase";
 import { BuyerTransaction, CartItem } from "../types";

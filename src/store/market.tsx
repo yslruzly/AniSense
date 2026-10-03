@@ -1,17 +1,17 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
-import { BuyerTransaction, CartItem, Expense, Listing, SellerDetail, UserRole } from "../types";
-import { LISTINGS, SELLER_DETAILS } from "../data/marketplace";
-import { EXPENSES, BUYER_TRANSACTIONS } from "../data/expenses";
-import { IncomingOrder, sampleIncomingOrders } from "../data/orders";
+import { BuyerTransaction, CartItem, Expense, IncomingOrder, Listing, SellerDetail, UserRole } from "../types";
+import { LISTINGS, SELLER_DETAILS } from "../data/demo/marketplace";
+import { EXPENSES, BUYER_TRANSACTIONS } from "../data/demo/expenses";
+import { sampleIncomingOrders } from "../data/demo/orders";
 import { CROPS, CROP_GROUP_BY_ID, applyPrices } from "../data/crops";
-import { isSupabaseConfigured } from "./supabase";
+import { isSupabaseConfigured } from "../lib/supabase";
 import { LoadPhase, useSkeletonGate } from "../hooks/useSkeletonGate";
-import { setCacheScope } from "./cache";
-import { Planting, localISO, loadPlantings, savePlantings as keepPlantings } from "./plantings";
-import { Sale, loadSales, saveSales as keepSales } from "./sales";
-import { PriceAlert, loadAlerts, saveAlerts as keepAlerts } from "./priceAlerts";
-import { HarvestPlans, loadHarvestPlans, saveHarvestPlans as keepPlans } from "./harvestPlans";
-import type { AchievementId } from "./achievements";
+import { setCacheScope } from "../lib/cache";
+import { Planting, localISO, loadPlantings, savePlantings as keepPlantings } from "../lib/plantings";
+import { Sale, loadSales, saveSales as keepSales } from "../lib/sales";
+import { PriceAlert, loadAlerts, saveAlerts as keepAlerts } from "../lib/priceAlerts";
+import { HarvestPlans, loadHarvestPlans, saveHarvestPlans as keepPlans } from "../lib/harvestPlans";
+import type { AchievementId } from "../lib/achievements";
 import { fetchMarket, createListing, updateListing, removeListing, ListingInput } from "../services/listings";
 import { fetchMyPurchases, fetchMySales, placeOrder as sendOrder } from "../services/transactions";
 import { fetchExpenses, addExpense, updateExpense, deleteExpense as dropExpense, ExpenseForm } from "../services/expenses";
@@ -63,7 +63,7 @@ export interface Market {
   /** What this farmer sold through the marketplace (live only). */
   marketSales: Sale[];
   /** Orders buyers have placed with this farmer, newest first. A mockup for
-   *  now: sample orders in the demo, none on a real account (data/orders.ts). */
+   *  now: sample orders in the demo, none on a real account (data/demo/orders.ts). */
   incomingOrders: IncomingOrder[];
   /** The farmer has spoken to the buyer and takes the order. */
   confirmOrder: (id: string) => void;

@@ -1,10 +1,10 @@
-import { CROPS } from "./crops";
-import { WEATHER_FORECAST } from "./weather";
-import { LISTINGS } from "./marketplace";
+import { CROPS } from "../data/crops";
+import { WEATHER_FORECAST } from "../data/demo/weather";
+import { LISTINGS } from "../data/demo/marketplace";
 import { UserRole } from "../types";
-import { PriceAlert, alertHit } from "../lib/priceAlerts";
-import { Planting, daysLeft } from "../lib/plantings";
-import { IncomingOrder } from "./orders";
+import { PriceAlert, alertHit } from "./priceAlerts";
+import { Planting, daysLeft } from "./plantings";
+import { IncomingOrder } from "../types";
 
 // ─── Alerts ───────────────────────────────────────────────────────────────────
 // What the bell in the header is counting. Derived from the data already on

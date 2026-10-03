@@ -6,11 +6,11 @@
 //                   days to harvest from src/data/cropCycles.ts)
 //   crops           every variety (RICE_VARIETIES + CROP_GROUPS)
 //   crop_prices     the price records: every month on record for the study's
-//                   varieties (src/data/priceHistory.ts, built from
+//                   varieties (src/data/generated/priceHistory.ts, built from
 //                   data/historical-prices.csv), and one sample price for
 //                   each variety that has no records yet
 //   crop_forecasts  the next months, per variety and model
-//                   (src/data/forecasts.json, from ml/train_forecasts.py)
+//                   (src/data/generated/forecasts.json, from ml/train_forecasts.py)
 //   achievements    the badges
 //
 // Run it again after changing the crop data, adding a month of prices or
@@ -25,14 +25,14 @@ const out = await build({
   stdin: {
     contents: `export { RICE_VARIETIES, CROP_GROUPS, FAMILY_GROUPS } from "./src/data/crops";
                export { CROP_CYCLES } from "./src/data/cropCycles";
-               export { PRICE_MONTHS, PRICE_SERIES } from "./src/data/priceHistory";`,
+               export { PRICE_MONTHS, PRICE_SERIES } from "./src/data/generated/priceHistory";`,
     resolveDir: process.cwd(), loader: "ts",
   },
   bundle: true, format: "esm", platform: "node", write: false, logLevel: "error",
 });
 const data = await import("data:text/javascript;base64," + Buffer.from(out.outputFiles[0].text).toString("base64"));
 const { RICE_VARIETIES, CROP_GROUPS, FAMILY_GROUPS, CROP_CYCLES, PRICE_MONTHS, PRICE_SERIES } = data;
-const forecasts = JSON.parse(readFileSync("src/data/forecasts.json", "utf8"));
+const forecasts = JSON.parse(readFileSync("src/data/generated/forecasts.json", "utf8"));
 
 const q = (s) => (s === null || s === undefined ? "null" : `'${String(s).replace(/'/g, "''")}'`);
 const groupId = (name) => name.toLowerCase();

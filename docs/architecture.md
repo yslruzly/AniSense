@@ -1,6 +1,6 @@
 # AniSense architecture
 
-This document describes how AniSense is built: its parts, how they depend on each other, how data moves, and the decisions behind that. For setup and build instructions see [README.md](README.md) and [SETUP_DATABASE.md](SETUP_DATABASE.md); for the database tables see [supabase/README.md](supabase/README.md).
+This document describes how AniSense is built: its parts, how they depend on each other, how data moves, and the decisions behind that. For setup and build instructions see [README.md](../README.md) and [database-setup.md](database-setup.md); for the database tables see [supabase/README.md](../supabase/README.md).
 
 ## Contents
 
@@ -37,7 +37,7 @@ flowchart TB
     Storage["Storage<br/>listing photos"]
   end
 
-  Web["Static web pages (docs/)<br/>privacy policy, account deletion"]
+  Web["Static web pages (site/)<br/>privacy policy, account deletion"]
 
   subgraph Build["Development computer"]
     Csv["Price records<br/>data/historical-prices.csv"]
@@ -91,7 +91,7 @@ flowchart TB
   Shell["App shell<br/>src/App.tsx"]
   Screens["Screens<br/>src/screens"]
   Components["Components<br/>src/components"]
-  Store["Market store<br/>src/lib/market.tsx"]
+  Store["Market store<br/>src/store/market.tsx"]
   Services["Services<br/>src/services"]
   Lib["Infrastructure<br/>src/lib: cache, outbox, supabase, platform"]
   Data["Static data<br/>src/data"]
@@ -108,11 +108,11 @@ flowchart TB
 |---|---|---|
 | App shell | `src/App.tsx` | Authentication state, which screen is showing, session restore, the walkthrough and achievement overlays. Injects the stylesheets. |
 | Screens | `src/screens/` | One file per screen. Compose components and read from the store. |
-| Components | `src/components/` | Reusable UI, grouped by feature (`home`, `analytics`, `profile`, `tour`, `ui`, `layout`). |
-| Market store | `src/lib/market.tsx` | The single data layer. Holds listings, sellers, purchases, expenses, farm records, a farmer's incoming orders, prices and badges, and exposes actions to change them. |
+| Components | `src/components/` | Reusable UI, grouped by feature (`home`, `analytics`, `marketplace`, `prices`, `privacy`, `profile`, `tour`), plus shared building blocks (`ui`, `layout`, `icons`, `brand`, `states`, `charts`). |
+| Store | `src/store/` | `market.tsx`, the single data layer, and `viewer.ts`, the context that says who is looking. The market store holds listings, sellers, purchases, expenses, farm records, a farmer's incoming orders, prices and badges, and exposes actions to change them. |
 | Services | `src/services/` | One file per domain (`auth`, `listings`, `transactions`, `expenses`, `farmRecords`, `catalog`, `sync`). The only code that calls Supabase. |
-| Infrastructure | `src/lib/` | Supabase client, cache, outbox, platform wrappers (haptics, status bar, keyboard). |
-| Static data | `src/data/` | The crop catalog, the price records and forecasts, Philippine locations, the privacy policy, and sample data for demo mode. |
+| Infrastructure and helpers | `src/lib/` | Supabase client, cache, outbox, platform wrappers (haptics, status bar, keyboard), and small domain helpers (alerts, achievements, plantings, sales). |
+| Static data | `src/data/` | The crop catalog, Philippine locations, the privacy policy, and the readers for the price records and forecasts. Two subfolders: `generated/`, written by scripts and never edited by hand, and `demo/`, the sample data for demo mode. |
 
 **Dependency rule:** screens and components never import the Supabase client. They read and write through the store, which decides whether to call a service or use sample data. This keeps the live and demo modes from leaking into the UI.
 
@@ -181,9 +181,9 @@ Every interface string is an entry in `src/i18n.tsx` with English and Tagalog te
 
 | File | Role |
 |---|---|
-| `src/data/priceHistory.ts` | The monthly price records, generated from `data/historical-prices.csv`. Bundled. |
+| `src/data/generated/priceHistory.ts` | The monthly price records, generated from `data/historical-prices.csv`. Bundled. |
 | `src/data/priceRecords.ts` | Reads the records: a variety's history, its newest price, and the change from the month before. Lays the database's records over the bundled ones when they arrive. |
-| `src/data/forecasts.json` | The finished forecasts and each model's tested error, written by `ml/train_forecasts.py`. Bundled. |
+| `src/data/generated/forecasts.json` | The finished forecasts and each model's tested error, written by `ml/train_forecasts.py`. Bundled. |
 | `src/data/forecast.ts` | Reads the forecasts. Hides a forecast month once a real record exists for it, and marks a forecast as unreliable when its tested error is above `RELIABLE_MAPE` (20%). |
 
 - The catalog in `src/data/crops.ts` takes the price of the study's five varieties from the records as it loads. The other 19 varieties have no records, and their prices are sample values.
@@ -192,9 +192,9 @@ Every interface string is an entry in `src/i18n.tsx` with English and Tagalog te
 
 ### 3.8 Alerts
 
-The bell in the header counts alerts derived from data the app already holds (`src/data/alerts.ts`): a farmer's incoming orders, plantings that are due, price targets that were met, rain, and the sharpest price moves. Buyers get a different set.
+The bell in the header counts alerts derived from data the app already holds (`src/lib/alerts.ts`): a farmer's incoming orders, plantings that are due, price targets that were met, rain, and the sharpest price moves. Buyers get a different set.
 
-An incoming order is the only alert with actions: it shows the buyer's name and number, a Call button that opens the dialer, and a Confirm button. **It is a mockup**: two sample orders in demo mode (`src/data/orders.ts`), none on a real account, and not connected to checkout.
+An incoming order is the only alert with actions: it shows the buyer's name and number, a Call button that opens the dialer, and a Confirm button. **It is a mockup**: two sample orders in demo mode (`src/data/demo/orders.ts`), none on a real account, and not connected to checkout.
 
 ## 4. Backend architecture
 
@@ -220,7 +220,7 @@ Server-side functions:
 
 The catalog section holds the price records (`crop_prices`) and the forecasts (`crop_forecasts`). Both are written by the seed file, never by the app, and are readable by any signed-in account.
 
-The full table and relationship reference is in [supabase/README.md](supabase/README.md).
+The full table and relationship reference is in [supabase/README.md](../supabase/README.md).
 
 ## 5. Key flows
 
@@ -334,7 +334,7 @@ sequenceDiagram
   A-->>U: Welcome screen
 ```
 
-The same function is called by the web page in `docs/`, for someone who no longer has the app.
+The same function is called by the web page in `site/`, for someone who no longer has the app.
 
 ### 5.6 A new month of prices
 
@@ -344,7 +344,7 @@ The same function is called by the web page in `docs/`, for someone who no longe
 4. `npm run seed` rewrites the database's copy, which is then run in the SQL Editor.
 5. A new APK carries the update to phones. A phone signed in to a real account also picks it up from the database the next time it is online.
 
-There is no upload inside the app. The steps are in [ml/README.md](ml/README.md).
+There is no upload inside the app. The steps are in [ml/README.md](../ml/README.md).
 
 ## 6. Offline design
 
@@ -380,10 +380,10 @@ flowchart LR
   Dist -->|cap sync| AndroidProj["android/"]
   AndroidProj -->|gradle assemble| APK["APK"]
   Env[".env"] -.->|baked in at build| Dist
-  Policy["src/data/privacyPolicy.ts"] -->|build-privacy.mjs| DocsPage["docs/privacy-policy.html"]
+  Policy["src/data/privacyPolicy.ts"] -->|build-privacy.mjs| SitePage["site/privacy-policy.html"]
   Crops["src/data/crops.ts"] -->|build-seed.mjs| Seed["supabase/seed.sql"]
-  Csv["data/historical-prices.csv"] -->|build-prices.mjs| History["src/data/priceHistory.ts"]
-  Csv -->|ml/train_forecasts.py| Forecasts["src/data/forecasts.json"]
+  Csv["data/historical-prices.csv"] -->|build-prices.mjs| History["src/data/generated/priceHistory.ts"]
+  Csv -->|ml/train_forecasts.py| Forecasts["src/data/generated/forecasts.json"]
   History -->|build-seed.mjs| Seed
   Forecasts -->|build-seed.mjs| Seed
   History -.->|bundled| Dist
@@ -393,7 +393,8 @@ flowchart LR
 - Environment values are compiled into the bundle, so a build made without `.env` is a demo build.
 - Generators keep derived files in step with their source: the database seed is generated from the crop catalog, the price records and the forecasts, and the web privacy policy from the text the app shows.
 - Prices follow one path: `data/historical-prices.csv` holds the monthly records. From it come the history the app bundles (so prices show offline), the ARIMA and LSTM forecasts (trained locally in Python, never on the phone), and the database's copy. Signed in, the app lays the database's records and forecasts over the bundled ones, so a new month reaches phones without a new APK.
-- `docs/` is a static site (privacy policy and account deletion) that can be served by any static host.
+- `site/` is a static site (privacy policy and account deletion) that any static host can serve. `.github/workflows/pages.yml` publishes it to GitHub Pages.
+- `.github/workflows/ci.yml` type-checks and builds the app on every push and pull request, without `.env`, so it builds the demo.
 
 ## 9. Decision log
 
@@ -421,9 +422,9 @@ flowchart LR
 | Crop prices | Monthly records for five varieties, added to a CSV by hand; sample values for the other 19 | Records for the remaining varieties; ingestion from government sources on a schedule. |
 | Price forecasts | ARIMA and LSTM trained on the five varieties' records. The ARIMA search picks the differencing order by AIC, which is not the right tool for it; the LSTM's settings were not tuned; neither model can foresee a price shock. | Choose the differencing order with a stationarity test; tune the LSTM with a small grid scored inside the training months; test a seasonal ARIMA; consider extra inputs (weather, costs) as later work. |
 | Order alerts | A mockup with sample orders, in demo mode only | Read a farmer's incoming orders and the buyer's contact from the database, save the confirmation, and send a push notification. |
-| Weather | Sample values in `src/data/weather.ts` | Connect a forecast service. PAGASA's TenDay API needs a token that PAGASA approves on request, and it gives daily forecasts, not current conditions. |
+| Weather | Sample values in `src/data/demo/weather.ts` | Connect a forecast service. PAGASA's TenDay API needs a token that PAGASA approves on request, and it gives daily forecasts, not current conditions. |
 | Phone verification | Not enabled | SMS codes through a provider, sent by a server-side hook. |
 | Password reset | Not implemented | Email reset for Gmail accounts; SMS code for mobile-number accounts. |
 | Automated tests | None in the repository | Add unit tests for the services and the store, and database tests for the SQL functions. |
-| Continuous integration | None | Type-check and build on every push. |
+| Continuous integration | Type-check and build on every push (`.github/workflows/ci.yml`) | Run the automated tests there once they exist. |
 | iOS | Not targeted | Capacitor supports it if needed later. |

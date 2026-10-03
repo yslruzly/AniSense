@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CropIcon } from "./icons";
+import { CropIcon } from ".";
 
 // ─── Crop emoji ───────────────────────────────────────────────────────────────
 // Emoji beat line icons here: they arrive in full colour, they're already

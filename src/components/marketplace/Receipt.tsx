@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Download, Check, AlertCircle } from "lucide-react";
-import { useLang, translations } from "../i18n";
-import { haptic, saveImage } from "../lib/platform";
-import { renderReceipt } from "../lib/receiptImage";
-import { CartItem } from "../types";
-import { Sheet } from "./ui/Sheet";
-import { AniSenseLogo } from "./AniSenseLogo";
+import { useLang, translations } from "../../i18n";
+import { haptic, saveImage } from "../../lib/platform";
+import { renderReceipt } from "../../lib/receiptImage";
+import { CartItem } from "../../types";
+import { Sheet } from "../ui/Sheet";
+import { AniSenseLogo } from "../brand/AniSenseLogo";
 
 // ─── Order receipt ────────────────────────────────────────────────────────────
 // What a buyer sees after confirming an order: a paper receipt, printed out

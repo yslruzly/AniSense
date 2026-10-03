@@ -2,10 +2,10 @@ import React, { useState } from "react";
 import { ArrowLeft, Bell, BellRing, BellOff, TrendingUp, TrendingDown, CloudRain, X, Sprout, Scissors, ShoppingBag, Phone, Check, MapPin } from "lucide-react";
 import { useLang } from "../../i18n";
 import { haptic } from "../../lib/platform";
-import { buildAlerts, openAlerts, Alert } from "../../data/alerts";
-import { IncomingOrder } from "../../data/orders";
+import { buildAlerts, openAlerts, Alert } from "../../lib/alerts";
+import { IncomingOrder } from "../../types";
 import { Sheet } from "../ui/Sheet";
-import { useViewer } from "../../lib/viewer";
+import { useViewer } from "../../store/viewer";
 
 // ─── An order from a buyer ────────────────────────────────────────────────────
 // The one alert that asks the farmer to do something, so it is the one alert

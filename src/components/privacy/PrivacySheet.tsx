@@ -1,8 +1,8 @@
 import { X } from "lucide-react";
-import { Sheet } from "./ui/Sheet";
+import { Sheet } from "../ui/Sheet";
 import { PrivacyPolicy } from "./PrivacyPolicy";
-import { useLang } from "../i18n";
-import { PRIVACY } from "../data/privacyPolicy";
+import { useLang } from "../../i18n";
+import { PRIVACY } from "../../data/privacyPolicy";
 
 // ─── Privacy policy, in a sheet ───────────────────────────────────────────────
 // The policy for someone who isn't signed in yet: opened from the welcome

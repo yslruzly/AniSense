@@ -1,5 +1,5 @@
 // ─── node scripts/build-privacy.mjs ───────────────────────────────────────────
-// Writes docs/privacy-policy.html, the page Google Play's listing links to,
+// Writes site/privacy-policy.html, the page Google Play's listing links to,
 // from the same text the app shows (src/data/privacyPolicy.ts), so the web
 // page and the app can never say different things.
 //
@@ -78,5 +78,5 @@ ${s.body.map(b => b.p
 </html>
 `;
 
-writeFileSync("docs/privacy-policy.html", html);
-console.log(`docs/privacy-policy.html written: ${PRIVACY.sections.length} sections, in effect from ${PRIVACY.effective}.`);
+writeFileSync("site/privacy-policy.html", html);
+console.log(`site/privacy-policy.html written: ${PRIVACY.sections.length} sections, in effect from ${PRIVACY.effective}.`);

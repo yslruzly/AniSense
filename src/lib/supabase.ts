@@ -1,8 +1,8 @@
 // ─── Supabase Client ──────────────────────────────────────────────────────────
 // Single shared client for the whole app. Import it anywhere with:
-//   import { supabase } from "../lib/supabase";
+//   import { supabase } from "./supabase";
 //
-// SETUP REQUIRED before this works (see SETUP_DATABASE.md):
+// SETUP REQUIRED before this works (see docs/database-setup.md):
 //   1. Create a Supabase project and run supabase/schema.sql
 //   2. Copy .env.example → .env and paste your project URL + anon key
 //
@@ -20,7 +20,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
   // Any real service call will fail loudly with a clear message instead.
   console.warn(
     "[AniSense] Supabase is not configured yet. " +
-    "Copy .env.example to .env and add your project keys. See SETUP_DATABASE.md."
+    "Copy .env.example to .env and add your project keys. See docs/database-setup.md."
   );
 }
 

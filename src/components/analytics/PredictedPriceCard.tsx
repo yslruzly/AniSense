@@ -2,7 +2,7 @@ import { ArrowDownRight, ArrowUpRight, ArrowRight } from "lucide-react";
 import { useLang } from "../../i18n";
 import { forecastForGroup } from "../../data/forecast";
 import { monthLabel } from "../../data/priceRecords";
-import { CropEmoji } from "../CropEmoji";
+import { CropEmoji } from "../icons/CropEmoji";
 
 // ─── Prices in the next 3 months ──────────────────────────────────────────────
 // The advisor card says what to do; this one shows how the price gets there,

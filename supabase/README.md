@@ -1,6 +1,6 @@
 # AniSense database
 
-PostgreSQL on Supabase, in five sections. Every feature of the app keeps its data here once a project is connected (see `SETUP_DATABASE.md`).
+PostgreSQL on Supabase, in five sections. Every feature of the app keeps its data here once a project is connected (see `docs/database-setup.md`).
 
 | File | What it is | When to run it |
 |---|---|---|

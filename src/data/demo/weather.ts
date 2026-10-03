@@ -2,8 +2,7 @@
 // Nueva Ecija, where the farms are. Sample figures until a forecast service
 // is connected; every screen reads them from here.
 
-/** Sunny · PartlyCloudy · Cloudy · LightRain · Rainy · Stormy */
-export type WxIcon = "Sunny" | "PartlyCloudy" | "Cloudy" | "LightRain" | "Rainy" | "Stormy";
+import { WxIcon } from "../../types";
 
 export const WEATHER_NOW = {
   icon: "PartlyCloudy" as WxIcon,

@@ -4,7 +4,8 @@ import {
   ArrowUp, ArrowDown, CheckCircle, AlertTriangle, Truck,
 } from "lucide-react";
 import { useLang } from "../i18n";
-import { WEATHER_NOW, WEATHER_HOURLY, WEATHER_FORECAST, WxIcon } from "../data/weather";
+import { WEATHER_NOW, WEATHER_HOURLY, WEATHER_FORECAST } from "../data/demo/weather";
+import { WxIcon } from "../types";
 import { Hdr } from "../components/layout/Hdr";
 import { WeatherIcon } from "../components/icons";
 import { useIsNight } from "../hooks/useIsNight";

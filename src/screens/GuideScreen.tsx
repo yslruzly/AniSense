@@ -8,7 +8,7 @@ import { useLang } from "../i18n";
 import { haptic } from "../lib/platform";
 import { Hdr } from "../components/layout/Hdr";
 import { AutoHeight } from "../components/ui/AutoHeight";
-import { useViewer } from "../lib/viewer";
+import { useViewer } from "../store/viewer";
 import mascotBody from "../assets/mascot-wave-body.webp";
 import mascotHand from "../assets/mascot-wave-hand.webp";
 import mascotEyes from "../assets/mascot-wave-eyes.webp";

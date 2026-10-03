@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Sprout, Wheat, HandCoins, Award, Medal, Trophy, Lock } from "lucide-react";
 import { useLang } from "../../i18n";
-import { useMarket } from "../../lib/market";
+import { useMarket } from "../../store/market";
 import { Sale } from "../../lib/sales";
 import { ACHIEVEMENTS, AchievementId, earnedAchievements } from "../../lib/achievements";
 
