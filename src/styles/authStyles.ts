@@ -634,7 +634,21 @@ export const authCss = `
     font-family: var(--font-display); font-weight: 600; font-size: var(--fs-label); color: var(--text-muted);
     transition: color 200ms ease; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
-  .a-seg button.on { color: var(--ink); }
+  .a-seg button.on { color: #fff; text-shadow: 0 1px 1px rgba(0,0,0,.18); }
+  /* The chosen segment is the app's raised green, the same as the family
+     switch in the Marketplace and on Prices, so every "pick one of these"
+     in the app is one thing: a glossy green thumb with a light top edge, a
+     dark lower edge and a soft shadow, and white words on it. */
+  .a-seg-thumb {
+    background: none;
+    background-image: linear-gradient(180deg, #14875A 0%, var(--tanim) 54%, #075232 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.26),
+      inset 0 -1px 0 rgba(0,0,0,.24),
+      inset 0 0 0 1px rgba(4,40,24,.22),
+      0 1px 2px rgba(6,38,23,.3),
+      0 6px 12px -6px rgba(6,38,23,.5);
+  }
   /* Three options (Luzon, Visayas, Mindanao): the same well and gliding
      thumb, a third of the width, moved by index. */
   .a-seg.three { grid-template-columns: repeat(3, 1fr); }
