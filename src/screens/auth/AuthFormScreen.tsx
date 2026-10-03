@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { haptic } from "../../lib/platform";
-import { ChevronLeft, Check, AlertCircle, MapPin, Smartphone, Mail, Send, BadgeCheck } from "lucide-react";
+import { ChevronLeft, Check, AlertCircle, MapPin, Smartphone, Mail, BadgeCheck } from "lucide-react";
 import { useLang } from "../../i18n";
 import { UserRole, FarmDetails } from "../../types";
 import { CROPS, MAIN_CROPS } from "../../data/crops";
@@ -21,7 +21,8 @@ import { isSupabaseConfigured } from "../../lib/supabase";
 import { formatName } from "../../lib/names";
 import { createAccount, signIn, verifyEmailCode, resendEmailCode, authErrorKey } from "../../services/auth";
 import { LegalSheet } from "../../components/legal/LegalSheet";
-import { codeKey, sendSignupCode, checkSignupCode } from "../../services/verification";
+import { codeKey, sendCode as sendVerifyCode, checkCode, saveNewPassword } from "../../services/verification";
+import { useHardwareBack } from "../../hooks/useHardwareBack";
 import { PRIVACY, LegalDocData } from "../../data/privacyPolicy";
 import { TERMS } from "../../data/termsOfService";
 
@@ -38,12 +39,17 @@ import { TERMS } from "../../data/termsOfService";
 // What stays from the form: labels are never only placeholders, the password
 // reveal is a word, errors carry an icon and sit under the field they are
 // about, and that field takes focus, so the fix is where the eye already is.
+//
+// "Forgot your password?" on Sign in opens two pages under Sign in's green
+// header: the CP number or Gmail with a code sent to it, then a new
+// password. Then back to Sign in, which says the password was changed.
 
 type Field = "first" | "last" | "contact" | "vcode" | "password" | "confirm" | "years" | "phone" | "terms";
 /** Years of farming must be under this. The database holds the same limit
  *  (profiles.years_farming in supabase/schema.sql). */
 const MAX_YEARS = 80;
-type Page = "signin" | "name" | "contact" | "password" | "years" | "farm" | "phone" | "crops" | "where" | "verify";
+type Page = "signin" | "name" | "contact" | "password" | "years" | "farm" | "phone" | "crops" | "where" | "verify" | "forgot" | "newpass";
+const RESET_PAGES: Page[] = ["forgot", "newpass"];
 
 // Chunked the way Filipinos read numbers aloud: 917 123 4567, or 0917 123 4567.
 // State keeps digits only, so validation never sees the spaces.
@@ -183,17 +189,21 @@ export function AuthFormScreen({
     ? ["name", "contact", "password", "years", "farm", ...(mode === "gmail" ? ["phone" as const] : []), "crops"]
     : ["name", "contact", "password", "where"];
   const at = pages.indexOf(page);
+  const resetting = RESET_PAGES.includes(page);
 
   // How the page arrives. A question further on comes in from the right and
   // one back from the left, like iOS navigation; switching between Sign in
   // and Create account settles in place. Worked out once per change of page
   // and remembered, so typing (which re-renders) never replays it. The first
-  // page comes in from the right: it follows the role step.
-  const order = (p: Page) => p === "verify" ? pages.length : pages.indexOf(p);
+  // page comes in from the right: it follows the role step. Resetting a
+  // password moves on from Sign in, so it comes in from the right too, and
+  // goes back to it from the left.
+  const order = (p: Page) => p === "verify" ? pages.length : RESET_PAGES.includes(p) ? RESET_PAGES.indexOf(p) : pages.indexOf(p);
   const nav = useRef<{ page: Page; anim: "fwd" | "back" | "swap" }>({ page, anim: "fwd" });
   if (nav.current.page !== page) {
     const from = nav.current.page;
-    nav.current.anim = from === "signin" || page === "signin" ? "swap" : order(page) > order(from) ? "fwd" : "back";
+    const swap = (from === "signin" || page === "signin") && !RESET_PAGES.includes(from) && !RESET_PAGES.includes(page);
+    nav.current.anim = swap ? "swap" : order(page) > order(from) ? "fwd" : "back";
     nav.current.page = page;
   }
   const anim = nav.current.anim;
@@ -209,7 +219,9 @@ export function AuthFormScreen({
 
   const clear = () => { setError(""); setErrField(null); };
 
-  const contactKey = codeKey(mode, contact);
+  // A code for a new account and one for a new password are kept apart.
+  const purpose = resetting ? "reset" : "signup";
+  const contactKey = codeKey(purpose, mode, contact);
   const codeSent = sentTo === contactKey;
   const verified = verifiedFor === contactKey;
   // The countdown before "Send the code again" can be tapped.
@@ -236,6 +248,21 @@ export function AuthFormScreen({
     if (mode === "phone" && !validPhone(contact)) return t("err_valid_phone");
     return "";
   };
+  // The number or address is filled in and its code has passed; if not, the
+  // message says which of the two is missing, under that field.
+  const contactChecked = () => {
+    const bad = contactError();
+    if (bad) return fail("contact", bad);
+    if (verified) return true;
+    if (!codeSent) return fail("contact", t(mode === "gmail" ? "err_verify_gmail_first" : "err_verify_cp_first"));
+    return fail("vcode", t("err_code_required"));
+  };
+  const passwordOk = () => {
+    if (!password) return fail("password", t("err_password_required"));
+    if (password.length < 6) return fail("password", t("err_password_short"));
+    if (password !== confirm) return fail("confirm", t("err_password_mismatch"));
+    return true;
+  };
 
   // ── Sign in ──
   const signInNow = () => {
@@ -260,6 +287,35 @@ export function AuthFormScreen({
       setLoading(false);
       onSuccess(role === "farmer" ? "Juan Dela Cruz" : "Maria Santos", role, ["Rice", "Corn"], undefined, false);
     }, 1200);
+  };
+
+  // ── Forgot your password ──
+  // Whatever was typed on Sign in carries over, so a number already there
+  // needs only "Send code". A wrong password typed on Sign in does not.
+  const openForgot = () => {
+    setPassword(""); setConfirm(""); setShowPw(false); setNotice("");
+    go("forgot");
+  };
+  const saveReset = () => {
+    setLoading(true);
+    saveNewPassword(mode, contact, password)
+      .then(r => {
+        setLoading(false);
+        if (r === "expired") {
+          // The code passed too long ago: back for a new one.
+          setSentTo(null); setVerifiedFor(null);
+          go("forgot"); fail("contact", t("err_reset_again"));
+          return;
+        }
+        // The code is used up: another change takes another code.
+        setPassword(""); setConfirm(""); setShowPw(false);
+        setSentTo(null); setVerifiedFor(null); setVcode(""); setDemoCode("");
+        haptic.success();
+        go("signin");
+        setNotice(t("reset_done"));
+        requestAnimationFrame(() => requestAnimationFrame(() => document.getElementById("f-password")?.focus()));
+      })
+      .catch(err => { setLoading(false); setError(t(authErrorKey(err))); setErrField(null); });
   };
 
   // ── Create the account, after the last question ──
@@ -321,20 +377,20 @@ export function AuthFormScreen({
     if (page === "name" && !familyName.trim()) { fail("last", t("err_last_name")); return; }
     if (page === "name" && !agreed) { fail("terms", t("err_agree_required")); return; }
     if (page === "name") { setGivenName(formatName(givenName)); setFamilyName(formatName(familyName)); }
-    if (page === "contact") {
+    // Only a number or address that has been checked goes on.
+    if (page === "contact" && !contactChecked()) return;
+    if ((page === "password" || page === "newpass") && !passwordOk()) return;
+    // Forgot, page 1: the one button under the field does each step in
+    // turn: send the code, then, once it matches, go on.
+    if (page === "forgot") {
       const bad = contactError();
       if (bad) { fail("contact", bad); return; }
-      // Only a number or address that has been checked goes on.
-      if (!verified) {
-        if (!codeSent) { fail("contact", t(mode === "gmail" ? "err_verify_gmail_first" : "err_verify_cp_first")); return; }
-        fail("vcode", t("err_code_required")); return;
-      }
+      if (!codeSent) { void sendCode(); return; }
+      if (!verified) { fail("vcode", t("err_code_required")); return; }
+      go("newpass");
+      return;
     }
-    if (page === "password") {
-      if (!password) { fail("password", t("err_password_required")); return; }
-      if (password.length < 6) { fail("password", t("err_password_short")); return; }
-      if (password !== confirm) { fail("confirm", t("err_password_mismatch")); return; }
-    }
+    if (page === "newpass") { saveReset(); return; }
     if (page === "years") {
       const yrs = Number(farmYears);
       // Under 80: a farmer of 80 years would be well past 90. An empty box
@@ -364,9 +420,18 @@ export function AuthFormScreen({
 
   const back = () => {
     if (page === "verify") { go(pages[pages.length - 1]); return; }
+    if (page === "forgot") { go("signin"); return; }
+    if (page === "newpass") { go("forgot"); return; }
     if (at > 0) { go(pages[at - 1]); return; }
     onBack();
   };
+  // Android's back button walks the pages the same way. On Sign in and the
+  // first question it is App's, which leaves the form.
+  useHardwareBack(() => {
+    if (page === "signin" || at === 0) return false;
+    back();
+    return true;
+  });
 
   const toggleCrop = (crop: string) => {
     setSelectedCrops(prev =>
@@ -402,8 +467,12 @@ export function AuthFormScreen({
 
   // The main button. Its words swap with a short blur when they change, so
   // "Continue" turning into "Create Account" on the last question is seen.
-  const primary = (label: string, busyLabel = t("please_wait")) => (
-    <button type="submit" className="a-btn a-btn-green" disabled={loading} aria-busy={loading}>
+  // waiting: grey until the page's own step is done (the code on the CP
+  // number / Gmail question), so the green button on the page is plainly
+  // the next tap. It still answers a tap, with the reason.
+  const primary = (label: string, busyLabel = t("please_wait"), waiting = false) => (
+    <button type="submit" className={`a-btn a-btn-green${waiting ? " a-btn-wait" : ""}`} disabled={loading} aria-busy={loading}
+      aria-disabled={waiting || undefined}>
       {loading ? busy(busyLabel) : <span className="a-swap" key={label}>{label}</span>}
     </button>
   );
@@ -430,7 +499,11 @@ export function AuthFormScreen({
     if (mode === id) return;
     haptic.select(); setMode(id); setContact(""); clear();
   };
-  const contactInput = (autoFocus: boolean) => (
+  // The "we'll send a code here" line is about checking a number, said
+  // under the field on sign-up; Sign in has no need of it, and the reset
+  // page says it in its own words at the top.
+  const contactHelp = page !== "signin" && page !== "forgot";
+  const contactInput = (autoFocus: boolean, label = false) => (
     <>
       <div className="a-seg" role="radiogroup" aria-label={t("auth_contact_method")} data-mode={mode}>
         <span className="a-seg-thumb" aria-hidden="true" />
@@ -447,12 +520,13 @@ export function AuthFormScreen({
           </button>
         ))}
       </div>
+      {label && <label className="a-lbl" htmlFor="f-contact">{labelContact}</label>}
       {mode === "gmail" ? (
         <input id="f-contact" className={`a-inp ${bad("contact")}`} type="email"
           placeholder="juan@gmail.com" autoComplete={page === "signin" ? "username" : "email"} autoCapitalize="none" spellCheck={false}
           enterKeyHint="next" onKeyDown={page === "signin" ? focusNext("f-password") : undefined} autoFocus={autoFocus}
-          aria-label={labelContact}
-          {...errProps("contact", page === "signin" ? undefined : "f-contact-help")}
+          aria-label={label ? undefined : labelContact}
+          {...errProps("contact", contactHelp ? "f-contact-help" : undefined)}
           value={contact} onChange={e => { setContact(e.target.value.trim()); clear(); }} />
       ) : (
         <div className="a-prefix-row">
@@ -460,15 +534,13 @@ export function AuthFormScreen({
           <input id="f-contact" className={`a-inp num ${bad("contact")}`} type="tel"
             inputMode="numeric" autoComplete={page === "signin" ? "username" : "tel-national"} placeholder="9XX XXX XXXX" maxLength={13}
             enterKeyHint="next" onKeyDown={page === "signin" ? focusNext("f-password") : undefined} autoFocus={autoFocus}
-            aria-label={labelContact}
-            {...errProps("contact", page === "signin" ? undefined : "f-contact-help")}
+            aria-label={label ? undefined : labelContact}
+            {...errProps("contact", contactHelp ? "f-contact-help" : undefined)}
             value={fmtPhone(contact)}
             onChange={e => { setContact(digits(e.target.value)); clear(); }} />
         </div>
       )}
-      {/* The "we'll send your confirmation here" line is about a new
-          account, so Sign in doesn't show it. */}
-      {errField === "contact" ? fieldErr("contact") : page !== "signin" && <p className="a-help" id="f-contact-help">{t("auth_help_cp")}</p>}
+      {errField === "contact" ? fieldErr("contact") : contactHelp && <p className="a-help" id="f-contact-help">{t("auth_help_cp")}</p>}
     </>
   );
 
@@ -479,7 +551,7 @@ export function AuthFormScreen({
     if (bad) { fail("contact", bad); return; }
     setSending(true);
     try {
-      const { demoCode: dc } = await sendSignupCode(mode, contact);
+      const { demoCode: dc } = await sendVerifyCode(purpose, mode, contact);
       setSentTo(contactKey); setVcode(""); setDemoCode(dc ?? ""); setResendIn(30);
       haptic.select();
       requestAnimationFrame(() => requestAnimationFrame(() => document.getElementById("f-vcode")?.focus()));
@@ -494,7 +566,7 @@ export function AuthFormScreen({
     const d = v.replace(/\D/g, "").slice(0, 6);
     setVcode(d); clear();
     if (d.length < 6) return;
-    const r = await checkSignupCode(mode, contact, d);
+    const r = await checkCode(purpose, mode, contact, d);
     if (r === "ok") { setVerifiedFor(contactKey); haptic.success(); return; }
     setVcode("");
     fail("vcode", t(r === "wrong" ? "err_code_mismatch" : r === "expired" ? "err_code_expired" : "err_code_tries"));
@@ -503,16 +575,16 @@ export function AuthFormScreen({
 
   // Under the field: "Send code" until a code is out; then where it went,
   // the box for it and the way to send another; then, once it matches, a
-  // green line saying so.
-  const verifyBlock = () => verified ? (
+  // green line saying so. "Send code" is the page's green button, full
+  // width; the reset page's own main button does it there.
+  const verifyBlock = (sendButton = true) => verified ? (
     <p className="a-verified" role="status">
       <BadgeCheck size={22} strokeWidth={2.4} aria-hidden="true" />
       {t(mode === "gmail" ? "auth_verified_gmail" : "auth_verified_cp")}
     </p>
-  ) : !codeSent ? (
-    <button type="button" className="a-sendcode" onClick={sendCode} disabled={sending} aria-busy={sending}>
-      {sending ? <><span className="a-spin green" aria-hidden="true" />{t("auth_sending_code")}</>
-        : <><Send size={19} strokeWidth={2.4} aria-hidden="true" />{t("auth_send_code")}</>}
+  ) : !codeSent ? (sendButton &&
+    <button type="button" className="a-btn a-btn-green a-inline-btn" onClick={sendCode} disabled={sending} aria-busy={sending}>
+      {sending ? busy(t("auth_sending_code")) : <span className="a-swap" key="send">{t("auth_send_code")}</span>}
     </button>
   ) : (
     <div className="a-codebox">
@@ -579,6 +651,13 @@ export function AuthFormScreen({
         </div>
 
         <div className="a-scroll a-step" data-anim={anim} key="signin">
+          {/* After a new password is saved: said first, in green. */}
+          {notice && (
+            <p className="a-verified a-done" role="status">
+              <BadgeCheck size={22} strokeWidth={2.4} aria-hidden="true" />
+              <span>{notice}</span>
+            </p>
+          )}
           {/* No label over the field: the switch right above it already says
               "CP Number" or "Gmail". It is still read out with the field. */}
           <div className="a-field">{contactInput(false)}</div>
@@ -587,7 +666,7 @@ export function AuthFormScreen({
                 arises, instead of on a line of its own below. */}
             <div className="a-lbl-row">
               <label className="a-lbl" htmlFor="f-password">{t("auth_password")}</label>
-              <button type="button" className="a-link">{t("auth_forgot")}</button>
+              <button type="button" className="a-link" onClick={openForgot}>{t("auth_forgot")}</button>
             </div>
             <div className="a-pwrow">
               <input id="f-password" className={`a-inp ${bad("password")}`}
@@ -672,6 +751,53 @@ export function AuthFormScreen({
     </form>
   );
 
+  // A password and the same once more, to be sure it was typed as meant.
+  // For a new account (where the question is the first one's label) and for
+  // a new password (where each has a label of its own).
+  const passwordFields = (labels?: { pw: string; confirm: string }) => {
+    const pwOk = password.length >= 6;
+    const confirmOk = confirm.length > 0 && confirm === password;
+    return (
+      <>
+        {labels && <label className="a-lbl" htmlFor="f-password">{labels.pw}</label>}
+        <div className="a-pwrow">
+          <input id="f-password" className={`a-inp ${bad("password")}`}
+            type={showPw ? "text" : "password"} placeholder={t("auth_password_ph")}
+            autoComplete="new-password" enterKeyHint="next" onKeyDown={focusNext("f-confirm")} autoFocus
+            aria-labelledby={labels ? undefined : "ask-q"} {...errProps("password", "f-password-help")}
+            value={password} onChange={e => { setPassword(e.target.value); clear(); }} />
+          {reveal}
+        </div>
+        {errField === "password"
+          ? fieldErr("password")
+          : (
+            // The rule turns into a tick the moment it's met: the page
+            // confirms progress as it happens, not only on Continue.
+            <p className={`a-help a-hint ${pwOk ? "ok" : ""}`} id="f-password-help">
+              <span className="a-hint-ico"><Check size={12} strokeWidth={3.4} /></span>
+              {t("auth_help_pw")}
+            </p>
+          )}
+        <div className="a-field">
+          <label className="a-lbl" htmlFor="f-confirm">{labels?.confirm ?? t("auth_confirm_password")}</label>
+          <input id="f-confirm" className={`a-inp ${bad("confirm")}`}
+            type={showPw ? "text" : "password"} placeholder={t("auth_confirm_password_ph")}
+            autoComplete="new-password" enterKeyHint="next"
+            {...errProps("confirm")}
+            value={confirm} onChange={e => { setConfirm(e.target.value); clear(); }} />
+          {errField === "confirm"
+            ? fieldErr("confirm")
+            : confirmOk && (
+              <p className="a-help a-hint ok a-hint-in">
+                <span className="a-hint-ico"><Check size={12} strokeWidth={3.4} /></span>
+                {t("auth_pw_match")}
+              </p>
+            )}
+        </div>
+      </>
+    );
+  };
+
   const last = at === pages.length - 1;
   const onward = primary(last ? t("auth_create_btn") : t("continue"));
 
@@ -713,6 +839,65 @@ export function AuthFormScreen({
       verify,
     );
   }
+
+  // ── Forgot your password ──
+  // Sign in's green header, leaves and all, with Back at its top left: the
+  // title, a line saying what happens, and Juan with a word. Then the
+  // fields with their labels, and the button right under them, where the
+  // eye already is and where it stays in view with the keyboard up.
+  const resetPage = (title: string, sub: string, say: string, body: ReactNode, button: ReactNode) => (
+    <form className="a-screen a-setup a-askscreen a-reset" noValidate onSubmit={e => { e.preventDefault(); next(); }}>
+      <div className="a-inkhead a-formhead a-askhead">
+        <button type="button" className="a-iconbtn a-reset-back" onClick={back} aria-label={t("back")}>
+          <ChevronLeft size={26} color="#fff" strokeWidth={2.4} />
+        </button>
+        <div className="a-swap" key={`h-${page}`}>
+          <h1 className="a-title on-ink">{title}</h1>
+          <p className="a-sub on-ink">{sub}</p>
+        </div>
+        <Scene role={role} cue={page}>
+          <div className="a-ask a-ask-hi" key={`q-${page}`}>
+            <p className="a-ask-q">{say}</p>
+          </div>
+        </Scene>
+      </div>
+      <div className="a-scroll a-step" data-anim={anim} key={`r-${page}`}>
+        <div className="a-ask-body">{body}</div>
+        {!errField && alert()}
+        {button}
+      </div>
+    </form>
+  );
+  const resetButton = (label: string, working: boolean, workingLabel: string) => (
+    <button type="submit" className="a-btn a-btn-green a-inline-btn" disabled={working} aria-busy={working}>
+      {working ? busy(workingLabel) : <span className="a-swap" key={label}>{label}</span>}
+    </button>
+  );
+
+  // 1: the code. The CP Number / Gmail switch, then the field with its
+  // label, then the button: "Send code" until a code is out, "Continue"
+  // after. A number carried over from Sign in needs no keyboard.
+  if (page === "forgot") return resetPage(
+    t("reset_forgot_title"),
+    t("reset_forgot_sub"),
+    t("reset_say_forgot"),
+    <>
+      {contactInput(!contact, true)}
+      {verifyBlock(false)}
+    </>,
+    codeSent || verified
+      ? resetButton(t("continue"), false, "")
+      : resetButton(t("auth_send_code"), sending, t("auth_sending_code")),
+  );
+
+  // 2: the new one, typed twice, as on sign-up.
+  if (page === "newpass") return resetPage(
+    t("reset_new_title"),
+    t("reset_new_sub"),
+    t("reset_say_new"),
+    passwordFields({ pw: t("reset_new_lbl"), confirm: t("reset_confirm_lbl") }),
+    resetButton(t("reset_save"), loading, t("reset_saving")),
+  );
 
   // ── 1. Name ──
   // First name and last name, each with its own small label, so there is no
@@ -786,56 +971,12 @@ export function AuthFormScreen({
         {contactInput(true)}
         {verifyBlock()}
       </>,
-      onward,
+      primary(t("continue"), undefined, !verified),
     );
   }
 
   // ── 3. Password ── (and once more, to be sure it was typed as meant)
-  if (page === "password") {
-    const pwOk = password.length >= 6;
-    const confirmOk = confirm.length > 0 && confirm === password;
-    return ask(
-      t("ask_password"),
-      t("ask_password_why"),
-      <>
-        <div className="a-pwrow">
-          <input id="f-password" className={`a-inp ${bad("password")}`}
-            type={showPw ? "text" : "password"} placeholder={t("auth_password_ph")}
-            autoComplete="new-password" enterKeyHint="next" onKeyDown={focusNext("f-confirm")} autoFocus
-            aria-labelledby="ask-q" {...errProps("password", "f-password-help")}
-            value={password} onChange={e => { setPassword(e.target.value); clear(); }} />
-          {reveal}
-        </div>
-        {errField === "password"
-          ? fieldErr("password")
-          : (
-            // The rule turns into a tick the moment it's met: the page
-            // confirms progress as it happens, not only on Continue.
-            <p className={`a-help a-hint ${pwOk ? "ok" : ""}`} id="f-password-help">
-              <span className="a-hint-ico"><Check size={12} strokeWidth={3.4} /></span>
-              {t("auth_help_pw")}
-            </p>
-          )}
-        <div className="a-field">
-          <label className="a-lbl" htmlFor="f-confirm">{t("auth_confirm_password")}</label>
-          <input id="f-confirm" className={`a-inp ${bad("confirm")}`}
-            type={showPw ? "text" : "password"} placeholder={t("auth_confirm_password_ph")}
-            autoComplete="new-password" enterKeyHint="next"
-            {...errProps("confirm")}
-            value={confirm} onChange={e => { setConfirm(e.target.value); clear(); }} />
-          {errField === "confirm"
-            ? fieldErr("confirm")
-            : confirmOk && (
-              <p className="a-help a-hint ok a-hint-in">
-                <span className="a-hint-ico"><Check size={12} strokeWidth={3.4} /></span>
-                {t("auth_pw_match")}
-              </p>
-            )}
-        </div>
-      </>,
-      onward,
-    );
-  }
+  if (page === "password") return ask(t("ask_password"), t("ask_password_why"), passwordFields(), onward);
 
   // ── 4 (farmer). Years farming ── A number with its unit beside it.
   if (page === "years") {

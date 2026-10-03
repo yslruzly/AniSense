@@ -196,7 +196,8 @@ export const buttonCss = `
   .a-btn:disabled, .btn-primary:disabled, .btn-secondary:disabled, .btn-danger:disabled,
   .buy-now-btn:disabled, .add-cart-btn:disabled, .btn-call:disabled, .btn-details:disabled,
   .cart-checkout-btn:disabled, .mp-sell-btn:disabled, .add-btn:disabled, .post-btn:disabled,
-  .calc-use:disabled, .wid-btn:disabled, .pick-field:disabled {
+  .calc-use:disabled, .wid-btn:disabled, .pick-field:disabled,
+  .a-btn.a-btn-wait, .a-btn.a-btn-wait:active {
     background-image: none;
     background-color: #E3E5E3;
     color: #8B9089;
