@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { haptic } from "../../lib/platform";
-import { ChevronLeft, Check, AlertCircle, MapPin, Smartphone, Mail } from "lucide-react";
+import { ChevronLeft, Check, AlertCircle, MapPin, Smartphone, Mail, Send, BadgeCheck } from "lucide-react";
 import { useLang } from "../../i18n";
 import { UserRole, FarmDetails } from "../../types";
 import { CROPS, MAIN_CROPS } from "../../data/crops";
@@ -21,6 +21,7 @@ import { isSupabaseConfigured } from "../../lib/supabase";
 import { formatName } from "../../lib/names";
 import { createAccount, signIn, verifyEmailCode, resendEmailCode, authErrorKey } from "../../services/auth";
 import { LegalSheet } from "../../components/legal/LegalSheet";
+import { codeKey, sendSignupCode, checkSignupCode } from "../../services/verification";
 import { PRIVACY, LegalDocData } from "../../data/privacyPolicy";
 import { TERMS } from "../../data/termsOfService";
 
@@ -38,7 +39,7 @@ import { TERMS } from "../../data/termsOfService";
 // reveal is a word, errors carry an icon and sit under the field they are
 // about, and that field takes focus, so the fix is where the eye already is.
 
-type Field = "first" | "last" | "contact" | "password" | "confirm" | "years" | "phone" | "terms";
+type Field = "first" | "last" | "contact" | "vcode" | "password" | "confirm" | "years" | "phone" | "terms";
 /** Years of farming must be under this. The database holds the same limit
  *  (profiles.years_farming in supabase/schema.sql). */
 const MAX_YEARS = 80;
@@ -120,6 +121,18 @@ export function AuthFormScreen({
   // The first page's agreement to the Terms of Service and Privacy Policy,
   // and which of the two is open in a sheet over the form.
   const [agreed, setAgreed] = useState(false);
+  // Checking the CP number or Gmail is theirs: where the last code went, the
+  // code being typed, which number or address has passed, the wait before
+  // another code can be sent, and the demo code shown while nothing is
+  // really sent (services/verification.ts). Each is tied to the number or
+  // address, so changing it, or switching between CP number and Gmail,
+  // starts the check again.
+  const [sentTo, setSentTo] = useState<string | null>(null);
+  const [vcode, setVcode] = useState("");
+  const [verifiedFor, setVerifiedFor] = useState<string | null>(null);
+  const [resendIn, setResendIn] = useState(0);
+  const [sending, setSending] = useState(false);
+  const [demoCode, setDemoCode] = useState("");
   const [legal, setLegal] = useState<LegalDocData | null>(null);
   // First and last name, asked separately; the account keeps them as one
   // full name ("Juan Dela Cruz").
@@ -192,6 +205,16 @@ export function AuthFormScreen({
   const firstName = formatName(givenName);
 
   const clear = () => { setError(""); setErrField(null); };
+
+  const contactKey = codeKey(mode, contact);
+  const codeSent = sentTo === contactKey;
+  const verified = verifiedFor === contactKey;
+  // The countdown before "Send the code again" can be tapped.
+  useEffect(() => {
+    if (resendIn <= 0) return;
+    const id = window.setTimeout(() => setResendIn(s => s - 1), 1000);
+    return () => window.clearTimeout(id);
+  }, [resendIn]);
   const go = (p: Page) => { clear(); setPage(p); };
 
   const fail = (field: Field, msg: string) => {
@@ -298,6 +321,11 @@ export function AuthFormScreen({
     if (page === "contact") {
       const bad = contactError();
       if (bad) { fail("contact", bad); return; }
+      // Only a number or address that has been checked goes on.
+      if (!verified) {
+        if (!codeSent) { fail("contact", t(mode === "gmail" ? "err_verify_gmail_first" : "err_verify_cp_first")); return; }
+        fail("vcode", t("err_code_required")); return;
+      }
     }
     if (page === "password") {
       if (!password) { fail("password", t("err_password_required")); return; }
@@ -439,6 +467,66 @@ export function AuthFormScreen({
           account, so Sign in doesn't show it. */}
       {errField === "contact" ? fieldErr("contact") : page !== "signin" && <p className="a-help" id="f-contact-help">{t("auth_help_cp")}</p>}
     </>
+  );
+
+  // ── Checking the number or address ──
+  const sendCode = async () => {
+    clear();
+    const bad = contactError();
+    if (bad) { fail("contact", bad); return; }
+    setSending(true);
+    try {
+      const { demoCode: dc } = await sendSignupCode(mode, contact);
+      setSentTo(contactKey); setVcode(""); setDemoCode(dc ?? ""); setResendIn(30);
+      haptic.select();
+      requestAnimationFrame(() => requestAnimationFrame(() => document.getElementById("f-vcode")?.focus()));
+    } catch {
+      setError(t("err_auth_generic")); setErrField(null);
+    } finally {
+      setSending(false);
+    }
+  };
+  // The code is checked as soon as six digits are in: no extra button.
+  const typeCode = async (v: string) => {
+    const d = v.replace(/\D/g, "").slice(0, 6);
+    setVcode(d); clear();
+    if (d.length < 6) return;
+    const r = await checkSignupCode(mode, contact, d);
+    if (r === "ok") { setVerifiedFor(contactKey); haptic.success(); return; }
+    setVcode("");
+    fail("vcode", t(r === "wrong" ? "err_code_mismatch" : r === "expired" ? "err_code_expired" : "err_code_tries"));
+  };
+  const who = mode === "gmail" ? contact.trim() : `+63 ${fmtPhone(contact).replace(/^0/, "")}`;
+
+  // Under the field: "Send code" until a code is out; then where it went,
+  // the box for it and the way to send another; then, once it matches, a
+  // green line saying so.
+  const verifyBlock = () => verified ? (
+    <p className="a-verified" role="status">
+      <BadgeCheck size={22} strokeWidth={2.4} aria-hidden="true" />
+      {t(mode === "gmail" ? "auth_verified_gmail" : "auth_verified_cp")}
+    </p>
+  ) : !codeSent ? (
+    <button type="button" className="a-sendcode" onClick={sendCode} disabled={sending} aria-busy={sending}>
+      {sending ? <><span className="a-spin green" aria-hidden="true" />{t("auth_sending_code")}</>
+        : <><Send size={19} strokeWidth={2.4} aria-hidden="true" />{t("auth_send_code")}</>}
+    </button>
+  ) : (
+    <div className="a-codebox">
+      <p className="a-codebox-t" role="status">{t("auth_code_sent").replace("{to}", who)}</p>
+      {demoCode && <p className="a-demo-code">{t("auth_code_demo").replace("{code}", demoCode)}</p>}
+      <label className="a-lbl" htmlFor="f-vcode">{t("verify_lbl")}</label>
+      <input id="f-vcode" className={`a-inp num a-code ${bad("vcode")}`} type="text" inputMode="numeric"
+        autoComplete="one-time-code" maxLength={6} placeholder="000000"
+        {...errProps("vcode")}
+        value={vcode} onChange={e => { void typeCode(e.target.value); }} />
+      {fieldErr("vcode")}
+      <p className="a-resend">
+        {resendIn > 0
+          ? <span className="a-resend-wait">{t("auth_resend_in").replace("{s}", String(resendIn))}</span>
+          : <button type="button" className="a-link" onClick={sendCode} disabled={sending}>{t("verify_resend")}</button>}
+      </p>
+    </div>
   );
 
   const reveal = (
@@ -691,7 +779,10 @@ export function AuthFormScreen({
     return ask(
       t("ask_contact").replace("{name}", firstName),
       t("ask_contact_why"),
-      contactInput(true),
+      <>
+        {contactInput(true)}
+        {verifyBlock()}
+      </>,
       onward,
     );
   }

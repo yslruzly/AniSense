@@ -894,6 +894,47 @@ export const authCss = `
   .a-askscreen .a-seg { border-radius: 999px; }
   .a-askscreen .a-seg-thumb { border-radius: 999px; }
   .a-askscreen .a-iconbtn.on-paper { background: var(--fill-soft); box-shadow: none; }
+  /* The code box: six digits, spaced and centred, typed once. */
+  .a-askscreen .a-inp.a-code { font-size: 24px; letter-spacing: .4em; text-align: center; padding-left: calc(22px + .4em); }
+
+  /* ── Checking the number or address ──────────────────────────────────────
+     "Send code" under the field: a soft green pill, quieter than Continue
+     so the two are never mistaken, but plainly a button. Once a code is
+     out, the box for it arrives with where it went said above it; once it
+     matches, a green line with a tick takes the place of it all. */
+  .a-sendcode {
+    width: 100%; min-height: 52px; margin-top: 14px; padding: 0 18px; border: none; border-radius: 999px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    background: var(--tanim-sk); color: var(--tanim-deep);
+    font-family: var(--font-display); font-weight: 600; font-size: var(--fs-body);
+    box-shadow: inset 0 0 0 1.5px rgba(11,107,65,.28);
+    transition: transform 160ms var(--ease-out), background-color 160ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .a-sendcode:active { transform: scale(.97); transition-duration: 90ms; }
+  .a-sendcode:disabled { cursor: default; opacity: .85; }
+  .a-spin.green { border-color: rgba(11,107,65,.25); border-top-color: var(--tanim); }
+  .a-codebox { margin-top: 16px; animation: a-err-in 220ms var(--ease-out); }
+  .a-codebox-t { margin: 0 0 8px; padding-left: 6px; font-size: var(--fs-label); line-height: 1.45; color: var(--text-soft); }
+  /* The demo code, in the app's gold note: plainly not part of the real flow. */
+  .a-demo-code {
+    margin: 0 0 12px; padding: 10px 14px; border-radius: 14px;
+    background: var(--gold-sk); color: var(--gold-text);
+    font-size: var(--fs-label); line-height: 1.4; font-weight: 600;
+  }
+  .a-resend { margin: 6px 0 0; padding-left: 6px; min-height: 44px; display: flex; align-items: center; }
+  .a-resend .a-link { min-height: 44px; font-size: var(--fs-label); padding-left: 0; }
+  .a-resend-wait { font-size: var(--fs-label); color: var(--text-faint); font-variant-numeric: tabular-nums; }
+  .a-verified {
+    display: flex; align-items: center; gap: 10px; margin: 14px 0 0; padding: 12px 16px; border-radius: 999px;
+    background: var(--tanim-sk); color: var(--tanim-deep);
+    font-family: var(--font-display); font-weight: 600; font-size: var(--fs-body);
+  }
+  .a-verified svg { flex-shrink: 0; color: var(--tanim); animation: a-radio-pop 280ms var(--ease-out); }
+  @media (prefers-reduced-motion: reduce) {
+    .a-sendcode:active { transform: none; }
+    .a-codebox, .a-verified svg { animation: none; }
+  }
 
   /* The agreement: a rounded box and its sentence, one 52px target. The box
      fills green with a white tick and pops once; the documents' names are

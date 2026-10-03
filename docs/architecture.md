@@ -424,7 +424,7 @@ flowchart LR
 | Price forecasts | ARIMA and LSTM trained on the five varieties' records. The ARIMA search picks the differencing order by AIC, which is not the right tool for it; the LSTM's settings were not tuned; neither model can foresee a price shock. | Choose the differencing order with a stationarity test; tune the LSTM with a small grid scored inside the training months; test a seasonal ARIMA; consider extra inputs (weather, costs) as later work. |
 | Order alerts | A mockup with sample orders, in demo mode only | Read a farmer's incoming orders and the buyer's contact from the database, save the confirmation, and send a push notification. |
 | Weather | Sample values in `src/data/demo/weather.ts` | Connect a forecast service. PAGASA's TenDay API needs a token that PAGASA approves on request, and it gives daily forecasts, not current conditions. |
-| Phone verification | Not enabled | SMS codes through a provider, sent by a server-side hook. |
+| Phone and Gmail verification | A sign-up code step exists, but as a mockup: `src/services/verification.ts` makes the code on the phone and the screen shows it. | Replace its two functions with calls to a server function that texts (Semaphore) or emails the code and checks it there. The form does not change. |
 | Password reset | Not implemented | Email reset for Gmail accounts; SMS code for mobile-number accounts. |
 | Automated tests | None in the repository | Add unit tests for the services and the store, and database tests for the SQL functions. |
 | Continuous integration | Type-check and build on every push (`.github/workflows/ci.yml`) | Run the automated tests there once they exist. |
