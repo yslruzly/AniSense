@@ -285,6 +285,17 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
     setShowModal(true);
   };
 
+  // Sent here from a featured harvest on Home: its details slide up over the
+  // marketplace, which is already showing that crop underneath. Set after
+  // mount, like a featured farmer's profile, so the sheet arrives rather
+  // than simply being there. If the listing has just sold out, nothing opens
+  // and the crop's other listings are what the buyer sees.
+  useEffect(() => {
+    if (intent?.listing) setOpenId(intent.listing);
+    // Once, on arrival. The intent is fixed for this visit.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Sent here by "Post a harvest" on Home: open the form on arrival.
   useEffect(() => {
     if (intent?.post) openPost();

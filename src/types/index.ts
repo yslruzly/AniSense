@@ -6,7 +6,11 @@ export type UserRole = "farmer" | "buyer" | null;
  *  optional rather than a second near-identical type. */
 /** What the marketplace should open showing when another screen sends the
  *  buyer there: a crop, a farmer, a search, or just the search box ready. */
-export type TradeIntent = { category?: string; family?: string; search?: string; seller?: string; focusSearch?: boolean; post?: boolean };
+export type TradeIntent = {
+  category?: string; family?: string; search?: string; seller?: string; focusSearch?: boolean; post?: boolean;
+  /** A listing's id: the marketplace opens on it, its details already up. */
+  listing?: string;
+};
 export type FarmDetails = { years?: string; location: string; phone?: string };
 export interface CropPrice {
   id: string; name: string; pricePerKg: number; change: number;

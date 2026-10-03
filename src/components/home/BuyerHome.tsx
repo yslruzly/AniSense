@@ -167,12 +167,14 @@ export function FeaturedProducts({ onShop }: { onShop: Shop }) {
   // four sacks of rice, because the top-rated sellers here all grow rice.
   // A featured shelf that shows the same thing four times is a shelf of one.
   const seen = new Set<string>();
+  // Special Rice → Rice, Red → Onions: the crop a listing is filed under.
+  const groupOf = (l: { crop: string }) => CROP_GROUP_BY_ID[CROPS.find(c => c.name === l.crop)?.id ?? ""] || l.crop;
   // A row holds more than a grid of four did, and the ones past the edge are
   // the reason to push it along.
   const picks = [...listings]
     .sort((a, b) => b.rating - a.rating || new Date(b.date).getTime() - new Date(a.date).getTime())
     .filter(l => {
-      const group = CROP_GROUP_BY_ID[CROPS.find(c => c.name === l.crop)?.id ?? ""] || l.crop;
+      const group = groupOf(l);
       if (seen.has(group)) return false;
       seen.add(group);
       return true;
@@ -214,7 +216,11 @@ export function FeaturedProducts({ onShop }: { onShop: Shop }) {
               ? l.variety
               : l.variety + " " + tn(l.crop);
           return (
-            <button key={l.id} className="fp-card" onClick={() => onShop({ search: l.variety || l.crop })}>
+            // The card is that one harvest: tapping it opens the marketplace
+            // on it, its details already up, with the same crop's other
+            // listings behind for comparison. (A text search for the variety
+            // found nothing: the search reads the crop, not the variety.)
+            <button key={l.id} className="fp-card" onClick={() => onShop({ listing: l.id, category: groupOf(l) })}>
               <span className="fp-photo">
                 {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropEmoji crop={l.crop} size={32} />}
               </span>

@@ -1242,8 +1242,8 @@ export const translations: Dict = {
   },
   tour_b_featured_t: { en: "Worth a look today", tl: "Sulit tingnan ngayon" },
   tour_b_featured_b: {
-    en: "The best-rated harvest of each crop right now. Swipe sideways for more.",
-    tl: "Ang pinakamataas ang rating na ani ng bawat pananim ngayon. Mag-swipe pakanan para sa iba pa.",
+    en: "The best-rated harvest of each crop right now. Swipe sideways for more, and tap one to see it in the Market.",
+    tl: "Ang pinakamataas ang rating na ani ng bawat pananim ngayon. Mag-swipe pakanan para sa iba pa, at pindutin ang isa para makita ito sa Merkado.",
   },
   tour_b_deals_t: {
     en: "Cheapest today",
