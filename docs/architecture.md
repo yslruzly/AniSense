@@ -29,6 +29,7 @@ flowchart TB
   subgraph Device["Android phone"]
     App["AniSense app<br/>React + TypeScript in a Capacitor WebView"]
     Local["On-device storage<br/>cache, outbox, session, settings"]
+    Codes["Verification codes<br/>mockup, made on the phone"]
   end
 
   subgraph Supabase["Supabase (managed)"]
@@ -45,7 +46,8 @@ flowchart TB
   end
 
   subgraph Planned["Planned, not built yet"]
-    SMS["SMS provider<br/>phone verification"]
+    SMS["SMS provider (Semaphore)<br/>codes for CP-number accounts"]
+    Mail["Email sender<br/>codes for Gmail accounts"]
     Prices["Price ingestion<br/>government sources"]
     Wx["Weather service"]
   end
@@ -53,6 +55,7 @@ flowchart TB
   Farmer --> App
   Buyer --> App
   App <--> Local
+  App <--> Codes
   App <-->|HTTPS| Auth
   App <-->|HTTPS| DB
   App -->|HTTPS| Storage
@@ -61,12 +64,15 @@ flowchart TB
   Csv --> Train
   Train -->|bundled in the APK| App
   Train -.->|seed.sql| DB
-  Auth -.-> SMS
+  Codes -.->|replaced by| SMS
+  Codes -.->|replaced by| Mail
   Prices -.-> DB
   Wx -.-> App
 ```
 
 There is no custom application server. The app talks to Supabase directly, and every rule that matters (who can read what, how an order is priced, how stock is reduced) is enforced inside the database.
+
+The verification codes used when creating an account and when resetting a password are a stand-in for now: the app makes them itself and shows them on screen (see [3.9](#39-verification-codes)). Once an SMS provider and an email sender are connected, a server function sends and checks them instead.
 
 The forecast models are not part of the running system. They are trained on a development computer from the price records, and only their results travel: inside the APK, and into the database through the seed file.
 
@@ -96,7 +102,9 @@ flowchart TB
   Lib["Infrastructure<br/>src/lib: cache, outbox, supabase, platform"]
   Data["Static data<br/>src/data"]
 
+  Hooks["Hooks<br/>src/hooks"]
   Shell --> Screens --> Components
+  Screens --> Hooks
   Screens --> Store
   Shell --> Store
   Store --> Services --> Lib
@@ -108,9 +116,10 @@ flowchart TB
 |---|---|---|
 | App shell | `src/App.tsx` | Authentication state, which screen is showing, session restore, the walkthrough and achievement overlays. Injects the stylesheets. |
 | Screens | `src/screens/` | One file per screen. Compose components and read from the store. |
-| Components | `src/components/` | Reusable UI, grouped by feature (`home`, `analytics`, `marketplace`, `prices`, `privacy`, `profile`, `tour`), plus shared building blocks (`ui`, `layout`, `icons`, `brand`, `states`, `charts`). |
+| Components | `src/components/` | Reusable UI, grouped by feature (`home`, `analytics`, `expenses`, `marketplace`, `prices`, `legal`, `profile`, `tour`), plus shared building blocks (`ui`, `layout`, `icons`, `brand`, `states`, `charts`). `legal` shows the privacy policy and the terms of service, as a page or in a sheet. |
 | Store | `src/store/` | `market.tsx`, the single data layer, and `viewer.ts`, the context that says who is looking. The market store holds listings, sellers, purchases, expenses, farm records, a farmer's incoming orders, prices and badges, and exposes actions to change them. |
-| Services | `src/services/` | One file per domain (`auth`, `listings`, `transactions`, `expenses`, `farmRecords`, `catalog`, `sync`). The only code that calls Supabase. |
+| Services | `src/services/` | One file per domain (`auth`, `listings`, `transactions`, `expenses`, `farmRecords`, `catalog`, `prices`, `sync`, `verification`). The only code that calls Supabase, and the one place the verification codes are made and checked. |
+| Hooks | `src/hooks/` | Small React hooks: Android's Back button, offline state, the outbox count, when to show skeleton loaders, presence, night mode, and loading a resource. |
 | Infrastructure and helpers | `src/lib/` | Supabase client, cache, outbox, platform wrappers (haptics, status bar, keyboard), and small domain helpers (alerts, achievements, plantings, sales). |
 | Static data | `src/data/` | The crop catalog, Philippine locations, the privacy policy and terms of service, and the readers for the price records and forecasts. Two subfolders: `generated/`, written by scripts and never edited by hand, and `demo/`, the sample data for demo mode. |
 
@@ -143,11 +152,16 @@ Navigation is state, not URLs. There is no router, because the app has no addres
 ```mermaid
 stateDiagram-v2
   [*] --> Welcome
-  Welcome --> Language
+  Welcome --> SignIn: I already have an account
+  Welcome --> Language: Create account
   Language --> Role
-  Role --> SignIn: has an account
-  Role --> SignUp: new
+  Role --> SignUp
   SignUp --> SignUp: one question per page
+  SignUp --> SignIn: Already have an account?
+  SignIn --> Language: Create an account
+  SignIn --> Forgot: Forgot your password?
+  Forgot --> NewPassword: the code matches
+  NewPassword --> SignIn: password saved
   SignIn --> In
   SignUp --> In: account created
 
@@ -165,9 +179,10 @@ stateDiagram-v2
   In --> Welcome: sign out or delete account
 ```
 
-- Before sign-in, an `authScreen` value steps through welcome, language, role and the account form when creating an account. "I already have an account" goes straight from welcome to the Sign in form: a real account brings its own role, and the role of the last account used on the phone (`anisense-last-role`, farmer if none) only picks who greets them and, in the demo, which sample account opens.
+- Before sign-in, an `authScreen` value steps through welcome, language, role and the account form when creating an account. "I already have an account" goes straight from welcome to the Sign in form: a real account brings its own role, and the role of the last account used on the phone (`anisense-last-role`, farmer if none) only picks who greets them and, in the demo, which sample account opens. "Create an account" on that Sign in goes back through language and role, which were skipped.
+- Inside the account form (`src/screens/auth/AuthFormScreen.tsx`) a `page` value selects the page: Sign in, the sign-up questions, and the two Forgot password pages (`forgot`, `newpass`).
 - After sign-in, an `active` value selects the screen. The five tab screens switch in place; the others are pushed and return on Back.
-- Android's hardware Back is handled by a small stack (`useHardwareBack`): the topmost open sheet closes first, then pushed screens, then the app.
+- Android's hardware Back is handled by a small stack (`useHardwareBack`): the topmost open sheet closes first; inside the account form it steps back one page (a sign-up question, or a Forgot password page); then pushed screens; then the app.
 
 ### 3.5 Styling
 
@@ -195,6 +210,27 @@ Every interface string is an entry in `src/i18n.tsx` with English and Tagalog te
 The bell in the header counts alerts derived from data the app already holds (`src/lib/alerts.ts`): a farmer's incoming orders, plantings that are due, price targets that were met, rain, and the sharpest price moves. Buyers get a different set.
 
 An incoming order is the only alert with actions: it shows the buyer's name and number, a Call button that opens the dialer, and a Confirm button. **It is a mockup**: two sample orders in demo mode (`src/data/demo/orders.ts`), none on a real account, and not connected to checkout.
+
+### 3.9 Verification codes
+
+Two flows ask for a 6-digit code sent to the CP number or Gmail an account signs in with:
+
+| Flow | Where | What the code proves |
+|---|---|---|
+| Creating an account | The "how can we reach you" question | The number or address belongs to the person signing up. Continue stays grey until the code passes. |
+| Forgot password | The first of the two Forgot password pages | The person resetting the password owns the account's number or address. Only then does the new-password page open. |
+
+Both use `src/services/verification.ts`:
+
+| Function | Does |
+|---|---|
+| `sendCode(purpose, mode, contact)` | Makes a code for `"signup"` or `"reset"` and the given number or address. A new code replaces the last one. |
+| `checkCode(purpose, mode, contact, code)` | Returns `ok`, `wrong`, `expired` or `too-many`. The form checks as soon as the sixth digit is typed. |
+| `saveNewPassword(mode, contact, password)` | Saves the new password, only within 10 minutes of a reset code passing, and only once. |
+
+Rules: a code is 6 random digits (`crypto.getRandomValues`), lasts 10 minutes, allows 5 wrong tries and works once; a sign-up code cannot reset a password. The form allows a new code after 30 seconds.
+
+**This is a mockup.** No SMS provider or email sender is connected, so the code is made on the phone and shown in a gold "Demo" note, and no password really changes. Making it real changes only this file: `sendCode` and `checkCode` call a server function that texts (Semaphore) or emails the code and keeps it on the server, and `saveNewPassword` sends the new password with proof that the code passed. The screens do not change.
 
 ## 4. Backend architecture
 
@@ -232,10 +268,18 @@ Sign-up collects answers across several pages but creates the account once, at t
 sequenceDiagram
   actor U as User
   participant A as App
+  participant V as Verification codes
   participant Auth as Supabase Auth
   participant DB as PostgreSQL
 
-  U->>A: Answers each question
+  U->>A: First and last name, ticks the agreement
+  U->>A: CP number or Gmail, taps Send code
+  A->>V: sendCode("signup")
+  V-->>A: code (mockup: shown on screen)
+  U->>A: Types the 6 digits
+  A->>V: checkCode
+  V-->>A: ok, so Continue turns green
+  U->>A: Answers the rest (password, farm or location, crops)
   Note over A: Answers held in memory only
   U->>A: Create Account
   A->>Auth: signUp(email or alias, password, details)
@@ -246,7 +290,28 @@ sequenceDiagram
   A-->>U: Welcome ID, then walkthrough
 ```
 
-### 5.2 Checkout
+### 5.2 Signing in and resetting a password
+
+```mermaid
+flowchart TB
+  W["Welcome"] -->|I already have an account| S["Sign in<br/>CP number or Gmail, password"]
+  S -->|Sign In| Ok{"Correct?"}
+  Ok -->|yes| H["Home"]
+  Ok -->|no| S
+  S -->|Forgot your password?| F["Forgot password<br/>number or address carried over"]
+  F -->|Send code| C["Code box<br/>checked on the sixth digit"]
+  C --> M{"Code matches?"}
+  M -->|no: wrong, expired or too many| C
+  M -->|yes| N["Reset password<br/>new password, twice"]
+  N -->|Save new password| P{"Saved within<br/>10 minutes?"}
+  P -->|yes| S2["Sign in<br/>'Your password has been changed'"]
+  P -->|no| F
+  S2 --> S
+```
+
+Whatever was typed on Sign in carries over to Forgot password except the password. After a reset the code is used up; another change needs another code.
+
+### 5.3 Checkout
 
 ```mermaid
 sequenceDiagram
@@ -270,7 +335,7 @@ sequenceDiagram
 
 The client sends only listing ids and quantities. Price and seller are read on the server, so a modified client cannot change what it pays.
 
-### 5.3 Reading data
+### 5.4 Reading data
 
 Every read goes through `cachedFetch`: a successful response is saved on the phone, and a failed one falls back to the saved copy.
 
@@ -294,7 +359,7 @@ sequenceDiagram
   end
 ```
 
-### 5.4 Writing while offline
+### 5.5 Writing while offline
 
 ```mermaid
 sequenceDiagram
@@ -315,7 +380,7 @@ sequenceDiagram
   S->>DB: fetch the fresh list
 ```
 
-### 5.5 Deleting an account
+### 5.6 Deleting an account
 
 ```mermaid
 sequenceDiagram
@@ -336,7 +401,7 @@ sequenceDiagram
 
 The same function is called by the web page in `site/`, for someone who no longer has the app.
 
-### 5.6 A new month of prices
+### 5.7 A new month of prices
 
 1. A row is added to `data/historical-prices.csv` (or a newer PDF is imported with `ml/import_pdf.py`).
 2. `npm run prices` rebuilds the bundled history.
@@ -370,6 +435,7 @@ Design points:
 - **Server-side operations.** Orders can be created only through `place_order`.
 - **No secrets in the client.** The app and the web pages use the publishable key only. `npm run check:db` refuses to run if it finds a secret key in `.env`.
 - **Passwords** are handled by Supabase Auth and stored hashed.
+- **Verification codes** are random, last 10 minutes, allow 5 wrong tries, work once, and are kept apart by purpose. In the mockup they live on the phone; the real version keeps them only on the server, so the phone never knows a code before the user types it.
 - **Transport** is HTTPS throughout.
 
 ## 8. Build and delivery
@@ -412,6 +478,11 @@ flowchart LR
 | One source for the privacy policy | Separate app and web copies | The two can never disagree. |
 | Privacy policy and terms of service in English only | English and Tagalog | The owner's decision: one text, so there is never a question of which version is binding. |
 | Agree to the terms on the first sign-up page, with a checkbox | A line under the last page's button; no explicit step | Consent is given before any personal detail is typed, and a ticked box is a clear choice. The agreement is not yet stored with the account. |
+| "I already have an account" opens Sign in directly | Language and role first, as for a new account | A real account already has its role, and the welcome screen is already in the chosen language. A returning user gets there in one tap. |
+| Build the code screens now, behind one service file, as a mockup | Wait for the SMS provider and email sender | The screens could be designed and tested now; connecting the senders changes only `verification.ts`. |
+| Check a code as soon as the sixth digit is typed | A separate Verify button | One less button to find; it also suits codes the phone fills in from an SMS. |
+| One green button at a time on the code question: Continue stays grey until the code passes | Send code and Continue both green | The next tap is never in doubt. The grey Continue still answers a tap with the reason. |
+| Forgot password as two pages with labelled fields and the button right under them | The sign-up layout, with the button at the foot | Follows the owner's reference design, keeps the button in view with the keyboard up, and keeps the green header so it still looks like AniSense. |
 | Train the models on a computer and ship the forecasts as data | Run the model on the phone (TensorFlow.js); train in the cloud | The forecast is the same for every user, so it is worked out once. The app stays small, needs no machine-learning library, and works offline. Training takes about a minute on a laptop. |
 | Show each model's tested error, and give no advice above 20% | Show every forecast the same way | Onion and calamansi forecasts were 28 to 52% off in testing; a farmer should not hold a harvest on them. |
 | Word prices by the month | Keep "today" and "yesterday" | The records are monthly; daily wording would be false. |
