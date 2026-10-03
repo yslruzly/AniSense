@@ -5,6 +5,7 @@
 //   · secondary text #454F49 ≈ 7.4:1 on paper, no gray-on-gray
 //   · motion: transform/opacity only, <300ms, custom ease-out, reduced-motion honoured
 import wallpaper from "../assets/anisense-wallpaper.webp";
+import leafMask from "../assets/anisense-leaf-mask.png";
 
 export const authCss = `
   /* A verification code: six digits read off another screen and typed back,
@@ -406,6 +407,20 @@ export const authCss = `
     background-size: 180px 180px, auto, auto, auto, auto;
     border-radius: 0 0 30px 30px;
     box-shadow: inset 0 -1px 0 rgba(255,255,255,.08), 0 18px 34px -24px rgba(16,26,21,.55);
+    isolation: isolate;
+  }
+  /* The AniSense leaves, worked into the green like embroidery: the same
+     mark, tilt and faintness as on the Profile member card and a farmer's
+     profile, so the setup screens and the app carry one signature. In the
+     bottom-left corner, cut by the header's edge the way the Profile card
+     cuts it at its bottom-right, behind everything (z-index -1 inside the
+     header's own layer), and at a tenth of white so what sits over it stays
+     crisp. Decoration only: no box, no pointer. */
+  .a-inkhead.a-rolehead::before, .a-inkhead.a-formhead::before {
+    content: ""; position: absolute; z-index: -1; pointer-events: none;
+    left: -40px; bottom: -46px; width: 230px; height: 230px;
+    background: url(${leafMask}) center / contain no-repeat;
+    opacity: .1; transform: rotate(-14deg);
   }
   .a-rolehead-copy { margin-top: 22px; }
   .a-rolehead-copy .a-sub { margin-top: 6px; }
