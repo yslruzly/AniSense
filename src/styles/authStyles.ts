@@ -827,6 +827,97 @@ export const authCss = `
   .a-switch { text-align: center; font-size: var(--fs-body); color: var(--text-muted); margin-top: 18px; }
   .a-switch .a-link { min-height: 44px; margin: -10px 0; }
 
+  /* ── Sign in and Create account: the card look ─────────────────────────
+     A white page under the green header, and on it soft grey pill fields
+     with no drawn border, the way a modern sign-up card is set. A field
+     turns white when it takes the typing, ringed in green with a soft halo;
+     a wrong one is ringed in red. The location pickers, the switch and the
+     back button take the same grey and the same round ends, so the page
+     reads as one family. Defined after the base field styles, so these
+     win where the two meet. */
+  .a-askscreen { background: var(--card); }
+  .a-askscreen .a-inp, .a-askscreen .a-prefix-row, .a-askscreen .pick-field {
+    border-radius: 999px; background-color: var(--fill-soft);
+    box-shadow: 0 0 0 1px rgba(22,33,27,.05), 0 0 0 0 transparent, 0 0 0 0 rgba(11,107,65,0);
+    transition: box-shadow 180ms var(--ease-out), background-color 160ms ease, transform 160ms var(--ease-out);
+  }
+  .a-askscreen .a-inp, .a-askscreen .pick-field { padding-left: 22px; }
+  /* A size down from the rest of setup, so a page with two fields and a
+     line of small print still breathes: 56px fields with 17px type (the
+     app's 52px and 16px floors stay well clear), 16px labels sitting close
+     over their field, and the two buttons at the foot at 56px. */
+  .a-askscreen .a-inp, .a-askscreen .pick-field, .a-askscreen .a-locked { min-height: 56px; font-size: var(--fs-body); }
+  .a-askscreen .a-inp-lg { min-height: 56px; font-size: var(--fs-lead); }
+  .a-askscreen .a-prefix, .a-askscreen .a-suffix { font-size: var(--fs-body); }
+  .a-askscreen .a-reveal { height: 44px; min-width: 80px; }
+  .a-askscreen .a-lbl { font-size: var(--fs-label); margin-bottom: 6px; padding-left: 6px; }
+  .a-namefield + .a-namefield { margin-top: 14px; }
+  /* Tighter steps between the parts, so the whole first page (two names,
+     the agreement, the way back to Sign in) fits a small phone without
+     scrolling. */
+  .a-askscreen .a-ask-body { padding-top: 18px; }
+  .a-askscreen .a-scroll { padding-bottom: 16px; }
+  .a-askscreen .a-switch { margin-top: 8px; }
+  .a-askscreen .a-dock .a-btn { min-height: 56px; }
+  .a-askscreen .a-dockpair .a-iconbtn { width: 56px; height: 56px; flex-basis: 56px; }
+  .a-askscreen .a-inp:focus, .a-askscreen .a-prefix-row:focus-within, .a-askscreen .pick-field:active {
+    background-color: var(--card);
+    box-shadow: 0 0 0 2px var(--tanim), 0 1px 2px rgba(22,33,27,.06), 0 0 0 6px rgba(11,107,65,.14);
+  }
+  .a-askscreen .a-inp.bad, .a-askscreen .a-prefix-row:has(.a-inp.bad) {
+    background-color: var(--card);
+    box-shadow: 0 0 0 2px var(--error), 0 1px 2px rgba(22,33,27,.06), 0 0 0 6px rgba(165,35,27,.12);
+  }
+  .a-askscreen .pick-field:disabled { background-color: rgba(118,118,128,.07); box-shadow: none; }
+  /* Inside a +63 or a "years" row the field is see-through: the row is the pill. */
+  .a-askscreen .a-prefix-row .a-inp,
+  .a-askscreen .a-prefix-row .a-inp:focus,
+  .a-askscreen .a-prefix-row .a-inp.bad { background: transparent; box-shadow: none; border-radius: 0 999px 999px 0; padding-left: 14px; }
+  .a-askscreen .a-unit-row .a-inp, .a-askscreen .a-unit-row .a-inp:focus, .a-askscreen .a-unit-row .a-inp.bad { border-radius: 999px 0 0 999px; padding-left: 22px; }
+  .a-askscreen .a-prefix { padding-left: 22px; }
+  .a-askscreen .a-suffix { padding: 0 22px 0 14px; }
+  .a-askscreen .a-locked { border-radius: 999px; padding: 0 22px; background: var(--fill-soft); }
+  .a-askscreen .a-seg { border-radius: 999px; }
+  .a-askscreen .a-seg-thumb { border-radius: 999px; }
+  .a-askscreen .a-iconbtn.on-paper { background: var(--fill-soft); box-shadow: none; }
+
+  /* The agreement: a rounded box and its sentence, one 52px target. The box
+     fills green with a white tick and pops once; the documents' names are
+     green links that open them instead of ticking the box. The real
+     checkbox sits unseen under it, so the keyboard and screen readers still
+     have one, and its focus shows as a ring round the box. */
+  .a-agree { position: relative; margin-top: 8px; }
+  .a-agree-box { position: absolute; top: 14px; left: 4px; width: 24px; height: 24px; margin: 0; opacity: 0; pointer-events: none; }
+  .a-agree-t {
+    display: flex; align-items: flex-start; gap: 12px; min-height: 52px; padding: 12px 4px; cursor: pointer;
+    font-size: var(--fs-label); line-height: 1.45; color: var(--text-soft); -webkit-tap-highlight-color: transparent;
+  }
+  .a-agree-tick {
+    width: 24px; height: 24px; flex: 0 0 24px; margin-top: -1px; border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--card); box-shadow: inset 0 0 0 2px #7A817C; color: transparent;
+    transition: background-color 160ms ease, box-shadow 160ms ease, color 160ms ease;
+  }
+  .a-agree.on .a-agree-tick {
+    background: var(--tanim); box-shadow: inset 0 0 0 2px var(--tanim); color: #fff;
+    animation: a-radio-pop 260ms var(--ease-out);
+  }
+  .a-agree-box:focus-visible + .a-agree-t .a-agree-tick { outline: 3px solid rgba(11,107,65,.4); outline-offset: 2px; }
+  .a-agree.bad .a-agree-tick { box-shadow: inset 0 0 0 2px var(--error); animation: a-shake 360ms var(--ease-out); }
+  .a-agree-link {
+    display: inline; padding: 0; border: none; background: none; cursor: pointer;
+    font: inherit; font-weight: 700; color: var(--tanim);
+    text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 3px;
+    text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .a-agree-link:active { opacity: .55; }
+
+
+  @media (prefers-reduced-motion: reduce) {
+    .a-agree.on .a-agree-tick, .a-agree.bad .a-agree-tick { animation: none; }
+  }
+
   /* ── Crop picker ───────────────────────────────────────────────────────── */
   /* White tiles on the grey page, like the setup card: a hairline and a soft
      shadow at rest. Picked, a green ring closes round the tile and its

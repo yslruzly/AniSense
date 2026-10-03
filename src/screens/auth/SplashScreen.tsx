@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLang } from "../../i18n";
-import { PrivacySheet } from "../../components/privacy/PrivacySheet";
+import { LegalSheet } from "../../components/legal/LegalSheet";
 import { PRIVACY } from "../../data/privacyPolicy";
 
 // ─── Welcome ──────────────────────────────────────────────────────────────────
@@ -39,7 +39,7 @@ export function SplashScreen({ onSignIn, onSignUp }: { onSignIn: () => void; onS
           </span>
         </p>
       </div>
-      <PrivacySheet open={showPolicy} onClose={() => setShowPolicy(false)} />
+      <LegalSheet doc={showPolicy ? PRIVACY : null} onClose={() => setShowPolicy(false)} />
     </div>
   );
 }

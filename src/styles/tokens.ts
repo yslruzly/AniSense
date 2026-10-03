@@ -22,6 +22,7 @@ export const tokensCss = `
        the page behind it — that is what makes selection disappear. */
     --paper:      #F2F3F4;   /* app background (7.9:1 with --text-muted) */
     --paper-alt:  #E7E8EA;   /* recessed / secondary background */
+    --fill-soft:  #EFF1F3;   /* a filled field on a white card (sign in, create account) */
     --card:       #FFFFFF;
     --line:       #D9DBDE;   /* hairline */
     --line-strong:#C2C5C9;

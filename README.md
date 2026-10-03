@@ -63,8 +63,9 @@ The study behind the app focuses on four crops: rice, onion, garlic and calamans
 - Conversational sign-up: one question per screen, with a progress bar.
 - A guided first-run walkthrough, replayable from the in-app guide.
 - A member ID card generated at sign-up.
-- English and Tagalog throughout. The privacy policy is the one exception: it is English only.
-- Profile has a Manage account section with the privacy policy and account deletion.
+- English and Tagalog throughout. The privacy policy and the terms of service are the exception: they are English only.
+- Creating an account starts with first and last name and agreeing to the Terms of Service and Privacy Policy; the next page asks for a CP number or a Gmail address.
+- Profile has a Manage account section with the privacy policy, the terms of service and account deletion.
 
 ## Project status
 
@@ -78,7 +79,8 @@ The app is feature-complete on the client. Some data sources are still sample da
 | Price forecasts (ARIMA, LSTM) | Trained on the price records by `ml/train_forecasts.py` (statsmodels and PyTorch, run locally, free). Three months ahead for the five varieties. Tested on the last 12 months: rice is 3 to 9% off on average; onion and calamansi are 28 to 52% off. Results are in `ml/REPORT.md`, known limits in `ml/README.md`. The phone runs no model: it reads the finished forecasts. |
 | Weather | **Sample values.** No forecast service is connected yet. |
 | Order alerts for farmers | **Sample data.** Two invented orders, shown to the demo farmer only. Not yet connected to checkout or the database, and there are no push notifications. |
-| Privacy policy | A draft, English only, in the app (Welcome screen and Profile → Manage account) and at `site/privacy-policy.html`. Not yet reviewed by a lawyer. |
+| Privacy policy | A draft, English only, in the app (Welcome screen, Create account and Profile → Manage account) and at `site/privacy-policy.html`. Not yet reviewed by a lawyer. |
+| Terms of service | A draft, English only (`src/data/termsOfService.ts`), agreed to at Create account and readable under Profile → Manage account. In the app only, not yet on the web. Not yet reviewed by a lawyer. |
 | Account deletion | In the app (Profile → Manage account) and on a web page (`site/delete-account.html`), as Google Play requires. |
 | Mobile-number verification by SMS | Not enabled. Numbers are not verified. |
 | Password reset | Not implemented. |
@@ -175,7 +177,7 @@ AniSense/
 │   ├── assets/          Images bundled in the app
 │   ├── components/      Reusable UI, grouped by feature
 │   ├── constants/       Shared constant values
-│   ├── data/            Crop catalog, locations, privacy policy text, price records and forecasts
+│   ├── data/            Crop catalog, locations, privacy policy and terms text, price records and forecasts
 │   │   ├── demo/        Sample data for demo mode
 │   │   └── generated/   Written by scripts; never edited by hand
 │   ├── hooks/           React hooks

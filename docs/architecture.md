@@ -112,7 +112,7 @@ flowchart TB
 | Store | `src/store/` | `market.tsx`, the single data layer, and `viewer.ts`, the context that says who is looking. The market store holds listings, sellers, purchases, expenses, farm records, a farmer's incoming orders, prices and badges, and exposes actions to change them. |
 | Services | `src/services/` | One file per domain (`auth`, `listings`, `transactions`, `expenses`, `farmRecords`, `catalog`, `sync`). The only code that calls Supabase. |
 | Infrastructure and helpers | `src/lib/` | Supabase client, cache, outbox, platform wrappers (haptics, status bar, keyboard), and small domain helpers (alerts, achievements, plantings, sales). |
-| Static data | `src/data/` | The crop catalog, Philippine locations, the privacy policy, and the readers for the price records and forecasts. Two subfolders: `generated/`, written by scripts and never edited by hand, and `demo/`, the sample data for demo mode. |
+| Static data | `src/data/` | The crop catalog, Philippine locations, the privacy policy and terms of service, and the readers for the price records and forecasts. Two subfolders: `generated/`, written by scripts and never edited by hand, and `demo/`, the sample data for demo mode. |
 
 **Dependency rule:** screens and components never import the Supabase client. They read and write through the store, which decides whether to call a service or use sample data. This keeps the live and demo modes from leaking into the UI.
 
@@ -175,7 +175,7 @@ Styles are plain CSS held in TypeScript strings (`src/styles/*.ts`) and injected
 
 ### 3.6 Localization
 
-Every interface string is an entry in `src/i18n.tsx` with English and Tagalog text. Components call `t(key)` for strings and `tn(name)` for crop names. A few market terms stay in English by design. The privacy policy (`src/data/privacyPolicy.ts`) is English only and is never translated.
+Every interface string is an entry in `src/i18n.tsx` with English and Tagalog text. Components call `t(key)` for strings and `tn(name)` for crop names. A few market terms stay in English by design. The privacy policy (`src/data/privacyPolicy.ts`) and the terms of service (`src/data/termsOfService.ts`) are English only and are never translated.
 
 ### 3.7 Prices and forecasts
 
@@ -410,7 +410,8 @@ flowchart LR
 | Create the account at the last sign-up step | Create on the first page | Avoids half-complete accounts. |
 | Keep orders when an account is deleted, with the name removed | Delete orders with the account | An order is also the other party's record of a sale. |
 | One source for the privacy policy | Separate app and web copies | The two can never disagree. |
-| Privacy policy in English only | English and Tagalog | The owner's decision: one text, so there is never a question of which version is binding. |
+| Privacy policy and terms of service in English only | English and Tagalog | The owner's decision: one text, so there is never a question of which version is binding. |
+| Agree to the terms on the first sign-up page, with a checkbox | A line under the last page's button; no explicit step | Consent is given before any personal detail is typed, and a ticked box is a clear choice. The agreement is not yet stored with the account. |
 | Train the models on a computer and ship the forecasts as data | Run the model on the phone (TensorFlow.js); train in the cloud | The forecast is the same for every user, so it is worked out once. The app stays small, needs no machine-learning library, and works offline. Training takes about a minute on a laptop. |
 | Show each model's tested error, and give no advice above 20% | Show every forecast the same way | Onion and calamansi forecasts were 28 to 52% off in testing; a farmer should not hold a harvest on them. |
 | Word prices by the month | Keep "today" and "yesterday" | The records are monthly; daily wording would be false. |

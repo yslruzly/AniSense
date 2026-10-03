@@ -19,6 +19,9 @@
 
 export type PrivacyBlock = { p: string } | { list: string[] };
 export interface PrivacySection { id: string; title: string; body: PrivacyBlock[] }
+/** A legal document the app shows: this policy, or the Terms of Service.
+ *  The first section is the short version, set apart at the top. */
+export interface LegalDocData { effective: string; title: string; effectiveLabel: string; sections: PrivacySection[] }
 
 export const PRIVACY = {
   /** ISO date this version took effect. */
@@ -192,6 +195,6 @@ export const PRIVACY = {
 export const fillPrivacy = (s: string) =>
   s.replace(/\{operator\}/g, PRIVACY.operator).replace(/\{place\}/g, PRIVACY.place).replace(/\{email\}/g, PRIVACY.email);
 
-/** "October 1, 2026". */
-export const privacyDate = () =>
-  new Date(`${PRIVACY.effective}T00:00:00`).toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" });
+/** "October 1, 2026": a document's effective date, the policy's by default. */
+export const privacyDate = (effective: string = PRIVACY.effective) =>
+  new Date(`${effective}T00:00:00`).toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" });

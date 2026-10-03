@@ -1,7 +1,7 @@
 import { ShieldCheck } from "lucide-react";
 import { useLang } from "../i18n";
 import { Hdr } from "../components/layout/Hdr";
-import { PrivacyPolicy } from "../components/privacy/PrivacyPolicy";
+import { LegalDocument } from "../components/legal/LegalDocument";
 import { PRIVACY } from "../data/privacyPolicy";
 
 // ─── Privacy ──────────────────────────────────────────────────────────────────
@@ -17,7 +17,7 @@ export function PrivacyScreen({ onBack }: { onBack: () => void }) {
       <Hdr icon={<ShieldCheck size={20} color="var(--tanim)" />} title={PRIVACY.title} sub={t("pp_sub")} onBack={onBack} />
       <div className="scroll screen-enter">
         <div className="card pp-page">
-          <PrivacyPolicy />
+          <LegalDocument doc={PRIVACY} />
         </div>
       </div>
     </div>

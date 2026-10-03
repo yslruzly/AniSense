@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ArrowLeft, Camera, Bell, IdCard, Award, Sprout, Wheat, SlidersHorizontal, Info, ChevronRight, Globe, ShieldCheck, UserCog, HelpCircle, PlayCircle, Settings, LogOut, Phone, Mail, MapPin, Calendar } from "lucide-react";
+import { ArrowLeft, Camera, Bell, IdCard, Award, Sprout, Wheat, SlidersHorizontal, Info, ChevronRight, Globe, ShieldCheck, UserCog, FileText, HelpCircle, PlayCircle, Settings, LogOut, Phone, Mail, MapPin, Calendar } from "lucide-react";
 import { useLang, LanguageToggle } from "../i18n";
 import { Screen, UserRole, FarmerProfile } from "../types";
 import { CropEmoji } from "../components/icons/CropEmoji";
@@ -10,6 +10,8 @@ import { Achievements } from "../components/profile/Achievements";
 import { Sale } from "../lib/sales";
 import { DeleteAccount } from "../components/profile/DeleteAccount";
 import { PRIVACY } from "../data/privacyPolicy";
+import { TERMS } from "../data/termsOfService";
+import { LegalSheet } from "../components/legal/LegalSheet";
 
 // ─── Profile Screen ───────────────────────────────────────────────────────────
 export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignOut, onDeleteAccount, userInitials = "JD", userRole, userPhoto = null, onShowId, onReplayTour, sales = [], memberSince }: {
@@ -42,6 +44,7 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
     </div>
   );
   const [editing, setEditing] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
   const [draft, setDraft] = useState({ ...profile });
 
   const ALL_CROPS = ["Rice", "Corn", "Onions", "Tomatoes", "Calamansi", "Mango", "Garlic", "Squash", "Mongo"];
@@ -269,8 +272,19 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
                 </div>
                 <ChevronRight size={16} color="var(--line-strong)" />
               </button>
+              {/* The terms agreed to at sign-up, readable again any time.
+                  A sheet over Profile, like the delete step below. */}
+              <button className="setting-row as-btn" onClick={() => setShowTerms(true)}>
+                <div className="setting-ico" style={{ background: "var(--paper-alt)" }}><FileText size={16} color="var(--tanim-deep)" /></div>
+                <div style={{ flex: 1 }}>
+                  <div className="setting-lbl" lang="en">{TERMS.title}</div>
+                  <div className="setting-sub">{t("prof_terms_sub")}</div>
+                </div>
+                <ChevronRight size={16} color="var(--line-strong)" />
+              </button>
               {onDeleteAccount && <DeleteAccount role={userRole} onDelete={onDeleteAccount} />}
             </div>
+            <LegalSheet doc={showTerms ? TERMS : null} onClose={() => setShowTerms(false)} />
 
             <div className="card" data-card="preferences">
               {head("tint-slate", <SlidersHorizontal size={20} strokeWidth={2.2} />, t("prof_preferences"))}

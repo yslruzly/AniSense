@@ -1,9 +1,11 @@
 import React from "react";
-import { PRIVACY, PrivacySection, fillPrivacy, privacyDate } from "../../data/privacyPolicy";
+import { PRIVACY, PrivacySection, LegalDocData, fillPrivacy, privacyDate } from "../../data/privacyPolicy";
 
-// ─── Privacy policy ───────────────────────────────────────────────────────────
-// The policy. Shown on the Privacy screen (Profile) and in a sheet from the
-// welcome screen. It ships inside the app, so it can be read without signal.
+// ─── A legal document ─────────────────────────────────────────────────────────
+// The Privacy Policy or the Terms of Service. The policy shows on the Privacy
+// screen (Profile) and in a sheet from the welcome screen and from sign-up;
+// the terms in a sheet from sign-up and from Profile. Both ship inside the
+// app, so they can be read without signal.
 //
 // Always in English, whichever language the app is set to: there is one text
 // and it is never translated. It is marked lang="en" so a screen reader reads
@@ -41,11 +43,11 @@ function Blocks({ section }: { section: PrivacySection }) {
   );
 }
 
-export function PrivacyPolicy() {
-  const [short, ...rest] = PRIVACY.sections;
+export function LegalDocument({ doc }: { doc: LegalDocData }) {
+  const [short, ...rest] = doc.sections;
   return (
     <article className="pp" lang="en">
-      <p className="pp-date">{PRIVACY.effectiveLabel.replace("{date}", privacyDate())}</p>
+      <p className="pp-date">{doc.effectiveLabel.replace("{date}", privacyDate(doc.effective))}</p>
 
       <section className="pp-summary" aria-labelledby="pp-summary-t">
         <h2 className="pp-summary-t" id="pp-summary-t">{short.title}</h2>

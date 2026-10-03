@@ -20,6 +20,9 @@ import type { Session } from "@supabase/supabase-js";
 import { isSupabaseConfigured } from "../../lib/supabase";
 import { formatName } from "../../lib/names";
 import { createAccount, signIn, verifyEmailCode, resendEmailCode, authErrorKey } from "../../services/auth";
+import { LegalSheet } from "../../components/legal/LegalSheet";
+import { PRIVACY, LegalDocData } from "../../data/privacyPolicy";
+import { TERMS } from "../../data/termsOfService";
 
 // ─── Sign In / Create Account ─────────────────────────────────────────────────
 // Signing in is one short page: two fields, for someone who has done it before.
@@ -35,7 +38,7 @@ import { createAccount, signIn, verifyEmailCode, resendEmailCode, authErrorKey }
 // reveal is a word, errors carry an icon and sit under the field they are
 // about, and that field takes focus, so the fix is where the eye already is.
 
-type Field = "name" | "contact" | "password" | "confirm" | "years" | "phone";
+type Field = "first" | "last" | "contact" | "password" | "confirm" | "years" | "phone" | "terms";
 /** Years of farming must be under this. The database holds the same limit
  *  (profiles.years_farming in supabase/schema.sql). */
 const MAX_YEARS = 80;
@@ -114,7 +117,15 @@ export function AuthFormScreen({
 }) {
   const [page, setPage] = useState<Page>(flow === "signin" ? "signin" : "name");
   const [mode, setMode] = useState<"gmail" | "phone">("phone");
-  const [name, setName] = useState("");
+  // The first page's agreement to the Terms of Service and Privacy Policy,
+  // and which of the two is open in a sheet over the form.
+  const [agreed, setAgreed] = useState(false);
+  const [legal, setLegal] = useState<LegalDocData | null>(null);
+  // First and last name, asked separately; the account keeps them as one
+  // full name ("Juan Dela Cruz").
+  const [givenName, setGivenName] = useState("");
+  const [familyName, setFamilyName] = useState("");
+  const name = [givenName.trim(), familyName.trim()].filter(Boolean).join(" ");
   const [contact, setContact] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -178,7 +189,7 @@ export function AuthFormScreen({
   const labelContact = mode === "gmail" ? t("auth_gmail_address") : t("auth_cp_number");
   // The number buyers call: the sign-in number when there is one.
   const buyersCall = mode === "phone" ? contact : farmPhone;
-  const firstName = formatName(name).split(" ")[0] || "";
+  const firstName = formatName(givenName);
 
   const clear = () => { setError(""); setErrField(null); };
   const go = (p: Page) => { clear(); setPage(p); };
@@ -280,8 +291,10 @@ export function AuthFormScreen({
   const next = () => {
     clear();
     if (page === "signin") { signInNow(); return; }
-    if (page === "name" && !name.trim()) { fail("name", t("err_full_name")); return; }
-    if (page === "name") setName(formatName(name));
+    if (page === "name" && !givenName.trim()) { fail("first", t("err_first_name")); return; }
+    if (page === "name" && !familyName.trim()) { fail("last", t("err_last_name")); return; }
+    if (page === "name" && !agreed) { fail("terms", t("err_agree_required")); return; }
+    if (page === "name") { setGivenName(formatName(givenName)); setFamilyName(formatName(familyName)); }
     if (page === "contact") {
       const bad = contactError();
       if (bad) { fail("contact", bad); return; }
@@ -382,6 +395,10 @@ export function AuthFormScreen({
   // picked. Shared by Sign in and the "how can we reach you" question.
   // The switch says which one the field is for, so the field has no label
   // of its own on screen; it is read out with it.
+  const switchMode = (id: "phone" | "gmail") => {
+    if (mode === id) return;
+    haptic.select(); setMode(id); setContact(""); clear();
+  };
   const contactInput = (autoFocus: boolean) => (
     <>
       <div className="a-seg" role="radiogroup" aria-label={t("auth_contact_method")} data-mode={mode}>
@@ -392,7 +409,7 @@ export function AuthFormScreen({
             className={mode === id ? "on" : ""}
             onClick={() => {
               if (mode === id) return;
-              haptic.select(); setMode(id); setContact(""); clear();
+              switchMode(id);
               requestAnimationFrame(() => document.getElementById("f-contact")?.focus());
             }}>
             {ico}{lbl}
@@ -607,23 +624,63 @@ export function AuthFormScreen({
   }
 
   // ── 1. Name ──
-  // The question is the label: the field sits right under it and is read
-  // out with it. The way back to Sign in stays on this first question only.
+  // First name and last name, each with its own small label, so there is no
+  // guessing which goes where; then the agreement to the Terms of Service
+  // and Privacy Policy. The way back to Sign in stays on this first question
+  // only.
   if (page === "name") {
+    const [agreeA, rest = ""] = t("auth_agree").split("{terms}");
+    const [agreeB, agreeC = ""] = rest.split("{privacy}");
     return ask(
       t("ask_name"),
       t("ask_name_why"),
       <>
-        <input id="f-name" className={`a-inp a-inp-lg ${bad("name")}`}
-          placeholder={t("auth_full_name_ph")}
-          autoComplete="name" autoCapitalize="words" enterKeyHint="next" autoFocus
-          aria-labelledby="ask-q" {...errProps("name")}
-          onBlur={() => setName(n => formatName(n))}
-          value={name} onChange={e => { setName(e.target.value); clear(); }} />
-        {fieldErr("name")}
+        <div className="a-namefield">
+          <label className="a-lbl" htmlFor="f-first">{t("auth_first_name")}</label>
+          <input id="f-first" className={`a-inp ${bad("first")}`}
+            placeholder={t("auth_first_name_ph")}
+            autoComplete="given-name" autoCapitalize="words" enterKeyHint="next" autoFocus
+            onKeyDown={focusNext("f-last")} {...errProps("first")}
+            onBlur={() => setGivenName(n => formatName(n))}
+            value={givenName} onChange={e => { setGivenName(e.target.value); clear(); }} />
+          {fieldErr("first")}
+        </div>
+        <div className="a-namefield">
+          <label className="a-lbl" htmlFor="f-last">{t("auth_last_name")}</label>
+          <input id="f-last" className={`a-inp ${bad("last")}`}
+            placeholder={t("auth_last_name_ph")}
+            autoComplete="family-name" autoCapitalize="words" enterKeyHint="next"
+            {...errProps("last")}
+            onBlur={() => setFamilyName(n => formatName(n))}
+            value={familyName} onChange={e => { setFamilyName(e.target.value); clear(); }} />
+          {fieldErr("last")}
+        </div>
+
+        {/* The agreement, a real checkbox: the box and its sentence are one
+            52px target, and each document's name opens it in a sheet
+            without ticking the box. Asked here, before anything else is
+            typed in. */}
+        <div className={`a-agree ${agreed ? "on" : ""} ${bad("terms")}`}>
+          <input id="f-terms" type="checkbox" className="a-agree-box" checked={agreed}
+            onChange={e => { setAgreed(e.target.checked); if (e.target.checked) haptic.select(); clear(); }}
+            {...errProps("terms")} />
+          <label htmlFor="f-terms" className="a-agree-t">
+            <span className="a-agree-tick" aria-hidden="true"><Check size={16} strokeWidth={3.2} /></span>
+            <span className="a-agree-words">
+            {agreeA}
+            <button type="button" className="a-agree-link" lang="en" onClick={e => { e.preventDefault(); setLegal(TERMS); }}>{TERMS.title}</button>
+            {agreeB}
+            <button type="button" className="a-agree-link" lang="en" onClick={e => { e.preventDefault(); setLegal(PRIVACY); }}>{PRIVACY.title}</button>
+            {agreeC}
+            </span>
+          </label>
+        </div>
+        {fieldErr("terms")}
+
         <p className="a-switch">
           {t("auth_have_account")} <button type="button" className="a-link" onClick={() => go("signin")}>{t("auth_signin_btn")}</button>
         </p>
+        <LegalSheet doc={legal} onClose={() => setLegal(null)} />
       </>,
       onward,
     );

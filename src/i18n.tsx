@@ -92,6 +92,10 @@ export const translations: Dict = {
   auth_sign_in_with: { en: "Sign in with", tl: "Mag-sign in gamit ang" },
   auth_cp_number: { en: "CP Number", tl: "Numero ng CP" },
   auth_full_name_ph: { en: "e.g. Juan Dela Cruz", tl: "hal. Juan Dela Cruz" },
+  auth_first_name: { en: "First name", tl: "Pangalan" },
+  auth_last_name: { en: "Last name", tl: "Apelyido" },
+  auth_first_name_ph: { en: "e.g. Juan", tl: "hal. Juan" },
+  auth_last_name_ph: { en: "e.g. Dela Cruz", tl: "hal. Dela Cruz" },
   auth_gmail_address: { en: "Gmail Address", tl: "Gmail Address" },
   auth_password: { en: "Password", tl: "Password" },
   auth_password_ph: { en: "Enter password", tl: "Ilagay ang password" },
@@ -667,6 +671,7 @@ export const translations: Dict = {
   prof_crop_spec: { en: "Crop Specialization", tl: "Espesyalisasyon sa Pananim" },
   prof_preferences: { en: "Preferences", tl: "Mga Kagustuhan" },
   prof_manage: { en: "Manage account", tl: "Pamahalaan ang account" },
+  prof_terms_sub: { en: "The rules for using AniSense", tl: "Ang mga patakaran sa paggamit ng AniSense" },
   prof_notifications: { en: "Notifications", tl: "Mga Abiso" },
   prof_notifications_sub: {
     en: "Price alerts & market updates",
@@ -717,6 +722,8 @@ export const translations: Dict = {
 
   // ── Extra: auth validation ────────────────────────────────────────────────
   err_full_name: { en: "Full name is required.", tl: "Kailangan ang buong pangalan." },
+  err_first_name: { en: "Enter your first name.", tl: "Ilagay ang pangalan mo." },
+  err_last_name: { en: "Enter your last name.", tl: "Ilagay ang apelyido mo." },
   err_gmail_required: { en: "Gmail address is required.", tl: "Kailangan ang Gmail address." },
   err_cp_required: { en: "CP number is required.", tl: "Kailangan ang numero ng CP." },
   err_valid_gmail: { en: "Enter a valid Gmail address.", tl: "Maglagay ng wastong Gmail address." },
@@ -1093,6 +1100,12 @@ export const translations: Dict = {
     tl: "Ito ang pangalang makikita ng mga magsasaka at mamimili.",
   },
   ask_contact: { en: "How can we reach you, {name}?", tl: "Paano ka namin makokontak, {name}?" },
+  // {terms} and {privacy} are the two documents' names, which stay in English.
+  auth_agree: { en: "I agree to the {terms} and {privacy}.", tl: "Sumasang-ayon ako sa {terms} at {privacy}." },
+  err_agree_required: {
+    en: "Please agree to the Terms of Service and Privacy Policy to continue.",
+    tl: "Sumang-ayon muna sa Terms of Service at Privacy Policy para makapagpatuloy.",
+  },
   ask_contact_why: { en: "You'll use this to sign in.", tl: "Ito ang gagamitin mo sa pag-sign in." },
   ask_password: { en: "Now, make a password", tl: "Ngayon, gumawa ng password" },
   ask_password_why: {
