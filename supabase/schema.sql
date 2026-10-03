@@ -116,13 +116,16 @@ create table if not exists public.profiles (
   phone           text,                                  -- E.164: +639171234567
   phone_verified  boolean not null default false,
   location        text,                                  -- 'Bagong Sikat, Cabanatuan City, Nueva Ecija'
-  years_farming   int check (years_farming between 0 and 80),
+  years_farming   int check (years_farming between 0 and 79),   -- under 80, as the sign-up form asks
   bio             text,
   rating          numeric(2,1) not null default 5.0 check (rating between 0 and 5),
   total_sales     int not null default 0,                -- orders received through the market
   created_at      timestamptz not null default now(),
   updated_at      timestamptz not null default now()
 );
+-- For a database built when the limit was 0 to 80.
+alter table public.profiles drop constraint if exists profiles_years_farming_check;
+alter table public.profiles add constraint profiles_years_farming_check check (years_farming between 0 and 79);
 
 -- The crops a farmer grows: one row per farmer per crop type.
 create table if not exists public.profile_crops (

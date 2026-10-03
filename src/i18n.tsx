@@ -819,8 +819,12 @@ export const translations: Dict = {
     tl: "hal. Cabanatuan City, Nueva Ecija",
   },
   err_years_required: {
-    en: "Enter a valid number of years (0–80).",
-    tl: "Maglagay ng wastong bilang ng taon (0–80).",
+    en: "Enter how many years you have been farming.",
+    tl: "Ilagay kung ilang taon ka nang nagsasaka.",
+  },
+  err_years_max: {
+    en: "Enter a number under {max}.",
+    tl: "Maglagay ng bilang na mas mababa sa {max}.",
   },
   err_phone_required: { en: "Phone number is required.", tl: "Kailangan ang numero ng telepono." },
   crops_setting_up: { en: "Setting up your profile…", tl: "Inaayos ang profile mo…" },

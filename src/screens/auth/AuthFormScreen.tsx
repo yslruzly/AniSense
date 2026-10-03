@@ -36,6 +36,9 @@ import { createAccount, signIn, verifyEmailCode, resendEmailCode, authErrorKey }
 // about, and that field takes focus, so the fix is where the eye already is.
 
 type Field = "name" | "contact" | "password" | "confirm" | "years" | "phone";
+/** Years of farming must be under this. The database holds the same limit
+ *  (profiles.years_farming in supabase/schema.sql). */
+const MAX_YEARS = 80;
 type Page = "signin" | "name" | "contact" | "password" | "years" | "farm" | "phone" | "crops" | "where" | "verify";
 
 // Chunked the way Filipinos read numbers aloud: 917 123 4567, or 0917 123 4567.
@@ -290,7 +293,11 @@ export function AuthFormScreen({
     }
     if (page === "years") {
       const yrs = Number(farmYears);
-      if (!farmYears.trim() || isNaN(yrs) || yrs < 0 || yrs > 80) { fail("years", t("err_years_required")); return; }
+      // Under 80: a farmer of 80 years would be well past 90. An empty box
+      // and a number that is too big get different messages, so the fix is
+      // plain either way.
+      if (!farmYears.trim() || isNaN(yrs) || yrs < 0) { fail("years", t("err_years_required")); return; }
+      if (yrs >= MAX_YEARS) { fail("years", t("err_years_max").replace("{max}", String(MAX_YEARS))); return; }
     }
     if (page === "farm") {
       if (!municipality) { setError(t("err_municipality_required")); return; }
