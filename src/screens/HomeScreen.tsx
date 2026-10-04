@@ -30,6 +30,7 @@ import { useIsNight } from "../hooks/useIsNight";
 import buyerMascot from "../assets/buyer-mascot.webp";
 import anisensePoster from "../assets/anisense-poster.webp";
 import homePoster from "../assets/anisense-poster-home.webp";
+import { peso, toCents } from "../lib/money";
 
 // ─── Home ─────────────────────────────────────────────────────────────────────
 // A morning check, in the order a farmer asks:
@@ -113,7 +114,7 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
   const deals = [...listings]
     .sort((a, b) => a.pricePerKg - b.pricePerKg)
     .slice(0, 3)
-    .map(l => { const m = marketPrice(l.crop, l.variety); return { l, save: m ? m - l.pricePerKg : 0 }; });
+    .map(l => { const m = marketPrice(l.crop, l.variety); return { l, save: m ? toCents(m - l.pricePerKg) : 0 }; });
   const { location: buyerLocation } = useViewer();
   const shop = (intent: TradeIntent) => (onShop ? onShop(intent) : onNavigate("trade"));
   const sellerCount = new Set(listings.map(l => l.seller)).size;
@@ -230,13 +231,13 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
                         <span className="hm-crop-var"><MapPin size={12} strokeWidth={2.4} /> {l.location} · {l.seller}</span>
                       </span>
                       <span className="hm-crop-end">
-                        <span className="hm-crop-price">₱{l.pricePerKg}<small>{t("per_kg_short")}</small></span>
+                        <span className="hm-crop-price">{peso(l.pricePerKg)}<small>{t("per_kg_short")}</small></span>
                         {/* The saving, not just the price: a number means more
                             beside the one it beats. */}
                         {/* Only when there is something to say. A chip on
                             every row reading "at market price" is noise, and
                             it was squeezing the seller's name off the line. */}
-                        {save > 0 && <span className="pr-chg up">−₱{save} {t("home_below")}</span>}
+                        {save > 0 && <span className="pr-chg up">−{peso(save)} {t("home_below")}</span>}
                       </span>
                     </div>
                   );
@@ -281,7 +282,7 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
                     <span className="hm-crop-var">{c.name}</span>
                   </span>
                   <span className="hm-crop-end">
-                    <span className="hm-crop-price">₱{c.pricePerKg}<small>{t("per_kg_short")}</small></span>
+                    <span className="hm-crop-price">{peso(c.pricePerKg)}<small>{t("per_kg_short")}</small></span>
                     <Chg value={c.change} />
                   </span>
                 </button>

@@ -10,6 +10,7 @@ import { PickerField } from "../ui/PickerField";
 import { haptic } from "../../lib/platform";
 import { Sale, newSaleId, soldSince } from "../../lib/sales";
 import { Planting, localISO } from "../../lib/plantings";
+import { peso } from "../../lib/money";
 
 // ─── Profit snapshot ──────────────────────────────────────────────────────────
 // Earned, spent, and what is left — the number a farmer actually wants. Two
@@ -139,7 +140,7 @@ export function ProfitSnapshot({ sales, onChange, plantings, onOpenExpenses }: {
             options={CROP_CYCLES.map(c => ({
               value: c.crop,
               label: tn(c.crop),
-              sub: t("pa_today").replace("{price}", `₱${priceOfGroup(c.crop)}`),
+              sub: t("pa_today").replace("{price}", peso(priceOfGroup(c.crop))),
               photo: cropGroupPhoto(c.crop),
             }))}
             onChange={pickCrop}
@@ -189,7 +190,7 @@ export function ProfitSnapshot({ sales, onChange, plantings, onOpenExpenses }: {
         {/* The total, worked out as they type: the figure that lands in the
             snapshot, shown before they commit to it. */}
         <p className="pa-promise ps-total">
-          {t("ps_total")}<b>₱{(kg * price).toLocaleString()}</b>
+          {t("ps_total")}<b>{peso(kg * price)}</b>
         </p>
 
         <button className="mp-sell-btn pa-save" onClick={save}>

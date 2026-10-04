@@ -6,6 +6,7 @@ import { buildAlerts, openAlerts, Alert } from "../../lib/alerts";
 import { IncomingOrder } from "../../types";
 import { Sheet } from "../ui/Sheet";
 import { useViewer } from "../../store/viewer";
+import { peso } from "../../lib/money";
 
 // ─── An order from a buyer ────────────────────────────────────────────────────
 // The one alert that asks the farmer to do something, so it is the one alert
@@ -117,8 +118,8 @@ export function Hdr({ icon, title, sub, onBack, extra, center }: { icon?: React.
       return {
         tone: "green", kind: t("alert_kind_target"), ico: <BellRing {...I} />,
         title: t("pa_alert_title"),
-        body: t("pa_alert_body").replace("{crop}", tn(a.crop || "")).replace("{price}", `₱${a.target}`),
-        chip: `₱${a.target}`,
+        body: t("pa_alert_body").replace("{crop}", tn(a.crop || "")).replace("{price}", peso(a.target ?? 0)),
+        chip: peso(a.target ?? 0),
       };
     }
     if (a.kind === "new-listing") {
@@ -126,7 +127,7 @@ export function Hdr({ icon, title, sub, onBack, extra, center }: { icon?: React.
         tone: "green", kind: t("alert_kind_listing"), ico: <Sprout {...I} />,
         title: t("alert_new_near"),
         body: `${tn(a.crop || "")} · ${a.seller}`,
-        chip: `₱${a.pricePerKg}${t("per_kg_short")}`,
+        chip: `${peso(a.pricePerKg ?? 0)}${t("per_kg_short")}`,
       };
     }
     if (a.kind === "weather") {

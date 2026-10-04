@@ -12,6 +12,7 @@ import { CropEmoji } from "../icons/CropEmoji";
 import { Listing, TradeIntent } from "../../types";
 import { avatarTone } from "../../lib/avatar";
 import leafMask from "../../assets/anisense-leaf-mask.png";
+import { peso } from "../../lib/money";
 
 // ─── Buyer Home sections ──────────────────────────────────────────────────────
 // The pieces of the buyer's Home that the farmer never sees. Each one opens
@@ -129,7 +130,7 @@ export function PriceMoves({ onOpen }: { onOpen: () => void }) {
               </span>
               <span className="mv-txt">
                 <span className="mv-name">{name}</span>
-                <span className="mv-price">₱{c.pricePerKg}<small>{t("per_kg_short")}</small></span>
+                <span className="mv-price">{peso(c.pricePerKg)}<small>{t("per_kg_short")}</small></span>
               </span>
             </span>
           );
@@ -144,7 +145,7 @@ export function PriceMoves({ onOpen }: { onOpen: () => void }) {
               key={c.id}
               className={`mv-row ${dir}`}
               onClick={onOpen}
-              aria-label={`${name}, ₱${c.pricePerKg} ${t("per_kg_short")}, ${pct}% ${dir === "down" ? t("bm_cheaper_aria") : t("bm_pricier_aria")}`}
+              aria-label={`${name}, ${peso(c.pricePerKg)} ${t("per_kg_short")}, ${pct}% ${dir === "down" ? t("bm_cheaper_aria") : t("bm_pricier_aria")}`}
             >
               {dir === "up" ? <>{id}{bar}</> : <>{bar}{id}</>}
             </button>
@@ -228,7 +229,7 @@ export function FeaturedProducts({ onShop }: { onShop: Shop }) {
                 <span className="fp-name">{name}</span>
                 {/* Price is the loudest thing on the card, then the name,
                     then where it is from. One thing bold, not three. */}
-                <span className="fp-price">₱{l.pricePerKg}<small>{t("per_kg_short")}</small></span>
+                <span className="fp-price">{peso(l.pricePerKg)}<small>{t("per_kg_short")}</small></span>
                 <span className="fp-loc"><MapPin size={12} strokeWidth={2.4} aria-hidden="true" />{l.location}</span>
               </span>
             </button>

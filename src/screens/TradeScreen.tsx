@@ -25,6 +25,7 @@ import { MUNICIPALITIES } from "../data/locations";
 import { useViewer } from "../store/viewer";
 import { useMarket, sellerKeyOfDetail } from "../store/market";
 import { orderErrorOf } from "../services/transactions";
+import { peso } from "../lib/money";
 
 // A farmer's profile is always in English, whatever language the app is set
 // to: it is their public card, and it reads the same to every buyer.
@@ -549,7 +550,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
               return (
                 <article key={l.id} className="mp-card">
                   <button className="mp-card-main" onClick={() => setOpenId(l.id)}
-                    aria-label={`${titleOf(l)}, ₱${l.pricePerKg} ${t("per_kg_short")}, ${l.kg} kg, ${l.seller}`}>
+                    aria-label={`${titleOf(l)}, ${peso(l.pricePerKg)} ${t("per_kg_short")}, ${l.kg} kg, ${l.seller}`}>
                     <span className="mp-card-photo">
                       {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropIcon crop={l.crop} size={30} />}
                       {mine
@@ -558,7 +559,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                     </span>
                     <span className="mp-card-body">
                       <span className="mp-card-name">{titleOf(l)}</span>
-                      <span className="mp-card-price">₱{l.pricePerKg}<small>{t("per_kg_short")}</small></span>
+                      <span className="mp-card-price">{peso(l.pricePerKg)}<small>{t("per_kg_short")}</small></span>
                       <span className="mp-card-meta">{l.kg} kg · {l.location}</span>
                       <span className="mp-card-seller">
                         {/* The rating is the one number a buyer weighs a
@@ -620,7 +621,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
 
               <div className="pr-sheet-body">
                 <div className="pr-sheet-price">
-                  <span className="pr-big">₱{l.pricePerKg}<small>{t("per_kg_short")}</small></span>
+                  <span className="pr-big">{peso(l.pricePerKg)}<small>{t("per_kg_short")}</small></span>
                   <span className="mp-avail green"><Package size={15} strokeWidth={2.2} /> {l.kg} {t("trade_kg_available")}</span>
                 </div>
                 <div className="pr-sheet-sub"><Calendar size={13} strokeWidth={2.2} /> {t("mp_posted")} {posted(l.date)}</div>
@@ -664,7 +665,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                           <Plus size={18} strokeWidth={2.6} />
                         </button>
                       </div>
-                      <span className="mp-qty-total">₱{(qty * l.pricePerKg).toLocaleString()}</span>
+                      <span className="mp-qty-total">{peso(qty * l.pricePerKg)}</span>
                     </div>
                     <div className="listing-btns mp-actions">
                       <button className={`add-cart-btn${inC ? " in-cart" : ""}`}
@@ -977,12 +978,12 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                           <div className="cart-item-body">
                             <div className="cart-item-top">
                               <div className="cart-item-name">{item.crop}</div>
-                              <div className="cart-item-sum">₱{(item.qty * item.pricePerKg).toLocaleString()}</div>
+                              <div className="cart-item-sum">{peso(item.qty * item.pricePerKg)}</div>
                             </div>
                             <div className="cart-item-meta">
                               {item.seller} · <MapPin size={13} strokeWidth={2.2} /> {item.location}
                             </div>
-                            <div className="cart-item-rate">₱{item.pricePerKg}<span>{t("per_kg_short")}</span></div>
+                            <div className="cart-item-rate">{peso(item.pricePerKg)}<span>{t("per_kg_short")}</span></div>
 
                             <div className="cart-step-row">
                               {/* At 1 kg the minus becomes a bin: one control
@@ -1026,7 +1027,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                       {cartKg} kg · {sellerCount} {sellerCount !== 1 ? t("cart_sellers") : t("cart_seller")}
                     </div>
                   </div>
-                  <div className="cart-total-val">₱{cartTotal.toLocaleString()}</div>
+                  <div className="cart-total-val">{peso(cartTotal)}</div>
                 </div>
                 {/* Says what happens next, so "Confirm" doesn't read as "pay". */}
                 <p className="cart-pay-note">{t("cart_pay_note")}</p>
@@ -1111,7 +1112,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                                 <span className="sml-name">{titleOf(l)}</span>
                                 <span className="sml-meta">{l.kg} {en("trade_kg_available")}</span>
                               </span>
-                              <span className="sml-price">₱{l.pricePerKg}<small>{en("per_kg_short")}</small></span>
+                              <span className="sml-price">{peso(l.pricePerKg)}<small>{en("per_kg_short")}</small></span>
                               <ChevronRight size={18} strokeWidth={2.4} className="sml-chev" aria-hidden="true" />
                             </button>
                           );

@@ -8,6 +8,7 @@ import { Sheet } from "../ui/Sheet";
 import { PickerField } from "../ui/PickerField";
 import { haptic } from "../../lib/platform";
 import { PriceAlert, alertHit, isRising, newAlertId } from "../../lib/priceAlerts";
+import { peso } from "../../lib/money";
 
 // ─── Price alerts ─────────────────────────────────────────────────────────────
 // The forecast says a price is climbing; this is what a farmer does about it.
@@ -91,15 +92,15 @@ export function PriceAlerts({ alerts, onChange, farmerCrops }: {
                     <span className="pa-name">{tn(a.cropName)}</span>
                     <span className="pa-meta">
                       {hit
-                        ? t("pa_reached").replace("{price}", `₱${a.target}`)
+                        ? t("pa_reached").replace("{price}", peso(a.target))
                         : t(isRising(a) ? "pa_waiting_up" : "pa_waiting_down")
-                            .replace("{target}", `₱${a.target}`)
-                            .replace("{gap}", `₱${gap}`)}
+                            .replace("{target}", peso(a.target))
+                            .replace("{gap}", peso(gap))}
                     </span>
                   </span>
                   {hit
-                    ? <span className="pa-hit"><Check size={15} strokeWidth={3} /> ₱{price}</span>
-                    : <span className="pa-now">₱{price}<small>{t("per_kg_short")}</small></span>}
+                    ? <span className="pa-hit"><Check size={15} strokeWidth={3} /> {peso(price)}</span>
+                    : <span className="pa-now">{peso(price)}<small>{t("per_kg_short")}</small></span>}
                   <button className="pa-x" onClick={() => remove(a.id)} aria-label={`${t("pa_remove")} ${tn(a.cropName)}`}>
                     <X size={18} strokeWidth={2.6} />
                   </button>
@@ -132,7 +133,7 @@ export function PriceAlerts({ alerts, onChange, farmerCrops }: {
             options={ordered.map(c => ({
               value: c.id,
               label: c.name,
-              sub: t("pa_today").replace("{price}", `₱${c.pricePerKg}`),
+              sub: t("pa_today").replace("{price}", peso(c.pricePerKg)),
               photo: cropPhoto(c.id),
             }))}
             onChange={pickCrop}
@@ -156,14 +157,14 @@ export function PriceAlerts({ alerts, onChange, farmerCrops }: {
             </span>
             <button onClick={() => nudge(5)} aria-label={t("pa_more")}><Plus size={22} strokeWidth={2.8} /></button>
           </div>
-          <p className="pa-help">{t("pa_today").replace("{price}", `₱${current}`)}</p>
+          <p className="pa-help">{t("pa_today").replace("{price}", peso(current))}</p>
         </div>
 
         {/* What will happen, in words, before they commit to it. */}
         <p className="pa-promise">
           {t(target >= current ? "pa_promise_up" : "pa_promise_down")
             .replace("{crop}", tn(CROPS.find(c => c.id === cropId)?.name || ""))
-            .replace("{target}", `₱${target}`)}
+            .replace("{target}", peso(target))}
         </p>
 
         <button className="mp-sell-btn pa-save" onClick={save} disabled={!target}>

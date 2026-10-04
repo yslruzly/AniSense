@@ -5,6 +5,7 @@ import { cropPhotoFor } from "../../data/cropPhotos";
 import { CropIcon } from "../icons";
 import { useMarket } from "../../store/market";
 import { Skeleton, SkeletonMediaRows } from "../states";
+import { peso, toCents } from "../../lib/money";
 
 // ─── Your harvest ─────────────────────────────────────────────────────────────
 // The farmer's own half of the marketplace, on Home. Everything else on this
@@ -67,7 +68,7 @@ export function YourHarvest({ onPost, onOpenMarket }: {
           </div>
         ) : (
           <>
-            <div className="fh-total">₱{value.toLocaleString()}</div>
+            <div className="fh-total">{peso(value)}</div>
             <p className="fh-summary">
               {t("fh_summary")
                 .replace("{n}", mine.length === 1 ? t("fh_listing_one") : t("fh_listings_n").replace("{n}", String(mine.length)))
@@ -78,7 +79,7 @@ export function YourHarvest({ onPost, onOpenMarket }: {
               {mine.map(l => {
                 const photo = l.photo || cropPhotoFor(l.crop, l.variety);
                 const market = marketPrice(l.crop, l.variety);
-                const diff = market ? l.pricePerKg - market : 0;
+                const diff = market ? toCents(l.pricePerKg - market) : 0;
                 // For a seller, above the market price means more money per
                 // kilo — the opposite of what it means to a buyer, so the
                 // green sits on the other side here.
@@ -93,13 +94,13 @@ export function YourHarvest({ onPost, onOpenMarket }: {
                       <span className="fh-meta">{l.kg.toLocaleString()} {t("fh_left")}</span>
                     </span>
                     <span className="fh-end">
-                      <span className="fh-price">₱{l.pricePerKg}<small>{t("per_kg_short")}</small></span>
+                      <span className="fh-price">{peso(l.pricePerKg)}<small>{t("per_kg_short")}</small></span>
                       <span className={`fh-vs ${dir}`}>
                         {dir === "up" && <ArrowUp size={13} strokeWidth={3} />}
                         {dir === "down" && <ArrowDown size={13} strokeWidth={3} />}
                         {dir === "same"
                           ? t("fh_at")
-                          : `₱${Math.abs(diff)} ${dir === "up" ? t("fh_above") : t("fh_below")}`}
+                          : `${peso(Math.abs(diff))} ${dir === "up" ? t("fh_above") : t("fh_below")}`}
                       </span>
                     </span>
                   </li>
