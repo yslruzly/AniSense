@@ -3,7 +3,7 @@ import { haptic } from "../../lib/platform";
 import { ChevronLeft, Check, AlertCircle, MapPin, Smartphone, Mail, BadgeCheck } from "lucide-react";
 import { useLang } from "../../i18n";
 import { UserRole, FarmDetails } from "../../types";
-import { MAIN_CROPS } from "../../data/crops";
+import { MAIN_CROPS, familyOf } from "../../data/crops";
 import { FARM_PROVINCE, MUNICIPALITIES, BARANGAYS_BY_MUNICIPALITY, formatFarmLocation } from "../../data/locations";
 import { ISLAND_GROUPS, IslandGroup, PH_PROVINCES } from "../../data/generated/phPlaces";
 import { CropEmoji } from "../../components/icons/CropEmoji";
@@ -1060,7 +1060,9 @@ export function AuthFormScreen({
               <CropEmoji crop={crop} size={34} />
               <span>
                 <span className="a-crop-n">{tn(crop)}</span>
-                <span className="a-crop-e">{crop}</span>
+                {/* What kind of crop it is, so the line adds something
+                    rather than saying the name again. */}
+                <span className="a-crop-e">{t(`kind_${familyOf(crop)}` as "kind_Crops")}</span>
               </span>
               <span className="a-crop-tick"><Check size={14} color="#fff" strokeWidth={3.6} /></span>
             </button>

@@ -412,6 +412,10 @@ export const translations: Dict = {
   fam_crops: { en: "Crops", tl: "Palay/Mais" },
   fam_vegetables: { en: "Vegetables", tl: "Gulay" },
   fam_fruits: { en: "Fruits", tl: "Prutas" },
+  // One crop's kind, under its name on the crop tiles.
+  kind_Crops: { en: "Grain", tl: "Butil" },
+  kind_Vegetables: { en: "Vegetable", tl: "Gulay" },
+  kind_Fruits: { en: "Fruit", tl: "Prutas" },
   mp_avg: { en: "avg", tl: "karaniwan" },
   mp_sort: { en: "Sort listings", tl: "Ayusin ang mga listing" },
   mp_how_many: { en: "How many kilos?", tl: "Ilang kilo?" },

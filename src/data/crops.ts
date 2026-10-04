@@ -126,6 +126,10 @@ export const FAMILY_GROUPS: Record<string, string[]> = {
   Fruits: ["Calamansi", "Mango", "Watermelon"],
 };
 
+/** A crop type's family ("Mango" → "Fruits"), for the line under its name. */
+export const familyOf = (group: string) =>
+  CROP_FAMILIES.find(f => FAMILY_GROUPS[f].includes(group)) ?? "Crops";
+
 /** Every crop name inside a family, varieties included. */
 export function familyCropNames(family: string): string[] {
   return (FAMILY_GROUPS[family] || []).flatMap(g =>
