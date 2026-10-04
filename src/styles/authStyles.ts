@@ -870,6 +870,14 @@ export const authCss = `
   .a-askscreen .a-ask-body { padding-top: 18px; }
   .a-askscreen .a-scroll { padding-bottom: 16px; }
   .a-askscreen .a-switch { margin-top: 8px; }
+  /* The buttons sit on a white band of their own, with a short fade above
+     it, so a page that scrolls (the crop tiles) slips softly under them
+     instead of being cut off right at their top edge. */
+  .a-askscreen .a-dock { position: relative; padding: 12px 22px calc(18px + var(--safe-bottom)); background: var(--card); }
+  .a-askscreen .a-dock::before {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 100%; height: 24px; pointer-events: none;
+    background: linear-gradient(to top, var(--card), rgba(255,255,255,0));
+  }
   .a-askscreen .a-dock .a-btn { min-height: 56px; }
   .a-askscreen .a-dockpair .a-iconbtn { width: 56px; height: 56px; flex-basis: 56px; }
   .a-askscreen .a-inp:focus, .a-askscreen .a-prefix-row:focus-within, .a-askscreen .pick-field:active {
