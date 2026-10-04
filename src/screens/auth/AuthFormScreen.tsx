@@ -3,8 +3,7 @@ import { haptic } from "../../lib/platform";
 import { ChevronLeft, Check, AlertCircle, MapPin, Smartphone, Mail, BadgeCheck } from "lucide-react";
 import { useLang } from "../../i18n";
 import { UserRole, FarmDetails } from "../../types";
-import { CROPS, MAIN_CROPS } from "../../data/crops";
-import { hasRecords } from "../../data/priceRecords";
+import { MAIN_CROPS } from "../../data/crops";
 import { FARM_PROVINCE, MUNICIPALITIES, BARANGAYS_BY_MUNICIPALITY, formatFarmLocation } from "../../data/locations";
 import { ISLAND_GROUPS, IslandGroup, PH_PROVINCES } from "../../data/generated/phPlaces";
 import { CropEmoji } from "../../components/icons/CropEmoji";
@@ -616,19 +615,6 @@ export function AuthFormScreen({
     // rather than a stock "welcome back".
     const hour = new Date().getHours();
     const greeting = t(hour >= 5 && hour < 12 ? "signin_morning" : hour >= 12 && hour < 18 ? "signin_afternoon" : "signin_evening");
-    // And a reason to sign in, from the price records: for a farmer the crop
-    // that rose the most from the month before (good news for a seller), for
-    // a buyer the one that fell the most (a deal). Only crops with real
-    // records make the news; a sample price is never announced. If nothing
-    // moved that way, Juan just says hi.
-    const byChange = CROPS.filter(c => hasRecords(c.id)).sort((a, b) => b.change - a.change);
-    const pick = role === "buyer" ? byChange[byChange.length - 1] : byChange[0];
-    const news = pick && (role === "buyer" ? pick.change < 0 : pick.change > 0) ? pick : null;
-    const fill = (key: string) => t(key)
-      .replace("{crop}", tn(news!.name))
-      .replace("{pct}", Math.abs(news!.change).toFixed(1))
-      .replace("{price}", String(Math.round(news!.pricePerKg * 100) / 100));
-    const up = role !== "buyer";
     return (
       // A real form, so the keyboard's Go key submits and password managers
       // recognise the sign-in.
@@ -638,14 +624,10 @@ export function AuthFormScreen({
             <h1 className="a-title on-ink">{greeting}</h1>
             <p className="a-sub on-ink">{t("auth_signin_title")}</p>
           </div>
+          {/* Juan just says hi: Sign in is for getting in, not for news. */}
           <Scene role={role} cue="signin">
             <div className="a-ask a-ask-hi">
-              {news ? (
-                <>
-                  <p className="a-ask-q">{fill(up ? "signin_up_q" : "signin_down_q")}</p>
-                  <p className="a-ask-why">{fill(up ? "signin_up_why" : "signin_down_why")}</p>
-                </>
-              ) : <p className="a-ask-q">{t("ask_signin_say")}</p>}
+              <p className="a-ask-q">{t("ask_signin_say")}</p>
             </div>
           </Scene>
         </div>

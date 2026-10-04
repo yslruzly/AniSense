@@ -86,7 +86,7 @@ export const translations: Dict = {
   },
 
   // ── Auth form ─────────────────────────────────────────────────────────────
-  auth_signin_title: { en: "Welcome back to AniSense.", tl: "Maligayang pagbabalik sa AniSense." },
+  auth_signin_title: { en: "Sign in to your account.", tl: "Mag-sign in sa account mo." },
   auth_farmer_account: { en: "Farmer Account", tl: "Account ng Magsasaka" },
   auth_buyer_account: { en: "Buyer Account", tl: "Account ng Mamimili" },
   auth_sign_in_with: { en: "Sign in with", tl: "Mag-sign in gamit ang" },
@@ -1106,19 +1106,9 @@ export const translations: Dict = {
   signin_morning: { en: "Good morning!", tl: "Magandang umaga!" },
   signin_afternoon: { en: "Good afternoon!", tl: "Magandang hapon!" },
   signin_evening: { en: "Good evening!", tl: "Magandang gabi!" },
-  signin_up_q: { en: "{crop} went up {pct}% in a month!", tl: "Tumaas ng {pct}% ang {crop} sa loob ng isang buwan!" },
-  signin_up_why: {
-    en: "₱{price} a kilo. Sign in to see all the latest prices.",
-    tl: "₱{price} kada kilo. Mag-sign in para makita ang lahat ng pinakabagong presyo.",
-  },
-  signin_down_q: { en: "{crop} went down {pct}% in a month!", tl: "Bumaba ng {pct}% ang {crop} sa loob ng isang buwan!" },
-  signin_down_why: {
-    en: "Just ₱{price} a kilo. Sign in to buy it fresh from farmers.",
-    tl: "₱{price} na lang kada kilo. Mag-sign in para mabili ito nang sariwa sa magsasaka.",
-  },
   signin_new_q: { en: "New here?", tl: "Bago ka?" },
   signin_new_btn: { en: "Create an account", tl: "Gumawa ng account" },
-  ask_signin_say: { en: "Good to see you again! 👋", tl: "Masaya akong makita ka ulit! 👋" },
+  ask_signin_say: { en: "Hi! Welcome back to AniSense. 👋", tl: "Hi! Maligayang pagbabalik sa AniSense. 👋" },
   ask_name: { en: "First, what's your name?", tl: "Una, ano ang pangalan mo?" },
   ask_name_why: {
     en: "This is the name farmers and buyers will see.",
