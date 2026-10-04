@@ -281,10 +281,12 @@ p { margin: 0; text-wrap: pretty; }
 .cols li { display: grid; grid-template-columns: 20px 1fr; gap: 10px; }
 .cols li svg { margin-top: 5px; color: var(--tanim); }
 
-/* Records: the app's own profit card, lifted off the page */
-.card-shot { position: relative; max-width: 470px; margin: 0 auto; }
-.card-shot img { width: 100%; border-radius: 26px; box-shadow: 0 0 0 1px rgba(22,33,27,.06), 0 40px 80px -40px rgba(22,33,27,.45), 0 12px 24px -16px rgba(22,33,27,.25); }
-.card-shot .chip { bottom: -22px; right: -10px; }
+/* Records: the app's own profit card, cut out with its own rounded
+   corners, so the shadow follows its shape (drop-shadow, not a box). The
+   note sits on its empty top-right corner, clear of anything to read. */
+.card-shot { position: relative; max-width: 440px; margin: 0 auto; }
+.card-shot img { width: 100%; height: auto; filter: drop-shadow(0 24px 34px rgba(22,33,27,.16)) drop-shadow(0 4px 8px rgba(22,33,27,.08)); }
+.card-shot .chip { top: -26px; right: -22px; }
 
 /* Made for the field */
 .grid4 { margin-top: 44px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
@@ -303,7 +305,13 @@ p { margin: 0; text-wrap: pretty; }
 .step-n { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--ink); color: var(--on-ink); font: 700 17px/1 var(--font-display); }
 .step h3 { margin-top: 18px; font: 700 22px/1.25 var(--font-display); letter-spacing: -.02em; }
 .step p { margin-top: 8px; font-size: 17px; color: var(--muted); }
-.step .peek { margin: 28px auto 0; height: 300px; overflow: hidden; display: flex; justify-content: center; }
+/* The phone at its true shape, as wide as the card so its shadow has room,
+   fading into the card where the card ends rather than cut off. */
+.step .peek {
+  margin: 28px -26px 0; height: 300px; padding-top: 6px; overflow: hidden;
+  display: flex; justify-content: center; align-items: flex-start;
+  -webkit-mask-image: linear-gradient(to bottom, #000 58%, transparent); mask-image: linear-gradient(to bottom, #000 58%, transparent);
+}
 .step .peek .phone { --pw: 230px; }
 
 /* FAQ */
@@ -375,11 +383,12 @@ p { margin: 0; text-wrap: pretty; }
   .ticker-label { display: none; }
   .trow { grid-template-columns: 1fr auto; padding: 14px 18px; }
   .trow .verdict { grid-column: 1 / -1; justify-self: start; }
-  .card-shot .chip { right: 8px; }
+  .card-shot .chip { right: 6px; top: -22px; }
   .foot nav { margin-left: 0; }
 }
 
 @media (max-width: 380px) {
+  .card-shot .chip { top: -34px; }
   .duo .phone { --pw: 208px; }
   .duo { min-height: 460px; }
   .duo .back { transform: translate(-25%, 5%) rotate(-5deg) scale(.86); }
@@ -640,7 +649,7 @@ main, .hdr-row { transition: opacity 140ms ease, filter 140ms ease; }
         </ul>
       </div>
       <div class="card-shot reveal" style="--i:2">
-        <img data-shot="profit-card" src="assets/screens/profit-card.webp" width="716" height="708" loading="lazy" decoding="async"
+        <img data-shot="profit-card" src="assets/screens/profit-card.webp" width="716" height="878" loading="lazy" decoding="async"
           alt="The Your profit card: estimated and final profit, and ₱13,000 spent on rice." data-i18n-alt="alt_profit">
         <div class="chip">
           <span class="chip-ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
