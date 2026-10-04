@@ -53,7 +53,7 @@
 }
 
 * { box-sizing: border-box; }
-html { color-scheme: light; -webkit-text-size-adjust: 100%; scroll-padding-top: 84px; }
+html { color-scheme: light; -webkit-text-size-adjust: 100%; scroll-padding-top: 84px; overflow-x: clip; }
 @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
 body {
   margin: 0; background: var(--paper); color: var(--text);
@@ -129,7 +129,9 @@ p { margin: 0; text-wrap: pretty; }
 
 /* ── The dark bands: the app's header, at full width ── */
 .ink {
-  position: relative; isolation: isolate; color: var(--on-ink);
+  /* Clipped at its edges: the tilted leaf behind it must never widen the
+     page (on a phone that pushed the header's language switch off-screen). */
+  position: relative; isolation: isolate; overflow: hidden; color: var(--on-ink);
   background:
     url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .06 0 0 0 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23g)'/%3E%3C/svg%3E"),
     radial-gradient(50% 40% at 88% 4%, rgba(242,179,44,.14), rgba(242,179,44,0) 72%),
@@ -304,11 +306,11 @@ p { margin: 0; text-wrap: pretty; }
 .step { position: relative; padding: 28px 26px 0; border-radius: 28px; background: var(--paper); overflow: hidden; display: flex; flex-direction: column; }
 .step-n { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--ink); color: var(--on-ink); font: 700 17px/1 var(--font-display); }
 .step h3 { margin-top: 18px; font: 700 22px/1.25 var(--font-display); letter-spacing: -.02em; }
-.step p { margin-top: 8px; font-size: 17px; color: var(--muted); }
+.step p { margin: 8px 0 28px; font-size: 17px; color: var(--muted); }
 /* The phone at its true shape, as wide as the card so its shadow has room,
    fading into the card where the card ends rather than cut off. */
 .step .peek {
-  margin: 28px -26px 0; height: 300px; padding-top: 6px; overflow: hidden;
+  margin: auto -26px 0; height: 300px; padding-top: 6px; overflow: hidden;
   display: flex; justify-content: center; align-items: flex-start;
   -webkit-mask-image: linear-gradient(to bottom, #000 58%, transparent); mask-image: linear-gradient(to bottom, #000 58%, transparent);
 }
@@ -355,40 +357,107 @@ p { margin: 0; text-wrap: pretty; }
 @media (max-width: 960px) {
   .hero-grid, .split, .cta-grid { grid-template-columns: 1fr; }
   .split.flip .copy { order: 0; }
-  .stage { padding-top: 0; width: 100%; max-width: 500px; margin: 0 auto; }
-  .c2 { right: -2%; }
+  /* One column: the phone, then its notes resting on its lower edge,
+     instead of laid across its screen. */
+  .stage { display: flex; flex-direction: column; align-items: center; padding: 8px 0 44px; }
+  .chip { position: relative; inset: auto; transform-origin: center top; width: max-content; max-width: 100%; }
+  .c1 { margin-top: -60px; }
+  .c2 { margin-top: 10px; }
+  .c3 { display: none; }
   .hero-lead { max-width: 40ch; }
   .stats { grid-template-columns: 1fr 1fr; }
   .stat:nth-child(3) { box-shadow: 0 -1px 0 var(--line); }
   .stat:nth-child(4) { box-shadow: -1px 0 0 var(--line), 0 -1px 0 var(--line); }
   .grid4 { grid-template-columns: 1fr 1fr; }
-  .steps { grid-template-columns: 1fr; max-width: 520px; margin-left: auto; margin-right: auto; }
+  /* The three steps side by side, with smaller phones. */
+  .step { padding: 22px 18px 0; }
+  .step h3 { font-size: 19px; }
+  .step .peek { margin: auto -18px 0; height: 250px; }
+  .step p { margin-bottom: 22px; }
+  .step .peek .phone { --pw: 168px; }
   .mascot { justify-self: center; width: 260px; }
   .cta-note { padding-bottom: 24px; }
 }
+/* ── Phones ──
+   One column, tighter spacing, and nothing laid over anything else: the
+   hero's notes sit under its phone instead of across its screen, the four
+   numbers and the four "built for" points become compact grids and rows,
+   and the buttons share one width. */
 @media (max-width: 600px) {
-  .phone { --pw: 250px; }
-  .duo { min-height: 500px; }
-  .duo .phone { --pw: 228px; }
-  .duo .back { transform: translate(-28%, 5%) rotate(-5deg) scale(.86); }
-  .duo .front { transform: translate(15%, 0) rotate(2deg); }
-  .fc-visual .phone { --pw: 260px; }
-  .chip { font-size: 14px; padding: 10px 12px 10px 10px; gap: 10px; border-radius: 16px; }
+  .sec { padding: 64px 0; }
+  .sec h2, .ink h2 { font-size: clamp(30px, 8.4vw, 36px); }
+  .lead { font-size: 18px; }
+
+  .hero { padding-top: 100px; }
+  .eyebrow { font-size: 14px; }
+  .hero h1 { font-size: clamp(38px, 11vw, 46px); margin-top: 18px; }
+  .hero-lead { font-size: 18px; margin-top: 18px; }
+  .hero-cta { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 28px; }
+  .hero-cta .btn { width: 100%; }
+  .ticks { margin-top: 22px; }
+
+  /* The phone, then its two notes resting on its lower edge. */
+  .stage { padding-bottom: 40px; }
+  .phone { --pw: 244px; }
+  .c1 { margin-top: -58px; }
+  .chip { font-size: 14px; padding: 10px 14px 10px 10px; gap: 10px; border-radius: 16px; }
   .chip b { font-size: 15px; }
   .chip-ico { width: 34px; height: 34px; border-radius: 10px; }
-  .c1 { left: -4px; top: 8%; } .c2 { right: -4px; top: 52%; } .c3 { display: none; }
-  .cols, .grid4 { grid-template-columns: 1fr; }
-  .stats { grid-template-columns: 1fr; }
-  .stat + .stat, .stat:nth-child(3), .stat:nth-child(4) { box-shadow: 0 -1px 0 var(--line); }
+
   .ticker-label { display: none; }
+  .ticker-row { height: 56px; }
+
+  /* The four numbers, two by two. */
+  .stats-wrap { padding-top: 40px; }
+  .stats { grid-template-columns: 1fr 1fr; border-radius: 22px; }
+  .stat { padding: 20px 18px 22px; }
+  .stat + .stat { box-shadow: none; }
+  .stat:nth-child(2n) { box-shadow: -1px 0 0 var(--line); }
+  .stat:nth-child(n+3) { box-shadow: 0 -1px 0 var(--line); }
+  .stat:nth-child(4) { box-shadow: -1px 0 0 var(--line), 0 -1px 0 var(--line); }
+  .stat-n { font-size: 34px; }
+  .stat p { margin-top: 8px; font-size: 16px; }
+
+  .points { gap: 14px; }
+  .duo { min-height: 470px; margin-top: 8px; }
+  .duo .phone { --pw: 224px; }
+  .duo .back { transform: translate(-28%, 5%) rotate(-5deg) scale(.86); }
+  .duo .front { transform: translate(15%, 0) rotate(2deg); }
+  .fc-visual .phone { --pw: 250px; }
+  .cols { grid-template-columns: 1fr; gap: 22px; }
   .trow { grid-template-columns: 1fr auto; padding: 14px 18px; }
   .trow .verdict { grid-column: 1 / -1; justify-self: start; }
-  .card-shot .chip { right: 6px; top: -22px; }
+  .tested h3 { padding: 16px 18px 6px; }
+
+  /* The note sits below the card on a phone, clear of its title. */
+  .card-shot .chip { position: absolute; top: auto; bottom: -30px; right: 10px; margin: 0; }
+
+  /* "Built for": one compact row each, the icon beside the words. */
+  .grid4 { grid-template-columns: 1fr; gap: 10px; margin-top: 32px; }
+  .feat { display: grid; grid-template-columns: 44px 1fr; column-gap: 16px; align-items: start; padding: 18px 18px 20px; border-radius: 20px; }
+  .feat-ico { grid-row: span 2; width: 44px; height: 44px; border-radius: 13px; }
+  .feat h3 { margin-top: 2px; font-size: 18px; }
+  .feat p { margin-top: 4px; font-size: 16px; }
+
+  .steps { grid-template-columns: 1fr; max-width: 520px; margin: 36px auto 0; gap: 14px; }
+  .step { padding: 22px 22px 0; border-radius: 24px; }
+  .step h3 { margin-top: 14px; font-size: 20px; }
+  .step .peek { margin: auto -22px 0; height: 236px; }
+  .step .peek .phone { --pw: 196px; }
+
+  .faq { margin-top: 32px; gap: 10px; }
+  .qa button { padding: 18px 20px; font-size: 17px; }
+  .qa-body p { padding: 0 20px 20px; font-size: 17px; }
+
+  .cta { padding-top: 64px; }
+  .cta-grid { gap: 8px; }
+  .cta-actions .btn { width: 100%; }
+  .cta-note { padding-bottom: 8px; }
+  .mascot { width: 190px; }
   .foot nav { margin-left: 0; }
 }
 
 @media (max-width: 380px) {
-  .card-shot .chip { top: -34px; }
   .duo .phone { --pw: 208px; }
   .duo { min-height: 460px; }
   .duo .back { transform: translate(-25%, 5%) rotate(-5deg) scale(.86); }
