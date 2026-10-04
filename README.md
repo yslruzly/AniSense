@@ -16,6 +16,7 @@
 - [Tech stack](#tech-stack)
 - [Architecture](#architecture)
 - [Getting started](#getting-started)
+- [Website](#website)
 - [Project structure](#project-structure)
 - [Further reading](#further-reading)
 - [License](#license)
@@ -161,6 +162,20 @@ Key design decisions:
 | `npm run forecasts` | Trains and tests ARIMA and LSTM again and rewrites the forecasts. |
 | `npm run seed` | Rewrites `supabase/seed.sql` from the crop catalog, the price records and the forecasts. |
 
+## Website
+
+`site/` is the AniSense website: plain HTML with no build step.
+
+| Page | File | Notes |
+|---|---|---|
+| Home | `site/index.html` | What AniSense does, in English and Tagalog, with screenshots of the app (`site/assets/screens/`, in both languages). |
+| Privacy policy | `site/privacy-policy.html` | Generated from `src/data/privacyPolicy.ts` by `node scripts/build-privacy.mjs`. Never edit it by hand. |
+| Delete account | `site/delete-account.html` | Signs a person in and deletes their account without the app, as Google Play requires. Reads `site/config.js`. |
+
+`site/config.js` holds the Supabase URL, the publishable key and the support email address, shared by the deletion page and the home page's contact links.
+
+**Publishing on Vercel:** import the repository, set **Root Directory** to `site`, no build command. `site/vercel.json` turns on clean addresses, so the two pages Google Play asks for are `https://<domain>/privacy-policy` and `https://<domain>/delete-account`. Add a custom domain under the project's **Settings → Domains**.
+
 ## Project structure
 
 ```
@@ -172,7 +187,7 @@ AniSense/
 ├── docs/                Documentation: architecture, database setup
 ├── ml/                  ARIMA and LSTM training (Python) and the test report
 ├── scripts/             Build and maintenance scripts (Node)
-├── site/                Public web pages for Google Play: privacy policy, account deletion
+├── site/                The website: home page, privacy policy, account deletion (Vercel)
 ├── src/                 The app (React + TypeScript)
 │   ├── assets/          Images bundled in the app
 │   ├── components/      Reusable UI, grouped by feature

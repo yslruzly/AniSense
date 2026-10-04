@@ -1,0 +1,1004 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AniSense · Crop prices, forecasts and a market for Nueva Ecija</title>
+<meta name="description" content="AniSense shows this month's crop prices in Nueva Ecija, forecasts for the next three months, and lets farmers sell straight to buyers. Free, in English and Tagalog, and it works offline.">
+<meta name="theme-color" content="#101814">
+<link rel="icon" href="assets/favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="AniSense · Know the price before you sell">
+<meta property="og:description" content="Crop prices, three-month forecasts and a market for Nueva Ecija farmers and their buyers. Free, in English and Tagalog.">
+<meta property="og:image" content="assets/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="preload" as="image" href="assets/screens/farmer-prices.webp" fetchpriority="high">
+<script>document.documentElement.classList.add("js");</script>
+<style>
+/* ─── AniSense: the website ──────────────────────────────────────────────────
+   The app's own colours, type and leaf mark: ink green for the dark bands,
+   paper grey for the light ones, the palay gold kept for accents on ink,
+   Lexend for headings and Source Sans 3 for reading. Text never goes below
+   17px: the people this is for are 50 to 70.
+
+   Motion follows one rule each:
+   · the hero arrives once, in a short stagger (first visit, so it may take
+     its time: 700ms, strong ease-out)
+   · sections rise into place the first time they scroll into view, and
+     never again
+   · presses answer at once (scale .97, 160ms); hovers only where a mouse is
+   · the language switch slides its thumb (ease-in-out: it moves on screen),
+     and the words and screenshots cross-fade through a light blur
+   · the price ticker is the one thing that moves on its own (linear), and it
+     stops for anyone who asked for less motion */
+
+:root {
+  --ink: #16211B; --ink-2: #1C2D24; --deep: #101814;
+  --tanim: #0B6B41; --tanim-2: #14875A; --tanim-sk: #D7EADD; --tanim-mist: #EAF4EE;
+  --palay: #F2B32C; --gold-text: #8A5D0C;
+  --paper: #F2F3F4; --card: #FFFFFF; --line: #D9DBDE;
+  --text: #16211B; --muted: #474B4F; --faint: #606469;
+  --on-ink: #F4F7F5; --on-ink-2: rgba(244, 247, 245, .74); --on-ink-3: rgba(244, 247, 245, .56);
+  --up: #0B6B41; --down: #A5231B;
+  --ease-out: cubic-bezier(.23, 1, .32, 1);
+  --ease-in-out: cubic-bezier(.77, 0, .175, 1);
+  --font-display: "Lexend", system-ui, sans-serif;
+  --font-body: "Source Sans 3", system-ui, sans-serif;
+  --wrap: 1160px;
+  --gutter: clamp(20px, 4vw, 40px);
+}
+
+* { box-sizing: border-box; }
+html { color-scheme: light; -webkit-text-size-adjust: 100%; scroll-padding-top: 84px; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+body {
+  margin: 0; background: var(--paper); color: var(--text);
+  font: 18px/1.6 var(--font-body); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  overflow-x: clip;
+}
+img { display: block; max-width: 100%; }
+a { color: inherit; }
+h1, h2, h3 { font-family: var(--font-display); margin: 0; letter-spacing: -.025em; text-wrap: balance; }
+p { margin: 0; text-wrap: pretty; }
+.wrap { width: 100%; max-width: calc(var(--wrap) + var(--gutter) * 2); margin: 0 auto; padding: 0 var(--gutter); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.skip { position: fixed; left: 16px; top: -60px; z-index: 100; padding: 12px 18px; border-radius: 12px; background: var(--card); color: var(--ink); font-weight: 700; text-decoration: none; transition: top 160ms var(--ease-out); }
+.skip:focus { top: 16px; }
+:focus-visible { outline: 3px solid var(--palay); outline-offset: 3px; border-radius: 10px; }
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 56px; padding: 0 24px; border: 0; border-radius: 999px; cursor: pointer;
+  font: 600 17px/1 var(--font-display); letter-spacing: -.01em; text-decoration: none;
+  transition: transform 160ms var(--ease-out), background-color 160ms ease, box-shadow 160ms ease;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+}
+.btn:active { transform: scale(.97); transition-duration: 90ms; }
+.btn svg { flex-shrink: 0; }
+.btn-gold { background: var(--palay); color: #1B1403; box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 -1px 0 rgba(120,78,0,.3), 0 1px 2px rgba(0,0,0,.25); }
+.btn-ghost { background: rgba(255,255,255,.08); color: var(--on-ink); box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.2); }
+.btn-store {
+  min-height: 60px; padding: 0 22px 0 18px; gap: 12px; background: var(--card); color: var(--ink);
+  box-shadow: 0 1px 0 rgba(255,255,255,.9) inset, 0 10px 30px -12px rgba(0,0,0,.55);
+  cursor: default;
+}
+.btn-store .store-lines { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; text-align: left; }
+.btn-store small { font: 600 12px/1 var(--font-body); letter-spacing: .08em; text-transform: uppercase; color: var(--tanim); }
+.btn-store b { font: 700 19px/1 var(--font-display); letter-spacing: -.015em; }
+.store-mark { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; background: var(--tanim-mist); color: var(--tanim); }
+@media (hover: hover) and (pointer: fine) {
+  .btn-gold:hover { background: #F5BE45; }
+  .btn-ghost:hover { background: rgba(255,255,255,.14); }
+  .nav a:hover { color: var(--on-ink); }
+}
+
+/* ── Header ── */
+.hdr {
+  position: fixed; inset: 0 0 auto; z-index: 50; color: var(--on-ink);
+  transition: background-color 220ms ease, box-shadow 220ms ease, backdrop-filter 220ms ease;
+}
+.hdr.scrolled {
+  background: rgba(16, 24, 20, .78);
+  -webkit-backdrop-filter: saturate(150%) blur(16px); backdrop-filter: saturate(150%) blur(16px);
+  box-shadow: 0 1px 0 rgba(255,255,255,.07);
+}
+.hdr-row { display: flex; align-items: center; gap: 20px; height: 72px; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit; font: 700 21px/1 var(--font-display); letter-spacing: -.02em; margin-right: auto; }
+.brand-mark { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; background: var(--card);
+  box-shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 14px -6px rgba(0,0,0,.45); }
+.brand-mark img { width: 26px; height: 26px; }
+.nav { display: flex; gap: 6px; }
+.nav a { padding: 10px 12px; border-radius: 10px; text-decoration: none; color: var(--on-ink-2); font: 500 16px/1 var(--font-display); transition: color 160ms ease; }
+.hdr .btn-gold { min-height: 46px; padding: 0 18px; font-size: 16px; }
+
+/* The language switch: two words, a thumb that slides between them. */
+.lang { position: relative; display: grid; grid-template-columns: 1fr 1fr; padding: 4px; border-radius: 999px; background: rgba(255,255,255,.1); box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); }
+.lang-thumb { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px); border-radius: 999px; background: var(--on-ink);
+  box-shadow: 0 1px 3px rgba(0,0,0,.3); transition: transform 240ms var(--ease-in-out); }
+.lang[data-lang="tl"] .lang-thumb { transform: translateX(100%); }
+.lang button { position: relative; z-index: 1; min-width: 46px; min-height: 38px; padding: 0 10px; border: 0; background: none; cursor: pointer;
+  font: 600 15px/1 var(--font-display); color: var(--on-ink-2); transition: color 200ms ease; -webkit-tap-highlight-color: transparent; }
+.lang button[aria-pressed="true"] { color: var(--ink); }
+@media (max-width: 900px) { .nav { display: none; } }
+@media (max-width: 520px) { .hdr .btn-gold { display: none; } .brand { font-size: 19px; } }
+
+/* ── The dark bands: the app's header, at full width ── */
+.ink {
+  position: relative; isolation: isolate; color: var(--on-ink);
+  background:
+    url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .06 0 0 0 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23g)'/%3E%3C/svg%3E"),
+    radial-gradient(50% 40% at 88% 4%, rgba(242,179,44,.14), rgba(242,179,44,0) 72%),
+    radial-gradient(60% 50% at 0% 70%, rgba(46,128,98,.22), rgba(46,128,98,0) 72%),
+    radial-gradient(70% 60% at 82% 100%, rgba(88,172,106,.26), rgba(88,172,106,0) 70%),
+    linear-gradient(180deg, #1C2D24 0%, #15201A 55%, #101814 100%);
+  background-size: 180px 180px, auto, auto, auto, auto;
+}
+/* The AniSense leaves, worked into the green like embroidery, as in the app. */
+.ink::before {
+  content: ""; position: absolute; z-index: -1; pointer-events: none;
+  left: -90px; bottom: -110px; width: 520px; height: 520px;
+  background: url("assets/leaf-mask.png") center / contain no-repeat;
+  opacity: .07; transform: rotate(-14deg);
+}
+
+/* ── Hero ── */
+.hero { padding: clamp(112px, 15vh, 150px) 0 0; overflow: hidden; }
+.hero-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: clamp(32px, 5vw, 64px); align-items: center; }
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 10px; padding: 8px 14px 8px 10px; border-radius: 999px;
+  background: rgba(255,255,255,.06); box-shadow: inset 0 0 0 1px rgba(255,255,255,.14);
+  font: 500 15px/1.2 var(--font-display); color: var(--on-ink-2);
+}
+.eyebrow i { width: 8px; height: 8px; border-radius: 50%; background: #7FD08F; box-shadow: 0 0 0 4px rgba(127,208,143,.18); }
+.hero h1 { margin-top: 22px; font-weight: 700; font-size: clamp(42px, 6vw, 74px); line-height: 1.02; letter-spacing: -.04em; }
+.hl { color: var(--palay); }
+.hero-lead { margin-top: 22px; max-width: 34ch; font-size: clamp(18px, 1.6vw, 21px); line-height: 1.55; color: var(--on-ink-2); }
+.hero-cta { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 12px; }
+.ticks { margin: 26px 0 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 16px; color: var(--on-ink-3); }
+.ticks li { display: flex; align-items: center; gap: 8px; }
+.ticks svg { color: #7FD08F; }
+
+.stage { position: relative; display: grid; place-items: center; padding: 20px 0 60px; perspective: 1400px; }
+.stage::before {
+  content: ""; position: absolute; inset: 8% 4% 6%; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(127,208,143,.28), rgba(127,208,143,.08) 55%, rgba(127,208,143,0));
+  filter: blur(8px);
+}
+.tilt { transform-style: preserve-3d; will-change: transform; }
+
+/* ── A phone, around a real screenshot of the app ── */
+.phone {
+  --pw: 300px; --sw: calc(var(--pw) * .936);
+  position: relative; width: var(--pw); aspect-ratio: 390 / 844; flex-shrink: 0;
+  padding: calc(var(--pw) * .032); border-radius: calc(var(--pw) * .16);
+  background: linear-gradient(150deg, #39423d 0%, #151a17 38%, #0b0e0c 100%);
+  box-shadow:
+    inset 0 0 0 1.5px rgba(255,255,255,.14),
+    inset 0 0 0 4px rgba(0,0,0,.6),
+    0 2px 2px rgba(0,0,0,.2),
+    0 30px 60px -24px rgba(0,0,0,.55),
+    0 60px 120px -40px rgba(8,30,20,.55);
+}
+.phone-screen { position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: calc(var(--pw) * .13); background: #F2F3F4; }
+.phone-screen img { width: 100%; height: 100%; object-fit: cover; object-position: top; transition: opacity 180ms ease, filter 180ms ease; }
+.phone-screen img.swapping { opacity: .35; filter: blur(6px); }
+.island { position: absolute; top: calc(var(--sw) * .028); left: 50%; width: calc(var(--sw) * .3); height: calc(var(--sw) * .075); transform: translateX(-50%);
+  border-radius: 999px; background: #050605; }
+.sbar { position: absolute; inset: 0 0 auto; height: calc(var(--sw) * 38 / 390); display: flex; align-items: center; justify-content: space-between;
+  padding: 0 calc(var(--sw) * .075) 0 calc(var(--sw) * .09); color: #16211B; font: 600 calc(var(--sw) * 14.5 / 390) / 1 var(--font-display); }
+.sbar.on-photo { color: #fff; }
+.sbar svg { height: calc(var(--sw) * 11 / 390); width: auto; }
+.sbar-i { display: flex; align-items: center; gap: calc(var(--sw) * 5 / 390); }
+
+/* The floating notes around the hero phone: small cards of real numbers. */
+.chip {
+  position: absolute; z-index: 2; display: flex; align-items: center; gap: 12px; padding: 12px 16px 12px 12px; border-radius: 18px;
+  background: rgba(255,255,255,.96); color: var(--ink); box-shadow: 0 1px 0 rgba(255,255,255,.8) inset, 0 18px 40px -16px rgba(0,0,0,.55), 0 2px 6px rgba(0,0,0,.18);
+  font-size: 15px; line-height: 1.25; white-space: nowrap;
+}
+.chip b { display: block; font: 600 16px/1.2 var(--font-display); letter-spacing: -.01em; }
+.chip span.sub { color: var(--faint); }
+.chip-ico { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; flex-shrink: 0; background: var(--tanim-mist); color: var(--tanim); }
+.chip-ico.gold { background: #FDF3DD; color: var(--gold-text); }
+.delta { display: inline-flex; align-items: center; gap: 3px; padding: 3px 8px; border-radius: 999px; font: 600 13px/1.2 var(--font-display); }
+.delta.down { background: #FBEAE8; color: var(--down); }
+.delta.up { background: var(--tanim-sk); color: var(--up); }
+.c1 { top: 13%; left: -2%; transform-origin: right center; }
+.c2 { top: 46%; right: -6%; transform-origin: left center; }
+.c3 { bottom: 15%; left: 2%; transform-origin: right center; }
+
+/* The price ticker along the foot of the hero. */
+.ticker { margin-top: 24px; border-top: 1px solid rgba(255,255,255,.08); background: rgba(0,0,0,.14); }
+.ticker-row { display: flex; align-items: center; height: 64px; }
+.ticker-label { flex-shrink: 0; padding-right: 20px; margin-right: 20px; border-right: 1px solid rgba(255,255,255,.12); font: 600 13px/1.2 var(--font-display); letter-spacing: .08em; text-transform: uppercase; color: var(--on-ink-3); max-width: 230px; }
+.ticker-view { position: relative; overflow: hidden; flex: 1; -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); }
+.ticker-track { display: flex; width: max-content; animation: ticker 48s linear infinite; }
+.ticker-view:hover .ticker-track { animation-play-state: paused; }
+@keyframes ticker { to { transform: translateX(-50%); } }
+.tick { display: flex; align-items: center; gap: 10px; padding: 0 26px; font-size: 17px; color: var(--on-ink-2); white-space: nowrap; }
+.tick b { font: 600 17px/1 var(--font-display); color: var(--on-ink); font-variant-numeric: tabular-nums; }
+.tick .delta.down { background: rgba(232,120,110,.16); color: #F3A79E; }
+.tick .delta.up { background: rgba(127,208,143,.16); color: #9EDDA8; }
+.tick .delta.flat { background: rgba(255,255,255,.1); color: var(--on-ink-2); }
+
+/* ── Light sections ── */
+.sec { padding: clamp(80px, 11vw, 136px) 0; }
+.sec.white { background: var(--card); }
+.tag { display: inline-flex; align-items: center; gap: 8px; font: 600 14px/1 var(--font-display); letter-spacing: .1em; text-transform: uppercase; color: var(--tanim); }
+.ink .tag { color: #9EDDA8; }
+.sec h2, .ink h2 { margin-top: 16px; font-weight: 700; font-size: clamp(34px, 4.4vw, 54px); line-height: 1.06; letter-spacing: -.035em; }
+.lead { margin-top: 18px; max-width: 38ch; font-size: clamp(18px, 1.5vw, 20px); line-height: 1.6; color: var(--muted); }
+.ink .lead { color: var(--on-ink-2); }
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(40px, 6vw, 88px); align-items: center; }
+.split.flip .copy { order: 2; }
+
+.points { margin: 30px 0 0; padding: 0; list-style: none; display: grid; gap: 18px; }
+.points li { display: grid; grid-template-columns: 32px 1fr; gap: 14px; align-items: start; color: var(--muted); }
+.points b { color: var(--text); font-weight: 700; }
+.ink .points li { color: var(--on-ink-2); }
+.ink .points b { color: var(--on-ink); }
+.dot { width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; background: var(--tanim-sk); color: var(--tanim); margin-top: 1px; }
+
+/* Two phones, the second behind and to the side. */
+.duo { position: relative; display: flex; justify-content: center; align-items: center; min-height: 600px; }
+.duo .phone { --pw: 290px; }
+.duo .back { position: absolute; transform: translate(-46%, 6%) rotate(-5deg) scale(.9); filter: saturate(.92); z-index: 0; }
+.duo .front { position: relative; transform: translate(22%, 0) rotate(2deg); z-index: 1; }
+.duo::before { content: ""; position: absolute; inset: 12% 6%; border-radius: 50%; background: radial-gradient(closest-side, rgba(11,107,65,.16), rgba(11,107,65,0)); }
+
+/* Stats */
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border-radius: 28px; background: var(--card); box-shadow: 0 0 0 1px rgba(22,33,27,.06), 0 24px 50px -36px rgba(22,33,27,.35); overflow: hidden; }
+.stat { padding: 30px 28px 32px; }
+.stat + .stat { box-shadow: -1px 0 0 var(--line); }
+.stat-n { font: 700 clamp(36px, 3.6vw, 48px)/1 var(--font-display); letter-spacing: -.04em; color: var(--ink); font-variant-numeric: tabular-nums; }
+.stat-n small { font-size: .5em; letter-spacing: -.01em; margin-left: 4px; }
+.stat p { margin-top: 12px; font-size: 17px; line-height: 1.45; color: var(--muted); }
+.stats-wrap { margin-top: -1px; padding: 56px 0 0; }
+
+/* Forecast honesty */
+.tested { margin-top: 32px; border-radius: 24px; padding: 8px 0; background: rgba(255,255,255,.05); box-shadow: inset 0 0 0 1px rgba(255,255,255,.1); }
+.tested h3 { padding: 16px 22px 8px; font: 600 15px/1.3 var(--font-display); letter-spacing: .06em; text-transform: uppercase; color: var(--on-ink-3); }
+.trow { display: grid; grid-template-columns: 1fr auto auto; gap: 16px; align-items: center; padding: 14px 22px; }
+.trow + .trow { box-shadow: 0 -1px 0 rgba(255,255,255,.07); }
+.trow-name { font: 600 17px/1.3 var(--font-display); color: var(--on-ink); }
+.trow-err { font: 600 17px/1 var(--font-display); color: var(--on-ink-2); font-variant-numeric: tabular-nums; text-align: right; min-width: 64px; }
+.verdict { padding: 6px 11px; border-radius: 999px; font: 600 14px/1.2 var(--font-display); white-space: nowrap; }
+.verdict.ok { background: rgba(127,208,143,.16); color: #A9E3B2; }
+.verdict.no { background: rgba(242,179,44,.16); color: #F7CF77; }
+.note { margin-top: 18px; font-size: 17px; color: var(--on-ink-3); max-width: 52ch; }
+.fc-visual { display: flex; justify-content: center; position: relative; }
+.fc-visual .phone { --pw: 310px; }
+
+/* Market: two short lists, side by side */
+.cols { margin-top: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 26px; }
+.cols h3 { font: 700 19px/1.3 var(--font-display); letter-spacing: -.015em; }
+.cols ul { margin: 12px 0 0; padding: 0; list-style: none; display: grid; gap: 10px; color: var(--muted); font-size: 17px; }
+.cols li { display: grid; grid-template-columns: 20px 1fr; gap: 10px; }
+.cols li svg { margin-top: 5px; color: var(--tanim); }
+
+/* Records: the app's own profit card, lifted off the page */
+.card-shot { position: relative; max-width: 470px; margin: 0 auto; }
+.card-shot img { width: 100%; border-radius: 26px; box-shadow: 0 0 0 1px rgba(22,33,27,.06), 0 40px 80px -40px rgba(22,33,27,.45), 0 12px 24px -16px rgba(22,33,27,.25); }
+.card-shot .chip { bottom: -22px; right: -10px; }
+
+/* Made for the field */
+.grid4 { margin-top: 44px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.feat { padding: 26px 24px 28px; border-radius: 24px; background: var(--card); box-shadow: 0 0 0 1px rgba(22,33,27,.06), 0 18px 40px -32px rgba(22,33,27,.4); }
+.feat-ico { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; color: #fff;
+  background: linear-gradient(180deg, #16895B 0%, var(--tanim) 55%, #07522F 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.24), inset 0 -1px 0 rgba(0,0,0,.18), 0 8px 16px -8px rgba(11,107,65,.6); }
+.feat h3 { margin-top: 20px; font: 700 20px/1.25 var(--font-display); letter-spacing: -.015em; }
+.feat p { margin-top: 8px; font-size: 17px; line-height: 1.5; color: var(--muted); }
+.center { text-align: center; }
+.center .lead { margin-left: auto; margin-right: auto; }
+
+/* How it works */
+.steps { margin: 52px 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; counter-reset: step; }
+.step { position: relative; padding: 28px 26px 0; border-radius: 28px; background: var(--paper); overflow: hidden; display: flex; flex-direction: column; }
+.step-n { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--ink); color: var(--on-ink); font: 700 17px/1 var(--font-display); }
+.step h3 { margin-top: 18px; font: 700 22px/1.25 var(--font-display); letter-spacing: -.02em; }
+.step p { margin-top: 8px; font-size: 17px; color: var(--muted); }
+.step .peek { margin: 28px auto 0; height: 300px; overflow: hidden; display: flex; justify-content: center; }
+.step .peek .phone { --pw: 230px; }
+
+/* FAQ */
+.faq { margin: 44px auto 0; max-width: 820px; display: grid; gap: 12px; }
+.qa { border-radius: 22px; background: var(--card); box-shadow: 0 0 0 1px rgba(22,33,27,.06); }
+.qa button {
+  width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 22px 24px;
+  border: 0; background: none; cursor: pointer; text-align: left; color: var(--text);
+  font: 600 19px/1.35 var(--font-display); letter-spacing: -.015em; border-radius: 22px; -webkit-tap-highlight-color: transparent;
+}
+.qa button svg { flex-shrink: 0; color: var(--faint); transition: transform 240ms var(--ease-out); }
+.qa button[aria-expanded="true"] svg { transform: rotate(180deg); }
+.qa-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 260ms var(--ease-out); }
+.qa-body > div { overflow: hidden; }
+.qa-body p { padding: 0 24px 24px; color: var(--muted); max-width: 66ch; opacity: 0; transition: opacity 200ms ease; }
+.qa.open .qa-body { grid-template-rows: 1fr; }
+.qa.open .qa-body p { opacity: 1; transition-delay: 60ms; }
+.qa a, .foot a, .cta a.mail { color: var(--tanim); font-weight: 600; text-decoration: none; }
+
+/* The last word */
+.cta { padding: clamp(90px, 12vw, 140px) 0 0; overflow: hidden; }
+.cta-grid { display: grid; grid-template-columns: 1.2fr .8fr; gap: 40px; align-items: end; }
+.slogan { font: 700 clamp(20px, 2vw, 24px)/1.2 var(--font-display); color: var(--palay); letter-spacing: -.01em; }
+.cta h2 { margin-top: 14px; }
+.cta .lead { margin-top: 16px; }
+.cta-actions { margin-top: 30px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.cta a.mail { color: #9EDDA8; }
+.cta-note { margin-top: 22px; font-size: 17px; color: var(--on-ink-3); padding-bottom: clamp(70px, 9vw, 110px); }
+.mascot { justify-self: end; width: min(340px, 100%); filter: drop-shadow(0 30px 40px rgba(0,0,0,.35)); }
+
+.foot { background: var(--deep); color: var(--on-ink-3); padding: 34px 0 40px; font-size: 16px; }
+.foot-row { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 28px; }
+.foot .brand { font-size: 18px; color: var(--on-ink); margin-right: 0; }
+.foot .brand-mark { width: 32px; height: 32px; border-radius: 10px; }
+.foot .brand-mark img { width: 22px; height: 22px; }
+.foot nav { display: flex; flex-wrap: wrap; gap: 6px 22px; margin-left: auto; }
+.foot nav a { color: var(--on-ink-2); }
+.foot-copy { margin-top: 18px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,.07); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
+
+/* ── Small screens ── */
+@media (max-width: 960px) {
+  .hero-grid, .split, .cta-grid { grid-template-columns: 1fr; }
+  .split.flip .copy { order: 0; }
+  .stage { padding-top: 0; width: 100%; max-width: 500px; margin: 0 auto; }
+  .c2 { right: -2%; }
+  .hero-lead { max-width: 40ch; }
+  .stats { grid-template-columns: 1fr 1fr; }
+  .stat:nth-child(3) { box-shadow: 0 -1px 0 var(--line); }
+  .stat:nth-child(4) { box-shadow: -1px 0 0 var(--line), 0 -1px 0 var(--line); }
+  .grid4 { grid-template-columns: 1fr 1fr; }
+  .steps { grid-template-columns: 1fr; max-width: 520px; margin-left: auto; margin-right: auto; }
+  .mascot { justify-self: center; width: 260px; }
+  .cta-note { padding-bottom: 24px; }
+}
+@media (max-width: 600px) {
+  .phone { --pw: 250px; }
+  .duo { min-height: 500px; }
+  .duo .phone { --pw: 228px; }
+  .duo .back { transform: translate(-28%, 5%) rotate(-5deg) scale(.86); }
+  .duo .front { transform: translate(15%, 0) rotate(2deg); }
+  .fc-visual .phone { --pw: 260px; }
+  .chip { font-size: 14px; padding: 10px 12px 10px 10px; gap: 10px; border-radius: 16px; }
+  .chip b { font-size: 15px; }
+  .chip-ico { width: 34px; height: 34px; border-radius: 10px; }
+  .c1 { left: -4px; top: 8%; } .c2 { right: -4px; top: 52%; } .c3 { display: none; }
+  .cols, .grid4 { grid-template-columns: 1fr; }
+  .stats { grid-template-columns: 1fr; }
+  .stat + .stat, .stat:nth-child(3), .stat:nth-child(4) { box-shadow: 0 -1px 0 var(--line); }
+  .ticker-label { display: none; }
+  .trow { grid-template-columns: 1fr auto; padding: 14px 18px; }
+  .trow .verdict { grid-column: 1 / -1; justify-self: start; }
+  .card-shot .chip { right: 8px; }
+  .foot nav { margin-left: 0; }
+}
+
+@media (max-width: 380px) {
+  .duo .phone { --pw: 208px; }
+  .duo { min-height: 460px; }
+  .duo .back { transform: translate(-25%, 5%) rotate(-5deg) scale(.86); }
+}
+
+/* ── Arrival ──
+   Hidden only when the script is running, so the page never stays blank. */
+.js .rise { opacity: 0; transform: translateY(14px); filter: blur(6px); }
+.js .ready .rise { animation: rise 700ms var(--ease-out) forwards; animation-delay: calc(var(--i, 0) * 70ms + 60ms); }
+@keyframes rise { to { opacity: 1; transform: none; filter: none; } }
+.js .phone-in { opacity: 0; transform: translateY(34px) scale(.965); }
+.js .ready .phone-in { animation: phone-in 900ms var(--ease-out) 220ms forwards; }
+@keyframes phone-in { to { opacity: 1; transform: none; } }
+.js .chip-in { opacity: 0; transform: scale(.94); }
+.js .ready .chip-in { animation: chip-in 520ms var(--ease-out) forwards; animation-delay: calc(var(--i, 0) * 120ms + 760ms); }
+@keyframes chip-in { to { opacity: 1; transform: none; } }
+
+.js .reveal { opacity: 0; transform: translateY(22px); filter: blur(4px); transition: opacity 700ms var(--ease-out), transform 700ms var(--ease-out), filter 700ms var(--ease-out); transition-delay: calc(var(--i, 0) * 70ms); }
+.js .reveal.in { opacity: 1; transform: none; filter: none; }
+
+/* Swapping language: the words dim and soften for a moment, then return. */
+main, .hdr-row { transition: opacity 140ms ease, filter 140ms ease; }
+.swapping main { opacity: .2; filter: blur(3px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .js .rise, .js .phone-in, .js .chip-in { transform: none; filter: none; }
+  .js .ready .rise, .js .ready .phone-in, .js .ready .chip-in { animation: fade 300ms ease forwards; animation-delay: 0ms; }
+  @keyframes fade { to { opacity: 1; } }
+  .js .reveal { transform: none; filter: none; transition: opacity 300ms ease; transition-delay: 0ms; }
+  .ticker-track { animation: none; }
+  .ticker-view { overflow-x: auto; }
+  .swapping main { filter: none; }
+  .lang-thumb, .qa-body, .qa button svg { transition: none; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main" data-i18n="skip">Skip to content</a>
+
+<!-- ── Header ── -->
+<header class="hdr" id="hdr">
+  <div class="wrap hdr-row">
+    <a class="brand" href="#top" aria-label="AniSense">
+      <span class="brand-mark"><img src="assets/logo.webp" alt="" width="26" height="26"></span>
+      AniSense
+    </a>
+    <nav class="nav" aria-label="Sections">
+      <a href="#features" data-i18n="nav_features">Features</a>
+      <a href="#forecasts" data-i18n="nav_forecasts">Forecasts</a>
+      <a href="#how" data-i18n="nav_how">How it works</a>
+      <a href="#faq" data-i18n="nav_faq">FAQ</a>
+    </nav>
+    <div class="lang" id="lang" data-lang="en" role="group" aria-label="Language">
+      <span class="lang-thumb" aria-hidden="true"></span>
+      <button type="button" data-set-lang="en" aria-pressed="true" lang="en">EN</button>
+      <button type="button" data-set-lang="tl" aria-pressed="false" lang="tl">TL</button>
+    </div>
+    <a class="btn btn-gold" href="#download" data-i18n="cta_get">Get the app</a>
+  </div>
+</header>
+
+<main id="main">
+  <!-- ── Hero ── -->
+  <section class="hero ink" id="top">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <p class="eyebrow rise" style="--i:0"><i></i><span data-i18n="hero_eyebrow">For Nueva Ecija farmers and the buyers they sell to</span></p>
+        <h1 class="rise" style="--i:1" data-i18n="hero_title">Know the price <span class="hl">before you sell.</span></h1>
+        <p class="hero-lead rise" style="--i:2" data-i18n="hero_lead">AniSense shows this month's crop prices, what the next three months may bring, and lets you sell straight to buyers. Free, in English and Tagalog, and it works even when the signal drops.</p>
+        <div class="hero-cta rise" style="--i:3">
+          <span class="btn btn-store">
+            <span class="store-mark" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3.6v16.8c0 .8.9 1.3 1.6.9l14.5-8.4c.7-.4.7-1.4 0-1.8L6.6 2.7C5.9 2.3 5 2.8 5 3.6z"/></svg></span>
+            <span class="store-lines"><small data-i18n="store_soon">Coming soon</small><b>Google Play</b></span>
+          </span>
+          <a class="btn btn-ghost" href="#features"><span data-i18n="hero_how">See what it does</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg></a>
+        </div>
+        <ul class="ticks rise" style="--i:4">
+          <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span data-i18n="tick_free">Free</span></li>
+          <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span data-i18n="tick_lang">English and Tagalog</span></li>
+          <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span data-i18n="tick_offline">Works offline</span></li>
+        </ul>
+      </div>
+
+      <div class="stage" id="stage">
+        <div class="tilt" id="tilt">
+          <div class="phone phone-in">
+            <div class="phone-screen">
+              <img data-shot="farmer-prices" src="assets/screens/farmer-prices.webp" width="390" height="844" fetchpriority="high"
+                alt="The Prices screen: September 2026 retail prices in Nueva Ecija, with 15 of 24 prices up from the month before." data-i18n-alt="alt_prices">
+              <div class="sbar" aria-hidden="true"><span>9:41</span><span class="sbar-i"><svg viewBox="0 0 18 11"><rect x="0" y="7" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5" width="3" height="6" rx="1" fill="currentColor"/><rect x="10" y="2.5" width="3" height="8.5" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="11" rx="1" fill="currentColor"/></svg><svg viewBox="0 0 16 11"><path d="M8 2.2c2.4 0 4.6.9 6.3 2.4l1.2-1.3C13.5 1.4 10.9.4 8 .4S2.5 1.4.5 3.3l1.2 1.3C3.4 3.1 5.6 2.2 8 2.2zm0 3.5c1.4 0 2.7.5 3.7 1.4l1.2-1.3C11.6 4.6 9.9 3.9 8 3.9s-3.6.7-4.9 1.9l1.2 1.3c1-.9 2.3-1.4 3.7-1.4zm0 3.4c.5 0 .9.2 1.2.5L8 10.8 6.8 9.6c.3-.3.7-.5 1.2-.5z" fill="currentColor"/></svg><svg viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3.2" fill="none" stroke="currentColor" opacity=".4"/><rect x="2.2" y="2.2" width="16" height="7.6" rx="1.8" fill="currentColor"/><rect x="23.6" y="4" width="1.8" height="4" rx=".9" fill="currentColor" opacity=".45"/></svg></span></div>
+              <div class="island" aria-hidden="true"></div>
+            </div>
+          </div>
+        </div>
+        <div class="chip c1 chip-in" style="--i:0">
+          <span class="chip-ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span>
+          <span><b>Special Rice · ₱57.20/kg</b><span class="sub"><span class="delta down">−3.2%</span> <span data-i18n="chip_from">from August</span></span></span>
+        </div>
+        <div class="chip c2 chip-in" style="--i:1">
+          <span class="chip-ico gold" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></span>
+          <span><b data-i18n="chip_fc">3-month forecast</b><span class="sub" data-i18n="chip_fc_sub">tested: off by about 3%</span></span>
+        </div>
+        <div class="chip c3 chip-in" style="--i:2">
+          <span class="chip-ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h.01"/><path d="M8.5 16.43a5 5 0 0 1 7 0"/><path d="M5 12.86a10 10 0 0 1 5.17-2.69"/><path d="M19 12.86a10 10 0 0 0-2-1.52"/><path d="M2 8.82a15 15 0 0 1 4.18-2.64"/><path d="M22 8.82a15 15 0 0 0-11.29-3.76"/><path d="m2 2 20 20"/></svg></span>
+          <span><b data-i18n="chip_off">No signal? Still works.</b><span class="sub" data-i18n="chip_off_sub">Prices are inside the app</span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Real prices, from the records the app is built on. -->
+    <div class="ticker">
+      <div class="wrap ticker-row">
+        <p class="ticker-label" data-i18n="ticker_label">September 2026 retail prices · Nueva Ecija</p>
+        <div class="ticker-view">
+          <div class="ticker-track" id="ticker" aria-label="September 2026 retail prices">
+            <span class="tick">Special Rice <b>₱57.20</b> <span class="delta down">−3.2%</span></span>
+            <span class="tick">Well Milled Rice <b>₱47.00</b> <span class="delta down">−3.9%</span></span>
+            <span class="tick">Native Garlic <b>₱350.00</b> <span class="delta flat">0.0%</span></span>
+            <span class="tick">Red Onion <b>₱92.50</b> <span class="delta up">+2.8%</span></span>
+            <span class="tick">Regular Calamansi <b>₱55.00</b> <span class="delta down">−15.4%</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── In numbers ── -->
+  <div class="stats-wrap">
+    <div class="wrap">
+      <div class="stats reveal">
+        <div class="stat"><div class="stat-n">24</div><p data-i18n="stat_1">crop varieties, from rice to watermelon</p></div>
+        <div class="stat"><div class="stat-n">320</div><p data-i18n="stat_2">monthly price records, back to 2021</p></div>
+        <div class="stat"><div class="stat-n">3<small data-i18n="stat_3_unit">months</small></div><p data-i18n="stat_3">of forecast, by ARIMA and LSTM</p></div>
+        <div class="stat"><div class="stat-n">₱0</div><p data-i18n="stat_4">to use. No paid account, no ads.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Prices ── -->
+  <section class="sec" id="features">
+    <div class="wrap split">
+      <div class="copy">
+        <p class="tag reveal" data-i18n="prices_tag">Prices</p>
+        <h2 class="reveal" style="--i:1" data-i18n="prices_h">Prices you can plan around</h2>
+        <p class="lead reveal" style="--i:2" data-i18n="prices_lead">Monthly retail prices for Nueva Ecija, the newest first, with the crops you grow at the top.</p>
+        <ul class="points">
+          <li class="reveal" style="--i:3"><span class="dot" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span><p data-i18n="prices_p1"><b>See every move.</b> Each price says how far it went up or down from the month before.</p></li>
+          <li class="reveal" style="--i:4"><span class="dot" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></span><p data-i18n="prices_p2"><b>Tap a crop for its year.</b> A chart of this year's prices, the low and the high, and where it may go next.</p></li>
+          <li class="reveal" style="--i:5"><span class="dot" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10.27 21a2 2 0 0 0 3.46 0"/><path d="M3.26 15.33A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.67C19.41 13.96 18 12.5 18 8A6 6 0 0 0 6 8c0 4.5-1.41 5.96-2.74 7.33"/></svg></span><p data-i18n="prices_p3"><b>Name your price.</b> Set a price alert, and AniSense tells you when a crop reaches it.</p></li>
+        </ul>
+      </div>
+      <div class="duo reveal" style="--i:2">
+        <div class="phone back">
+          <div class="phone-screen">
+            <img data-shot="farmer-price-sheet" src="assets/screens/farmer-price-sheet.webp" width="390" height="844" loading="lazy" decoding="async"
+              alt="Special Rice at ₱57.20 a kilo, with a chart of 2026 prices and the forecast to December." data-i18n-alt="alt_sheet">
+            <div class="island" aria-hidden="true"></div>
+          </div>
+        </div>
+        <div class="phone front">
+          <div class="phone-screen">
+            <img data-shot="farmer-prices" src="assets/screens/farmer-prices.webp" width="390" height="844" loading="lazy" decoding="async"
+              alt="The Prices screen, with the biggest price moves of the month." data-i18n-alt="alt_prices_2">
+            <div class="island" aria-hidden="true"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Forecasts ── -->
+  <section class="sec ink" id="forecasts">
+    <div class="wrap split flip">
+      <div class="copy">
+        <p class="tag reveal" data-i18n="fc_tag">Forecasts</p>
+        <h2 class="reveal" style="--i:1" data-i18n="fc_h">Forecasts that say how sure they are</h2>
+        <p class="lead reveal" style="--i:2" data-i18n="fc_lead">Two models, ARIMA and LSTM, learned from monthly prices since 2021 and were tested on the last twelve months. AniSense shows how far off they were, and gives sell-or-wait advice only when that is 20% or less.</p>
+        <div class="tested reveal" style="--i:3">
+          <h3 data-i18n="fc_table">How far off the forecast was in testing</h3>
+          <div class="trow"><span class="trow-name">Special Rice</span><span class="trow-err">4.5%</span><span class="verdict ok" data-i18n="fc_ok">Gives advice</span></div>
+          <div class="trow"><span class="trow-name">Native Garlic</span><span class="trow-err">4.8%</span><span class="verdict ok" data-i18n="fc_ok">Gives advice</span></div>
+          <div class="trow"><span class="trow-name">Well Milled Rice</span><span class="trow-err">7.4%</span><span class="verdict ok" data-i18n="fc_ok">Gives advice</span></div>
+          <div class="trow"><span class="trow-name">Red Onion</span><span class="trow-err">28.3%</span><span class="verdict no" data-i18n="fc_no">Too uncertain: no advice</span></div>
+          <div class="trow"><span class="trow-name">Regular Calamansi</span><span class="trow-err">48.9%</span><span class="verdict no" data-i18n="fc_no">Too uncertain: no advice</span></div>
+        </div>
+        <p class="note reveal" style="--i:4" data-i18n="fc_note">Average miss of the ARIMA model, which gives the advice. No model can see a sudden shock, like a typhoon or an import ban coming: a forecast is a guide, not a promise.</p>
+      </div>
+      <div class="fc-visual reveal" style="--i:2">
+        <div class="phone">
+          <div class="phone-screen">
+            <img data-shot="farmer-forecast" src="assets/screens/farmer-forecast.webp" width="390" height="844" loading="lazy" decoding="async"
+              alt="The price forecast for Special Rice: ₱57.20 in September to ₱56.66 in December, expected to fall, tested at about 3% off." data-i18n-alt="alt_forecast">
+            <div class="island" aria-hidden="true"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Market ── -->
+  <section class="sec white" id="market">
+    <div class="wrap split">
+      <div class="copy">
+        <p class="tag reveal" data-i18n="mk_tag">Market</p>
+        <h2 class="reveal" style="--i:1" data-i18n="mk_h">Sell straight to the people who buy</h2>
+        <p class="lead reveal" style="--i:2" data-i18n="mk_lead">Farmers post what they have. Buyers find it, order it, and call the farmer.</p>
+        <div class="cols">
+          <div class="reveal" style="--i:3">
+            <h3 data-i18n="mk_f">If you farm</h3>
+            <ul>
+              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span data-i18n="mk_f1">Post a harvest with a photo, the kilos and your price.</span></li>
+              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span data-i18n="mk_f2">See your price beside the market's.</span></li>
+              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span data-i18n="mk_f3">Buyers call you directly.</span></li>
+            </ul>
+          </div>
+          <div class="reveal" style="--i:4">
+            <h3 data-i18n="mk_b">If you buy</h3>
+            <ul>
+              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span data-i18n="mk_b1">Browse fresh produce from Nueva Ecija farms.</span></li>
+              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span data-i18n="mk_b2">Order from several farmers in one checkout.</span></li>
+              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span data-i18n="mk_b3">Know who grew it, and where.</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="duo reveal" style="--i:2">
+        <div class="phone back">
+          <div class="phone-screen">
+            <img data-shot="buyer-market" src="assets/screens/buyer-market.webp" width="390" height="844" loading="lazy" decoding="async"
+              alt="The Market: listings with photos, the price per kilo, the kilos left and the farmer's town." data-i18n-alt="alt_market">
+            <div class="island" aria-hidden="true"></div>
+          </div>
+        </div>
+        <div class="phone front">
+          <div class="phone-screen">
+            <img data-shot="buyer-home" src="assets/screens/buyer-home.webp" width="390" height="844" loading="lazy" decoding="async"
+              alt="A buyer's Home: search, fresh local produce, and crops, fruits and vegetables to browse." data-i18n-alt="alt_buyer">
+            <div class="island" aria-hidden="true"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Farm records ── -->
+  <section class="sec" id="records">
+    <div class="wrap split flip">
+      <div class="copy">
+        <p class="tag reveal" data-i18n="rc_tag">Farm records</p>
+        <h2 class="reveal" style="--i:1" data-i18n="rc_h">Your farm's books, even without signal</h2>
+        <p class="lead reveal" style="--i:2" data-i18n="rc_lead">Write down what each crop costs and what it sold for. AniSense works out what is left over.</p>
+        <ul class="points">
+          <li class="reveal" style="--i:3"><span class="dot" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/></svg></span><p data-i18n="rc_p1"><b>Expenses by crop.</b> Seeds, fertilizer, labor and more, month by month.</p></li>
+          <li class="reveal" style="--i:4"><span class="dot" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span><p data-i18n="rc_p2"><b>Profit, before and after.</b> What your harvest is worth at today's price, and what it really sold for.</p></li>
+          <li class="reveal" style="--i:5"><span class="dot" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h.01"/><path d="M8.5 16.43a5 5 0 0 1 7 0"/><path d="M5 12.86a10 10 0 0 1 5.17-2.69"/><path d="M19 12.86a10 10 0 0 0-2-1.52"/><path d="M2 8.82a15 15 0 0 1 4.18-2.64"/><path d="M22 8.82a15 15 0 0 0-11.29-3.76"/><path d="m2 2 20 20"/></svg></span><p data-i18n="rc_p3"><b>Saved on the phone first.</b> No signal in the field? It is sent the moment you are back online.</p></li>
+          <li class="reveal" style="--i:6"><span class="dot" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span><p data-i18n="rc_p4"><b>Yours alone.</b> Only you can see your farm records.</p></li>
+        </ul>
+      </div>
+      <div class="card-shot reveal" style="--i:2">
+        <img data-shot="profit-card" src="assets/screens/profit-card.webp" width="716" height="708" loading="lazy" decoding="async"
+          alt="The Your profit card: estimated and final profit, and ₱13,000 spent on rice." data-i18n-alt="alt_profit">
+        <div class="chip">
+          <span class="chip-ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+          <span><b data-i18n="rc_chip">Saved offline</b><span class="sub" data-i18n="rc_chip_sub">sent when the signal returns</span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Made for the field ── -->
+  <section class="sec white">
+    <div class="wrap center">
+      <p class="tag reveal" data-i18n="mf_tag">Made for the field</p>
+      <h2 class="reveal" style="--i:1" data-i18n="mf_h">Built for the people who use it</h2>
+      <p class="lead reveal" style="--i:2" data-i18n="mf_lead">Farmers in Nueva Ecija, many of them past fifty, on the phones they already have.</p>
+      <div class="grid4" style="text-align:left">
+        <div class="feat reveal" style="--i:2"><span class="feat-ico" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg></span><h3 data-i18n="mf_1">Easy to read</h3><p data-i18n="mf_1d">Large text and large buttons, one question at a time.</p></div>
+        <div class="feat reveal" style="--i:3"><span class="feat-ico" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg></span><h3 data-i18n="mf_2">English and Tagalog</h3><p data-i18n="mf_2d">Switch any time, from the very first screen.</p></div>
+        <div class="feat reveal" style="--i:4"><span class="feat-ico" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h.01"/><path d="M8.5 16.43a5 5 0 0 1 7 0"/><path d="M5 12.86a10 10 0 0 1 5.17-2.69"/><path d="M19 12.86a10 10 0 0 0-2-1.52"/><path d="M2 8.82a15 15 0 0 1 4.18-2.64"/><path d="M22 8.82a15 15 0 0 0-11.29-3.76"/><path d="m2 2 20 20"/></svg></span><h3 data-i18n="mf_3">Works offline</h3><p data-i18n="mf_3d">Prices, their history and the forecasts are inside the app.</p></div>
+        <div class="feat reveal" style="--i:5"><span class="feat-ico" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg></span><h3 data-i18n="mf_4">Private by default</h3><p data-i18n="mf_4d">No ads, and we never sell your information.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── How it works ── -->
+  <section class="sec" id="how">
+    <div class="wrap center">
+      <p class="tag reveal" data-i18n="hw_tag">How it works</p>
+      <h2 class="reveal" style="--i:1" data-i18n="hw_h">Up and running in three steps</h2>
+      <ol class="steps" style="text-align:left">
+        <li class="step reveal" style="--i:2"><span class="step-n">1</span><h3 data-i18n="hw_1">Create an account</h3><p data-i18n="hw_1d">With your CP number or Gmail. Choose farmer or buyer.</p>
+          <div class="peek"><div class="phone"><div class="phone-screen"><img data-shot="signin-splash" src="assets/screens/signin-splash.webp" width="390" height="844" loading="lazy" decoding="async" alt="The AniSense welcome screen, with Create an Account and I already have an account." data-i18n-alt="alt_splash"><div class="island" aria-hidden="true"></div></div></div></div></li>
+        <li class="step reveal" style="--i:3"><span class="step-n">2</span><h3 data-i18n="hw_2">Check the prices</h3><p data-i18n="hw_2d">This month's prices, and the next three months, crop by crop.</p>
+          <div class="peek"><div class="phone"><div class="phone-screen"><img data-shot="farmer-price-sheet" src="assets/screens/farmer-price-sheet.webp" width="390" height="844" loading="lazy" decoding="async" alt="A crop's price, its change from the month before, and its chart." data-i18n-alt="alt_sheet_2"><div class="island" aria-hidden="true"></div></div></div></div></li>
+        <li class="step reveal" style="--i:4"><span class="step-n">3</span><h3 data-i18n="hw_3">Sell or buy</h3><p data-i18n="hw_3d">Post your harvest, or order fresh from a farmer.</p>
+          <div class="peek"><div class="phone"><div class="phone-screen"><img data-shot="buyer-market" src="assets/screens/buyer-market.webp" width="390" height="844" loading="lazy" decoding="async" alt="Listings in the Market." data-i18n-alt="alt_market_2"><div class="island" aria-hidden="true"></div></div></div></div></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ── Questions ── -->
+  <section class="sec white" id="faq">
+    <div class="wrap center">
+      <p class="tag reveal" data-i18n="faq_tag">Questions</p>
+      <h2 class="reveal" style="--i:1" data-i18n="faq_h">Good to know</h2>
+      <div class="faq" id="faq-list" style="text-align:left"></div>
+    </div>
+  </section>
+
+  <!-- ── Download ── -->
+  <section class="cta ink" id="download">
+    <div class="wrap cta-grid">
+      <div>
+        <p class="slogan reveal">Ani mo, alam mo.</p>
+        <h2 class="reveal" style="--i:1" data-i18n="dl_h">AniSense is coming to Google Play</h2>
+        <p class="lead reveal" style="--i:2" data-i18n="dl_lead">Free for farmers and buyers, on Android phones. This page will link to it the day it is out.</p>
+        <div class="cta-actions reveal" style="--i:3">
+          <span class="btn btn-store">
+            <span class="store-mark" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3.6v16.8c0 .8.9 1.3 1.6.9l14.5-8.4c.7-.4.7-1.4 0-1.8L6.6 2.7C5.9 2.3 5 2.8 5 3.6z"/></svg></span>
+            <span class="store-lines"><small data-i18n="store_soon">Coming soon</small><b>Google Play</b></span>
+          </span>
+        </div>
+        <p class="cta-note reveal" style="--i:4"><span data-i18n="dl_ask">Questions? Write to</span> <a class="mail js-mail" href="mailto:AniSense2026@gmail.com">AniSense2026@gmail.com</a></p>
+      </div>
+      <img class="mascot reveal" style="--i:2" src="assets/mascot-thumbs.webp" width="420" height="443" loading="lazy" decoding="async" alt="">
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-row">
+      <a class="brand" href="#top"><span class="brand-mark"><img src="assets/logo.webp" alt="" width="22" height="22"></span>AniSense</a>
+      <span data-i18n="foot_tag">Crop prices, forecasts and a market for Nueva Ecija.</span>
+      <nav aria-label="Footer">
+        <a href="privacy-policy.html" lang="en">Privacy Policy</a>
+        <a href="delete-account.html" data-i18n="foot_delete">Delete your account</a>
+        <a class="js-mail" href="mailto:AniSense2026@gmail.com" data-i18n="foot_contact">Contact</a>
+      </nav>
+    </div>
+    <div class="foot-copy"><span>© 2026 AniSense</span><span data-i18n="foot_made">Made in the Philippines</span></div>
+  </div>
+</footer>
+
+<script src="config.js"></script>
+<script>
+(() => {
+  // ── Words, in both languages ──
+  // The Privacy Policy keeps its English name in both: it is published in
+  // English only, as in the app.
+  const T = {
+    en: {
+      skip: "Skip to content",
+      nav_features: "Features", nav_forecasts: "Forecasts", nav_how: "How it works", nav_faq: "FAQ",
+      cta_get: "Get the app",
+      hero_eyebrow: "For Nueva Ecija farmers and the buyers they sell to",
+      hero_title: 'Know the price <span class="hl">before you sell.</span>',
+      hero_lead: "AniSense shows this month's crop prices, what the next three months may bring, and lets you sell straight to buyers. Free, in English and Tagalog, and it works even when the signal drops.",
+      store_soon: "Coming soon", hero_how: "See what it does",
+      tick_free: "Free", tick_lang: "English and Tagalog", tick_offline: "Works offline",
+      chip_from: "from August", chip_fc: "3-month forecast", chip_fc_sub: "tested: off by about 3%",
+      chip_off: "No signal? Still works.", chip_off_sub: "Prices are inside the app",
+      ticker_label: "September 2026 retail prices · Nueva Ecija",
+      stat_1: "crop varieties, from rice to watermelon", stat_2: "monthly price records, back to 2021",
+      stat_3_unit: "months", stat_3: "of forecast, by ARIMA and LSTM", stat_4: "to use. No paid account, no ads.",
+      prices_tag: "Prices", prices_h: "Prices you can plan around",
+      prices_lead: "Monthly retail prices for Nueva Ecija, the newest first, with the crops you grow at the top.",
+      prices_p1: "<b>See every move.</b> Each price says how far it went up or down from the month before.",
+      prices_p2: "<b>Tap a crop for its year.</b> A chart of this year's prices, the low and the high, and where it may go next.",
+      prices_p3: "<b>Name your price.</b> Set a price alert, and AniSense tells you when a crop reaches it.",
+      fc_tag: "Forecasts", fc_h: "Forecasts that say how sure they are",
+      fc_lead: "Two models, ARIMA and LSTM, learned from monthly prices since 2021 and were tested on the last twelve months. AniSense shows how far off they were, and gives sell-or-wait advice only when that is 20% or less.",
+      fc_table: "How far off the forecast was in testing", fc_ok: "Gives advice", fc_no: "Too uncertain: no advice",
+      fc_note: "Average miss of the ARIMA model, which gives the advice. No model can see a sudden shock, like a typhoon or an import ban, coming: a forecast is a guide, not a promise.",
+      mk_tag: "Market", mk_h: "Sell straight to the people who buy",
+      mk_lead: "Farmers post what they have. Buyers find it, order it, and call the farmer.",
+      mk_f: "If you farm", mk_f1: "Post a harvest with a photo, the kilos and your price.", mk_f2: "See your price beside the market's.", mk_f3: "Buyers call you directly.",
+      mk_b: "If you buy", mk_b1: "Browse fresh produce from Nueva Ecija farms.", mk_b2: "Order from several farmers in one checkout.", mk_b3: "Know who grew it, and where.",
+      rc_tag: "Farm records", rc_h: "Your farm's books, even without signal",
+      rc_lead: "Write down what each crop costs and what it sold for. AniSense works out what is left over.",
+      rc_p1: "<b>Expenses by crop.</b> Seeds, fertilizer, labor and more, month by month.",
+      rc_p2: "<b>Profit, before and after.</b> What your harvest is worth at today's price, and what it really sold for.",
+      rc_p3: "<b>Saved on the phone first.</b> No signal in the field? It is sent the moment you are back online.",
+      rc_p4: "<b>Yours alone.</b> Only you can see your farm records.",
+      rc_chip: "Saved offline", rc_chip_sub: "sent when the signal returns",
+      mf_tag: "Made for the field", mf_h: "Built for the people who use it",
+      mf_lead: "Farmers in Nueva Ecija, many of them past fifty, on the phones they already have.",
+      mf_1: "Easy to read", mf_1d: "Large text and large buttons, one question at a time.",
+      mf_2: "English and Tagalog", mf_2d: "Switch any time, from the very first screen.",
+      mf_3: "Works offline", mf_3d: "Prices, their history and the forecasts are inside the app.",
+      mf_4: "Private by default", mf_4d: "No ads, and we never sell your information.",
+      hw_tag: "How it works", hw_h: "Up and running in three steps",
+      hw_1: "Create an account", hw_1d: "With your CP number or Gmail. Choose farmer or buyer.",
+      hw_2: "Check the prices", hw_2d: "This month's prices, and the next three months, crop by crop.",
+      hw_3: "Sell or buy", hw_3d: "Post your harvest, or order fresh from a farmer.",
+      faq_tag: "Questions", faq_h: "Good to know",
+      dl_h: "AniSense is coming to Google Play",
+      dl_lead: "Free for farmers and buyers, on Android phones. This page will link to it the day it is out.",
+      dl_ask: "Questions? Write to",
+      foot_tag: "Crop prices, forecasts and a market for Nueva Ecija.",
+      foot_delete: "Delete your account", foot_contact: "Contact", foot_made: "Made in the Philippines",
+      alt_prices: "The Prices screen: September 2026 retail prices in Nueva Ecija, with 15 of 24 prices up from the month before.",
+      alt_prices_2: "The Prices screen, with the biggest price moves of the month.",
+      alt_sheet: "Special Rice at ₱57.20 a kilo, with a chart of 2026 prices and the forecast to December.",
+      alt_sheet_2: "A crop's price, its change from the month before, and its chart.",
+      alt_forecast: "The price forecast for Special Rice: ₱57.20 in September to ₱56.66 in December, expected to fall, tested at about 3% off.",
+      alt_market: "The Market: listings with photos, the price per kilo, the kilos left and the farmer's town.",
+      alt_market_2: "Listings in the Market.",
+      alt_buyer: "A buyer's Home: search, fresh local produce, and crops, fruits and vegetables to browse.",
+      alt_profit: "The Your profit card: estimated and final profit, and ₱13,000 spent on rice.",
+      alt_splash: "The AniSense welcome screen, with Create an Account and I already have an account.",
+      faq: [
+        ["Is AniSense free?", "Yes. There is no paid account and no ads."],
+        ["Do I need internet?", "Not to see prices: they, their history and the forecasts are inside the app. Your farm records are saved on the phone and sent when the signal returns. Posting a harvest and placing an order need a connection."],
+        ["Which crops does it cover?", "24 varieties of rice, corn, onions, garlic, tomatoes, squash, ampalaya, calamansi, mango and watermelon. Special Rice, Well Milled Rice, Native Garlic, Red Onion and Regular Calamansi have real monthly retail prices; the others show sample prices for now."],
+        ["Are the forecasts always right?", "No forecast is. AniSense shows how far off each one was when tested, and gives no sell-or-wait advice when that is above 20%. A sudden event, like a typhoon, can move prices in ways no model can see."],
+        ["What happens to my information?", 'Only what the app needs is kept, your farm records are private, and nothing is sold. Read the <a href="privacy-policy.html" lang="en">Privacy Policy</a>.'],
+        ["How do I delete my account?", 'In the app: Profile → Manage account → Delete my account. Without the app, use the <a href="delete-account.html">account deletion page</a>.'],
+        ["When can I download it?", "AniSense is coming to Google Play for Android phones. This page will link to it the day it is out."],
+      ],
+    },
+    tl: {
+      skip: "Lumaktaw sa nilalaman",
+      nav_features: "Mga tampok", nav_forecasts: "Forecast", nav_how: "Paano gamitin", nav_faq: "Mga tanong",
+      cta_get: "Kunin ang app",
+      hero_eyebrow: "Para sa mga magsasaka ng Nueva Ecija at sa kanilang mamimili",
+      hero_title: 'Alamin ang presyo <span class="hl">bago ka magbenta.</span>',
+      hero_lead: "Ipinapakita ng AniSense ang presyo ng pananim ngayong buwan at ang posibleng presyo sa susunod na tatlong buwan. Puwede ka ring magbenta nang direkta sa mamimili. Libre, nasa Ingles at Tagalog, at gumagana kahit mahina ang signal.",
+      store_soon: "Malapit na", hero_how: "Tingnan ang laman",
+      tick_free: "Libre", tick_lang: "Ingles at Tagalog", tick_offline: "Gumagana offline",
+      chip_from: "mula Agosto", chip_fc: "Forecast sa 3 buwan", chip_fc_sub: "sinubok: lihis nang mga 3%",
+      chip_off: "Walang signal? Gumagana pa rin.", chip_off_sub: "Nasa loob ng app ang presyo",
+      ticker_label: "Presyong tingi, Setyembre 2026 · Nueva Ecija",
+      stat_1: "uri ng pananim, mula palay hanggang pakwan", stat_2: "talaan ng presyo kada buwan, mula 2021",
+      stat_3_unit: "buwan", stat_3: "na forecast, gawa ng ARIMA at LSTM", stat_4: "ang bayad. Walang bayad na account, walang ads.",
+      prices_tag: "Presyo", prices_h: "Presyong mapagbabatayan",
+      prices_lead: "Presyong tingi kada buwan sa Nueva Ecija, pinakabago muna, at nauuna ang mga pananim mo.",
+      prices_p1: "<b>Kita ang bawat galaw.</b> Nakasaad kung magkano ang itinaas o ibinaba ng bawat presyo mula noong nakaraang buwan.",
+      prices_p2: "<b>Pindutin ang pananim.</b> Lalabas ang tsart ng presyo ngayong taon, ang pinakamababa at pinakamataas, at ang posibleng susunod.",
+      prices_p3: "<b>Itakda ang presyo mo.</b> Maglagay ng price alert, at sasabihan ka ng AniSense kapag naabot ito ng pananim.",
+      fc_tag: "Forecast", fc_h: "Forecast na nagsasabi kung gaano ito kasigurado",
+      fc_lead: "Dalawang modelo, ARIMA at LSTM, ang natuto mula sa presyo kada buwan mula 2021, at sinubok sa huling labindalawang buwan. Ipinapakita ng AniSense kung gaano sila kalihis, at nagbibigay lang ng payo kung ibebenta o maghihintay kapag 20% pababa ito.",
+      fc_table: "Gaano kalihis ang forecast nang subukan", fc_ok: "May payo", fc_no: "Hindi sigurado: walang payo",
+      fc_note: "Karaniwang lihis ng modelong ARIMA, na siyang nagbibigay ng payo. Walang modelong makakakita ng biglaang pangyayari, gaya ng bagyo o pagbabawal sa pag-angkat: gabay ang forecast, hindi pangako.",
+      mk_tag: "Merkado", mk_h: "Magbenta nang direkta sa bumibili",
+      mk_lead: "Ipinopost ng magsasaka ang ani niya. Hahanapin ito ng mamimili, oorderin, at tatawagan ang magsasaka.",
+      mk_f: "Kung magsasaka ka", mk_f1: "I-post ang ani mo, kasama ang litrato, ilang kilo, at ang presyo mo.", mk_f2: "Makita ang presyo mo katabi ng presyo sa merkado.", mk_f3: "Direktang tatawag sa iyo ang mamimili.",
+      mk_b: "Kung mamimili ka", mk_b1: "Tumingin ng sariwang ani mula sa mga bukid ng Nueva Ecija.", mk_b2: "Umorder sa ilang magsasaka sa iisang checkout.", mk_b3: "Alamin kung sino ang nagtanim, at saan.",
+      rc_tag: "Talaan ng bukid", rc_h: "Ang talaan ng bukid mo, kahit walang signal",
+      rc_lead: "Isulat ang gastos at benta ng bawat pananim. Ang AniSense na ang magkukuwenta ng natira.",
+      rc_p1: "<b>Gastos kada pananim.</b> Binhi, abono, trabahador at iba pa, buwan-buwan.",
+      rc_p2: "<b>Kita, bago at pagkatapos.</b> Halaga ng ani mo sa presyo ngayon, at ang talagang naibenta.",
+      rc_p3: "<b>Naka-save muna sa telepono.</b> Walang signal sa bukid? Ipapadala ito pagbalik ng signal.",
+      rc_p4: "<b>Sa iyo lang.</b> Ikaw lang ang nakakakita ng talaan ng bukid mo.",
+      rc_chip: "Naka-save offline", rc_chip_sub: "ipapadala pagbalik ng signal",
+      mf_tag: "Ginawa para sa bukid", mf_h: "Ginawa para sa gagamit nito",
+      mf_lead: "Mga magsasaka ng Nueva Ecija, marami ay lampas singkuwenta, sa teleponong mayroon na sila.",
+      mf_1: "Madaling basahin", mf_1d: "Malalaking letra at button, isang tanong bawat pahina.",
+      mf_2: "Ingles at Tagalog", mf_2d: "Puwedeng palitan kahit kailan, mula sa unang screen.",
+      mf_3: "Gumagana offline", mf_3d: "Nasa loob ng app ang presyo, ang kasaysayan nito, at ang forecast.",
+      mf_4: "Pribado ang datos mo", mf_4d: "Walang ads, at hindi namin ibinebenta ang impormasyon mo.",
+      hw_tag: "Paano gamitin", hw_h: "Handa ka na sa tatlong hakbang",
+      hw_1: "Gumawa ng account", hw_1d: "Gamit ang CP number o Gmail mo. Piliin kung magsasaka o mamimili.",
+      hw_2: "Tingnan ang presyo", hw_2d: "Ang presyo ngayong buwan at sa susunod na tatlong buwan, bawat pananim.",
+      hw_3: "Magbenta o bumili", hw_3d: "I-post ang ani mo, o umorder nang sariwa mula sa magsasaka.",
+      faq_tag: "Mga tanong", faq_h: "Mabuting malaman",
+      dl_h: "Malapit nang dumating ang AniSense sa Google Play",
+      dl_lead: "Libre para sa magsasaka at mamimili, sa mga Android phone. Ilalagay dito ang link sa araw na lumabas ito.",
+      dl_ask: "May tanong? Sumulat sa",
+      foot_tag: "Presyo, forecast at merkado para sa Nueva Ecija.",
+      foot_delete: "Burahin ang account", foot_contact: "Makipag-ugnayan", foot_made: "Gawa sa Pilipinas",
+      alt_prices: "Ang screen ng Presyo: presyong tingi sa Nueva Ecija, Setyembre 2026; 15 sa 24 na presyo ang tumaas mula noong nakaraang buwan.",
+      alt_prices_2: "Ang screen ng Presyo, kasama ang pinakamalalaking galaw ng presyo ngayong buwan.",
+      alt_sheet: "Special Rice sa ₱57.20 kada kilo, kasama ang tsart ng presyo sa 2026 at ang forecast hanggang Disyembre.",
+      alt_sheet_2: "Ang presyo ng isang pananim, ang galaw nito mula noong nakaraang buwan, at ang tsart nito.",
+      alt_forecast: "Ang forecast ng Special Rice: ₱57.20 sa Setyembre hanggang ₱56.66 sa Disyembre, inaasahang bababa, lihis nang mga 3% nang subukan.",
+      alt_market: "Ang Merkado: mga paninda na may litrato, presyo kada kilo, natitirang kilo, at bayan ng magsasaka.",
+      alt_market_2: "Mga paninda sa Merkado.",
+      alt_buyer: "Ang Home ng mamimili: paghahanap, sariwang lokal na ani, at mga pananim, prutas at gulay.",
+      alt_profit: "Ang card na Ang kita mo: tantiyang kita, totoong kita, at ₱13,000 na nagastos sa palay.",
+      alt_splash: "Ang unang screen ng AniSense, may Gumawa ng Account at Mayroon na akong account.",
+      faq: [
+        ["Libre ba ang AniSense?", "Oo. Walang bayad na account at walang ads."],
+        ["Kailangan ba ng internet?", "Hindi para makita ang presyo: nasa loob ng app ang presyo, ang kasaysayan nito, at ang forecast. Naka-save sa telepono ang talaan ng bukid mo at ipapadala pagbalik ng signal. Kailangan ng internet sa pag-post ng ani at sa pag-order."],
+        ["Anong mga pananim ang nandito?", "24 na uri ng palay, mais, sibuyas, bawang, kamatis, kalabasa, ampalaya, kalamansi, mangga at pakwan. May totoong presyong tingi kada buwan ang Special Rice, Well Milled Rice, Native Garlic, Red Onion at Regular Calamansi; sample pa lang ang presyo ng iba."],
+        ["Laging tama ba ang forecast?", "Walang forecast na laging tama. Ipinapakita ng AniSense kung gaano kalihis ang bawat isa nang subukan, at walang payo kapag lampas 20% ang lihis. Ang biglaang pangyayari, gaya ng bagyo, ay puwedeng magpagalaw ng presyo na hindi nakikita ng anumang modelo."],
+        ["Ano ang nangyayari sa impormasyon ko?", 'Ang kailangan lang ng app ang iniingatan, pribado ang talaan ng bukid mo, at walang ibinebenta. Basahin ang <a href="privacy-policy.html" lang="en">Privacy Policy</a>.'],
+        ["Paano burahin ang account ko?", 'Sa app: Profile → Pamahalaan ang account → Burahin ang account ko. Kung wala ang app, gamitin ang <a href="delete-account.html">pahina para burahin ang account</a>.'],
+        ["Kailan ito puwedeng i-download?", "Darating ang AniSense sa Google Play para sa mga Android phone. Ilalagay dito ang link sa araw na lumabas ito."],
+      ],
+    },
+  };
+
+  const root = document.documentElement;
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch { /* private window */ } } };
+
+  // ── The questions: built once, words filled by the language ──
+  const faqList = document.getElementById("faq-list");
+  T.en.faq.forEach((_, i) => {
+    const qa = document.createElement("div");
+    qa.className = "qa reveal"; qa.style.setProperty("--i", String(Math.min(i, 4)));
+    qa.innerHTML = `<h3 style="margin:0"><button type="button" aria-expanded="false" aria-controls="qa-${i}" id="qa-b-${i}"><span></span>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></h3>
+      <div class="qa-body" id="qa-${i}" role="region" aria-labelledby="qa-b-${i}"><div><p></p></div></div>`;
+    const btn = qa.querySelector("button");
+    btn.addEventListener("click", () => {
+      const open = !qa.classList.contains("open");
+      qa.classList.toggle("open", open);
+      btn.setAttribute("aria-expanded", String(open));
+    });
+    faqList.appendChild(qa);
+  });
+
+  // ── Language ──
+  const langSwitch = document.getElementById("lang");
+  function apply(lang) {
+    const t = T[lang];
+    root.lang = lang === "tl" ? "tl" : "en";
+    document.querySelectorAll("[data-i18n]").forEach(el => { const v = t[el.dataset.i18n]; if (v != null) el.innerHTML = v; });
+    document.querySelectorAll("[data-i18n-alt]").forEach(el => { const v = t[el.dataset.i18nAlt]; if (v) el.alt = v; });
+    document.querySelectorAll("[data-i18n-aria]").forEach(el => { const v = t[el.dataset.i18nAria]; if (v) el.setAttribute("aria-label", v); });
+    faqList.querySelectorAll(".qa").forEach((qa, i) => {
+      qa.querySelector("button span").textContent = t.faq[i][0];
+      qa.querySelector("p").innerHTML = t.faq[i][1];
+    });
+    langSwitch.dataset.lang = lang;
+    langSwitch.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.setLang === lang)));
+  }
+  // The screenshots in the same language: each one soft-fades out, swaps,
+  // and comes back once the new picture has loaded.
+  function swapShots(lang) {
+    document.querySelectorAll("img[data-shot]").forEach(img => {
+      const next = `assets/screens/${img.dataset.shot}${lang === "tl" ? "-tl" : ""}.webp`;
+      if (img.getAttribute("src") === next) return;
+      if (reduce || !img.complete || img.getBoundingClientRect().bottom < 0 || img.getBoundingClientRect().top > innerHeight) { img.src = next; return; }
+      img.classList.add("swapping");
+      setTimeout(() => {
+        img.addEventListener("load", () => img.classList.remove("swapping"), { once: true });
+        img.addEventListener("error", () => img.classList.remove("swapping"), { once: true });
+        img.src = next;
+      }, 170);
+    });
+  }
+  let current = store.get("anisense-lang") || ((navigator.language || "").toLowerCase().startsWith("tl") || (navigator.language || "").toLowerCase().startsWith("fil") ? "tl" : "en");
+  apply(current); if (current === "tl") swapShots("tl");
+  langSwitch.addEventListener("click", e => {
+    const b = e.target.closest("button[data-set-lang]");
+    if (!b || b.dataset.setLang === current) return;
+    current = b.dataset.setLang; store.set("anisense-lang", current);
+    langSwitch.dataset.lang = current;
+    langSwitch.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.setLang === current)));
+    swapShots(current);
+    if (reduce) { apply(current); return; }
+    // Dim, swap the words at the darkest point, brighten.
+    root.classList.add("swapping");
+    setTimeout(() => { apply(current); requestAnimationFrame(() => root.classList.remove("swapping")); }, 140);
+  });
+
+  // ── Contact address, from config.js (the same place the delete page reads) ──
+  const email = (window.ANISENSE && window.ANISENSE.supportEmail) || "AniSense2026@gmail.com";
+  document.querySelectorAll(".js-mail").forEach(a => { a.href = "mailto:" + email; if (a.classList.contains("mail")) a.textContent = email; });
+
+  // ── Header: clear over the hero, frosted once the page moves ──
+  const hdr = document.getElementById("hdr");
+  let ticking = false;
+  const onScroll = () => { if (ticking) return; ticking = true; requestAnimationFrame(() => { hdr.classList.toggle("scrolled", scrollY > 12); ticking = false; }); };
+  addEventListener("scroll", onScroll, { passive: true }); onScroll();
+
+  // ── Every phone gets the hero's status bar (the screenshots leave room) ──
+  const bar = document.querySelector(".phone-screen .sbar");
+  document.querySelectorAll(".phone-screen").forEach(scr => {
+    if (scr.querySelector(".sbar")) return;
+    const b = bar.cloneNode(true);
+    if (scr.querySelector('img[data-shot="signin-splash"]')) b.classList.add("on-photo");
+    scr.insertBefore(b, scr.querySelector(".island"));
+  });
+
+  // ── The ticker loops on a second copy of itself ──
+  const track = document.getElementById("ticker");
+  const copy = track.innerHTML; track.insertAdjacentHTML("beforeend", copy);
+  [...track.children].slice(track.children.length / 2).forEach(el => el.setAttribute("aria-hidden", "true"));
+
+  // ── Sections rise in once, the first time they are seen ──
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(en => { if (en.isIntersecting) { en.target.classList.add("in"); io.unobserve(en.target); } });
+  }, { rootMargin: "0px 0px -10% 0px", threshold: .08 });
+  document.querySelectorAll(".reveal").forEach(el => io.observe(el));
+
+  // ── The hero arrives once the type has loaded, so nothing reflows mid-motion ──
+  const go = () => document.body.classList.add("ready");
+  Promise.race([document.fonts ? document.fonts.ready : Promise.resolve(), new Promise(r => setTimeout(r, 700))]).then(go);
+
+  // ── The hero phone leans toward the pointer, on a spring ──
+  // Decoration only: a mouse, a wide screen, and nobody asking for less motion.
+  const tilt = document.getElementById("tilt"), stage = document.getElementById("stage");
+  if (!reduce && matchMedia("(hover: hover) and (pointer: fine)").matches) {
+    const s = { x: 0, y: 0, vx: 0, vy: 0, tx: 0, ty: 0 };
+    let raf = 0, last = 0;
+    const K = 170, D = 22;            // stiffness, damping: settles without a wobble
+    const step = (now) => {
+      const dt = Math.min(.032, (now - (last || now)) / 1000); last = now;
+      s.vx += (K * (s.tx - s.x) - D * s.vx) * dt; s.x += s.vx * dt;
+      s.vy += (K * (s.ty - s.y) - D * s.vy) * dt; s.y += s.vy * dt;
+      tilt.style.transform = `rotateX(${s.y.toFixed(3)}deg) rotateY(${s.x.toFixed(3)}deg)`;
+      if (Math.abs(s.tx - s.x) + Math.abs(s.ty - s.y) + Math.abs(s.vx) + Math.abs(s.vy) > .01) raf = requestAnimationFrame(step);
+      else { raf = 0; last = 0; }
+    };
+    const kick = () => { if (!raf) raf = requestAnimationFrame(step); };
+    stage.addEventListener("pointermove", e => {
+      const r = stage.getBoundingClientRect();
+      s.tx = ((e.clientX - r.left) / r.width - .5) * 10;
+      s.ty = -((e.clientY - r.top) / r.height - .5) * 8;
+      kick();
+    });
+    stage.addEventListener("pointerleave", () => { s.tx = 0; s.ty = 0; kick(); });
+  }
+})();
+</script>
+</body>
+</html>

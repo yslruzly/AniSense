@@ -36,7 +36,7 @@ const html = `<!doctype html>
     body { background: var(--paper); color: #2F3336; font: 17px/1.6 "Source Sans 3", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
     main { max-width: 680px; margin: 0 auto; padding: 28px 20px 56px; }
     header { margin-bottom: 22px; }
-    .brand { font: 700 20px Lexend, sans-serif; letter-spacing: -.01em; color: var(--ink); }
+    .brand { font: 700 20px Lexend, sans-serif; letter-spacing: -.01em; color: var(--ink); text-decoration: none; }
     .doc { background: var(--card); border-radius: 22px; padding: 26px 24px 30px; margin-bottom: 18px;
            box-shadow: 0 0 0 1px rgba(22,33,27,.05), 0 1px 2px rgba(22,33,27,.06), 0 14px 30px -20px rgba(22,33,27,.3); }
     h1 { font: 700 30px/1.15 Lexend, sans-serif; letter-spacing: -.02em; color: var(--ink); }
@@ -60,7 +60,7 @@ const html = `<!doctype html>
 <body>
 <main>
   <header>
-    <div class="brand">AniSense</div>
+    <a class="brand" href="./">AniSense</a>
   </header>
   <div class="doc">
     <h1>${esc(PRIVACY.title)}</h1>
