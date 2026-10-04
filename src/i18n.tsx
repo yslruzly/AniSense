@@ -1262,6 +1262,49 @@ export const translations: Dict = {
   // ── Guided tour, buyer ──────────────────────────────────────────
   // The same voice as the farmer's, for someone on the other side of the
   // sale: where to look, how to tell a fair price, how to buy again.
+  // The Expenses page's own walkthrough (farmers).
+  tour_e_replay: { en: "Expenses walkthrough", tl: "Gabay sa Gastos" },
+  tour_e_replay_sub: { en: "How the Expenses page works", tl: "Paano gamitin ang pahina ng Gastos" },
+  tour_e_intro_t: { en: "Your Expenses page", tl: "Ang pahina ng Gastos mo" },
+  tour_e_intro_b: {
+    en: "This is where you write down what the farm costs, and see what is left after. {n} short steps. You can skip it and open it again from Profile.",
+    tl: "Dito mo isinusulat ang gastos ng bukid, at makikita mo ang natitira. {n} maikling hakbang. Puwede mong laktawan at buksan ulit sa Profile.",
+  },
+  tour_e_month_t: { en: "Spent this month", tl: "Nagastos ngayong buwan" },
+  tour_e_month_b: {
+    en: "Everything you spent this month, and whether it is more or less than last month.",
+    tl: "Lahat ng nagastos mo ngayong buwan, at kung mas malaki o mas maliit ito kaysa noong nakaraang buwan.",
+  },
+  tour_e_profit_t: { en: "Your profit", tl: "Ang kita mo" },
+  tour_e_profit_b: {
+    en: "What your harvest is worth, what you sold, and what is left once the costs are taken out.",
+    tl: "Magkano ang halaga ng ani mo, ang naibenta mo, at ang natitira kapag ibinawas na ang gastos.",
+  },
+  tour_e_views_t: { en: "Three ways to look", tl: "Tatlong paraan ng pagtingin" },
+  tour_e_views_b: {
+    en: "Overview, By Crop and By Month. Tap one to see your costs sorted that way.",
+    tl: "Buod, Pananim at Buwan. Pindutin ang isa para makita ang gastos mo sa ganoong ayos.",
+  },
+  tour_e_chart_t: { en: "Where the money goes", tl: "Saan napupunta ang pera" },
+  tour_e_chart_b: {
+    en: "Each kind of cost, like seeds, fertilizer or labor, as a share of the whole.",
+    tl: "Bawat uri ng gastos, gaya ng binhi, abono o trabahador, at ang bahagi nito sa kabuuan.",
+  },
+  tour_e_list_t: { en: "Every expense", tl: "Bawat gastos" },
+  tour_e_list_b: {
+    en: "Your expenses, newest first. Tap one to change it or delete it.",
+    tl: "Ang mga gastos mo, pinakabago muna. Pindutin ang isa para baguhin o burahin.",
+  },
+  tour_e_add_t: { en: "Add an expense", tl: "Magdagdag ng gastos" },
+  tour_e_add_b: {
+    en: "Write a cost down the day you pay it. The calculator helps you add up a receipt first.",
+    tl: "Isulat ang gastos sa araw na binayaran mo ito. Tutulungan ka ng calculator na magsuma ng resibo.",
+  },
+  tour_e_done_t: { en: "That's the Expenses page", tl: "Iyan ang pahina ng Gastos" },
+  tour_e_done_b: {
+    en: "See this again any time: Profile → Expenses walkthrough.",
+    tl: "Makikita mo ulit ito kahit kailan: Profile → Gabay sa Gastos.",
+  },
   tour_b_intro_t: { en: "Welcome to AniSense", tl: "Maligayang pagdating sa AniSense" },
   tour_b_intro_b: {
     en: "A quick look at how to buy straight from Nueva Ecija farmers: {n} short steps, about a minute. Skip it now and replay it any time from More tools or Profile.",

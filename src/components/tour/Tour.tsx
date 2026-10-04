@@ -11,6 +11,7 @@ import { useLang } from "../../i18n";
 import { haptic } from "../../lib/platform";
 import { useHardwareBack } from "../../hooks/useHardwareBack";
 import { usePresence } from "../../hooks/usePresence";
+import type { TourName } from "../../lib/tour";
 
 // ─── Guided tour ──────────────────────────────────────────────────────────────
 // The first minute of a farmer's first launch. The screen dims, one real
@@ -81,6 +82,20 @@ const BUYER_STEPS: Step[] = [
   { id: "b_done" },
 ];
 
+// The farmer's Expenses page, top to bottom, then the two buttons at its
+// foot. Its own script, run the first time Expenses opens (and from
+// Profile), so the Home tour stays about Home.
+const EXPENSES_STEPS: Step[] = [
+  { id: "e_intro" },
+  { id: "e_month", targets: ['[data-tour="exp-month"]'] },
+  { id: "e_profit", targets: ['[data-tour="exp-profit"]'] },
+  { id: "e_views", targets: ['[data-tour="exp-views"]'] },
+  { id: "e_chart", targets: ['[data-tour="exp-chart"]'] },
+  { id: "e_list", targets: ['[data-tour="exp-list"]'] },
+  { id: "e_add", targets: ['[data-tour="exp-add"]'], above: true },
+  { id: "e_done" },
+];
+
 type Box = { top: number; left: number; width: number; height: number };
 
 const PAD = 8;          // breathing room around the lit element
@@ -113,9 +128,9 @@ function measure(targets: string[] | undefined, host: DOMRect): Box | null {
   };
 }
 
-export function Tour({ open, onFinish, role }: { open: boolean; onFinish: () => void; role: "farmer" | "buyer" | null }) {
+export function Tour({ open, onFinish, script }: { open: boolean; onFinish: () => void; script: TourName | null }) {
   const { t } = useLang();
-  const STEPS = role === "buyer" ? BUYER_STEPS : FARMER_STEPS;
+  const STEPS = script === "buyer" ? BUYER_STEPS : script === "expenses" ? EXPENSES_STEPS : FARMER_STEPS;
   const [i, setI] = useState(0);
   // Mounted for the length of its exit, so the tour fades out instead of
   // being deleted from under the last thing the farmer read.
@@ -125,9 +140,13 @@ export function Tour({ open, onFinish, role }: { open: boolean; onFinish: () => 
   const [box, setBox] = useState<Box | null>(null);
   const [cardH, setCardH] = useState(200);
   const [shellH, setShellH] = useState(844);
-  const step = STEPS[i];
-  const last = i === STEPS.length - 1;
-  const opening = i === 0;
+  // Kept inside the script: the Home tour may have ended on its 11th step
+  // just before the 8-step Expenses one opens, and for one render the old
+  // number is still here.
+  const at = Math.min(i, STEPS.length - 1);
+  const step = STEPS[at];
+  const last = at === STEPS.length - 1;
+  const opening = at === 0;
   // The mascot bookends the tour: hello on the first card, a thumbs-up on
   // the last. The cards in between belong to the screen they point at.
   const withMascot = opening || last;
@@ -135,7 +154,7 @@ export function Tour({ open, onFinish, role }: { open: boolean; onFinish: () => 
   const [waves, setWaves] = useState(0);
 
   // Every run starts at the beginning, including a replay from the guide.
-  useEffect(() => { if (open) setI(0); }, [open]);
+  useEffect(() => { if (open) setI(0); }, [open, script]);
 
   // Where the light goes, and when. Scroll events are what drive it: while
   // the page glides to the next card the container reports every frame of it,
@@ -311,9 +330,9 @@ export function Tour({ open, onFinish, role }: { open: boolean; onFinish: () => 
         <div className="tour-foot">
           {/* Where you are, twice: dots to glance at, a count to read. */}
           <span className="tour-dots" aria-hidden="true">
-            {STEPS.map((s, n) => <span key={s.id} className={`tour-dot ${n === i ? "on" : ""} ${n < i ? "done" : ""}`} />)}
+            {STEPS.map((s, n) => <span key={s.id} className={`tour-dot ${n === at ? "on" : ""} ${n < at ? "done" : ""}`} />)}
           </span>
-          <span className="tour-count">{t("tour_step").replace("{n}", String(i + 1)).replace("{total}", String(STEPS.length))}</span>
+          <span className="tour-count">{t("tour_step").replace("{n}", String(at + 1)).replace("{total}", String(STEPS.length))}</span>
         </div>
 
         <div className="tour-btns">

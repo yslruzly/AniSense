@@ -28,7 +28,7 @@ import { PrivacyScreen } from "./screens/PrivacyScreen";
 import { ProfileScreen } from "./screens/ProfileScreen";
 import { WelcomeID, WelcomeInfo, makeMemberId } from "./components/profile/WelcomeID";
 import { Tour } from "./components/tour/Tour";
-import { loadTourSeen, saveTourSeen } from "./lib/tour";
+import { loadTourSeen, saveTourSeen, TourName } from "./lib/tour";
 import { ViewerContext } from "./store/viewer";
 import { isSupabaseConfigured } from "./lib/supabase";
 import {
@@ -103,6 +103,8 @@ export default function App() {
   // things introducing themselves at once is neither of them being read.
   const [tourOpen, setTourOpen] = useState(false);
   const [tourPending, setTourPending] = useState(false);
+  // Which script is running: the Home tour for the role, or Expenses.
+  const [tourScript, setTourScript] = useState<TourName | null>(null);
   const tourChecked = useRef(false);
   useEffect(() => {
     if (!isAuthed || !userRole || tourChecked.current) return;
@@ -122,10 +124,30 @@ export default function App() {
     if (!tourPending || showWelcome || welcomePending || active !== "home") return;
     // Home's own entrance runs first; the spotlight lands on a page that has
     // finished arriving rather than on one still sliding into place.
-    const id = setTimeout(() => { setTourPending(false); setTourOpen(true); }, 520);
+    const id = setTimeout(() => { setTourPending(false); setTourScript(userRole); setTourOpen(true); }, 520);
     return () => clearTimeout(id);
   }, [tourPending, showWelcome, welcomePending, active]);
-  const endTour = () => { setTourOpen(false); if (userRole) void saveTourSeen(userRole); };
+
+  // The Expenses walkthrough: not part of the Home tour. It waits for the
+  // first time a farmer opens Expenses on this phone (a new account's, or
+  // anyone's who has not seen it yet), and can be asked for again from
+  // Profile. Leaving Expenses before it starts keeps it for next time.
+  const [expTourPending, setExpTourPending] = useState(false);
+  const expTourChecked = useRef(false);
+  useEffect(() => {
+    if (!isAuthed || userRole !== "farmer" || active !== "expenses" || expTourChecked.current) return;
+    expTourChecked.current = true;
+    loadTourSeen("expenses").then(seen => { if (!seen) setExpTourPending(true); });
+  }, [isAuthed, userRole, active]);
+  useEffect(() => {
+    if (!expTourPending || active !== "expenses" || tourOpen || showWelcome || welcomePending) return;
+    // As on Home: the page arrives first, then the light.
+    const id = setTimeout(() => { setExpTourPending(false); setTourScript("expenses"); setTourOpen(true); }, 520);
+    return () => clearTimeout(id);
+  }, [expTourPending, active, tourOpen, showWelcome, welcomePending]);
+  const replayExpensesTour = () => { navigate("expenses"); setExpTourPending(true); };
+
+  const endTour = () => { setTourOpen(false); if (tourScript) void saveTourSeen(tourScript); };
 
   // ── Achievements unlocked ──
   // A new account's badges are news (Newbie, at least); an account opened
@@ -407,6 +429,8 @@ export default function App() {
     tourChecked.current = false;
     setTourPending(false);
     setTourOpen(false);
+    expTourChecked.current = false;
+    setExpTourPending(false);
     justJoined.current = false;
     achMarked.current = [];
     setAchQueue([]);
@@ -485,7 +509,7 @@ export default function App() {
       case "guide": return <GuideScreen onBack={goHome} onReplay={replayTour} />;
       case "privacy": return <PrivacyScreen onBack={openProfile} />;
       case "weather": return <WeatherScreen onProfile={openProfile} onBack={goHome} userInitials={initials} userRole={userRole} />;
-      case "profile": return <ProfileScreen onNavigate={navigate} onBack={goBack} profile={farmerProfile} setProfile={saveProfile} onSignOut={handleSignOut} onDeleteAccount={handleDeleteAccount} userInitials={initials} userRole={userRole} userPhoto={userPhoto} onShowId={() => { setIdMode("view"); setShowWelcome(true); }} onReplayTour={replayTour} sales={allSales} memberSince={welcome?.since} />;
+      case "profile": return <ProfileScreen onNavigate={navigate} onBack={goBack} profile={farmerProfile} setProfile={saveProfile} onSignOut={handleSignOut} onDeleteAccount={handleDeleteAccount} userInitials={initials} userRole={userRole} userPhoto={userPhoto} onShowId={() => { setIdMode("view"); setShowWelcome(true); }} onReplayTour={replayTour} onReplayExpensesTour={userRole === "farmer" ? replayExpensesTour : undefined} sales={allSales} memberSince={welcome?.since} />;
     }
   };
 
@@ -524,7 +548,7 @@ export default function App() {
             onNext={nextAch}
             onSeeAll={() => { markAchSeen(achQueue); setAchQueue([]); setAchOpen(false); navigate("profile"); }}
           />
-          <Tour open={tourOpen} onFinish={endTour} role={userRole} />
+          <Tour open={tourOpen} onFinish={endTour} script={tourScript} />
         </div>
       </div>
       </MarketContext.Provider>

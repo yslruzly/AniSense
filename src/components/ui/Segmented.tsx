@@ -12,18 +12,20 @@ import { haptic } from "../../lib/platform";
 // repaints. Styling lives in appStyles under `.seg`.
 
 export function Segmented<T extends string>({
-  value, options, onChange, label,
+  value, options, onChange, label, tour,
 }: {
   value: T;
   /** An icon beside a label makes each choice findable at a glance. */
   options: { id: T; label: string; icon?: ReactNode }[];
   onChange: (v: T) => void;
   label: string;
+  /** A name for the walkthrough to find it by. */
+  tour?: string;
 }) {
   const index = Math.max(0, options.findIndex(o => o.id === value));
 
   return (
-    <div className="seg" role="tablist" aria-label={label}>
+    <div className="seg" role="tablist" aria-label={label} data-tour={tour}>
       <span
         className="seg-thumb"
         aria-hidden="true"

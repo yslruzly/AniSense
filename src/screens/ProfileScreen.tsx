@@ -15,7 +15,7 @@ import { LegalSheet } from "../components/legal/LegalSheet";
 import { FarmStats } from "../components/profile/FarmStats";
 
 // ─── Profile Screen ───────────────────────────────────────────────────────────
-export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignOut, onDeleteAccount, userInitials = "JD", userRole, userPhoto = null, onShowId, onReplayTour, sales = [], memberSince }: {
+export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignOut, onDeleteAccount, userInitials = "JD", userRole, userPhoto = null, onShowId, onReplayTour, onReplayExpensesTour, sales = [], memberSince }: {
   onNavigate: (s: Screen) => void;
   onBack: () => void;
   profile: FarmerProfile;
@@ -29,6 +29,8 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
   onShowId?: () => void;
   /** Runs the guided walkthrough again, from wherever the farmer asked. */
   onReplayTour?: () => void;
+  /** Farmers only: the Expenses page's own walkthrough. */
+  onReplayExpensesTour?: () => void;
   /** For the achievements: what they have sold, and when they joined. */
   sales?: Sale[];
   memberSince?: Date;
@@ -72,6 +74,11 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
       ico: <PlayCircle size={16} color="var(--tanim)" />, bg: "var(--tanim-sk)",
       label: t("gd_replay_t"), sub: t("prof_tour_sub"),
       go: onReplayTour as (() => void) | undefined,
+    }] : []),
+    ...(onReplayExpensesTour ? [{
+      ico: <PlayCircle size={16} color="var(--tanim)" />, bg: "var(--tanim-sk)",
+      label: t("tour_e_replay"), sub: t("tour_e_replay_sub"),
+      go: onReplayExpensesTour as (() => void) | undefined,
     }] : []),
     {
       ico: <HelpCircle size={16} color="var(--tanim)" />, bg: "var(--tanim-sk)",

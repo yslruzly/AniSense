@@ -13,9 +13,14 @@ import { Preferences } from "@capacitor/preferences";
 // as a buyer on the same phone has not seen the buyer's tour; one shared flag
 // would have skipped it. The farmer's key keeps its original name so phones
 // that already saw the farmer tour are not shown it a second time.
-const keyFor = (role: "farmer" | "buyer") => (role === "buyer" ? "tour-seen-1-buyer" : "tour-seen-1");
+//
+// The Expenses walkthrough has a flag of its own: it runs the first time a
+// farmer opens Expenses, not as part of the Home tour.
+export type TourName = "farmer" | "buyer" | "expenses";
+const keyFor = (name: TourName) =>
+  name === "buyer" ? "tour-seen-1-buyer" : name === "expenses" ? "tour-seen-expenses-1" : "tour-seen-1";
 
-export async function loadTourSeen(role: "farmer" | "buyer"): Promise<boolean> {
+export async function loadTourSeen(role: TourName): Promise<boolean> {
   try {
     const { value } = await Preferences.get({ key: keyFor(role) });
     return value === "1";
@@ -26,7 +31,7 @@ export async function loadTourSeen(role: "farmer" | "buyer"): Promise<boolean> {
   }
 }
 
-export async function saveTourSeen(role: "farmer" | "buyer"): Promise<void> {
+export async function saveTourSeen(role: TourName): Promise<void> {
   try {
     await Preferences.set({ key: keyFor(role), value: "1" });
   } catch {

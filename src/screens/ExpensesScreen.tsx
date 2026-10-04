@@ -310,7 +310,7 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
         {!isBuyer && (
           <>
             {/* Hero */}
-            <div className="exp-hero" style={{ textAlign: "left", padding: "20px 18px" }}>
+            <div className="exp-hero" data-tour="exp-month" style={{ textAlign: "left", padding: "20px 18px" }}>
               <div className="exp-total-lbl">{t("exp_total_month")}</div>
               <div className="exp-total" style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
                 {busy ? (showSkeleton && <Skeleton className="on-ink" w={170} h={36} />) : <>₱{thisMonthTotal.toLocaleString()}</>}
@@ -328,6 +328,7 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
 
             {/* View mode tabs */}
             <Segmented
+              tour="exp-views"
               label={t("exp_overview")}
               value={viewMode}
               onChange={setViewMode}
@@ -342,7 +343,7 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
             {viewMode === "all" && (
               <>
                 {/* Pie chart */}
-                <div className="card">
+                <div className="card" data-tour="exp-chart">
                   <div style={{ fontSize: "var(--fs-label)", fontWeight: 800, color: "var(--text)", marginBottom: 12 }}>{t("exp_breakdown")}</div>
                   <PieChart transactions={transactions} />
                 </div>
@@ -363,7 +364,7 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
                 </div>
 
                 {/* Recent transactions */}
-                <div className="card">
+                <div className="card" data-tour="exp-list">
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
                     <div style={{ fontSize: "var(--fs-label)", fontWeight: 800, color: "var(--text)" }}>{t("exp_recent")}</div>
                     {!busy && <span className="ph-count">{filtered.length} {t("exp_items")}</span>}
@@ -619,7 +620,7 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
 
       {/* ── Sticky bottom bar (farmer only) ── */}
       {!isBuyer && (
-        <div className="screen-dock">
+        <div className="screen-dock" data-tour="exp-add">
           <button className="add-btn" onClick={openAdd}>{t("exp_add")}</button>
           <button onClick={() => { setCalc({ display: "0", prev: null, op: null, fresh: false }); setShowCalc(true); }}
             style={{ width: "100%", padding: "11px", background: "var(--tanim-sk)", border: "2px solid var(--line)", borderRadius: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: "var(--fs-label)", fontWeight: 700, color: "var(--tanim)", fontFamily: "inherit" }}>

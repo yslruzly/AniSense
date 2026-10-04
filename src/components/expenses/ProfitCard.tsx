@@ -89,7 +89,7 @@ export function ProfitCard({ transactions, sales, plans, onPlans, farmerCrops }:
   const tone = (n: number | null) => (n === null ? "" : n < 0 ? "neg" : "pos");
 
   return (
-    <section className="card pf" aria-labelledby="pf-t">
+    <section className="card pf" aria-labelledby="pf-t" data-tour="exp-profit">
       <div className="card-head">
         <span className="card-ico tint-green"><TrendingUp size={20} strokeWidth={2.2} /></span>
         <div className="card-title" style={{ margin: 0 }} id="pf-t">{t("pf_title")}</div>
