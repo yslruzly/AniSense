@@ -103,7 +103,7 @@ export const sheetCss = `
   .pp-sub { margin: 18px 0 0; font-weight: 700; color: var(--text); }
   .pp-ul { margin: 8px 0 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; }
   .pp-ul li::marker { color: var(--text-faint); }
-  .pp a { color: var(--tanim); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1.5px; overflow-wrap: anywhere; }
+  .pp a { color: var(--tanim); font-weight: 600; text-decoration: none; overflow-wrap: anywhere; }
 
   /* On the Privacy screen it is one white page, with a page's margins. */
   .pp-page { padding: 22px 20px 26px; }

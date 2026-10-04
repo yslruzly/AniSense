@@ -361,14 +361,13 @@ export const authCss = `
   }
   .a-legal { text-align: center; font-size: var(--fs-label); line-height: 1.5; color: rgba(255,255,255,.78); margin-top: 14px; text-shadow: 0 1px 6px rgba(0,0,0,.35); }
   /* What tapping either button means, on its own line under "Free": the
-     policy as a link, white and underlined so it reads as tappable on the
-     poster, with a 44px target that adds no height to the line. */
+     policy as a link, in full white and bold so it stands out from the
+     dimmer line around it, with a 44px target that adds no height to it. */
   .a-legal-consent { display: block; margin-top: 2px; }
   .a-legal-link {
     display: inline-flex; align-items: center; min-height: 44px; margin: -11px 0; padding: 0 3px;
     border: none; background: none; cursor: pointer; font: inherit; font-weight: 600; color: #fff;
-    text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 4px;
-    text-decoration-color: rgba(255,255,255,.6); text-shadow: inherit;
+    text-decoration: none; text-shadow: inherit;
     transition: opacity 140ms ease; -webkit-tap-highlight-color: transparent;
   }
   .a-legal-link:active { opacity: .6; transition-duration: 0ms; }
@@ -823,13 +822,12 @@ export const authCss = `
     18% { transform: translateX(-7px); } 36% { transform: translateX(6px); }
     54% { transform: translateX(-4px); } 72% { transform: translateX(2px); }
   }
-  /* Links keep their underline, a cue this audience relies on, but a light
-     one: thin, set off from the letters and half the strength of the text. */
+  /* Links have no underline: the green and the weight set them apart from
+     the grey words around them, and the press dims them. */
   .a-link {
     display: inline-flex; align-items: center; min-height: 52px; color: var(--tanim);
     font-family: var(--font-display); font-weight: 600; font-size: var(--fs-body);
-    text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 5px;
-    text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+    text-decoration: none;
     cursor: pointer; background: none; border: none; padding: 0 4px;
     transition: opacity 140ms ease; -webkit-tap-highlight-color: transparent;
   }
@@ -964,9 +962,7 @@ export const authCss = `
   .a-agree.bad .a-agree-tick { box-shadow: inset 0 0 0 2px var(--error); animation: a-shake 360ms var(--ease-out); }
   .a-agree-link {
     display: inline; padding: 0; border: none; background: none; cursor: pointer;
-    font: inherit; font-weight: 700; color: var(--tanim);
-    text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 3px;
-    text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+    font: inherit; font-weight: 700; color: var(--tanim); text-decoration: none;
     -webkit-tap-highlight-color: transparent;
   }
   .a-agree-link:active { opacity: .55; }
