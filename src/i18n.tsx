@@ -110,7 +110,6 @@ export const translations: Dict = {
   crops_title: { en: "What do you grow?", tl: "Ano ang mga tanim mo?" },
   crops_sub: { en: "Pick all that you grow or plan to grow.", tl: "Piliin lahat ng itinatanim mo o balak mong itanim." },
   crops_select_label: { en: "Select your crops", tl: "Piliin ang mga tinatanim mo" },
-  crops_selected: { en: "selected", tl: "ang napili" },
   crops_continue_with: { en: "Continue with", tl: "Magpatuloy gamit ang" },
   crops_crops: { en: "crops", tl: "pananim" },
   crop_rice: { en: "Rice", tl: "Palay" },
@@ -1146,7 +1145,6 @@ export const translations: Dict = {
   ask_phone_why: { en: "It shows on the harvests you sell.", tl: "Makikita ito sa mga aning ibinebenta mo." },
 
   auth_pw_match: { en: "Passwords match", tl: "Magkatugma ang password" },
-  crops_none_yet: { en: "None selected yet", tl: "Wala pang napili" },
 
   // ── Empty / error / loading states ────────────────────────────────────────
   // "No results" and "nothing yet" are deliberately different messages.

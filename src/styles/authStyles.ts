@@ -1014,10 +1014,6 @@ export const authCss = `
   }
   .a-crop-tick svg { opacity: 0; transform: scale(.6); transition: opacity 100ms ease, transform 140ms var(--ease-out); }
   .a-crop.on .a-crop-tick svg { opacity: 1; transform: none; transition: opacity 140ms var(--ease-out), transform 180ms var(--ease-out); }
-  .a-count {
-    font-family: var(--font-display); font-weight: 600; font-size: var(--fs-label);
-    color: var(--text-muted); font-variant-numeric: tabular-nums; margin-bottom: 12px; padding-left: 4px;
-  }
 
   @media (prefers-reduced-motion: reduce) {
     .a-step[data-anim] { animation: a-step-fade 200ms ease both; }

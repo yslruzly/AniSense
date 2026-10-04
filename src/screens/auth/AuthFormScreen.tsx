@@ -1071,11 +1071,7 @@ export function AuthFormScreen({
       </div>,
       primary(t("auth_create_btn"), t("crops_setting_up")),
       next,
-      <p className="a-count">
-        {selectedCrops.length === 0
-          ? t("crops_none_yet")
-          : `${selectedCrops.length} ${t("crops_selected")}`}
-      </p>,
+      undefined,
       true,
     );
   }
