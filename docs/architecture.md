@@ -460,7 +460,7 @@ flowchart LR
 - Environment values are compiled into the bundle, so a build made without `.env` is a demo build.
 - Generators keep derived files in step with their source: the database seed is generated from the crop catalog, the price records and the forecasts, and the web privacy policy from the text the app shows.
 - Prices follow one path: `data/historical-prices.csv` holds the monthly records. From it come the history the app bundles (so prices show offline), the ARIMA and LSTM forecasts (trained locally in Python, never on the phone), and the database's copy. Signed in, the app lays the database's records and forecasts over the bundled ones, so a new month reaches phones without a new APK.
-- `site/` is a static site (privacy policy and account deletion) that any static host can serve. `.github/workflows/pages.yml` publishes it to GitHub Pages.
+- `site/` is the website (home page, privacy policy, account deletion): plain HTML that any static host can serve. It is published on Vercel, with `site/` as the project's root directory; `site/vercel.json` gives the pages clean addresses.
 - `.github/workflows/ci.yml` type-checks and builds the app on every push and pull request, without `.env`, so it builds the demo.
 
 ## 9. Decision log

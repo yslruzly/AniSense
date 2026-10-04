@@ -180,7 +180,7 @@ Key design decisions:
 
 ```
 AniSense/
-├── .github/workflows/   CI build check, and publishing site/ to GitHub Pages
+├── .github/workflows/   CI build check
 ├── android/             Native Android project (Capacitor)
 ├── data/                Price records: historical-prices.csv, and raw/ for the source PDF
 ├── design/              Brand files (brand/) and full-size artwork (artwork/); not loaded by the app

@@ -245,18 +245,16 @@ Both are in `site/`:
 
 1. Open `site/config.js` and fill in the Project URL, the **publishable** key
    (the same two values as `.env`) and a support email address.
-2. Put the `site/` folder online. With GitHub Pages: in the repository,
-   **Settings → Pages → Build and deployment → Source: GitHub Actions**. The
-   workflow in `.github/workflows/pages.yml` then publishes `site/` whenever
-   a change to it reaches `main`; to publish the first time, open
-   **Actions → Publish site → Run workflow**. The page is then at
-   `https://<your-username>.github.io/<repository>/delete-account.html`.
-   (GitHub Pages needs a public repository on the free plan. Netlify and
-   Cloudflare Pages can host the `site/` folder for free from a private one.)
+2. Put the `site/` folder online, on Vercel (free, works with a private
+   repository): vercel.com → **Add New → Project** → this repository →
+   **Root Directory: `site`**, no build command → **Deploy**. Every push to
+   `main` publishes it again. Add your own domain later under the project's
+   **Settings → Domains**.
 3. In Play Console, paste the two addresses:
-   - `…/privacy-policy.html` under **App content → Privacy policy**
-   - `…/delete-account.html` under **App content → Data safety → Delete
-     account URL**
+   - `https://<your-domain>/privacy-policy` under **App content → Privacy
+     policy**
+   - `https://<your-domain>/delete-account` under **App content → Data
+     safety → Delete account URL**
 
 The policy is a draft. Have a lawyer or a data protection officer read it
 before the release.
