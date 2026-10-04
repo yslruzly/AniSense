@@ -230,7 +230,7 @@ Both use `src/services/verification.ts`:
 
 Rules: a code is 6 random digits (`crypto.getRandomValues`), lasts 10 minutes, allows 5 wrong tries and works once; a sign-up code cannot reset a password. The form allows a new code after 30 seconds.
 
-**This is a mockup.** No SMS provider or email sender is connected, so the code is made on the phone and shown in a gold "Demo" note, and no password really changes. Making it real changes only this file: `sendCode` and `checkCode` call a server function that texts (Semaphore) or emails the code and keeps it on the server, and `saveNewPassword` sends the new password with proof that the code passed. The screens do not change.
+**Gmail on the database is real; the rest is a demo.** For a Gmail account in a build with a database, the three functions call the `verify-code` Edge Function (`supabase/functions/verify-code/index.ts`): it makes the code, stores only its hash in `verification_codes`, emails it through Brevo, checks it, and after a reset code passes hands back a one-time token that `saveNewPassword` needs to set the password. For CP numbers (no SMS provider yet) and in a build without a database, the code is made on the phone and shown in a gold "Demo" note. On the database, Forgot password for a CP number is refused with a plain message rather than faked. Connecting Semaphore adds one sender to the function; the screens do not change.
 
 ## 4. Backend architecture
 
@@ -239,7 +239,8 @@ Supabase provides four things:
 | Service | Use |
 |---|---|
 | Auth | Accounts and sessions. A mobile-number account is stored as an email alias until SMS verification is added. |
-| PostgreSQL | 16 tables in five sections: catalog, accounts, market, farm records, rewards. |
+| PostgreSQL | 16 tables in five sections (catalog, accounts, market, farm records, rewards), plus `verification_codes`, which only the verify-code function can read. |
+| Edge Functions | `verify-code`: makes, emails (through Brevo), and checks the 6-digit codes, and sets a new password after a reset. Runs on the server with the service key, which never reaches the app. |
 | Functions (PL/pgSQL) | Operations that must be atomic or must not trust the client. |
 | Storage | One public bucket for listing photos, written only by the owner. |
 
@@ -495,8 +496,8 @@ flowchart LR
 | Price forecasts | ARIMA and LSTM trained on the five varieties' records. The ARIMA search picks the differencing order by AIC, which is not the right tool for it; the LSTM's settings were not tuned; neither model can foresee a price shock. | Choose the differencing order with a stationarity test; tune the LSTM with a small grid scored inside the training months; test a seasonal ARIMA; consider extra inputs (weather, costs) as later work. |
 | Order alerts | A mockup with sample orders, in demo mode only | Read a farmer's incoming orders and the buyer's contact from the database, save the confirmation, and send a push notification. |
 | Weather | Sample values in `src/data/demo/weather.ts` | Connect a forecast service. PAGASA's TenDay API needs a token that PAGASA approves on request, and it gives daily forecasts, not current conditions. |
-| Phone and Gmail verification | A sign-up code step exists, but as a mockup: `src/services/verification.ts` makes the code on the phone and the screen shows it. | Replace its functions with calls to a server function that texts (Semaphore) or emails the code and checks it there. The form does not change. |
-| Password reset | The two pages exist (code, then new password), as a mockup in `src/services/verification.ts`. | Gmail accounts: Supabase `resetPasswordForEmail` with a 6-digit `{{ .Token }}` email, `verifyOtp` of type `recovery`, then `updateUser`. CP-number accounts: the server function texts the code through Semaphore and sets the password. Only that file changes. |
+| Phone and Gmail verification | Gmail: real once the `verify-code` function and Brevo are set up. CP numbers: the on-screen demo code. Sign-up is gated by the form, not by the server: a modified app could still create an account without a code. | Add Semaphore as a second sender in `verify-code`. Have account creation itself require a passed code (sign-up through the function), and a domain of our own in Brevo so codes don't land in Spam. |
+| Password reset | Gmail accounts: real once `verify-code` is set up. CP-number accounts: refused with a message, until SMS. | CP numbers: the same function texts the code through Semaphore. |
 | Automated tests | None in the repository | Add unit tests for the services and the store, and database tests for the SQL functions. |
 | Continuous integration | Type-check and build on every push (`.github/workflows/ci.yml`) | Run the automated tests there once they exist. |
 | iOS | Not targeted | Capacitor supports it if needed later. |

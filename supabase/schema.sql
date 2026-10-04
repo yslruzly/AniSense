@@ -23,6 +23,7 @@
 --    6. Security       row level security: who may read and change what
 --    7. Functions      sign-up, checkout, farm-record sync, badges
 --    8. Storage        listing photos
+--    9. Codes          6-digit codes, kept for the verify-code function
 -- ═══════════════════════════════════════════════════════════════════════════
 
 
@@ -695,3 +696,36 @@ drop policy if exists "farmers delete own listing photos" on storage.objects;
 create policy "farmers delete own listing photos"
   on storage.objects for delete to authenticated
   using (bucket_id = 'listing-photos' and (storage.foldername(name))[1] = auth.uid()::text);
+
+
+-- ═══ 9. CODES ════════════════════════════════════════════════════════════════
+-- The 6-digit codes that prove a Gmail is the person's own (creating an
+-- account, resetting a password). Written and read only by the verify-code
+-- Edge Function (supabase/functions/verify-code), which runs on the server
+-- with the service key. Row level security is on and there are no policies,
+-- so the app, signed in or not, can neither read nor write a single row:
+-- nobody can look a code up. Codes are stored as hashes.
+create table if not exists public.verification_codes (
+  key               text primary key,                    -- 'signup:gmail:juan@gmail.com'
+  code_hash         text not null,                       -- sha-256, or 'used' once it has passed
+  expires_at        timestamptz not null,                -- 10 minutes after it was sent
+  tries             int not null default 0,              -- wrong tries; 5 and a new code is needed
+  sent_at           timestamptz not null default now(),  -- for the 30-second wait between codes
+  hour_started      timestamptz not null default now(),  -- for at most 5 codes an hour
+  sends_this_hour   int not null default 1,
+  token_hash        text,                                -- after a reset code passes: the one-time
+  token_expires_at  timestamptz                          -- right to set the new password
+);
+alter table public.verification_codes enable row level security;
+revoke all on public.verification_codes from anon, authenticated;
+grant select, insert, update, delete on public.verification_codes to service_role;
+
+-- Whether a Gmail already has an account, and which: for "there is already
+-- an account" on sign-up, and to find the account a reset is for. Only the
+-- function may call it; it is closed to the app.
+create or replace function public.auth_user_id_by_email(p_email text)
+returns uuid language sql stable security definer set search_path = '' as $$
+  select id from auth.users where lower(email) = lower(trim(p_email)) limit 1;
+$$;
+revoke all on function public.auth_user_id_by_email(text) from public, anon, authenticated;
+grant execute on function public.auth_user_id_by_email(text) to service_role;

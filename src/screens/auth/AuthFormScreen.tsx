@@ -20,7 +20,7 @@ import { isSupabaseConfigured } from "../../lib/supabase";
 import { formatName } from "../../lib/names";
 import { createAccount, signIn, verifyEmailCode, resendEmailCode, authErrorKey } from "../../services/auth";
 import { LegalSheet } from "../../components/legal/LegalSheet";
-import { codeKey, sendCode as sendVerifyCode, checkCode, saveNewPassword } from "../../services/verification";
+import { codeKey, sendCode as sendVerifyCode, checkCode, saveNewPassword, CodeError } from "../../services/verification";
 import { useHardwareBack } from "../../hooks/useHardwareBack";
 import { PRIVACY, LegalDocData } from "../../data/privacyPolicy";
 import { TERMS } from "../../data/termsOfService";
@@ -314,7 +314,12 @@ export function AuthFormScreen({
         setNotice(t("reset_done"));
         requestAnimationFrame(() => requestAnimationFrame(() => document.getElementById("f-password")?.focus()));
       })
-      .catch(err => { setLoading(false); setError(t(authErrorKey(err))); setErrField(null); });
+      .catch(err => {
+        setLoading(false);
+        if (err instanceof CodeError && err.code === "WEAK_PASSWORD") { fail("password", t("err_password_short")); return; }
+        setError(t(err instanceof CodeError ? (err.code === "OFFLINE" ? "err_auth_offline" : "err_auth_generic") : authErrorKey(err)));
+        setErrField(null);
+      });
   };
 
   // ── Create the account, after the last question ──
@@ -554,8 +559,17 @@ export function AuthFormScreen({
       setSentTo(contactKey); setVcode(""); setDemoCode(dc ?? ""); setResendIn(30);
       haptic.select();
       requestAnimationFrame(() => requestAnimationFrame(() => document.getElementById("f-vcode")?.focus()));
-    } catch {
-      setError(t("err_auth_generic")); setErrField(null);
+    } catch (err) {
+      // Each reason in words, under the field it is about.
+      const code = err instanceof CodeError ? err.code : "";
+      if (code === "WAIT" && err instanceof CodeError) { setResendIn(err.wait ?? 30); fail("contact", t("err_code_wait").replace("{s}", String(err.wait ?? 30))); }
+      else if (code === "ACCOUNT_EXISTS") fail("contact", t("err_gmail_taken"));
+      else if (code === "NO_ACCOUNT") fail("contact", t("err_no_account_gmail"));
+      else if (code === "TOO_MANY_SENDS") fail("contact", t("err_code_sends"));
+      else if (code === "SMS_NOT_READY") fail("contact", t("err_sms_not_ready"));
+      else if (code === "RESET_NOT_READY") fail("contact", t("err_reset_not_ready"));
+      else if (code === "OFFLINE") { setError(t("err_auth_offline")); setErrField(null); }
+      else { setError(t("err_code_send_failed")); setErrField(null); }
     } finally {
       setSending(false);
     }
@@ -565,7 +579,15 @@ export function AuthFormScreen({
     const d = v.replace(/\D/g, "").slice(0, 6);
     setVcode(d); clear();
     if (d.length < 6) return;
-    const r = await checkCode(purpose, mode, contact, d);
+    let r: Awaited<ReturnType<typeof checkCode>>;
+    try { r = await checkCode(purpose, mode, contact, d); }
+    catch (err) {
+      // Not checked at all (no signal): the code still stands, so say so
+      // and let them type it again.
+      setVcode("");
+      fail("vcode", t(err instanceof CodeError && err.code === "OFFLINE" ? "err_auth_offline" : "err_auth_generic"));
+      return;
+    }
     if (r === "ok") { setVerifiedFor(contactKey); haptic.success(); return; }
     setVcode("");
     fail("vcode", t(r === "wrong" ? "err_code_mismatch" : r === "expired" ? "err_code_expired" : "err_code_tries"));
@@ -589,6 +611,8 @@ export function AuthFormScreen({
     <div className="a-codebox">
       <p className="a-codebox-t" role="status">{t("auth_code_sent").replace("{to}", who)}</p>
       {demoCode && <p className="a-demo-code">{t("auth_code_demo").replace("{code}", demoCode)}</p>}
+      {/* A real email can land in Spam, more so from a new sender. */}
+      {!demoCode && mode === "gmail" && <p className="a-codebox-t">{t("auth_code_spam")}</p>}
       <label className="a-lbl" htmlFor="f-vcode">{t("verify_lbl")}</label>
       <input id="f-vcode" className={`a-inp num a-code ${bad("vcode")}`} type="text" inputMode="numeric"
         autoComplete="one-time-code" maxLength={6} placeholder="000000"

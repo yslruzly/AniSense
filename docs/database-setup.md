@@ -31,7 +31,8 @@ The database is organized in five sections (catalog, accounts, market, farm
 records, rewards). The table diagram and what each table holds are in
 `supabase/README.md`.
 
-It takes about 15 minutes. You need Steps 1 to 6.
+It takes about 15 minutes. You need Steps 1 to 6. Step 7 (real codes by
+email, through Brevo) is optional and takes another 15 minutes.
 
 ---
 
@@ -49,7 +50,7 @@ Two files, in this order, each in its own query:
 
 1. Sidebar: **SQL Editor → New query**. Open `supabase/schema.sql`, copy
    **all** of it, paste, **Run**. You should see "Success. No rows returned".
-   This creates the 16 tables, the security rules, the functions (checkout,
+   This creates the 17 tables, the security rules, the functions (checkout,
    sign-up, farm-record sync, badges) and the `listing-photos` storage bucket.
 2. **New query** again. Open `supabase/seed.sql`, copy all of it, paste,
    **Run**. This fills the catalog: 10 crop types, 24 varieties, 320 monthly
@@ -105,10 +106,12 @@ checks that:
 - the key is the public one
 - the project answers
 - Confirm email is off
-- all 16 tables exist, section by section
+- all 16 tables the app reads exist, section by section (the 17th, for codes,
+  is checked through the function in Step 7)
 - every database function exists
 - the catalog, the price records and the forecasts are loaded (seed.sql ran)
 - the photo bucket exists
+- whether real Gmail codes are set up (Step 7): a `!` note until they are
 
 Anything wrong is listed with its fix.
 
@@ -125,6 +128,72 @@ cd android
 
 The APK is at `android/app/build/outputs/apk/debug/app-debug.apk`.
 **An APK built before `.env` existed still uses the sample data.**
+
+## Step 7 (optional): Real codes for Gmail, through Brevo
+
+Without this step, the 6-digit codes on Create account and Forgot password
+are a demo: the app makes them itself and shows them on screen. With it,
+**Gmail** accounts get a real code by email, and Forgot password really
+changes a Gmail account's password. CP numbers keep the demo code for
+sign-up until an SMS provider (Semaphore) is connected, and Forgot password
+for a CP number says it is not ready yet, rather than pretending.
+
+How it works: a small server function in your Supabase project,
+`supabase/functions/verify-code/index.ts`, makes each code, keeps it on the
+server, emails it through Brevo, checks it, and sets the new password. The
+code never reaches the phone before the person types it.
+
+**A. Brevo (free, 300 emails a day)**
+
+1. Sign up at https://www.brevo.com.
+2. **Senders, Domains & Dedicated IPs → Senders → Add a sender.** Name:
+   `AniSense`. Email: the address the codes come from, e.g.
+   `AniSense2026@gmail.com`. Brevo emails that address a link: open it to
+   verify the sender.
+3. **SMTP & API → API Keys → Generate a new API key.** Name it `anisense`.
+   Copy it now: Brevo shows it only once. Keep it to yourself; it goes only
+   into Supabase (B2), never into the app or GitHub.
+
+**B. Supabase**
+
+1. **SQL Editor:** run `supabase/schema.sql` again (all of it). It adds the
+   `verification_codes` table, which only the function can read, and is safe
+   to re-run.
+2. **Edge Functions → Secrets → Add new secret**, three times:
+   | Name | Value |
+   |---|---|
+   | `BREVO_API_KEY` | the key from A3 |
+   | `BREVO_SENDER_EMAIL` | the sender from A2, e.g. `AniSense2026@gmail.com` |
+   | `BREVO_SENDER_NAME` | `AniSense` |
+3. **Edge Functions → Deploy a new function → Via Editor.** Name it exactly
+   `verify-code`. Replace the sample code with all of
+   `supabase/functions/verify-code/index.ts`, then **Deploy function**.
+4. Open the function → **Details** (or Settings) → turn **Enforce JWT
+   verification** OFF → **Save**. The app asks for a code before anyone has
+   an account, so the function has to accept the app's publishable key.
+   (The function protects itself: at most one code every 30 seconds and 5 an
+   hour for each address.)
+
+**C. Check it**
+
+```
+npm run check:db
+```
+
+The last line should read `✓ Gmail codes: verify-code is deployed and sends
+through Brevo`. Then rebuild the APK (Step 6) and try Create account with
+your own Gmail: the code arrives by email, and no gold "Demo" note appears.
+
+If no email arrives:
+- Look in **Spam**. Mail sent through Brevo from a Gmail address is often
+  filtered at first; marking one as "Not spam" helps. For a public release,
+  a domain of your own (e.g. `anisense.ph`) verified in Brevo fixes this.
+- In Brevo, **Transactional → Logs** shows each email and what happened.
+- Brevo may block requests from addresses it doesn't know and email you
+  about it. Supabase's servers change address, so under **Security →
+  Authorised IPs**, turn the blocking off.
+- In Supabase, **Edge Functions → verify-code → Logs** shows the function's
+  own errors.
 
 ---
 
@@ -202,22 +271,13 @@ before the release.
 
 ## Later (optional)
 
-**Verify Gmail sign-ups with a 6-digit code.** The app already has the code
-screen.
-
-1. **Authentication → Email Templates → Confirm signup**: put `{{ .Token }}`
-   in the body.
-2. Turn **Confirm email** back ON.
-
-CP-number sign-ups are then asked to use Gmail instead. For more than a few
-emails an hour, add SMTP (Resend, Brevo, or a Gmail app password) under
-**Project Settings → Auth → SMTP Settings**.
+**Verify Gmail sign-ups with a 6-digit code.** Step 7 above. Keep
+**Confirm email** OFF: the codes come from the verify-code function, not
+from Supabase's own confirmation email.
 
 **Verify CP numbers by SMS.** This costs per text. The provider chosen for
-AniSense is Semaphore, which is cheaper in the Philippines. It needs a small
-Edge Function as a "Send SMS hook", with the Semaphore API key kept in
-Supabase's secrets, never in the app. `sendPhoneCode` and `verifyPhoneCode`
-in `src/services/auth.ts` are ready for it. (Twilio works without an Edge
-Function: **Authentication → Sign In / Providers → Phone**.)
+AniSense is Semaphore, which is cheaper in the Philippines. It becomes one
+more sender in the verify-code function (Step 7), with the Semaphore API key
+kept in Supabase's secrets, never in the app; the app's screens are ready.
 
 **Add a new month of prices.** See "Everyday admin" in `supabase/README.md`.

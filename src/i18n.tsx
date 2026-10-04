@@ -772,6 +772,21 @@ export const translations: Dict = {
     en: "No internet. Connect to data or Wi-Fi and try again.",
     tl: "Walang internet. Kumonekta sa data o Wi-Fi at subukan ulit.",
   },
+  // Sending a code: what the server can say no to.
+  err_code_send_failed: { en: "We couldn't send the code. Try again in a moment.", tl: "Hindi namin naipadala ang code. Subukan ulit maya-maya." },
+  err_code_wait: { en: "Wait {s} seconds before sending another code.", tl: "Maghintay ng {s} segundo bago magpadala ulit ng code." },
+  err_code_sends: { en: "Too many codes sent to this Gmail. Try again in an hour.", tl: "Sobrang daming code na ang naipadala sa Gmail na ito. Subukan ulit pagkalipas ng isang oras." },
+  err_gmail_taken: { en: "This Gmail already has an account. Sign in instead.", tl: "May account na ang Gmail na ito. Mag-sign in na lang." },
+  err_no_account_gmail: { en: "No AniSense account uses this Gmail. Check it, or create an account.", tl: "Walang AniSense account na gumagamit ng Gmail na ito. Tingnan ulit, o gumawa ng account." },
+  err_sms_not_ready: {
+    en: "Resetting a CP number's password by text is not ready yet. For help, email AniSense2026@gmail.com.",
+    tl: "Hindi pa puwedeng palitan ang password ng CP number sa pamamagitan ng text. Para sa tulong, mag-email sa AniSense2026@gmail.com.",
+  },
+  err_reset_not_ready: {
+    en: "Resetting a password is not ready yet. For help, email AniSense2026@gmail.com.",
+    tl: "Hindi pa puwedeng palitan ang password. Para sa tulong, mag-email sa AniSense2026@gmail.com.",
+  },
+  auth_code_spam: { en: "Not in your inbox? Look in Spam.", tl: "Wala sa inbox? Tingnan sa Spam." },
   err_auth_generic: {
     en: "Something went wrong. Please try again.",
     tl: "May nangyaring mali. Pakisubukan ulit.",

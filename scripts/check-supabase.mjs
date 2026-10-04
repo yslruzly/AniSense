@@ -12,6 +12,8 @@
 //   ✓ the crop catalog, price records, forecasts and badges are loaded
 //     (seed.sql ran)
 //   ✓ the listing-photos bucket exists
+//   ✓ (optional) real Gmail codes: the verify-code Edge Function is deployed,
+//     open to the app, has its Brevo key, and its table exists
 
 import { readFileSync, existsSync } from "node:fs";
 
@@ -143,6 +145,22 @@ let photoMsg = "";
 try { photoMsg = JSON.stringify(await photo.json()); } catch { /* empty */ }
 if (/bucket not found/i.test(photoMsg)) bad("Storage bucket listing-photos is missing", "Run the latest supabase/schema.sql again (safe to re-run).");
 else ok("Storage bucket listing-photos");
+
+// 5. Real Gmail codes (optional). Without the function the app keeps its
+//    on-screen demo code, so this is a note, not a failure, until it is
+//    deployed; once it is, anything half-done is a failure.
+const note = (m, fix) => { console.log(`  ! ${m}`); if (fix) console.log(`      → ${fix}`); };
+const fn = await fetch(`${url}/functions/v1/verify-code`, {
+  method: "POST", headers: { ...headers, "Content-Type": "application/json" }, body: JSON.stringify({ action: "ping" }),
+}).catch(() => null);
+let fb = null;
+try { fb = fn ? await fn.json() : null; } catch { /* empty */ }
+if (!fn || fn.status === 404) note("Gmail codes are still the on-screen demo: the verify-code function isn't deployed", "Optional. docs/database-setup.md, Step 7 (Brevo).");
+else if (fn.status === 401) bad("verify-code is deployed, but \"Enforce JWT verification\" is ON", "Edge Functions → verify-code → Details → turn Enforce JWT verification OFF → Save.");
+else if (!fb?.ok) bad(`verify-code answered with an error (${fn.status})`, "Edge Functions → verify-code → Logs.");
+else if (!fb.table) bad("verify-code can't find its table", "Run the latest supabase/schema.sql again (safe to re-run).");
+else if (!fb.email) bad("verify-code has no Brevo key", "Edge Functions → Secrets: add BREVO_API_KEY and BREVO_SENDER_EMAIL.");
+else ok("Gmail codes: verify-code is deployed and sends through Brevo");
 
 console.log(failures
   ? `\n${failures} thing${failures === 1 ? "" : "s"} to fix, then run: npm run check:db\n`

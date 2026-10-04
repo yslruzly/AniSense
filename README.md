@@ -82,8 +82,8 @@ The app is feature-complete on the client. Some data sources are still sample da
 | Privacy policy | A draft, English only, in the app (Welcome screen, Create account and Profile → Manage account) and at `site/privacy-policy.html`. Not yet reviewed by a lawyer. |
 | Terms of service | A draft, English only (`src/data/termsOfService.ts`), agreed to at Create account and readable under Profile → Manage account. In the app only, not yet on the web. Not yet reviewed by a lawyer. |
 | Account deletion | In the app (Profile → Manage account) and on a web page (`site/delete-account.html`), as Google Play requires. |
-| Sign-up verification code | **Mockup.** Create account asks for a 6-digit code sent to the CP number or Gmail before it continues, but nothing is sent yet: the code is made on the phone (`src/services/verification.ts`) and shown on screen as a demo. Real sending needs an SMS provider (Semaphore) and an email sender. |
-| Password reset | **Mockup.** "Forgot your password?" on Sign in opens two pages: the CP number or Gmail with a 6-digit code (Send code, then type it), then a new password typed twice; then back to Sign in, which says it was changed. Like the sign-up code, nothing is sent and no password really changes yet (`src/services/verification.ts`). |
+| Sign-up verification code | **Real for Gmail, once set up; demo for CP numbers.** Create account asks for a 6-digit code before it continues. For Gmail, the `verify-code` Edge Function emails it through Brevo and checks it on the server ([database-setup.md](docs/database-setup.md), Step 7). For CP numbers, and in a build without a database, the code is made on the phone and shown on screen as a demo until Semaphore (SMS) is connected. |
+| Password reset | **Real for Gmail, once set up.** "Forgot your password?" on Sign in: the Gmail and a 6-digit code by email, then a new password typed twice, which the `verify-code` function sets on the account. For a CP number it says resetting by text is not ready yet, until Semaphore is connected. In a build without a database it is a demo. |
 | Automated tests | None yet. `npm run build` type-checks the project, and CI runs it on every push. |
 
 ## Tech stack
@@ -115,7 +115,7 @@ flowchart LR
 
   subgraph Supabase
     Auth["Auth"]
-    DB["PostgreSQL<br/>16 tables, RLS on all"]
+    DB["PostgreSQL<br/>17 tables, RLS on all"]
     RPC["Functions<br/>place_order, replace_my_*"]
     Storage["Storage<br/>listing-photos"]
   end

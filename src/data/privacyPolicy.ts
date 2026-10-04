@@ -25,7 +25,7 @@ export interface LegalDocData { effective: string; title: string; effectiveLabel
 
 export const PRIVACY = {
   /** ISO date this version took effect. */
-  effective: "2026-10-01",
+  effective: "2026-10-04",
   operator: "Ruzly Macatula",
   place: "Manila, Philippines",
   email: "AniSense2026@gmail.com",
@@ -114,6 +114,7 @@ export const PRIVACY = {
         { list: [
           "Supabase, which hosts the database, the sign-in and the photos.",
           "Semaphore, our SMS provider in the Philippines: when phone verification is on, your mobile number is sent to it only to deliver your code.",
+          "Brevo, which sends our emails: when you sign up or reset your password with Gmail, your Gmail address is sent to it only to deliver your code.",
           "Google Fonts, which supplies the app's typefaces. Like any internet request, this shows Google your phone's internet address.",
         ] },
         { p: "We do not sell or rent your information to anyone. We share it with the authorities only when the law requires it." },
