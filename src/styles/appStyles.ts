@@ -1588,7 +1588,6 @@ export const appCss = `
     background-image: linear-gradient(180deg, #FCF3DF 0%, #FFFFFF 58%);
     box-shadow: inset 0 0 0 1px rgba(138,93,12,.18);
   }
-  .card.tint-gold .mini-stat-val { color: var(--gold-text); }
 
   /* ── Marketplace ─────────────────────────────────────────────────────────── */
   .mp-sell-btn {
@@ -3946,10 +3945,24 @@ export const appCss = `
   .info-lbl  { font-size: var(--fs-label); color: var(--text-muted); margin-bottom: 2px; }
   .info-val  { font-size: var(--fs-label); font-weight: 600; color: var(--text); }
 
-  .stat-row-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 9px; }
-  .mini-stat     { background: var(--green-bg); border-radius: 12px; padding: 12px 9px; text-align: center; }
-  .mini-stat-val { font-size: var(--fs-body); font-weight: 800; color: var(--green); }
-  .mini-stat-lbl { font-size: var(--fs-label); color: var(--text-muted); margin-top: 3px; line-height: 1.35; }
+  /* My farm at a glance: a ledger page, not a row of badges. Four cells in
+     a 2 × 2 grid, split by hairlines drawn as the grid's own gaps (the
+     cells are white on a line-coloured ground), label first and quiet, the
+     number large in ink with figures that line up, and a short line under
+     it. Left-aligned, so the eye runs down a column the way it reads a list. */
+  .fstat {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1px; margin: 0;
+    background: var(--line); border-radius: 14px; overflow: hidden;
+    box-shadow: 0 0 0 1px var(--line);
+  }
+  .fstat-cell { background: var(--card); padding: 14px 14px 13px; min-width: 0; }
+  .fstat-lbl { font-size: var(--fs-label); color: var(--text-muted); line-height: 1.3; }
+  .fstat-val {
+    margin: 6px 0 0; font-family: var(--font-display); font-weight: 700; font-size: var(--fs-title);
+    line-height: 1.1; letter-spacing: -.015em; color: var(--ink); font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+  }
+  .fstat-sub { margin: 4px 0 0; font-size: var(--fs-label); color: var(--text-faint); line-height: 1.3; }
 
   /* Pressed state is a real surface change, not just a scale. On a row this
      wide a 1% shrink is invisible; a tinted plate under the thumb is not. */

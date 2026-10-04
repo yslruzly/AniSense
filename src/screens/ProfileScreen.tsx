@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ArrowLeft, Camera, Bell, IdCard, Award, Sprout, Wheat, SlidersHorizontal, Info, ChevronRight, Globe, ShieldCheck, UserCog, FileText, HelpCircle, PlayCircle, Settings, LogOut, Phone, Mail, MapPin, Calendar } from "lucide-react";
+import { ArrowLeft, Camera, Bell, IdCard, Sprout, Wheat, SlidersHorizontal, Info, ChevronRight, Globe, ShieldCheck, UserCog, FileText, HelpCircle, PlayCircle, Settings, LogOut, Phone, Mail, MapPin, Calendar } from "lucide-react";
 import { useLang, LanguageToggle } from "../i18n";
 import { Screen, UserRole, FarmerProfile } from "../types";
 import { CropEmoji } from "../components/icons/CropEmoji";
@@ -12,6 +12,7 @@ import { DeleteAccount } from "../components/profile/DeleteAccount";
 import { PRIVACY } from "../data/privacyPolicy";
 import { TERMS } from "../data/termsOfService";
 import { LegalSheet } from "../components/legal/LegalSheet";
+import { FarmStats } from "../components/profile/FarmStats";
 
 // ─── Profile Screen ───────────────────────────────────────────────────────────
 export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignOut, onDeleteAccount, userInitials = "JD", userRole, userPhoto = null, onShowId, onReplayTour, sales = [], memberSince }: {
@@ -165,24 +166,11 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
           )}
         </div>
 
-        {/* Personal Stats, farmer only */}
+        {/* The farm in four real numbers, farmer only */}
         {userRole !== "buyer" && (
-          <div className="card tint-gold">
-            {head("tint-gold", <Award size={20} strokeWidth={2.2} />, t("prof_stats"))}
-            <div className="stat-row-grid">
-              {[
-                { val: "12", lbl: t("prof_years_farming") },
-                { val: "₱84K", lbl: t("prof_monthly_revenue") },
-                { val: "5", lbl: t("prof_active_listings") },
-                { val: "4.8", lbl: t("prof_seller_rating") },
-                { val: "24", lbl: t("prof_trades") },
-              ].map(s => (
-                <div key={s.lbl} className="mini-stat">
-                  <div className="mini-stat-val">{s.val}</div>
-                  <div className="mini-stat-lbl">{s.lbl}</div>
-                </div>
-              ))}
-            </div>
+          <div className="card">
+            {head("tint-green", <Sprout size={20} strokeWidth={2.2} />, t("prof_stats"))}
+            <FarmStats experience={profile.experience} sales={sales} />
           </div>
         )}
 
