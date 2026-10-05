@@ -463,11 +463,12 @@ a.play:active { transform: scale(.97); transition-duration: 90ms; }
   .cta-note { padding-bottom: 24px; }
 }
 /* ── The hero's phones on a narrow screen ──
-   The same row as on a laptop, only smaller: sized from the screen's width
-   so all three stand side by side, straight, with the laptop's gaps. */
+   The phones keep their own size, as on a tablet: a smaller frame crams the
+   whole app screen into it. The row is wider than the screen, so the two
+   behind run past its edges and are cut there, straight, never shrunk. */
 @media (max-width: 700px) {
-  .lineup { --main: calc((100vw - 40px) / 2.9); --side: calc(var(--main) * .866); gap: calc(var(--main) * .134); margin-top: 40px; }
-  .lineup .ph-side { margin-top: calc(var(--main) * .24); }
+  .lineup { --main: 236px; --side: 204px; gap: 18px; margin-top: 40px; }
+  .lineup .ph-side { margin-top: 56px; }
 }
 /* A laptop with a short window (a 720p screen, or a big toolbar): the
    words close up, so the tops of the phones still show without scrolling. */
@@ -511,10 +512,12 @@ a.play:active { transform: scale(.97); transition-duration: 90ms; }
   .stat p { margin-top: 8px; font-size: 16px; }
 
   .points { gap: 14px; }
-  /* The pair side by side, straight and the same size, both screens whole:
-     the laptop's tilted overlap hides half of the one behind on a phone. */
-  .duo { --dw: min(236px, calc((100vw - 54px) / 2)); gap: 14px; min-height: 0; margin-top: 8px; }
-  .duo .back, .duo .front { position: relative; transform: none; filter: none; }
+  /* The pair as on a laptop, at one fixed size for every phone (224px, a
+     touch under the laptop's 236): the frames stay whole and readable, never
+     shrunk to the screen. It is centred on its own middle (it leans left),
+     so on the narrowest phones the screen's edges trim the same thin sliver
+     from each side. */
+  .duo { --dw: 224px; margin-top: 8px; translate: calc(var(--dw) * .125) 0; }
   .fc-visual .phone { --pw: 250px; }
   .cols { grid-template-columns: 1fr; gap: 22px; }
   .trow { grid-template-columns: 1fr auto; padding: 14px 18px; }
