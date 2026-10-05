@@ -135,8 +135,8 @@ Without this step, the 6-digit codes on Create account and Forgot password
 are a demo: the app makes them itself and shows them on screen. With it,
 **Gmail** accounts get a real code by email, and Forgot password really
 changes a Gmail account's password. CP numbers keep the demo code for
-sign-up until an SMS provider (Semaphore) is connected, and Forgot password
-for a CP number says it is not ready yet, rather than pretending.
+sign-up until Semaphore is connected (Step 8), and Forgot password for a CP
+number says it is not ready yet, rather than pretending.
 
 How it works: a small server function in your Supabase project,
 `supabase/functions/verify-code/index.ts`, makes each code, keeps it on the
@@ -194,6 +194,64 @@ If no email arrives:
   Authorised IPs**, turn the blocking off.
 - In Supabase, **Edge Functions → verify-code → Logs** shows the function's
   own errors.
+
+## Step 8 (optional): Real codes for CP numbers, through Semaphore
+
+Needs Step 7 first (the same function sends both). Without this step a CP
+number gets the on-screen demo code on Create account, and Forgot password
+says it is not ready. With it, the code arrives **by text**, and Forgot
+password really changes a CP-number account's password.
+
+Each text costs credits, so the function guards them: one code every 30
+seconds and 5 an hour for each number, and at most 100 numbers an hour in
+all (change it with the `SMS_MAX_PER_HOUR` secret).
+
+**A. Semaphore** (https://semaphore.co)
+
+1. **Credits.** Semaphore is prepaid: buy credits in the dashboard. The
+   codes go out on Semaphore's OTP route, which reaches phones ahead of bulk
+   texts and costs more credits per text than a normal message: see their
+   pricing page. A small top-up is enough to start.
+2. **Sender name (recommended).** Under **Sender Names**, ask for
+   `AniSense` (11 characters at most). Semaphore reviews it, which can take
+   a few days. Until it is approved, texts come from Semaphore's own name
+   and still work.
+3. **API key.** In the dashboard's account / API page, copy your API key.
+   Keep it to yourself; it goes only into Supabase (B1), never into the app
+   or GitHub.
+
+**B. Supabase**
+
+1. **Edge Functions → Secrets → Add new secret:**
+   | Name | Value |
+   |---|---|
+   | `SEMAPHORE_API_KEY` | the key from A3 |
+   | `SEMAPHORE_SENDER_NAME` | `AniSense`, **only once Semaphore has approved it** (a name it hasn't approved makes it refuse every text) |
+2. **Deploy the new function code.** Edge Functions → **verify-code** →
+   **Code** → replace everything with the latest
+   `supabase/functions/verify-code/index.ts` → **Deploy**. Leave **Enforce
+   JWT verification** OFF.
+3. Rebuild the APK (Step 6): the app has to know to ask the server for
+   CP-number codes too.
+
+**C. Check it**
+
+```
+npm run check:db
+```
+
+It should end with `✓ CP-number codes: verify-code texts through
+Semaphore`. Then try Create account with your own CP number: the code
+arrives by text, and no gold "Demo" note appears. Forgot password with a
+CP-number account now works too.
+
+If no text arrives:
+- In Semaphore, the dashboard's message log shows each text and its status
+  (sent, pending, failed), and whether credits ran out.
+- In Supabase, **Edge Functions → verify-code → Logs**: "Semaphore did not
+  send the text" is followed by Semaphore's own reason.
+- The app says "We couldn't send the code" when Semaphore refused it, and
+  "too many codes" when the hourly limit was reached.
 
 ---
 
@@ -273,9 +331,7 @@ before the release.
 **Confirm email** OFF: the codes come from the verify-code function, not
 from Supabase's own confirmation email.
 
-**Verify CP numbers by SMS.** This costs per text. The provider chosen for
-AniSense is Semaphore, which is cheaper in the Philippines. It becomes one
-more sender in the verify-code function (Step 7), with the Semaphore API key
-kept in Supabase's secrets, never in the app; the app's screens are ready.
+**Verify CP numbers by SMS.** Step 8 above (Semaphore). It costs per text,
+so keep an eye on the credits in Semaphore's dashboard.
 
 **Add a new month of prices.** See "Everyday admin" in `supabase/README.md`.

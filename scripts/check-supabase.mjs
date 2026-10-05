@@ -14,6 +14,7 @@
 //   ✓ the listing-photos bucket exists
 //   ✓ (optional) real Gmail codes: the verify-code Edge Function is deployed,
 //     open to the app, has its Brevo key, and its table exists
+//   ✓ (optional) real CP-number codes: verify-code has its Semaphore key
 
 import { readFileSync, existsSync } from "node:fs";
 
@@ -146,7 +147,7 @@ try { photoMsg = JSON.stringify(await photo.json()); } catch { /* empty */ }
 if (/bucket not found/i.test(photoMsg)) bad("Storage bucket listing-photos is missing", "Run the latest supabase/schema.sql again (safe to re-run).");
 else ok("Storage bucket listing-photos");
 
-// 5. Real Gmail codes (optional). Without the function the app keeps its
+// 5. Real Gmail and CP-number codes (optional). Without the function the app keeps its
 //    on-screen demo code, so this is a note, not a failure, until it is
 //    deployed; once it is, anything half-done is a failure.
 const note = (m, fix) => { console.log(`  ! ${m}`); if (fix) console.log(`      → ${fix}`); };
@@ -161,6 +162,13 @@ else if (!fb?.ok) bad(`verify-code answered with an error (${fn.status})`, "Edge
 else if (!fb.table) bad("verify-code can't find its table", "Run the latest supabase/schema.sql again (safe to re-run).");
 else if (!fb.email) bad("verify-code has no Brevo key", "Edge Functions → Secrets: add BREVO_API_KEY and BREVO_SENDER_EMAIL.");
 else ok("Gmail codes: verify-code is deployed and sends through Brevo");
+// Texts to CP numbers: optional too, and a note until the key is in. An older
+// verify-code (before texts) does not say at all.
+if (fn?.ok && fb?.ok && fb.table) {
+  if (fb.sms === undefined) note("CP-number codes: this verify-code is the older one, without texts", "Deploy the new supabase/functions/verify-code/index.ts (docs/database-setup.md, Step 8).");
+  else if (!fb.sms) note("CP-number codes are still the on-screen demo: no Semaphore key", "Optional. docs/database-setup.md, Step 8 (Semaphore).");
+  else ok("CP-number codes: verify-code texts through Semaphore");
+}
 
 console.log(failures
   ? `\n${failures} thing${failures === 1 ? "" : "s"} to fix, then run: npm run check:db\n`

@@ -6,22 +6,21 @@
 //
 // Two ways it runs, and the screens never know which:
 //
-//   · GMAIL, ON THE DATABASE: real. The verify-code Edge Function
+//   · ON THE DATABASE: real. The verify-code Edge Function
 //     (supabase/functions/verify-code) makes the code, keeps it on the server,
-//     emails it through Brevo, checks it, and after a reset sets the new
-//     password. The phone never sees a code before the person types it.
+//     emails it to a Gmail through Brevo or texts it to a CP number through
+//     Semaphore, checks it, and after a reset sets the new password. The
+//     phone never sees a code before the person types it.
 //
-//   · EVERYTHING ELSE: a mockup made here, on the phone, and shown on screen
-//     in a "Demo" note. That is a build without a database (.env), and CP
-//     numbers, which need an SMS provider (Semaphore) that is not connected
-//     yet. On the database a CP-number reset is refused rather than faked:
-//     saying "your password has been changed" when it was not would lock
-//     the farmer out.
+//   · A BUILD WITHOUT A DATABASE (no .env): a mockup made here, on the
+//     phone, and shown on screen in a "Demo" note.
 //
-//   · And while the function is not deployed yet (a database, but Step 7 of
-//     docs/database-setup.md not done): Gmail sign-up falls back to the demo
-//     code, so nobody is shut out, and a Gmail reset is refused like a
-//     CP-number one. npm run check:db says when the function is missing.
+//   · And while a sender is not set up yet (the function not deployed, Step 7
+//     of docs/database-setup.md; or no Semaphore key, Step 8, for a CP
+//     number): sign-up falls back to the demo code, so nobody is shut out,
+//     and a reset is refused rather than faked: saying "your password has
+//     been changed" when it was not would lock the farmer out. npm run
+//     check:db says which sender is missing.
 
 import type { ContactMode } from "./auth";
 import { supabase, isSupabaseConfigured } from "../lib/supabase";
@@ -44,8 +43,8 @@ const MAX_TRIES = 5;
 export const codeKey = (purpose: CodePurpose, mode: ContactMode, contact: string) =>
   `${purpose}:${mode}:${mode === "phone" ? contact.replace(/\D/g, "").replace(/^0/, "") : contact.trim().toLowerCase()}`;
 
-/** The server does Gmail; the phone does the rest. */
-const onServer = (mode: ContactMode) => isSupabaseConfigured && mode === "gmail";
+/** On the database, the server does both; without one, the phone does. */
+const onServer = () => isSupabaseConfigured;
 
 const lang = () => { try { return localStorage.getItem("anisense-lang") === "tl" ? "tl" : "en"; } catch { return "en"; } };
 
@@ -64,8 +63,8 @@ async function callServer(body: Record<string, unknown>): Promise<Record<string,
 // After a reset code passes, the server hands back a one-time right to set
 // the new password. Kept in memory only, for the next page.
 const resetTokens = new Map<string, string>();
-// Gmail sign-ups that fell back to the demo because the function is missing:
-// their code is checked here, on the phone.
+// Sign-ups that fell back to the demo because their sender is missing (the
+// function, or Semaphore for a CP number): their code is checked here.
 const demoKeys = new Set<string>();
 
 // ── The demo, on the phone ──
@@ -81,23 +80,25 @@ const sixDigits = () => {
 };
 
 /** Sends a new code (a new one replaces any earlier). On the server it is
- *  emailed and nothing comes back; in the demo the code comes back so the
- *  screen can show it. Throws a CodeError when it cannot be sent. */
+ *  emailed or texted and nothing comes back; in the demo the code comes back
+ *  so the screen can show it. Throws a CodeError when it cannot be sent. */
 export async function sendCode(purpose: CodePurpose, mode: ContactMode, contact: string): Promise<{ demoCode?: string }> {
   const key = codeKey(purpose, mode, contact);
-  if (onServer(mode)) {
+  if (onServer()) {
     try {
       const r = await callServer({ action: "send", purpose, mode, contact });
       if (!r.ok) throw new CodeError(String(r.error ?? "SEND_FAILED"), typeof r.wait === "number" ? r.wait : undefined);
       demoKeys.delete(key);
       return {};
     } catch (err) {
-      if (!(err instanceof CodeError && err.code === "NOT_DEPLOYED")) throw err;
-      if (purpose === "reset") throw new CodeError("RESET_NOT_READY");
+      // No sender for this yet: the function is missing, or (for a CP
+      // number) Semaphore has no key. Anything else is a real refusal.
+      const missing = err instanceof CodeError && (err.code === "NOT_DEPLOYED" || (mode === "phone" && err.code === "SMS_NOT_READY"));
+      if (!missing) throw err;
+      if (purpose === "reset") throw new CodeError(mode === "phone" ? "SMS_NOT_READY" : "RESET_NOT_READY");
       demoKeys.add(key);   // sign-up: the demo below, for now
     }
   }
-  if (isSupabaseConfigured && mode === "phone" && purpose === "reset") throw new CodeError("SMS_NOT_READY");
   const code = sixDigits();
   pending.set(key, { code, expires: Date.now() + CODE_LIFE_MS, tries: 0 });
   // About as long as a real send takes, so the button's "Sending…" is seen.
@@ -110,7 +111,7 @@ export type CodeCheck = "ok" | "wrong" | "expired" | "too-many";
 /** Whether a typed code is the one sent to this number or address. */
 export async function checkCode(purpose: CodePurpose, mode: ContactMode, contact: string, code: string): Promise<CodeCheck> {
   const key = codeKey(purpose, mode, contact);
-  if (onServer(mode) && !demoKeys.has(key)) {
+  if (onServer() && !demoKeys.has(key)) {
     const r = await callServer({ action: "check", purpose, mode, contact, code });
     const result = (["ok", "wrong", "expired", "too-many"].includes(String(r.result)) ? r.result : "expired") as CodeCheck;
     if (result === "ok" && typeof r.token === "string") resetTokens.set(key, r.token);
@@ -130,7 +131,7 @@ export async function checkCode(purpose: CodePurpose, mode: ContactMode, contact
  *  CodeError for no signal or a password the server will not take. */
 export async function saveNewPassword(mode: ContactMode, contact: string, password: string): Promise<"ok" | "expired"> {
   const key = codeKey("reset", mode, contact);
-  if (onServer(mode)) {
+  if (onServer()) {
     const token = resetTokens.get(key);
     if (!token) return "expired";
     const r = await callServer({ action: "reset-password", mode, contact, token, password });

@@ -563,8 +563,8 @@ export function AuthFormScreen({
       // Each reason in words, under the field it is about.
       const code = err instanceof CodeError ? err.code : "";
       if (code === "WAIT" && err instanceof CodeError) { setResendIn(err.wait ?? 30); fail("contact", t("err_code_wait").replace("{s}", String(err.wait ?? 30))); }
-      else if (code === "ACCOUNT_EXISTS") fail("contact", t("err_gmail_taken"));
-      else if (code === "NO_ACCOUNT") fail("contact", t("err_no_account_gmail"));
+      else if (code === "ACCOUNT_EXISTS") fail("contact", t(mode === "phone" ? "err_phone_taken" : "err_gmail_taken"));
+      else if (code === "NO_ACCOUNT") fail("contact", t(mode === "phone" ? "err_no_account_phone" : "err_no_account_gmail"));
       else if (code === "TOO_MANY_SENDS") fail("contact", t("err_code_sends"));
       else if (code === "SMS_NOT_READY") fail("contact", t("err_sms_not_ready"));
       else if (code === "RESET_NOT_READY") fail("contact", t("err_reset_not_ready"));

@@ -197,7 +197,7 @@ erDiagram
 - `user_achievements`: who earned which, and when.
 
 **9. Codes.** Not part of the app's data.
-- `verification_codes`: the 6-digit codes for creating an account and resetting a password, as hashes, with their expiry and tries. Row level security with no policies: only the `verify-code` Edge Function (with the server's service key) reads or writes it. See `supabase/functions/verify-code/` and database-setup.md, Step 7.
+- `verification_codes`: the 6-digit codes for creating an account and resetting a password, as hashes, with their expiry and tries. Row level security with no policies: only the `verify-code` Edge Function (with the server's service key) reads or writes it. See `supabase/functions/verify-code/` and database-setup.md, Steps 7 (Gmail, Brevo) and 8 (CP numbers, Semaphore).
 
 ## Functions
 
@@ -210,7 +210,7 @@ erDiagram
 | `award…` triggers | Awards Newbie on sign-up, First harvest on a first listing, First sale on a first sale |
 | `delete_my_account()` | Deletes the caller's own account and everything that is theirs alone. Orders stay in the other party's history, with the name removed |
 | `catalog_status()` | Counts only, for `npm run check:db` |
-| `auth_user_id_by_email(email)` | Which account a Gmail belongs to, if any. Closed to the app; only the verify-code function may call it |
+| `auth_user_id_by_email(email)` | Which account a login address belongs to, if any (a Gmail, or a CP number's `639…@phone.anisense.app`). Closed to the app; only the verify-code function may call it |
 
 ## Security
 
