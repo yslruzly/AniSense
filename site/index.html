@@ -358,7 +358,19 @@ a.play:active { transform: scale(.97); transition-duration: 90ms; }
    The screen changes with a short cross-fade through a light blur, so the
    two screenshots read as one changing screen rather than two pictures. */
 .how { display: grid; grid-template-columns: 1fr 1fr; grid-template-areas: "head visual" "steps visual"; column-gap: clamp(36px, 5vw, 72px); align-items: start; }
+/* The buyers' half mirrors the farmers': the phone on the other side, so
+   the two read as a pair and not as the same section twice. */
+.how.flip { grid-template-areas: "visual head" "visual steps"; }
 .how-head { grid-area: head; }
+.how-head .tag svg { flex-shrink: 0; }
+/* The way across to the other half, for whoever landed on the wrong one. */
+.how-switch { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; margin-top: 10px; color: var(--tanim); font: 600 16px/1.3 var(--font-display); text-decoration: none; -webkit-tap-highlight-color: transparent; }
+.how-switch svg { flex-shrink: 0; transition: transform 160ms var(--ease-out); }
+@media (hover: hover) and (pointer: fine) {
+  .how-switch:hover { text-decoration: underline; text-underline-offset: 4px; }
+  .how-switch:hover svg { transform: translateY(2px); }
+  .how-switch.up:hover svg { transform: translateY(-2px); }
+}
 .how-steps { grid-area: steps; position: relative; margin-top: 26px; display: grid; gap: 6px; }
 /* The thread that joins the numbers: from each one down to the next, so it
    ends at the last number whatever the length of the words. */
@@ -384,7 +396,7 @@ a.play:active { transform: scale(.97); transition-duration: 90ms; }
 .how-bar { position: absolute; left: 76px; right: 20px; bottom: 10px; height: 3px; border-radius: 3px; overflow: hidden; background: rgba(11,107,65,.12); opacity: 0; transition: opacity 200ms ease; }
 .how-bar i { display: block; height: 100%; background: var(--tanim); transform: scaleX(0); transform-origin: left center; }
 .how.auto .how-step.on .how-bar { opacity: 1; }
-.how.auto.playing .how-step.on .how-bar i { animation: how-fill 4s linear forwards; }
+.how.auto.playing .how-step.on .how-bar i { animation: how-fill 3s linear forwards; }
 /* It waits only while the pointer is on one of the three steps (or the
    keyboard is on them): not over the phone, the title or the gaps.
    More specific than the rule that runs it, so the pause wins. */
@@ -392,6 +404,10 @@ a.play:active { transform: scale(.97); transition-duration: 90ms; }
 .how.auto.playing .how-steps:focus-within .how-step.on .how-bar i { animation-play-state: paused; }
 @keyframes how-fill { to { transform: scaleX(1); } }
 @media (hover: hover) and (pointer: fine) { .how-step:not(.on):hover { background: rgba(255,255,255,.6); } }
+/* On the white band the chosen step is a paper-grey card, as a white one
+   would vanish into it. */
+.white .how-step.on { background: var(--paper); box-shadow: inset 0 0 0 1px rgba(22,33,27,.05); }
+@media (hover: hover) and (pointer: fine) { .white .how-step:not(.on):hover { background: rgba(242,243,244,.6); } }
 
 .how-visual { grid-area: visual; align-self: center; position: relative; display: flex; justify-content: center; padding: 8px 0; }
 .how-visual::before { content: ""; position: absolute; inset: 6% 10%; border-radius: 50%; pointer-events: none;
@@ -455,7 +471,7 @@ a.play:active { transform: scale(.97); transition-duration: 90ms; }
   .grid4 { grid-template-columns: 1fr 1fr; }
   /* One column: what it is, the phone, then the steps under it, so a
      tap on a step changes the phone just above. */
-  .how { grid-template-columns: 1fr; grid-template-areas: "head" "visual" "steps"; max-width: 600px; margin: 0 auto; }
+  .how, .how.flip { grid-template-columns: 1fr; grid-template-areas: "head" "visual" "steps"; max-width: 600px; margin: 0 auto; }
   .how-visual { margin-top: 28px; }
   .how-visual .phone { --pw: 230px; }
   .mascot { justify-self: center; width: 260px; }
@@ -808,43 +824,89 @@ main, .hdr-row { transition: opacity 140ms ease, filter 140ms ease; }
     </div>
   </section>
 
-  <!-- ── How it works ── -->
+  <!-- ── How it works: farmers ── -->
   <section class="sec" id="how">
     <div class="wrap how">
       <div class="how-head">
-        <p class="tag reveal" data-i18n="hw_tag">How it works</p>
-        <h2 class="reveal" style="--i:1" id="how-h" data-i18n="hw_h">Up and running in three steps</h2>
-        <p class="lead reveal" style="--i:2" data-i18n="hw_lead">Tap a step to see it in the app.</p>
+        <p class="tag reveal"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 20h10"/><path d="M10 20c5.5-2.5.8-6.4 3-10"/><path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z"/><path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4 1-4.9 2z"/></svg><span data-i18n="hf_tag">How it works · Farmers</span></p>
+        <h2 class="reveal" style="--i:1" id="hf-h" data-i18n="hf_h">From your field to a fair price</h2>
+        <p class="lead reveal" style="--i:2" data-i18n="hf_lead">Three steps. Tap one to see it in the app.</p>
+        <a class="how-switch reveal" style="--i:2" href="#how-buyers"><span data-i18n="hf_switch">Buying? How it works for buyers</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg></a>
       </div>
 
       <!-- Tabs: each step shows its own screen in the phone beside them. -->
-      <div class="how-steps reveal" style="--i:3" role="tablist" aria-orientation="vertical" aria-labelledby="how-h" id="how-steps">
-        <button type="button" class="how-step on" role="tab" id="how-t0" aria-selected="true" aria-controls="how-panel" tabindex="0">
+      <div class="how-steps reveal" style="--i:3" role="tablist" aria-orientation="vertical" aria-labelledby="hf-h">
+        <button type="button" class="how-step on" role="tab" id="hf-t0" aria-selected="true" aria-controls="hf-panel" tabindex="0">
           <span class="how-n" aria-hidden="true">1</span>
-          <span class="how-words"><b data-i18n="hw_1">Create an account</b><span data-i18n="hw_1d">With your CP number or Gmail. Choose farmer or buyer.</span></span>
+          <span class="how-words"><b data-i18n="hf_1">Create an account</b><span data-i18n="hf_1d">With your CP number or Gmail. Choose Farmer.</span></span>
           <span class="how-bar" aria-hidden="true"><i></i></span>
         </button>
-        <button type="button" class="how-step" role="tab" id="how-t1" aria-selected="false" aria-controls="how-panel" tabindex="-1">
+        <button type="button" class="how-step" role="tab" id="hf-t1" aria-selected="false" aria-controls="hf-panel" tabindex="-1">
           <span class="how-n" aria-hidden="true">2</span>
-          <span class="how-words"><b data-i18n="hw_2">Check the prices</b><span data-i18n="hw_2d">This month's price for each crop, and where it may go in the next three months.</span></span>
+          <span class="how-words"><b data-i18n="hf_2">Check the prices</b><span data-i18n="hf_2d">This month's price for each crop, and where it may go in the next three months.</span></span>
           <span class="how-bar" aria-hidden="true"><i></i></span>
         </button>
-        <button type="button" class="how-step" role="tab" id="how-t2" aria-selected="false" aria-controls="how-panel" tabindex="-1">
+        <button type="button" class="how-step" role="tab" id="hf-t2" aria-selected="false" aria-controls="hf-panel" tabindex="-1">
           <span class="how-n" aria-hidden="true">3</span>
-          <span class="how-words"><b data-i18n="hw_3">Sell or buy</b><span data-i18n="hw_3d">Farmers post a harvest. Buyers order it and call the farmer.</span></span>
+          <span class="how-words"><b data-i18n="hf_3">Post your harvest</b><span data-i18n="hf_3d">Choose the crop, then add a photo, the kilos and your price. Buyers call you.</span></span>
           <span class="how-bar" aria-hidden="true"><i></i></span>
         </button>
       </div>
 
-      <div class="how-visual reveal" style="--i:2" id="how-visual">
-        <div class="phone" id="how-panel" role="tabpanel" aria-labelledby="how-t0">
+      <div class="how-visual reveal" style="--i:2">
+        <div class="phone" id="hf-panel" role="tabpanel" aria-labelledby="hf-t0">
           <div class="phone-screen">
-            <img class="how-shot on" data-shot="signin-splash" src="assets/screens/signin-splash.webp" width="390" height="844" loading="lazy" decoding="async"
-              alt="The AniSense welcome screen, with Create an Account and I already have an account." data-i18n-alt="alt_splash">
+            <img class="how-shot on" data-shot="role-farmer" data-top="dark" src="assets/screens/role-farmer.webp" width="390" height="844" loading="lazy" decoding="async"
+              alt="Who are you? with Farmer chosen: post listings, track expenses, and monitor crop market prices." data-i18n-alt="alt_role_farmer">
             <img class="how-shot" data-shot="farmer-price-sheet" src="assets/screens/farmer-price-sheet.webp" width="390" height="844" loading="lazy" decoding="async" aria-hidden="true"
               alt="A crop's price, its change from the month before, and its chart." data-i18n-alt="alt_sheet_2">
+            <img class="how-shot" data-shot="farmer-post" src="assets/screens/farmer-post.webp" width="390" height="844" loading="lazy" decoding="async" aria-hidden="true"
+              alt="Post your crops: the type of crop, with Rice chosen." data-i18n-alt="alt_post">
+            <div class="island" aria-hidden="true"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── How it works: buyers ── -->
+  <section class="sec white" id="how-buyers">
+    <div class="wrap how flip">
+      <div class="how-head">
+        <p class="tag reveal"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 11-1 9"/><path d="m19 11-4-7"/><path d="M2 11h20"/><path d="m3.5 11 1.6 7.4a2 2 0 0 0 2 1.6h9.8a2 2 0 0 0 2-1.6l1.7-7.4"/><path d="M4.5 15.5h15"/><path d="m5 11 4-7"/><path d="m9 11 1 9"/></svg><span data-i18n="hb_tag">How it works · Buyers</span></p>
+        <h2 class="reveal" style="--i:1" id="hb-h" data-i18n="hb_h">Fresh from the farm, straight to you</h2>
+        <p class="lead reveal" style="--i:2" data-i18n="hb_lead">Three steps. Tap one to see it in the app.</p>
+        <a class="how-switch reveal up" style="--i:2" href="#how"><span data-i18n="hb_switch">Farming? How it works for farmers</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg></a>
+      </div>
+
+      <!-- Tabs: each step shows its own screen in the phone beside them. -->
+      <div class="how-steps reveal" style="--i:3" role="tablist" aria-orientation="vertical" aria-labelledby="hb-h">
+        <button type="button" class="how-step on" role="tab" id="hb-t0" aria-selected="true" aria-controls="hb-panel" tabindex="0">
+          <span class="how-n" aria-hidden="true">1</span>
+          <span class="how-words"><b data-i18n="hb_1">Create an account</b><span data-i18n="hb_1d">With your CP number or Gmail. Choose Buyer.</span></span>
+          <span class="how-bar" aria-hidden="true"><i></i></span>
+        </button>
+        <button type="button" class="how-step" role="tab" id="hb-t1" aria-selected="false" aria-controls="hb-panel" tabindex="-1">
+          <span class="how-n" aria-hidden="true">2</span>
+          <span class="how-words"><b data-i18n="hb_2">Find fresh produce</b><span data-i18n="hb_2d">Harvests from Nueva Ecija farms, with the price per kilo, the kilos left and the farmer's town.</span></span>
+          <span class="how-bar" aria-hidden="true"><i></i></span>
+        </button>
+        <button type="button" class="how-step" role="tab" id="hb-t2" aria-selected="false" aria-controls="hb-panel" tabindex="-1">
+          <span class="how-n" aria-hidden="true">3</span>
+          <span class="how-words"><b data-i18n="hb_3">Order in one checkout</b><span data-i18n="hb_3d">Order from several farmers at once. Each one calls you to arrange delivery and payment.</span></span>
+          <span class="how-bar" aria-hidden="true"><i></i></span>
+        </button>
+      </div>
+
+      <div class="how-visual reveal" style="--i:2">
+        <div class="phone" id="hb-panel" role="tabpanel" aria-labelledby="hb-t0">
+          <div class="phone-screen">
+            <img class="how-shot on" data-shot="role-buyer" data-top="dark" src="assets/screens/role-buyer.webp" width="390" height="844" loading="lazy" decoding="async"
+              alt="Who are you? with Buyer chosen: browse listings, compare prices, and connect with local farmers." data-i18n-alt="alt_role_buyer">
             <img class="how-shot" data-shot="buyer-market" src="assets/screens/buyer-market.webp" width="390" height="844" loading="lazy" decoding="async" aria-hidden="true"
               alt="Listings in the Market." data-i18n-alt="alt_market_2">
+            <img class="how-shot" data-shot="buyer-cart" src="assets/screens/buyer-cart.webp" width="390" height="844" loading="lazy" decoding="async" aria-hidden="true"
+              alt="My Cart: Ampalaya and Mango from two farmers, ₱140 in all, and Confirm Order." data-i18n-alt="alt_cart">
             <div class="island" aria-hidden="true"></div>
           </div>
         </div>
@@ -853,7 +915,7 @@ main, .hdr-row { transition: opacity 140ms ease, filter 140ms ease; }
   </section>
 
   <!-- ── Questions ── -->
-  <section class="sec white" id="faq">
+  <section class="sec" id="faq">
     <div class="wrap center">
       <p class="tag reveal" data-i18n="faq_tag">Questions</p>
       <h2 class="reveal" style="--i:1" data-i18n="faq_h">Good to know</h2>
@@ -944,10 +1006,16 @@ main, .hdr-row { transition: opacity 140ms ease, filter 140ms ease; }
       mf_2: "English and Tagalog", mf_2d: "Switch any time, from the very first screen.",
       mf_3: "Works offline", mf_3d: "Prices, their history and the forecasts are inside the app.",
       mf_4: "Private by default", mf_4d: "No ads, and we never sell your information.",
-      hw_tag: "How it works", hw_h: "Up and running in three steps", hw_lead: "Tap a step to see it in the app.",
-      hw_1: "Create an account", hw_1d: "With your CP number or Gmail. Choose farmer or buyer.",
-      hw_2: "Check the prices", hw_2d: "This month's price for each crop, and where it may go in the next three months.",
-      hw_3: "Sell or buy", hw_3d: "Farmers post a harvest. Buyers order it and call the farmer.",
+      hf_tag: "How it works · Farmers", hf_h: "From your field to a fair price", hf_lead: "Three steps. Tap one to see it in the app.",
+      hf_switch: "Buying? How it works for buyers",
+      hf_1: "Create an account", hf_1d: "With your CP number or Gmail. Choose Farmer.",
+      hf_2: "Check the prices", hf_2d: "This month's price for each crop, and where it may go in the next three months.",
+      hf_3: "Post your harvest", hf_3d: "Choose the crop, then add a photo, the kilos and your price. Buyers call you.",
+      hb_tag: "How it works · Buyers", hb_h: "Fresh from the farm, straight to you", hb_lead: "Three steps. Tap one to see it in the app.",
+      hb_switch: "Farming? How it works for farmers",
+      hb_1: "Create an account", hb_1d: "With your CP number or Gmail. Choose Buyer.",
+      hb_2: "Find fresh produce", hb_2d: "Harvests from Nueva Ecija farms, with the price per kilo, the kilos left and the farmer's town.",
+      hb_3: "Order in one checkout", hb_3d: "Order from several farmers at once. Each one calls you to arrange delivery and payment.",
       faq_tag: "Questions", faq_h: "Good to know",
       dl_h: "AniSense is coming to Google Play",
       dl_lead: "Free for farmers and buyers, on Android phones. This page will link to it the day it is out.",
@@ -962,7 +1030,10 @@ main, .hdr-row { transition: opacity 140ms ease, filter 140ms ease; }
       alt_market_2: "Listings in the Market.",
       alt_buyer: "A buyer's Home: search, fresh local produce, and crops, fruits and vegetables to browse.",
       alt_profit: "The Your profit card: estimated and final profit, and ₱13,000 spent on rice.",
-      alt_splash: "The AniSense welcome screen, with Create an Account and I already have an account.",
+      alt_role_farmer: "Who are you? with Farmer chosen: post listings, track expenses, and monitor crop market prices.",
+      alt_role_buyer: "Who are you? with Buyer chosen: browse listings, compare prices, and connect with local farmers.",
+      alt_post: "Post your crops: the type of crop, with Rice chosen.",
+      alt_cart: "My Cart: Ampalaya and Mango from two farmers, ₱140 in all, and Confirm Order.",
       faq: [
         ["Is AniSense free?", "Yes. There is no paid account and no ads."],
         ["Do I need internet?", "Not to see prices: they, their history and the forecasts are inside the app. Your farm records are saved on the phone and sent when the signal returns. Posting a harvest and placing an order need a connection."],
@@ -1012,10 +1083,16 @@ main, .hdr-row { transition: opacity 140ms ease, filter 140ms ease; }
       mf_2: "Ingles at Tagalog", mf_2d: "Puwedeng palitan kahit kailan, mula sa unang screen.",
       mf_3: "Gumagana offline", mf_3d: "Nasa loob ng app ang presyo, ang kasaysayan nito, at ang forecast.",
       mf_4: "Pribado ang datos mo", mf_4d: "Walang ads, at hindi namin ibinebenta ang impormasyon mo.",
-      hw_tag: "Paano gamitin", hw_h: "Handa ka na sa tatlong hakbang", hw_lead: "Pindutin ang isang hakbang para makita ito sa app.",
-      hw_1: "Gumawa ng account", hw_1d: "Gamit ang CP number o Gmail mo. Piliin kung magsasaka o mamimili.",
-      hw_2: "Tingnan ang presyo", hw_2d: "Ang presyo ng bawat pananim ngayong buwan, at ang posibleng presyo sa susunod na tatlong buwan.",
-      hw_3: "Magbenta o bumili", hw_3d: "Ipinopost ng magsasaka ang ani. Oorderin ito ng mamimili at tatawagan ang magsasaka.",
+      hf_tag: "Paano gamitin · Magsasaka", hf_h: "Mula sa bukid mo, sa patas na presyo", hf_lead: "Tatlong hakbang. Pindutin ang isa para makita ito sa app.",
+      hf_switch: "Mamimili ka? Paano gamitin para sa mamimili",
+      hf_1: "Gumawa ng account", hf_1d: "Gamit ang CP number o Gmail mo. Piliin ang Magsasaka.",
+      hf_2: "Tingnan ang presyo", hf_2d: "Ang presyo ng bawat pananim ngayong buwan, at ang posibleng presyo sa susunod na tatlong buwan.",
+      hf_3: "I-post ang ani mo", hf_3d: "Piliin ang pananim, saka ilagay ang litrato, ilang kilo at ang presyo mo. Tatawagan ka ng mamimili.",
+      hb_tag: "Paano gamitin · Mamimili", hb_h: "Sariwa mula sa bukid, diretso sa iyo", hb_lead: "Tatlong hakbang. Pindutin ang isa para makita ito sa app.",
+      hb_switch: "Magsasaka ka? Paano gamitin para sa magsasaka",
+      hb_1: "Gumawa ng account", hb_1d: "Gamit ang CP number o Gmail mo. Piliin ang Mamimili.",
+      hb_2: "Maghanap ng sariwang ani", hb_2d: "Mga ani mula sa mga bukid ng Nueva Ecija, may presyo kada kilo, natitirang kilo, at bayan ng magsasaka.",
+      hb_3: "Umorder sa iisang checkout", hb_3d: "Umorder sa ilang magsasaka nang sabay. Tatawagan ka ng bawat isa para sa delivery at bayad.",
       faq_tag: "Mga tanong", faq_h: "Mabuting malaman",
       dl_h: "Malapit nang dumating ang AniSense sa Google Play",
       dl_lead: "Libre para sa magsasaka at mamimili, sa mga Android phone. Ilalagay dito ang link sa araw na lumabas ito.",
@@ -1030,7 +1107,10 @@ main, .hdr-row { transition: opacity 140ms ease, filter 140ms ease; }
       alt_market_2: "Mga paninda sa Merkado.",
       alt_buyer: "Ang Home ng mamimili: paghahanap, sariwang lokal na ani, at mga pananim, prutas at gulay.",
       alt_profit: "Ang card na Ang kita mo: tantiyang kita, totoong kita, at ₱13,000 na nagastos sa palay.",
-      alt_splash: "Ang unang screen ng AniSense, may Gumawa ng Account at Mayroon na akong account.",
+      alt_role_farmer: "Sino ka? Napili ang Magsasaka: mag-post ng paninda, subaybayan ang gastos, at bantayan ang presyo ng pananim.",
+      alt_role_buyer: "Sino ka? Napili ang Mamimili: tingnan ang mga paninda, ikumpara ang presyo, at makipag-ugnayan sa mga magsasaka.",
+      alt_post: "I-post ang pananim mo: ang uri ng pananim, napili ang Palay.",
+      alt_cart: "Aking Cart: Ampalaya at Mango mula sa dalawang magsasaka, ₱140 lahat, at Kumpirmahin ang Order.",
       faq: [
         ["Libre ba ang AniSense?", "Oo. Walang bayad na account at walang ads."],
         ["Kailangan ba ng internet?", "Hindi para makita ang presyo: nasa loob ng app ang presyo, ang kasaysayan nito, at ang forecast. Naka-save sa telepono ang talaan ng bukid mo at ipapadala pagbalik ng signal. Kailangan ng internet sa pag-post ng ani at sa pag-order."],
@@ -1133,39 +1213,40 @@ main, .hdr-row { transition: opacity 140ms ease, filter 140ms ease; }
   document.querySelectorAll(".phone-screen").forEach(scr => {
     if (scr.querySelector(".sbar")) return;
     const b = bar.cloneNode(true);
-    if (scr.querySelector('img[data-shot="signin-splash"]') && !scr.querySelector(".how-shot")) b.classList.add("on-photo");
     scr.insertBefore(b, scr.querySelector(".island"));
   });
 
-  // ── How it works: the steps and the phone ──
-  const how = document.querySelector(".how"), tabs = [...document.querySelectorAll(".how-step")];
-  const shots = [...document.querySelectorAll(".how-shot")], panel = document.getElementById("how-panel"), visual = document.getElementById("how-visual");
-  let step = 0;
-  function choose(i, instant) {
-    step = (i + tabs.length) % tabs.length;
-    visual.classList.toggle("instant", !!instant);
-    tabs.forEach((t, n) => { const on = n === step; t.classList.toggle("on", on); t.setAttribute("aria-selected", String(on)); t.tabIndex = on ? 0 : -1; });
-    shots.forEach((img, n) => { img.classList.toggle("on", n === step); if (n === step) img.removeAttribute("aria-hidden"); else img.setAttribute("aria-hidden", "true"); });
-    panel.setAttribute("aria-labelledby", tabs[step].id);
-    // The welcome screen is a bright photo: its status bar turns white.
-    const bar = panel.querySelector(".sbar"); if (bar) bar.classList.toggle("on-photo", shots[step].dataset.shot === "signin-splash");
-    if (instant) requestAnimationFrame(() => requestAnimationFrame(() => visual.classList.remove("instant")));
-  }
-  // Their choice, not the page's: any pick stops the walk-through for good.
-  const stopAuto = () => how.classList.remove("auto");
-  tabs.forEach((t, i) => t.addEventListener("click", () => { stopAuto(); choose(i); }));
-  document.getElementById("how-steps").addEventListener("keydown", e => {
-    const keys = { ArrowDown: step + 1, ArrowRight: step + 1, ArrowUp: step - 1, ArrowLeft: step - 1, Home: 0, End: tabs.length - 1 };
-    if (!(e.key in keys)) return;
-    e.preventDefault(); stopAuto(); choose(keys[e.key], true); tabs[step].focus();
+  // ── How it works, for farmers and for buyers: the steps and the phone ──
+  document.querySelectorAll(".how").forEach(how => {
+    const tabs = [...how.querySelectorAll(".how-step")], shots = [...how.querySelectorAll(".how-shot")];
+    const visual = how.querySelector(".how-visual"), panel = visual.querySelector(".phone");
+    let step = 0;
+    function choose(i, instant) {
+      step = (i + tabs.length) % tabs.length;
+      visual.classList.toggle("instant", !!instant);
+      tabs.forEach((t, n) => { const on = n === step; t.classList.toggle("on", on); t.setAttribute("aria-selected", String(on)); t.tabIndex = on ? 0 : -1; });
+      shots.forEach((img, n) => { img.classList.toggle("on", n === step); if (n === step) img.removeAttribute("aria-hidden"); else img.setAttribute("aria-hidden", "true"); });
+      panel.setAttribute("aria-labelledby", tabs[step].id);
+      // A screen with a dark top (the green header of "Who are you?") gets a white status bar.
+      const bar = panel.querySelector(".sbar"); if (bar) bar.classList.toggle("on-photo", shots[step].dataset.top === "dark");
+      if (instant) requestAnimationFrame(() => requestAnimationFrame(() => visual.classList.remove("instant")));
+    }
+    // Their choice, not the page's: any pick stops the walk-through for good.
+    const stopAuto = () => how.classList.remove("auto");
+    tabs.forEach((t, i) => t.addEventListener("click", () => { stopAuto(); choose(i); }));
+    how.querySelector(".how-steps").addEventListener("keydown", e => {
+      const keys = { ArrowDown: step + 1, ArrowRight: step + 1, ArrowUp: step - 1, ArrowLeft: step - 1, Home: 0, End: tabs.length - 1 };
+      if (!(e.key in keys)) return;
+      e.preventDefault(); stopAuto(); choose(keys[e.key], true); tabs[step].focus();
+    });
+    // The walk-through: only while its section is on screen, never with reduced motion.
+    if (!reduce) {
+      how.classList.add("auto");
+      how.addEventListener("animationend", e => { if (e.animationName === "how-fill" && how.classList.contains("auto")) choose(step + 1); });
+      new IntersectionObserver(([en]) => how.classList.toggle("playing", en.isIntersecting), { threshold: .35 }).observe(how);
+    }
+    choose(0, true);
   });
-  // The walk-through: only while the section is on screen, never with reduced motion.
-  if (!reduce) {
-    how.classList.add("auto");
-    how.addEventListener("animationend", e => { if (e.animationName === "how-fill" && how.classList.contains("auto")) choose(step + 1); });
-    new IntersectionObserver(([en]) => how.classList.toggle("playing", en.isIntersecting), { threshold: .35 }).observe(how);
-  }
-  choose(0, true);
 
   // ── The film ──
   // Muted, it plays once while it is on screen and rests on its last card.
