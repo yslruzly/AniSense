@@ -492,6 +492,12 @@ a.play:active { transform: scale(.97); transition-duration: 90ms; }
   .hero-lead { font-size: 18px; margin-top: 18px; }
   .hero-cta { flex-direction: column; gap: 14px; margin-top: 30px; }
   .play img { height: 50px; }
+  /* The first screen is all green, no white under it: the hero is at least
+     as tall as the screen (lvh: with the browser's bars slid away, so none
+     shows when they go), the words centred in it, the phones at its foot. */
+  .hero { min-height: 100vh; min-height: 100lvh; display: flex; flex-direction: column; }
+  .hero-copy { margin-top: auto; margin-bottom: auto; padding-bottom: 32px; }
+  .lineup { margin-top: 0; }
 
   /* The four numbers, two by two. */
   .stats-wrap { padding-top: 40px; }
