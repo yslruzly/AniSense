@@ -10,4 +10,8 @@ window.ANISENSE = {
   supabaseUrl: "",       // https://xxxxxxxx.supabase.co
   supabaseKey: "",       // sb_publishable_...
   supportEmail: "AniSense2026@gmail.com",   // where a deletion or privacy request can be sent
+  // The app's Google Play address, once it is published, e.g.
+  // "https://play.google.com/store/apps/details?id=com.nuevaecija.anisense".
+  // Empty: the website's badge says "Coming soon" and is not a link.
+  playStoreUrl: "",
 };

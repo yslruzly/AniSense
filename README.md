@@ -172,7 +172,7 @@ Key design decisions:
 | Privacy policy | `site/privacy-policy.html` | Generated from `src/data/privacyPolicy.ts` by `node scripts/build-privacy.mjs`. Never edit it by hand. |
 | Delete account | `site/delete-account.html` | Signs a person in and deletes their account without the app, as Google Play requires. Reads `site/config.js`. |
 
-`site/config.js` holds the Supabase URL, the publishable key and the support email address, shared by the deletion page and the home page's contact links.
+`site/config.js` holds the Supabase URL, the publishable key, the support email address and the app's Google Play address. The home page's "Get it on Google Play" badge (Google's own, in `site/assets/google-play-badge.png`) shows "Coming soon" and is not a link until `playStoreUrl` is filled in.
 
 **Publishing on Vercel:** import the repository, set **Root Directory** to `site`, no build command. `site/vercel.json` turns on clean addresses, so the two pages Google Play asks for are `https://<domain>/privacy-policy` and `https://<domain>/delete-account`. Add a custom domain under the project's **Settings → Domains**.
 
