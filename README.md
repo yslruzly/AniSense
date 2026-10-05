@@ -168,11 +168,19 @@ Key design decisions:
 
 | Page | File | Notes |
 |---|---|---|
-| Home | `site/index.html` | What AniSense does, in English and Tagalog, with screenshots of the app (`site/assets/screens/`, in both languages). |
+| Home | `site/index.html` | What AniSense does, in English and Tagalog, with screenshots of the app (`site/assets/screens/`, in both languages) and the AniSense ad in the hero (`site/assets/video/`). |
 | Privacy policy | `site/privacy-policy.html` | Generated from `src/data/privacyPolicy.ts` by `node scripts/build-privacy.mjs`. Never edit it by hand. |
 | Delete account | `site/delete-account.html` | Signs a person in and deletes their account without the app, as Google Play requires. Reads `site/config.js`. |
 
-`site/config.js` holds the Supabase URL, the publishable key, the support email address and the app's Google Play address. The home page's "Get it on Google Play" badge (Google's own, in `site/assets/google-play-badge.png`) shows "Coming soon" and is not a link until `playStoreUrl` is filled in.
+`site/config.js` holds the Supabase URL, the publishable key, the support email address and the app's Google Play address. The home page's "Get it on Google Play" badge (Google's own, in `site/assets/google-play-badge.png`) is not a link until `playStoreUrl` is filled in.
+
+The hero's film is the AniSense ad, in two web copies: `anisense-720.mp4` for laptops and tablets, and `anisense-540.mp4` (about half the size) for phones. `anisense-poster.webp` is its frame at 2 seconds (`POSTER_AT` in the page's script): the page starts the film from there, so the poster hands over to it without a jump. It plays muted, once, only while on screen, and never by itself with reduced motion or Data Saver on. To replace the ad, make the copies with ffmpeg (`+faststart` lets it begin before it has fully downloaded):
+
+```sh
+ffmpeg -i ad.mp4 -vf scale=720:1280:flags=lanczos -c:v libx264 -preset slow -crf 23 -pix_fmt yuv420p -c:a aac -b:a 96k -movflags +faststart site/assets/video/anisense-720.mp4
+ffmpeg -i ad.mp4 -vf scale=540:960:flags=lanczos -c:v libx264 -preset slow -crf 25 -pix_fmt yuv420p -c:a aac -b:a 64k -movflags +faststart site/assets/video/anisense-540.mp4
+ffmpeg -ss 2 -i site/assets/video/anisense-720.mp4 -frames:v 1 -c:v libwebp -quality 82 site/assets/video/anisense-poster.webp
+```
 
 **Publishing on Vercel:** import the repository, set **Root Directory** to `site`, no build command. `site/vercel.json` turns on clean addresses, so the two pages Google Play asks for are `https://<domain>/privacy-policy` and `https://<domain>/delete-account`. Add a custom domain under the project's **Settings → Domains**.
 
