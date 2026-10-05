@@ -150,13 +150,7 @@ a.play:active { transform: scale(.97); transition-duration: 90ms; }
 /* ── Hero ── */
 .hero { padding: clamp(92px, 12vh, 116px) 0 0; overflow: hidden; }
 .hero-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: clamp(28px, 4vw, 56px); align-items: center; }
-.eyebrow {
-  display: inline-flex; align-items: center; gap: 10px; padding: 8px 14px 8px 10px; border-radius: 999px;
-  background: rgba(255,255,255,.06); box-shadow: inset 0 0 0 1px rgba(255,255,255,.14);
-  font: 500 14px/1.2 var(--font-display); color: var(--on-ink-2);
-}
-.eyebrow i { width: 8px; height: 8px; border-radius: 50%; background: #7FD08F; box-shadow: 0 0 0 4px rgba(127,208,143,.18); }
-.hero h1 { margin-top: 18px; font-weight: 700; font-size: clamp(36px, 4.3vw, 56px); line-height: 1.04; letter-spacing: -.035em; }
+.hero h1 { margin-top: 0; font-weight: 700; font-size: clamp(36px, 4.3vw, 56px); line-height: 1.04; letter-spacing: -.035em; }
 .hl { color: var(--palay); }
 .hero-lead { margin-top: 18px; max-width: 40ch; font-size: 18px; line-height: 1.55; color: var(--on-ink-2); }
 .hero-cta { margin-top: 28px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 14px; }
@@ -218,7 +212,6 @@ a.play:active { transform: scale(.97); transition-duration: 90ms; }
 /* The price ticker along the foot of the hero. */
 .ticker { margin-top: 24px; border-top: 1px solid rgba(255,255,255,.08); background: rgba(0,0,0,.14); }
 .ticker-row { display: flex; align-items: center; height: 54px; }
-.ticker-label { flex-shrink: 0; padding-right: 18px; margin-right: 18px; border-right: 1px solid rgba(255,255,255,.12); font: 600 12px/1.25 var(--font-display); letter-spacing: .08em; text-transform: uppercase; color: var(--on-ink-3); max-width: 230px; }
 .ticker-view { position: relative; overflow: hidden; flex: 1; -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); }
 .ticker-track { display: flex; width: max-content; animation: ticker 48s linear infinite; }
 .ticker-view:hover .ticker-track { animation-play-state: paused; }
@@ -302,20 +295,58 @@ a.play:active { transform: scale(.97); transition-duration: 90ms; }
 .center { text-align: center; }
 .center .lead { margin-left: auto; margin-right: auto; }
 
-/* How it works */
-.steps { margin: 40px 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; counter-reset: step; }
-.step { position: relative; padding: 24px 22px 0; border-radius: 22px; background: var(--paper); overflow: hidden; display: flex; flex-direction: column; }
-.step-n { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--ink); color: var(--on-ink); font: 700 17px/1 var(--font-display); }
-.step h3 { margin-top: 14px; font: 700 19px/1.25 var(--font-display); letter-spacing: -.02em; }
-.step p { margin: 6px 0 22px; font-size: 16px; color: var(--muted); }
-/* The phone at its true shape, as wide as the card so its shadow has room,
-   fading into the card where the card ends rather than cut off. */
-.step .peek {
-  margin: auto -22px 0; height: 240px; padding-top: 6px; overflow: hidden;
-  display: flex; justify-content: center; align-items: flex-start;
-  -webkit-mask-image: linear-gradient(to bottom, #000 58%, transparent); mask-image: linear-gradient(to bottom, #000 58%, transparent);
+
+/* ── How it works ──────────────────────────────────────────────────────────
+   Three steps beside one phone; the phone shows the chosen step's screen.
+   It walks itself through the steps while the section is on screen (a
+   line fills under the step it is on), pauses under the pointer or the
+   keyboard, and stops for good once someone picks a step: their choice,
+   not the page's. With reduced motion it never moves by itself.
+   The screen changes with a short cross-fade through a light blur, so the
+   two screenshots read as one changing screen rather than two pictures. */
+.how { display: grid; grid-template-columns: 1fr 1fr; grid-template-areas: "head visual" "steps visual"; column-gap: clamp(36px, 5vw, 72px); align-items: start; }
+.how-head { grid-area: head; }
+.how-steps { grid-area: steps; position: relative; margin-top: 26px; display: grid; gap: 6px; }
+/* The thread that joins the numbers: from each one down to the next, so it
+   ends at the last number whatever the length of the words. */
+.how-step:not(:last-child)::after { content: ""; position: absolute; left: 39px; top: 56px; bottom: -22px; width: 2px; border-radius: 2px; background: var(--line); }
+.how-step {
+  position: relative; display: grid; grid-template-columns: 40px 1fr; gap: 16px; align-items: start; width: 100%;
+  padding: 16px 20px 20px; border: 0; border-radius: 18px; background: transparent; text-align: left; cursor: pointer; color: var(--text);
+  font: inherit; transition: background-color 200ms ease, box-shadow 200ms ease, transform 160ms var(--ease-out);
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
 }
-.step .peek .phone { --pw: 196px; }
+.how-step:active { transform: scale(.985); transition-duration: 90ms; }
+.how-step.on { background: var(--card); box-shadow: 0 0 0 1px rgba(22,33,27,.06), 0 14px 30px -22px rgba(22,33,27,.45); }
+.how-n {
+  position: relative; z-index: 1; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--card); color: var(--muted); box-shadow: inset 0 0 0 2px var(--line);
+  font: 700 16px/1 var(--font-display); transition: background-color 200ms ease, color 200ms ease, box-shadow 200ms ease;
+}
+.how-step.on .how-n { background: var(--tanim); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.22), 0 6px 14px -6px rgba(11,107,65,.6); }
+.how-words { display: grid; gap: 4px; padding-top: 7px; }
+.how-words b { font: 700 18px/1.25 var(--font-display); letter-spacing: -.015em; }
+.how-words span { font-size: 16px; line-height: 1.5; color: var(--muted); }
+/* The line that fills while the step is on: constant motion, so linear. */
+.how-bar { position: absolute; left: 76px; right: 20px; bottom: 10px; height: 3px; border-radius: 3px; overflow: hidden; background: rgba(11,107,65,.12); opacity: 0; transition: opacity 200ms ease; }
+.how-bar i { display: block; height: 100%; background: var(--tanim); transform: scaleX(0); transform-origin: left center; }
+.how.auto .how-step.on .how-bar { opacity: 1; }
+.how.auto.playing .how-step.on .how-bar i { animation: how-fill 6s linear forwards; }
+/* As specific as the rule that runs it, so the pause wins. */
+.how.auto.playing:hover .how-step.on .how-bar i, .how.auto.playing:focus-within .how-step.on .how-bar i { animation-play-state: paused; }
+@keyframes how-fill { to { transform: scaleX(1); } }
+@media (hover: hover) and (pointer: fine) { .how-step:not(.on):hover { background: rgba(255,255,255,.6); } }
+
+.how-visual { grid-area: visual; align-self: center; position: relative; display: flex; justify-content: center; padding: 8px 0; }
+.how-visual::before { content: ""; position: absolute; inset: 6% 10%; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(11,107,65,.16), rgba(11,107,65,0)); }
+.how-visual .phone { --pw: 252px; }
+.how-shot { position: absolute; inset: 0; opacity: 0; filter: blur(8px); transform: scale(1.03);
+  transition: opacity 180ms ease, filter 180ms ease, transform 180ms ease; }
+.how-shot.on { opacity: 1; filter: none; transform: none;
+  transition: opacity 320ms var(--ease-out), filter 320ms var(--ease-out), transform 420ms var(--ease-out); }
+/* Chosen from the keyboard: no animation, it answers at once. */
+.how-visual.instant .how-shot { transition: none; }
 
 /* FAQ */
 .faq { margin: 34px auto 0; max-width: 760px; display: grid; gap: 10px; }
@@ -370,12 +401,11 @@ a.play:active { transform: scale(.97); transition-duration: 90ms; }
   .stat:nth-child(3) { box-shadow: 0 -1px 0 var(--line); }
   .stat:nth-child(4) { box-shadow: -1px 0 0 var(--line), 0 -1px 0 var(--line); }
   .grid4 { grid-template-columns: 1fr 1fr; }
-  /* The three steps side by side, with smaller phones. */
-  .step { padding: 22px 18px 0; }
-  .step h3 { font-size: 19px; }
-  .step .peek { margin: auto -18px 0; height: 250px; }
-  .step p { margin-bottom: 22px; }
-  .step .peek .phone { --pw: 168px; }
+  /* One column: what it is, the phone, then the steps under it, so a
+     tap on a step changes the phone just above. */
+  .how { grid-template-columns: 1fr; grid-template-areas: "head" "visual" "steps"; max-width: 600px; margin: 0 auto; }
+  .how-visual { margin-top: 28px; }
+  .how-visual .phone { --pw: 230px; }
   .mascot { justify-self: center; width: 260px; }
   .cta-note { padding-bottom: 24px; }
 }
@@ -390,8 +420,7 @@ a.play:active { transform: scale(.97); transition-duration: 90ms; }
   .lead { font-size: 18px; }
 
   .hero { padding-top: 100px; }
-  .eyebrow { font-size: 14px; }
-  .hero h1 { font-size: clamp(38px, 11vw, 46px); margin-top: 18px; }
+  .hero h1 { font-size: clamp(38px, 11vw, 46px); }
   .hero-lead { font-size: 18px; margin-top: 18px; }
   .hero-cta { flex-direction: column; align-items: flex-start; gap: 14px; margin-top: 30px; }
   .play img { height: 50px; }
@@ -405,7 +434,6 @@ a.play:active { transform: scale(.97); transition-duration: 90ms; }
   .chip b { font-size: 15px; }
   .chip-ico { width: 34px; height: 34px; border-radius: 10px; }
 
-  .ticker-label { display: none; }
   .ticker-row { height: 56px; }
 
   /* The four numbers, two by two. */
@@ -440,11 +468,11 @@ a.play:active { transform: scale(.97); transition-duration: 90ms; }
   .feat h3 { margin-top: 2px; font-size: 18px; }
   .feat p { margin-top: 4px; font-size: 16px; }
 
-  .steps { grid-template-columns: 1fr; max-width: 520px; margin: 36px auto 0; gap: 14px; }
-  .step { padding: 22px 22px 0; border-radius: 24px; }
-  .step h3 { margin-top: 14px; font-size: 20px; }
-  .step .peek { margin: auto -22px 0; height: 236px; }
-  .step .peek .phone { --pw: 196px; }
+  .how-visual .phone { --pw: 210px; }
+  .how-steps { margin-top: 22px; }
+  .how-step { padding: 14px 16px 18px; gap: 14px; }
+  .how-step:not(:last-child)::after { left: 35px; top: 54px; bottom: -20px; }
+  .how-bar { left: 70px; right: 16px; }
 
   .faq { margin-top: 32px; gap: 10px; }
   .qa button { padding: 18px 20px; font-size: 17px; }
@@ -491,6 +519,7 @@ main, .hdr-row { transition: opacity 140ms ease, filter 140ms ease; }
   .ticker-view { overflow-x: auto; }
   .swapping main { filter: none; }
   .lang-thumb, .qa-body, .qa button svg { transition: none; }
+  .how-shot, .how-shot.on { transition: opacity 200ms ease; filter: none; transform: none; }
 }
 </style>
 </head>
@@ -524,7 +553,6 @@ main, .hdr-row { transition: opacity 140ms ease, filter 140ms ease; }
   <section class="hero ink" id="top">
     <div class="wrap hero-grid">
       <div class="hero-copy">
-        <p class="eyebrow rise" style="--i:0"><i></i><span data-i18n="hero_eyebrow">For Nueva Ecija farmers and the buyers they sell to</span></p>
         <h1 class="rise" style="--i:1" data-i18n="hero_title">Know the price <span class="hl">before you sell.</span></h1>
         <p class="hero-lead rise" style="--i:2" data-i18n="hero_lead">AniSense shows this month's crop prices, what the next three months may bring, and lets you sell straight to buyers. Free, in English and Tagalog, and it works even when the signal drops.</p>
         <div class="hero-cta rise" style="--i:3">
@@ -570,7 +598,6 @@ main, .hdr-row { transition: opacity 140ms ease, filter 140ms ease; }
     <!-- Real prices, from the records the app is built on. -->
     <div class="ticker">
       <div class="wrap ticker-row">
-        <p class="ticker-label" data-i18n="ticker_label">September 2026 retail prices · Nueva Ecija</p>
         <div class="ticker-view">
           <div class="ticker-track" id="ticker" aria-label="September 2026 retail prices">
             <span class="tick">Special Rice <b>₱57.20</b> <span class="delta down">−3.2%</span></span>
@@ -744,17 +771,45 @@ main, .hdr-row { transition: opacity 140ms ease, filter 140ms ease; }
 
   <!-- ── How it works ── -->
   <section class="sec" id="how">
-    <div class="wrap center">
-      <p class="tag reveal" data-i18n="hw_tag">How it works</p>
-      <h2 class="reveal" style="--i:1" data-i18n="hw_h">Up and running in three steps</h2>
-      <ol class="steps" style="text-align:left">
-        <li class="step reveal" style="--i:2"><span class="step-n">1</span><h3 data-i18n="hw_1">Create an account</h3><p data-i18n="hw_1d">With your CP number or Gmail. Choose farmer or buyer.</p>
-          <div class="peek"><div class="phone"><div class="phone-screen"><img data-shot="signin-splash" src="assets/screens/signin-splash.webp" width="390" height="844" loading="lazy" decoding="async" alt="The AniSense welcome screen, with Create an Account and I already have an account." data-i18n-alt="alt_splash"><div class="island" aria-hidden="true"></div></div></div></div></li>
-        <li class="step reveal" style="--i:3"><span class="step-n">2</span><h3 data-i18n="hw_2">Check the prices</h3><p data-i18n="hw_2d">This month's prices, and the next three months, crop by crop.</p>
-          <div class="peek"><div class="phone"><div class="phone-screen"><img data-shot="farmer-price-sheet" src="assets/screens/farmer-price-sheet.webp" width="390" height="844" loading="lazy" decoding="async" alt="A crop's price, its change from the month before, and its chart." data-i18n-alt="alt_sheet_2"><div class="island" aria-hidden="true"></div></div></div></div></li>
-        <li class="step reveal" style="--i:4"><span class="step-n">3</span><h3 data-i18n="hw_3">Sell or buy</h3><p data-i18n="hw_3d">Post your harvest, or order fresh from a farmer.</p>
-          <div class="peek"><div class="phone"><div class="phone-screen"><img data-shot="buyer-market" src="assets/screens/buyer-market.webp" width="390" height="844" loading="lazy" decoding="async" alt="Listings in the Market." data-i18n-alt="alt_market_2"><div class="island" aria-hidden="true"></div></div></div></div></li>
-      </ol>
+    <div class="wrap how">
+      <div class="how-head">
+        <p class="tag reveal" data-i18n="hw_tag">How it works</p>
+        <h2 class="reveal" style="--i:1" id="how-h" data-i18n="hw_h">Up and running in three steps</h2>
+        <p class="lead reveal" style="--i:2" data-i18n="hw_lead">Tap a step to see it in the app.</p>
+      </div>
+
+      <!-- Tabs: each step shows its own screen in the phone beside them. -->
+      <div class="how-steps reveal" style="--i:3" role="tablist" aria-orientation="vertical" aria-labelledby="how-h" id="how-steps">
+        <button type="button" class="how-step on" role="tab" id="how-t0" aria-selected="true" aria-controls="how-panel" tabindex="0">
+          <span class="how-n" aria-hidden="true">1</span>
+          <span class="how-words"><b data-i18n="hw_1">Create an account</b><span data-i18n="hw_1d">With your CP number or Gmail. Choose farmer or buyer.</span></span>
+          <span class="how-bar" aria-hidden="true"><i></i></span>
+        </button>
+        <button type="button" class="how-step" role="tab" id="how-t1" aria-selected="false" aria-controls="how-panel" tabindex="-1">
+          <span class="how-n" aria-hidden="true">2</span>
+          <span class="how-words"><b data-i18n="hw_2">Check the prices</b><span data-i18n="hw_2d">This month's price for each crop, and where it may go in the next three months.</span></span>
+          <span class="how-bar" aria-hidden="true"><i></i></span>
+        </button>
+        <button type="button" class="how-step" role="tab" id="how-t2" aria-selected="false" aria-controls="how-panel" tabindex="-1">
+          <span class="how-n" aria-hidden="true">3</span>
+          <span class="how-words"><b data-i18n="hw_3">Sell or buy</b><span data-i18n="hw_3d">Farmers post a harvest. Buyers order it and call the farmer.</span></span>
+          <span class="how-bar" aria-hidden="true"><i></i></span>
+        </button>
+      </div>
+
+      <div class="how-visual reveal" style="--i:2" id="how-visual">
+        <div class="phone" id="how-panel" role="tabpanel" aria-labelledby="how-t0">
+          <div class="phone-screen">
+            <img class="how-shot on" data-shot="signin-splash" src="assets/screens/signin-splash.webp" width="390" height="844" loading="lazy" decoding="async"
+              alt="The AniSense welcome screen, with Create an Account and I already have an account." data-i18n-alt="alt_splash">
+            <img class="how-shot" data-shot="farmer-price-sheet" src="assets/screens/farmer-price-sheet.webp" width="390" height="844" loading="lazy" decoding="async" aria-hidden="true"
+              alt="A crop's price, its change from the month before, and its chart." data-i18n-alt="alt_sheet_2">
+            <img class="how-shot" data-shot="buyer-market" src="assets/screens/buyer-market.webp" width="390" height="844" loading="lazy" decoding="async" aria-hidden="true"
+              alt="Listings in the Market." data-i18n-alt="alt_market_2">
+            <div class="island" aria-hidden="true"></div>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -812,14 +867,12 @@ main, .hdr-row { transition: opacity 140ms ease, filter 140ms ease; }
       skip: "Skip to content",
       nav_features: "Features", nav_forecasts: "Forecasts", nav_how: "How it works", nav_faq: "FAQ",
       cta_get: "Get the app",
-      hero_eyebrow: "For Nueva Ecija farmers and the buyers they sell to",
       hero_title: 'Know the price <span class="hl">before you sell.</span>',
       hero_lead: "AniSense shows this month's crop prices, what the next three months may bring, and lets you sell straight to buyers. Free, in English and Tagalog, and it works even when the signal drops.",
       hero_how: "See what it does",
       tick_free: "Free", tick_lang: "English and Tagalog", tick_offline: "Works offline",
       chip_from: "from August", chip_fc: "3-month forecast", chip_fc_sub: "tested: off by about 3%",
       chip_off: "No signal? Still works.", chip_off_sub: "Prices are inside the app",
-      ticker_label: "September 2026 retail prices · Nueva Ecija",
       stat_1: "crop varieties, from rice to watermelon", stat_2: "monthly price records, back to 2021",
       stat_3_unit: "months", stat_3: "of forecast, by ARIMA and LSTM", stat_4: "to use. No paid account, no ads.",
       prices_tag: "Prices", prices_h: "Prices you can plan around",
@@ -848,10 +901,10 @@ main, .hdr-row { transition: opacity 140ms ease, filter 140ms ease; }
       mf_2: "English and Tagalog", mf_2d: "Switch any time, from the very first screen.",
       mf_3: "Works offline", mf_3d: "Prices, their history and the forecasts are inside the app.",
       mf_4: "Private by default", mf_4d: "No ads, and we never sell your information.",
-      hw_tag: "How it works", hw_h: "Up and running in three steps",
+      hw_tag: "How it works", hw_h: "Up and running in three steps", hw_lead: "Tap a step to see it in the app.",
       hw_1: "Create an account", hw_1d: "With your CP number or Gmail. Choose farmer or buyer.",
-      hw_2: "Check the prices", hw_2d: "This month's prices, and the next three months, crop by crop.",
-      hw_3: "Sell or buy", hw_3d: "Post your harvest, or order fresh from a farmer.",
+      hw_2: "Check the prices", hw_2d: "This month's price for each crop, and where it may go in the next three months.",
+      hw_3: "Sell or buy", hw_3d: "Farmers post a harvest. Buyers order it and call the farmer.",
       faq_tag: "Questions", faq_h: "Good to know",
       dl_h: "AniSense is coming to Google Play",
       dl_lead: "Free for farmers and buyers, on Android phones. This page will link to it the day it is out.",
@@ -882,14 +935,12 @@ main, .hdr-row { transition: opacity 140ms ease, filter 140ms ease; }
       skip: "Lumaktaw sa nilalaman",
       nav_features: "Mga tampok", nav_forecasts: "Forecast", nav_how: "Paano gamitin", nav_faq: "Mga tanong",
       cta_get: "Kunin ang app",
-      hero_eyebrow: "Para sa mga magsasaka ng Nueva Ecija at sa kanilang mamimili",
       hero_title: 'Alamin ang presyo <span class="hl">bago ka magbenta.</span>',
       hero_lead: "Ipinapakita ng AniSense ang presyo ng pananim ngayong buwan at ang posibleng presyo sa susunod na tatlong buwan. Puwede ka ring magbenta nang direkta sa mamimili. Libre, nasa Ingles at Tagalog, at gumagana kahit mahina ang signal.",
       hero_how: "Tingnan ang laman",
       tick_free: "Libre", tick_lang: "Ingles at Tagalog", tick_offline: "Gumagana offline",
       chip_from: "mula Agosto", chip_fc: "Forecast sa 3 buwan", chip_fc_sub: "sinubok: lihis nang mga 3%",
       chip_off: "Walang signal? Gumagana pa rin.", chip_off_sub: "Nasa loob ng app ang presyo",
-      ticker_label: "Presyong tingi, Setyembre 2026 · Nueva Ecija",
       stat_1: "uri ng pananim, mula palay hanggang pakwan", stat_2: "talaan ng presyo kada buwan, mula 2021",
       stat_3_unit: "buwan", stat_3: "na forecast, gawa ng ARIMA at LSTM", stat_4: "ang bayad. Walang bayad na account, walang ads.",
       prices_tag: "Presyo", prices_h: "Presyong mapagbabatayan",
@@ -918,10 +969,10 @@ main, .hdr-row { transition: opacity 140ms ease, filter 140ms ease; }
       mf_2: "Ingles at Tagalog", mf_2d: "Puwedeng palitan kahit kailan, mula sa unang screen.",
       mf_3: "Gumagana offline", mf_3d: "Nasa loob ng app ang presyo, ang kasaysayan nito, at ang forecast.",
       mf_4: "Pribado ang datos mo", mf_4d: "Walang ads, at hindi namin ibinebenta ang impormasyon mo.",
-      hw_tag: "Paano gamitin", hw_h: "Handa ka na sa tatlong hakbang",
+      hw_tag: "Paano gamitin", hw_h: "Handa ka na sa tatlong hakbang", hw_lead: "Pindutin ang isang hakbang para makita ito sa app.",
       hw_1: "Gumawa ng account", hw_1d: "Gamit ang CP number o Gmail mo. Piliin kung magsasaka o mamimili.",
-      hw_2: "Tingnan ang presyo", hw_2d: "Ang presyo ngayong buwan at sa susunod na tatlong buwan, bawat pananim.",
-      hw_3: "Magbenta o bumili", hw_3d: "I-post ang ani mo, o umorder nang sariwa mula sa magsasaka.",
+      hw_2: "Tingnan ang presyo", hw_2d: "Ang presyo ng bawat pananim ngayong buwan, at ang posibleng presyo sa susunod na tatlong buwan.",
+      hw_3: "Magbenta o bumili", hw_3d: "Ipinopost ng magsasaka ang ani. Oorderin ito ng mamimili at tatawagan ang magsasaka.",
       faq_tag: "Mga tanong", faq_h: "Mabuting malaman",
       dl_h: "Malapit nang dumating ang AniSense sa Google Play",
       dl_lead: "Libre para sa magsasaka at mamimili, sa mga Android phone. Ilalagay dito ang link sa araw na lumabas ito.",
@@ -1040,9 +1091,39 @@ main, .hdr-row { transition: opacity 140ms ease, filter 140ms ease; }
   document.querySelectorAll(".phone-screen").forEach(scr => {
     if (scr.querySelector(".sbar")) return;
     const b = bar.cloneNode(true);
-    if (scr.querySelector('img[data-shot="signin-splash"]')) b.classList.add("on-photo");
+    if (scr.querySelector('img[data-shot="signin-splash"]') && !scr.querySelector(".how-shot")) b.classList.add("on-photo");
     scr.insertBefore(b, scr.querySelector(".island"));
   });
+
+  // ── How it works: the steps and the phone ──
+  const how = document.querySelector(".how"), tabs = [...document.querySelectorAll(".how-step")];
+  const shots = [...document.querySelectorAll(".how-shot")], panel = document.getElementById("how-panel"), visual = document.getElementById("how-visual");
+  let step = 0;
+  function choose(i, instant) {
+    step = (i + tabs.length) % tabs.length;
+    visual.classList.toggle("instant", !!instant);
+    tabs.forEach((t, n) => { const on = n === step; t.classList.toggle("on", on); t.setAttribute("aria-selected", String(on)); t.tabIndex = on ? 0 : -1; });
+    shots.forEach((img, n) => { img.classList.toggle("on", n === step); if (n === step) img.removeAttribute("aria-hidden"); else img.setAttribute("aria-hidden", "true"); });
+    panel.setAttribute("aria-labelledby", tabs[step].id);
+    // The welcome screen is a bright photo: its status bar turns white.
+    const bar = panel.querySelector(".sbar"); if (bar) bar.classList.toggle("on-photo", shots[step].dataset.shot === "signin-splash");
+    if (instant) requestAnimationFrame(() => requestAnimationFrame(() => visual.classList.remove("instant")));
+  }
+  // Their choice, not the page's: any pick stops the walk-through for good.
+  const stopAuto = () => how.classList.remove("auto");
+  tabs.forEach((t, i) => t.addEventListener("click", () => { stopAuto(); choose(i); }));
+  document.getElementById("how-steps").addEventListener("keydown", e => {
+    const keys = { ArrowDown: step + 1, ArrowRight: step + 1, ArrowUp: step - 1, ArrowLeft: step - 1, Home: 0, End: tabs.length - 1 };
+    if (!(e.key in keys)) return;
+    e.preventDefault(); stopAuto(); choose(keys[e.key], true); tabs[step].focus();
+  });
+  // The walk-through: only while the section is on screen, never with reduced motion.
+  if (!reduce) {
+    how.classList.add("auto");
+    how.addEventListener("animationend", e => { if (e.animationName === "how-fill" && how.classList.contains("auto")) choose(step + 1); });
+    new IntersectionObserver(([en]) => how.classList.toggle("playing", en.isIntersecting), { threshold: .35 }).observe(how);
+  }
+  choose(0, true);
 
   // ── The ticker loops on a second copy of itself ──
   const track = document.getElementById("ticker");
