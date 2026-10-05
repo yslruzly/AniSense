@@ -234,8 +234,8 @@ a.play:active { transform: scale(.97); transition-duration: 90ms; }
 .ink .points b { color: var(--on-ink); }
 .dot { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; background: var(--tanim-sk); color: var(--tanim); margin-top: 1px; }
 
-/* Two phones, the second behind and to the side. Their places are shares of
-   their width, so on a phone the pair only gets smaller (--dw), never closer. */
+/* Two phones, the second behind and to the side (--dw sets their size). On
+   a phone they stand side by side instead (see Phones, below). */
 .duo { --dw: 236px; position: relative; display: flex; justify-content: center; align-items: center; min-height: calc(var(--dw) * 2.12); }
 .duo .phone { --pw: var(--dw); }
 .duo .back { position: absolute; transform: translate(-46%, 6%) rotate(-5deg) scale(.9); filter: saturate(.92); z-index: 0; }
@@ -510,8 +510,10 @@ a.play:active { transform: scale(.97); transition-duration: 90ms; }
   .stat p { margin-top: 8px; font-size: 16px; }
 
   .points { gap: 14px; }
-  /* The pair as on a laptop, sized so both fit the screen's width. */
-  .duo { --dw: min(236px, calc((100vw - 48px) / 1.9)); margin-top: 8px; }
+  /* The pair side by side, straight and the same size, both screens whole:
+     the laptop's tilted overlap hides half of the one behind on a phone. */
+  .duo { --dw: min(236px, calc((100vw - 54px) / 2)); gap: 14px; min-height: 0; margin-top: 8px; }
+  .duo .back, .duo .front { position: relative; transform: none; filter: none; }
   .fc-visual .phone { --pw: 250px; }
   .cols { grid-template-columns: 1fr; gap: 22px; }
   .trow { grid-template-columns: 1fr auto; padding: 14px 18px; }
