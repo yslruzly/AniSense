@@ -1,16 +1,18 @@
+import type { CSSProperties } from "react";
 import { Star } from "lucide-react";
 import { useLang } from "../../i18n";
 import { useMarket } from "../../store/market";
 import { useViewer } from "../../store/viewer";
 import { featuredLineup, townOf } from "../../lib/featured";
-import { avatarTone } from "../../lib/avatar";
+import { avatarTint, avatarTone } from "../../lib/avatar";
 import { AniSenseLogo } from "../brand/AniSenseLogo";
 import leafMask from "../../assets/anisense-leaf-mask.png";
 
 // ── Featured farmers, in the Market ──────────────────────────────────────────
 // The same four as Home's (src/lib/featured.ts): the Farmer of the Week, then
-// three more, anyone in the viewer's own town first. The first card keeps a
-// gold glow but no "Farmer of the Week" label. They sit on a small AniSense
+// three more, anyone in the viewer's own town first. Each card has a cover
+// band in its farmer's own colour, pale; the first card's is gold, with a
+// gold glow, but no "Farmer of the Week" label. They sit on a small AniSense
 // poster: the green ground of the profile a tap opens, the leaf mark faint,
 // and the brand small on the top edge. Here they are a short
 // row of cards above the harvests, so meeting the growers never pushes the
@@ -43,6 +45,7 @@ export function FeaturedFarmersRow({ onOpen }: { onOpen: (sellerKey: string) => 
           const town = townOf(s.location);
           return (
             <button key={s.key} type="button" className={`mpf-card${week ? " is-week" : ""}`} onClick={() => onOpen(s.key)}
+              style={{ "--tint": avatarTint(s.name) } as CSSProperties}
               aria-label={[s.name, `${s.rating.toFixed(1)} ★`, town, s.near ? t("ff_near") : ""].filter(Boolean).join(", ")}>
               <span className="ff-ava" style={{ background: avatarTone(s.name) }} aria-hidden="true">{s.initials}</span>
               <span className="mpf-name" aria-hidden="true">{s.name}</span>

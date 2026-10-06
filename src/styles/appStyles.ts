@@ -2304,7 +2304,18 @@ export const appCss = `
   .mpf-card {
     flex: 0 0 152px; scroll-snap-align: start;
     display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0;
-    padding: 14px 12px; border: none; border-radius: 16px; background: var(--card);
+    padding: 14px 12px; border: none; border-radius: 16px;
+    /* A cover band across the top, like the photo on the farmer's profile:
+       their own avatar colour, pale (--tint, from avatarTint), with light
+       from the top left and the fine diagonal weave of the AniSense ground.
+       It ends at the avatar's middle, so the avatar sits on its edge the
+       way the profile's sits on the photo. The words stay on white. */
+    --band: 39px;
+    background:
+      repeating-linear-gradient(135deg, rgba(255,255,255,.5) 0 1px, transparent 1px 8px) top / 100% var(--band) no-repeat,
+      radial-gradient(90% 160% at 0% 0%, rgba(255,255,255,.65), transparent 60%) top / 100% var(--band) no-repeat,
+      linear-gradient(var(--tint, var(--tanim-sk)), var(--tint, var(--tanim-sk))) top / 100% var(--band) no-repeat,
+      var(--card);
     text-align: center; font: inherit; color: inherit; cursor: pointer;
     box-shadow: 0 1px 2px rgba(4,30,18,.28), 0 12px 22px -14px rgba(0,0,0,.6);
     transition: transform 190ms var(--ease-out);
@@ -2314,9 +2325,15 @@ export const appCss = `
   /* The app's green focus ring would vanish on the green ground. */
   .mpf-card:focus-visible { outline-color: var(--palay); }
   .mpf-card .ff-ava { margin: 2px 0 4px; }
-  /* On the green, the gold also glows outward a little. */
+  /* The week's farmer: a band of polished gold (the plate's metal, softer:
+     a bright top, a streak of light), cream below fading to white, and on
+     the green the gold also glows outward a little. */
   .mpf-card.is-week {
-    background: linear-gradient(180deg, #FFF6DE 0%, var(--card) 72%);
+    background:
+      repeating-linear-gradient(135deg, rgba(255,255,255,.4) 0 1px, transparent 1px 8px) top / 100% var(--band) no-repeat,
+      linear-gradient(105deg, rgba(255,255,255,0) 28%, rgba(255,255,255,.55) 44%, rgba(255,255,255,0) 60%) top / 100% var(--band) no-repeat,
+      linear-gradient(180deg, #FFF0C2 0%, #F6D271 62%, #EDBE4E 100%) top / 100% var(--band) no-repeat,
+      linear-gradient(180deg, #FFF6DE var(--band), var(--card) 80%);
     box-shadow: inset 0 0 0 1.5px #F2B32C, 0 0 14px -2px rgba(242,179,44,.5), 0 12px 22px -14px rgba(0,0,0,.6);
   }
   .mpf-name {

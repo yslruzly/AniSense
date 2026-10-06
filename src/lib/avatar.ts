@@ -7,9 +7,10 @@
 // No green: the app itself is green, and a green avatar on it reads as a
 // button or a badge, not a person. Eight colours rather than five, and a
 // proper hash of the whole name rather than a sum of its letters, which gave
-// half the sample farmers the same colour. The fixed "333:" in front is only
-// the setting under which the eight best-rated sample farmers all come out
-// different; any name still maps to one colour, always.
+// half the sample farmers the same colour. The fixed "231:" in front is only
+// the setting under which the five sample farmers all come out different
+// (gold, violet, red, blue, orange, in rating order, so no two neighbours in
+// Featured farmers look alike); any name still maps to one colour, always.
 
 const TONES = [
   "linear-gradient(135deg, #D19A2E, #8A5D0C)", // gold
@@ -32,5 +33,14 @@ function hash(s: string): number {
   return h >>> 0;
 }
 
-export const avatarTone = (name: string) =>
-  TONES[hash(`333:${name.trim().toLowerCase()}`) % TONES.length];
+// The same eight, pale: 30% of each colour's light end over white. For the
+// band behind an avatar, so the card around a farmer carries their colour
+// without competing with their initials or the words under them.
+const TINTS = ["#F1E1C0", "#C9DDF0", "#D7D0F1", "#F1CCC9", "#F8DCC4", "#F2CEDF", "#CED4EA", "#E5D6CA"];
+
+const toneIndex = (name: string) => hash(`231:${name.trim().toLowerCase()}`) % TONES.length;
+
+export const avatarTone = (name: string) => TONES[toneIndex(name)];
+
+/** The farmer's colour, pale, for a background behind their avatar. */
+export const avatarTint = (name: string) => TINTS[toneIndex(name)];
