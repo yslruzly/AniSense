@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ArrowLeft, Camera, Bell, IdCard, Info, ChevronRight, Globe, ShieldCheck, FileText, HelpCircle, PlayCircle, LogOut, Phone, Mail, MapPin, Calendar } from "lucide-react";
+import { ArrowLeft, Camera, Bell, IdCard, Sprout, Wheat, SlidersHorizontal, Info, ChevronRight, Globe, ShieldCheck, UserCog, FileText, HelpCircle, PlayCircle, LogOut, Phone, Mail, MapPin, Calendar } from "lucide-react";
 import { useLang, LanguageToggle } from "../i18n";
 import { Screen, UserRole, FarmerProfile } from "../types";
 import { CropEmoji } from "../components/icons/CropEmoji";
@@ -37,16 +37,22 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
 }) {
   const { t, tn } = useLang();
 
-  // Each section the way a phone's own Settings groups things: its name
-  // above, quiet and grey, then one white card. In the lists every row is
-  // built the same: a grey line icon, the words, and a chevron only where the
-  // row goes somewhere, with a hairline between rows.
-  const group = (id: string, title: string, body: React.ReactNode, opts: { card?: string; list?: boolean } = {}) => (
-    <section className="prof-group" aria-labelledby={`pg-${id}`}>
-      <h2 className="prof-group-t" id={`pg-${id}`}>{title}</h2>
-      <div className={`card prof-card${opts.list ? " is-list" : ""}`} data-card={opts.card}>{body}</div>
+  // Each section is one white card, named at its top beside one coloured
+  // chip: gold for what he's earned, blue for how to reach him, green for
+  // the farm and what grows on it, grey for the account and the app's own
+  // switches, violet for help. Colour as a label, not as decoration. In the
+  // lists every row is built the same: a grey line icon, the words, and a
+  // chevron only where the row goes somewhere, with a hairline between rows.
+  const group = (id: string, tone: string, chip: React.ReactNode, title: string, body: React.ReactNode, opts: { card?: string; list?: boolean } = {}) => (
+    <section className={`card prof-card${opts.list ? " is-list" : ""}`} data-card={opts.card} aria-labelledby={`pg-${id}`}>
+      <div className="card-head">
+        <span className={`card-ico ${tone}`} aria-hidden="true">{chip}</span>
+        <div className="card-title" id={`pg-${id}`} style={{ margin: 0 }}>{title}</div>
+      </div>
+      {body}
     </section>
   );
+  const C = { size: 20, strokeWidth: 2.2 };
   const I = { size: 22, strokeWidth: 1.8 };
   const ico = (node: React.ReactNode) => <span className="setting-ico" aria-hidden="true">{node}</span>;
   const chev = <ChevronRight className="setting-chev" size={20} strokeWidth={2} aria-hidden="true" />;
@@ -183,18 +189,18 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
         </div>
 
         {/* The farm in four real numbers, farmer only */}
-        {userRole !== "buyer" && group("stats", t("prof_stats"), <FarmStats experience={profile.experience} sales={sales} />)}
+        {userRole !== "buyer" && group("stats", "tint-green", <Sprout {...C} />, t("prof_stats"), <FarmStats experience={profile.experience} sales={sales} />)}
 
         {/* What they have earned on AniSense, right under their numbers. */}
         {userRole !== "buyer" && !editing && <Achievements sales={sales} memberSince={memberSince} />}
 
-        {group("contact", t("prof_contact"), contactFields.map(infoRow), { list: true })}
+        {group("contact", "tint-blue", <Phone {...C} />, t("prof_contact"), contactFields.map(infoRow), { list: true })}
 
         {/* Farm Details, farmer only */}
-        {userRole !== "buyer" && group("farm", t("prof_farm_details"), farmFields.map(infoRow), { list: true })}
+        {userRole !== "buyer" && group("farm", "tint-green", <Sprout {...C} />, t("prof_farm_details"), farmFields.map(infoRow), { list: true })}
 
         {/* Crop Specialization, farmer only */}
-        {userRole !== "buyer" && group("crops", t("prof_crop_spec"), editing
+        {userRole !== "buyer" && group("crops", "tint-green", <Wheat {...C} />, t("prof_crop_spec"), editing
           ? <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {ALL_CROPS.map(c => (
               <button key={c} onClick={() => toggleCrop(c)}
@@ -221,7 +227,7 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
                 (the privacy policy), and the way to take it all back
                 (deleting the account), which is the last row and only opens
                 a sheet that asks again. */}
-            {group("manage", t("prof_manage"), <>
+            {group("manage", "tint-slate", <UserCog {...C} />, t("prof_manage"), <>
               {/* A real button: it opens the Privacy screen. The policy's
                   name is in English in both languages, like the policy. */}
               <button className="setting-row as-btn" onClick={() => onNavigate("privacy")}>
@@ -240,7 +246,7 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
             </>, { card: "manage", list: true })}
             <LegalSheet doc={showTerms ? TERMS : null} onClose={() => setShowTerms(false)} />
 
-            {group("prefs", t("prof_preferences"), <>
+            {group("prefs", "tint-slate", <SlidersHorizontal {...C} />, t("prof_preferences"), <>
               <div className="setting-row">
                 {ico(<Bell {...I} />)}
                 <span className="setting-lbl">{t("prof_notifications")}</span>
@@ -256,7 +262,7 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
               </div>
             </>, { card: "preferences", list: true })}
 
-            {group("support", t("prof_support"), supportSettings.map(r => {
+            {group("support", "tint-violet", <Info {...C} />, t("prof_support"), supportSettings.map(r => {
               const body = (
                 <>
                   {ico(r.ico)}

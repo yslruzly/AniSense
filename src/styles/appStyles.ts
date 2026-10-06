@@ -1439,14 +1439,16 @@ export const appCss = `
   }
 
   /* ── Card headings with a colour chip ────────────────────────────────────
-     A card's name beside a filled chip in its colour (Expenses' profit
-     card). Profile names its sections above the card instead. */
+     Profile is a settings page: the cards stay white and the colour rides on
+     the chips, the way a phone's own Settings names its groups. Expenses'
+     profit card is named the same way. */
   .card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 13px; }
 
   /* ── Achievements (farmer Profile) ──────────────────────────────────────── */
   /* A medal per achievement, two to a row. Earned: a raised medal in its own
      colour, the same material as the app's filled icon tiles. Not yet: the
      same medal in grey with a small lock, and the words say how to earn it. */
+  .ach .card-head { margin-bottom: 14px; }
   .ach-count {
     margin-left: auto; flex-shrink: 0; padding: 4px 10px; border-radius: 99px;
     font-size: 12.5px; font-weight: 800; background: var(--gold-sk); color: var(--gold-text);
@@ -4098,28 +4100,20 @@ export const appCss = `
   }
   .fstat-sub { margin: 4px 0 0; font-size: var(--fs-label); color: var(--text-faint); line-height: 1.3; }
 
-  /* ── Profile: each section a grouped list ────────────────────────────────
-     Set the way a phone's own Settings is: the section's name above its
-     card, quiet and grey; one white card per section, no drawn border, a
-     soft shadow; and in the lists, every row built one way: a grey line
-     icon, the words in ink, a chevron only where the row goes somewhere,
-     and a hairline between rows (none above the first or under the last).
-     Rows are at least 60px and run the card's full width, so the press tint
-     reaches both edges. */
-  .prof-group { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
-  .prof-group-head { display: flex; align-items: center; gap: 10px; }
-  /* A pill on the name's line (Achievements' count) is taller than the
-     name; pulled in, so every card still starts 8px under its name. */
-  .prof-group-head .ach-count { margin-block: -2px; }
-  .prof-group-t {
-    margin: 0; padding-left: 4px; font-family: var(--font-display); font-size: var(--fs-label);
-    font-weight: 600; letter-spacing: -.005em; color: var(--text-muted);
-  }
+  /* ── Profile: each section a card of rows ────────────────────────────────
+     One white card per section, no drawn border, a soft shadow, named at
+     its top beside its coloured chip (.card-head). In the lists, every row
+     built one way: a grey line icon, the words in ink, a chevron only where
+     the row goes somewhere, and a hairline between rows (none above the
+     first or under the last). Rows are at least 60px and run the card's
+     full width, so the press tint reaches both edges. */
   .card.prof-card {
     border: none; border-radius: var(--radius);
     box-shadow: 0 1px 2px rgba(22,33,27,.05), 0 6px 18px -10px rgba(22,33,27,.16);
   }
   .card.prof-card.is-list { padding: 0 16px; overflow: hidden; }
+  /* A list card has no padding of its own: the heading brings its own top. */
+  .card.prof-card.is-list > .card-head { margin: 0; padding: 16px 0 4px; }
   .setting-row, .info-row {
     position: relative; display: flex; align-items: center; gap: 14px;
     width: calc(100% + 32px); min-height: 60px; margin: 0 -16px; padding: 14px 16px;
