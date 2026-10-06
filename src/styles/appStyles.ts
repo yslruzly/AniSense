@@ -1439,17 +1439,14 @@ export const appCss = `
   }
 
   /* ── Card headings with a colour chip ────────────────────────────────────
-     Profile is a settings page: the cards stay white and the colour rides on
-     the chips, the way a phone's own Settings names its groups. Only the
-     stats card takes a wash, because it's the one that's about the person
-     rather than about a setting. */
+     A card's name beside a filled chip in its colour (Expenses' profit
+     card). Profile names its sections above the card instead. */
   .card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 13px; }
 
   /* ── Achievements (farmer Profile) ──────────────────────────────────────── */
   /* A medal per achievement, two to a row. Earned: a raised medal in its own
      colour, the same material as the app's filled icon tiles. Not yet: the
      same medal in grey with a small lock, and the words say how to earn it. */
-  .ach .card-head { margin-bottom: 14px; }
   .ach-count {
     margin-left: auto; flex-shrink: 0; padding: 4px 10px; border-radius: 99px;
     font-size: 12.5px; font-weight: 800; background: var(--gold-sk); color: var(--gold-text);
@@ -4081,11 +4078,6 @@ export const appCss = `
     min-width: 0; line-height: 1.35; padding-top: 2px;
   }
 
-  .info-row { display: flex; align-items: center; gap: 13px; padding: 13px 0; border-bottom: 1px solid var(--border); }
-  .info-row:last-child { border-bottom: none; }
-  .info-ico  { width: 38px; height: 38px; border-radius: 12px; background: var(--green-bg); display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
-  .info-lbl  { font-size: var(--fs-label); color: var(--text-muted); margin-bottom: 2px; }
-  .info-val  { font-size: var(--fs-label); font-weight: 600; color: var(--text); }
 
   /* My farm at a glance: a ledger page, not a row of badges. Four cells in
      a 2 × 2 grid, split by hairlines drawn as the grid's own gaps (the
@@ -4106,26 +4098,70 @@ export const appCss = `
   }
   .fstat-sub { margin: 4px 0 0; font-size: var(--fs-label); color: var(--text-faint); line-height: 1.3; }
 
-  /* Pressed state is a real surface change, not just a scale. On a row this
-     wide a 1% shrink is invisible; a tinted plate under the thumb is not. */
-  .setting-row {
-    display: flex; align-items: center; gap: 13px;
-    padding: 14px 10px; margin: 0 -10px; border-radius: 12px;
-    border-bottom: 1px solid var(--border); cursor: pointer; min-height: 52px;
+  /* ── Profile: each section a grouped list ────────────────────────────────
+     Set the way a phone's own Settings is: the section's name above its
+     card, quiet and grey; one white card per section, no drawn border, a
+     soft shadow; and in the lists, every row built one way: a grey line
+     icon, the words in ink, a chevron only where the row goes somewhere,
+     and a hairline between rows (none above the first or under the last).
+     Rows are at least 60px and run the card's full width, so the press tint
+     reaches both edges. */
+  .prof-group { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+  .prof-group-head { display: flex; align-items: center; gap: 10px; }
+  /* A pill on the name's line (Achievements' count) is taller than the
+     name; pulled in, so every card still starts 8px under its name. */
+  .prof-group-head .ach-count { margin-block: -2px; }
+  .prof-group-t {
+    margin: 0; padding-left: 4px; font-family: var(--font-display); font-size: var(--fs-label);
+    font-weight: 600; letter-spacing: -.005em; color: var(--text-muted);
   }
-  .setting-row:active { background: var(--paper-alt); }
-  .setting-row:active svg:last-child { color: var(--tanim); }
-  .setting-row:last-child { border-bottom: none; }
-  .setting-ico { width: 38px; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
-  .setting-lbl { font-size: var(--fs-label); font-weight: 600; color: var(--text); flex: 1; }
-  .setting-sub { font-size: var(--fs-label); color: var(--text-muted); margin-top: 2px; }
-  .setting-arr { font-size: 15px; color: var(--line-strong); }
+  .card.prof-card {
+    border: none; border-radius: var(--radius);
+    box-shadow: 0 1px 2px rgba(22,33,27,.05), 0 6px 18px -10px rgba(22,33,27,.16);
+  }
+  .card.prof-card.is-list { padding: 0 16px; overflow: hidden; }
+  .setting-row, .info-row {
+    position: relative; display: flex; align-items: center; gap: 14px;
+    width: calc(100% + 32px); min-height: 60px; margin: 0 -16px; padding: 14px 16px;
+  }
+  .setting-row + .setting-row::before, .info-row + .info-row::before {
+    content: ""; position: absolute; top: 0; left: 16px; right: 16px; height: 1px;
+    background: rgba(22,33,27,.09); pointer-events: none;
+  }
+  .setting-row.as-btn {
+    border: none; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer;
+    transition: background-color 160ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .setting-row.as-btn:active { background: var(--paper); transition-duration: 0ms; }
+  /* Drawn inside the row: the card clips anything outside it. */
+  .setting-row.as-btn:focus-visible { outline-offset: -3px; border-radius: 12px; }
+  .setting-ico, .info-ico {
+    flex: 0 0 24px; width: 24px; height: 24px;
+    display: inline-flex; align-items: center; justify-content: center; color: var(--text-muted);
+  }
+  .setting-lbl { flex: 1; min-width: 0; font-size: var(--fs-body); font-weight: 500; line-height: 1.3; color: var(--text); }
+  /* The chevron steps forward under the thumb, as the row's arrow should. */
+  .setting-chev { flex-shrink: 0; color: #8F959B; transition: transform 160ms var(--ease-out); }
+  .setting-row.as-btn:active .setting-chev { transform: translateX(2px); }
+  /* A value where a row goes nowhere (About's version). */
+  .setting-val { flex-shrink: 0; font-size: var(--fs-label); color: var(--text-faint); font-variant-numeric: tabular-nums; }
+  /* A switch under its name, its left edge on the words above it. */
+  .setting-row.is-stack { flex-direction: column; align-items: stretch; gap: 12px; }
+  .setting-line { display: flex; align-items: center; gap: 14px; }
+  .setting-ctl { padding-left: 38px; }
+  /* What is on record: the label small and grey, the value under it. */
+  .info-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .info-lbl { font-size: var(--fs-label); line-height: 1.3; color: var(--text-muted); }
+  .info-val { font-size: var(--fs-body); font-weight: 500; line-height: 1.35; color: var(--text); overflow-wrap: anywhere; }
+  @media (prefers-reduced-motion: reduce) { .setting-row.as-btn:active .setting-chev { transform: none; } }
 
   .signout-btn { width: 100%; padding: 16px; background: var(--error-sk); color: var(--red); border: none; border-radius: var(--radius); font-family: inherit; font-size: var(--fs-label); font-weight: 700; cursor: pointer; }
   /* ── Delete account ─────────────────────────────────────────────────────
      The door is the last row of Manage account: a settings row like the
-     others, with its label in red so it is never taken for one of them. */
-  .del-row-lbl { color: var(--error); }
+     others, with its icon and label in red so it is never taken for one of
+     them. */
+  .del-row-lbl, .del-row .setting-ico { color: var(--error); }
   .del-sheet { max-height: 92%; overflow-y: auto; }
   .del-ico {
     width: 56px; height: 56px; border-radius: 18px; margin: 0 auto 14px;

@@ -692,28 +692,18 @@ export const translations: Dict = {
   prof_crop_spec: { en: "Crop Specialization", tl: "Espesyalisasyon sa Pananim" },
   prof_preferences: { en: "Preferences", tl: "Mga Kagustuhan" },
   prof_manage: { en: "Manage account", tl: "Pamahalaan ang account" },
-  prof_terms_sub: { en: "The rules for using AniSense", tl: "Ang mga patakaran sa paggamit ng AniSense" },
   prof_notifications: { en: "Notifications", tl: "Mga Abiso" },
-  prof_notifications_sub: {
-    en: "Price alerts & market updates",
-    tl: "Alerto sa presyo at balita sa merkado",
-  },
   prof_language: { en: "Language", tl: "Wika" },
-  prof_language_sub: { en: "Filipino / English", tl: "Filipino / English" },
   prof_support: { en: "Support & About", tl: "Suporta at Tungkol Dito" },
-  prof_privacy_sub: { en: "What we collect, and your rights", tl: "Ano ang kinukuha namin, at ang mga karapatan mo" },
   pp_sub: { en: "How your information is used", tl: "Paano ginagamit ang impormasyon mo" },
   pp_done: { en: "Got it", tl: "Naintindihan ko" },
   prof_help: { en: "Help & Support", tl: "Tulong at Suporta" },
-  prof_help_sub: { en: "How to use AniSense, step by step", tl: "Paano gamitin ang AniSense, hakbang-hakbang" },
-  prof_tour_sub: { en: "About a minute", tl: "Mga isang minuto" },
   prof_about: { en: "About", tl: "Tungkol Dito" },
   prof_version: { en: "Version 1.0.0", tl: "Bersyon 1.0.0" },
   prof_sign_out: { en: "Sign Out", tl: "Mag-sign Out" },
 
   // ── Delete account ────────────────────────────────────────────────────────
   del_link: { en: "Delete my account", tl: "Burahin ang account ko" },
-  del_row_sub: { en: "Remove your account and your data for good", tl: "Tuluyang burahin ang account at datos mo" },
   del_title: { en: "Delete your account?", tl: "Burahin ang account mo?" },
   del_body: {
     en: "This removes your AniSense account for good. It can't be undone.",
@@ -1294,7 +1284,6 @@ export const translations: Dict = {
   // sale: where to look, how to tell a fair price, how to buy again.
   // The Expenses page's own walkthrough (farmers).
   tour_e_replay: { en: "Expenses walkthrough", tl: "Gabay sa Gastos" },
-  tour_e_replay_sub: { en: "How the Expenses page works", tl: "Paano gamitin ang pahina ng Gastos" },
   tour_e_intro_t: { en: "Your Expenses page", tl: "Ang pahina ng Gastos mo" },
   tour_e_intro_b: {
     en: "This is where you write down what the farm costs, and see what is left after. {n} short steps. You can skip it and open it again from Profile.",

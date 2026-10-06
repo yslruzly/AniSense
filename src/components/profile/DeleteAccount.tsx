@@ -56,12 +56,9 @@ export function DeleteAccount({ role, onDelete }: {
       {/* A settings row like the ones above it, in red so it is never
           mistaken for one of them. */}
       <button type="button" className="setting-row as-btn del-row" onClick={() => setOpen(true)}>
-        <div className="setting-ico" style={{ background: "var(--error-sk)" }}><Trash2 size={16} color="var(--error)" /></div>
-        <div style={{ flex: 1 }}>
-          <div className="setting-lbl del-row-lbl">{t("del_link")}</div>
-          <div className="setting-sub">{t("del_row_sub")}</div>
-        </div>
-        <ChevronRight size={16} color="var(--line-strong)" />
+        <span className="setting-ico" aria-hidden="true"><Trash2 size={22} strokeWidth={1.8} /></span>
+        <span className="setting-lbl del-row-lbl">{t("del_link")}</span>
+        <ChevronRight className="setting-chev" size={20} strokeWidth={2} aria-hidden="true" />
       </button>
 
       <Sheet open={open} onClose={close} className="confirm-sheet del-sheet" label={t("del_title")} dismissible={!busy}>

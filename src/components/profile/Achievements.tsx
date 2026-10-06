@@ -42,30 +42,33 @@ export function Achievements({ sales = [], memberSince }: { sales?: Sale[]; memb
   const have = earnedAchievements({ listings, isMine, sellers, sellerKeyOf, sales, awarded: awards });
 
   return (
-    <div className="card ach">
-      <div className="card-head">
-        <span className="card-ico tint-gold"><Trophy size={20} strokeWidth={2.2} /></span>
-        <div className="card-title" style={{ margin: 0 }}>{t("ach_title")}</div>
+    // A Profile section like the others: its name above the card, with the
+    // count at the far end of the same line.
+    <section className="prof-group" aria-labelledby="pg-ach">
+      <div className="prof-group-head">
+        <h2 className="prof-group-t" id="pg-ach">{t("ach_title")}</h2>
         <span className="ach-count">{t("ach_count").replace("{n}", String(have.size)).replace("{total}", String(ACHIEVEMENTS.length))}</span>
       </div>
-      <div className="ach-grid stagger-list">
-        {ACHIEVEMENTS.map(({ id, tone }) => {
-          const earned = have.has(id);
-          return (
-            <div key={id} className={`ach-badge ${earned ? "on" : "off"}`}>
-              <span className={`ach-medal ${tone}`} aria-hidden="true">
-                {ACH_ICON[id](24)}
-                {!earned && <span className="ach-lock"><Lock size={11} strokeWidth={2.8} /></span>}
-              </span>
-              <span className="ach-name">
-                {t(`ach_${id}_t`)}
-                {!earned && <span className="sr-only">, {t("ach_locked")}</span>}
-              </span>
-              <span className="ach-note">{achNote(id, earned, t, locale, memberSince)}</span>
-            </div>
-          );
-        })}
+      <div className="card prof-card ach">
+        <div className="ach-grid stagger-list">
+          {ACHIEVEMENTS.map(({ id, tone }) => {
+            const earned = have.has(id);
+            return (
+              <div key={id} className={`ach-badge ${earned ? "on" : "off"}`}>
+                <span className={`ach-medal ${tone}`} aria-hidden="true">
+                  {ACH_ICON[id](24)}
+                  {!earned && <span className="ach-lock"><Lock size={11} strokeWidth={2.8} /></span>}
+                </span>
+                <span className="ach-name">
+                  {t(`ach_${id}_t`)}
+                  {!earned && <span className="sr-only">, {t("ach_locked")}</span>}
+                </span>
+                <span className="ach-note">{achNote(id, earned, t, locale, memberSince)}</span>
+              </div>
+            );
+          })}
+        </div>
       </div>
-    </div>
+    </section>
   );
 }

@@ -189,19 +189,6 @@ export const tourCss = `
     box-shadow: inset 0 0 0 1px rgba(11,107,65,.16);
   }
 
-  /* A settings row that actually goes somewhere. The chevron on this row used
-     to point at nothing; now the row is a button and presses like one. */
-  .setting-row.as-btn {
-    width: 100%; border: none; background: none; font: inherit; color: inherit;
-    text-align: left; cursor: pointer;
-    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-    /* The same hairline under it as a row that is not a button, so a card
-       of button rows is divided like every other card. */
-    border-bottom: 1px solid var(--border);
-  }
-  .setting-row.as-btn:last-child { border-bottom: none; }
-  .setting-row.as-btn:active { background: var(--paper-alt); }
-
   /* ── The guide page ──────────────────────────────────────────────────────
      Same walkthrough, at the farmer's own pace and in their own order. */
   /* The replay card. Light, like the guide's tile on Home, so the one green

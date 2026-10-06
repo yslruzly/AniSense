@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ArrowLeft, Camera, Bell, IdCard, Sprout, Wheat, SlidersHorizontal, Info, ChevronRight, Globe, ShieldCheck, UserCog, FileText, HelpCircle, PlayCircle, Settings, LogOut, Phone, Mail, MapPin, Calendar } from "lucide-react";
+import { ArrowLeft, Camera, Bell, IdCard, Info, ChevronRight, Globe, ShieldCheck, FileText, HelpCircle, PlayCircle, LogOut, Phone, Mail, MapPin, Calendar } from "lucide-react";
 import { useLang, LanguageToggle } from "../i18n";
 import { Screen, UserRole, FarmerProfile } from "../types";
 import { CropEmoji } from "../components/icons/CropEmoji";
@@ -37,15 +37,19 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
 }) {
   const { t, tn } = useLang();
 
-  // Each group gets one coloured chip: gold for what he's earned, blue for
-  // how to reach him, green for the farm and what grows on it, grey for the
-  // app's own switches. Colour as a label, not as decoration.
-  const head = (tone: string, ico: React.ReactNode, title: string) => (
-    <div className="card-head">
-      <span className={`card-ico ${tone}`}>{ico}</span>
-      <div className="card-title" style={{ margin: 0 }}>{title}</div>
-    </div>
+  // Each section the way a phone's own Settings groups things: its name
+  // above, quiet and grey, then one white card. In the lists every row is
+  // built the same: a grey line icon, the words, and a chevron only where the
+  // row goes somewhere, with a hairline between rows.
+  const group = (id: string, title: string, body: React.ReactNode, opts: { card?: string; list?: boolean } = {}) => (
+    <section className="prof-group" aria-labelledby={`pg-${id}`}>
+      <h2 className="prof-group-t" id={`pg-${id}`}>{title}</h2>
+      <div className={`card prof-card${opts.list ? " is-list" : ""}`} data-card={opts.card}>{body}</div>
+    </section>
   );
+  const I = { size: 22, strokeWidth: 1.8 };
+  const ico = (node: React.ReactNode) => <span className="setting-ico" aria-hidden="true">{node}</span>;
+  const chev = <ChevronRight className="setting-chev" size={20} strokeWidth={2} aria-hidden="true" />;
   const [editing, setEditing] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [draft, setDraft] = useState({ ...profile });
@@ -64,39 +68,44 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
 
   // The help rows do something. They used to be chevrons pointing at
   // nothing, which is the worst kind of button: it teaches people that the
-  // arrows in this app are decoration.
+  // arrows in this app are decoration. About goes nowhere, so it shows the
+  // version where a chevron would be.
   //
   // Two doors, because they answer different questions. The tour is for "show
   // me round again"; the guide is "how do I post a harvest" for a farmer and
   // "how do I order" for a buyer, read at their own pace.
-  const supportSettings = [
-    ...(onReplayTour ? [{
-      ico: <PlayCircle size={16} color="var(--tanim)" />, bg: "var(--tanim-sk)",
-      label: t("gd_replay_t"), sub: t("prof_tour_sub"),
-      go: onReplayTour as (() => void) | undefined,
-    }] : []),
-    ...(onReplayExpensesTour ? [{
-      ico: <PlayCircle size={16} color="var(--tanim)" />, bg: "var(--tanim-sk)",
-      label: t("tour_e_replay"), sub: t("tour_e_replay_sub"),
-      go: onReplayExpensesTour as (() => void) | undefined,
-    }] : []),
-    {
-      ico: <HelpCircle size={16} color="var(--tanim)" />, bg: "var(--tanim-sk)",
-      label: t("prof_help"), sub: t("prof_help_sub"),
-      go: (() => onNavigate("guide")) as (() => void) | undefined,
-    },
-    { ico: <Settings size={16} color="var(--ink-2)" />, bg: "var(--paper-alt)", label: t("prof_about"), sub: t("prof_version"), go: undefined as (() => void) | undefined },
+  const supportSettings: { ico: React.ReactNode; label: string; go?: () => void; value?: string }[] = [
+    ...(onReplayTour ? [{ ico: <PlayCircle {...I} />, label: t("gd_replay_t"), go: onReplayTour }] : []),
+    ...(onReplayExpensesTour ? [{ ico: <PlayCircle {...I} />, label: t("tour_e_replay"), go: onReplayExpensesTour }] : []),
+    { ico: <HelpCircle {...I} />, label: t("prof_help"), go: () => onNavigate("guide") },
+    { ico: <Info {...I} />, label: t("prof_about"), value: t("prof_version") },
   ];
 
   const contactFields = [
-    { ico: <Phone size={15} color="var(--tanim)" />, lbl: t("prof_phone"), key: "phone" as const },
-    { ico: <Mail size={15} color="var(--tanim)" />, lbl: t("prof_email"), key: "email" as const },
-    { ico: <MapPin size={15} color="var(--tanim)" />, lbl: t("prof_location"), key: "location" as const },
+    { ico: <Phone {...I} />, lbl: t("prof_phone"), key: "phone" as const },
+    { ico: <Mail {...I} />, lbl: t("prof_email"), key: "email" as const },
+    { ico: <MapPin {...I} />, lbl: t("prof_location"), key: "location" as const },
   ];
 
   const farmFields = [
-    { ico: <Calendar size={15} color="var(--tanim)" />, lbl: t("prof_experience"), key: "experience" as const },
+    { ico: <Calendar {...I} />, lbl: t("prof_experience"), key: "experience" as const },
   ];
+
+  // What is on record: the label small and grey over the value. Editing
+  // turns the value into a field.
+  const infoRow = (f: { ico: React.ReactNode; lbl: string; key: "phone" | "email" | "location" | "experience" }) => (
+    <div className="info-row" key={f.key}>
+      <span className="info-ico" aria-hidden="true">{f.ico}</span>
+      <div className="info-body">
+        <div className="info-lbl">{f.lbl}</div>
+        {editing
+          ? <input value={draft[f.key]} onChange={e => setDraft(d => ({ ...d, [f.key]: e.target.value }))} aria-label={f.lbl}
+            style={{ width: "100%", border: "1px solid var(--line)", borderRadius: 6, padding: "4px 8px", fontFamily: "inherit", fontSize: "var(--fs-label)", fontWeight: 600, color: "var(--text)", outline: "none", background: "var(--paper)" }} />
+          : <div className="info-val">{profile[f.key]}</div>
+        }
+      </div>
+    </div>
+  );
 
   return (
     <div className="screen">
@@ -174,76 +183,33 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
         </div>
 
         {/* The farm in four real numbers, farmer only */}
-        {userRole !== "buyer" && (
-          <div className="card">
-            {head("tint-green", <Sprout size={20} strokeWidth={2.2} />, t("prof_stats"))}
-            <FarmStats experience={profile.experience} sales={sales} />
-          </div>
-        )}
+        {userRole !== "buyer" && group("stats", t("prof_stats"), <FarmStats experience={profile.experience} sales={sales} />)}
 
         {/* What they have earned on AniSense, right under their numbers. */}
         {userRole !== "buyer" && !editing && <Achievements sales={sales} memberSince={memberSince} />}
 
-        {/* Contact Info */}
-        <div className="card">
-          {head("tint-blue", <Phone size={20} strokeWidth={2.2} />, t("prof_contact"))}
-          {contactFields.map(f => (
-            <div className="info-row" key={f.key}>
-              <div className="info-ico">{f.ico}</div>
-              <div style={{ flex: 1 }}>
-                <div className="info-lbl">{f.lbl}</div>
-                {editing
-                  ? <input value={draft[f.key]} onChange={e => setDraft(d => ({ ...d, [f.key]: e.target.value }))}
-                    style={{ width: "100%", border: "1px solid var(--line)", borderRadius: 6, padding: "4px 8px", fontFamily: "inherit", fontSize: "var(--fs-label)", fontWeight: 600, color: "var(--text)", outline: "none", background: "var(--paper)" }} />
-                  : <div className="info-val">{profile[f.key]}</div>
-                }
-              </div>
-            </div>
-          ))}
-        </div>
+        {group("contact", t("prof_contact"), contactFields.map(infoRow), { list: true })}
 
         {/* Farm Details, farmer only */}
-        {userRole !== "buyer" && (
-          <div className="card">
-            {head("tint-green", <Sprout size={20} strokeWidth={2.2} />, t("prof_farm_details"))}
-            {farmFields.map(f => (
-              <div className="info-row" key={f.key}>
-                <div className="info-ico">{f.ico}</div>
-                <div style={{ flex: 1 }}>
-                  <div className="info-lbl">{f.lbl}</div>
-                  {editing
-                    ? <input value={draft[f.key]} onChange={e => setDraft(d => ({ ...d, [f.key]: e.target.value }))}
-                      style={{ width: "100%", border: "1px solid var(--line)", borderRadius: 6, padding: "4px 8px", fontFamily: "inherit", fontSize: "var(--fs-label)", fontWeight: 600, color: "var(--text)", outline: "none", background: "var(--paper)" }} />
-                    : <div className="info-val">{profile[f.key]}</div>
-                  }
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        {userRole !== "buyer" && group("farm", t("prof_farm_details"), farmFields.map(infoRow), { list: true })}
 
         {/* Crop Specialization, farmer only */}
-        {userRole !== "buyer" && (
-          <div className="card">
-            {head("tint-green", <Wheat size={20} strokeWidth={2.2} />, t("prof_crop_spec"))}
-            {editing
-              ? <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {ALL_CROPS.map(c => (
-                  <button key={c} onClick={() => toggleCrop(c)}
-                    aria-pressed={draft.crops.includes(c)}
-                    className={`crop-toggle ${draft.crops.includes(c) ? "on" : ""}`}>
-                    <CropEmoji crop={c} size={16} /> {tn(c)}
-                  </button>
-                ))}
-              </div>
-              : <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {profile.crops.map(c => (
-                  <span key={c} style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 14px", borderRadius: 99, background: "var(--tanim-sk)", border: "1px solid var(--tanim-sk)", color: "var(--tanim)", fontSize: "var(--fs-label)", fontWeight: 600 }}>
-                    <CropEmoji crop={c} size={16} /> {tn(c)}
-                  </span>
-                ))}
-              </div>
-            }
+        {userRole !== "buyer" && group("crops", t("prof_crop_spec"), editing
+          ? <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {ALL_CROPS.map(c => (
+              <button key={c} onClick={() => toggleCrop(c)}
+                aria-pressed={draft.crops.includes(c)}
+                className={`crop-toggle ${draft.crops.includes(c) ? "on" : ""}`}>
+                <CropEmoji crop={c} size={16} /> {tn(c)}
+              </button>
+            ))}
+          </div>
+          : <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {profile.crops.map(c => (
+              <span key={c} style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 14px", borderRadius: 99, background: "var(--tanim-sk)", border: "1px solid var(--tanim-sk)", color: "var(--tanim)", fontSize: "var(--fs-label)", fontWeight: 600 }}>
+                <CropEmoji crop={c} size={16} /> {tn(c)}
+              </span>
+            ))}
           </div>
         )}
 
@@ -255,72 +221,53 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
                 (the privacy policy), and the way to take it all back
                 (deleting the account), which is the last row and only opens
                 a sheet that asks again. */}
-            <div className="card" data-card="manage">
-              {head("tint-slate", <UserCog size={20} strokeWidth={2.2} />, t("prof_manage"))}
+            {group("manage", t("prof_manage"), <>
               {/* A real button: it opens the Privacy screen. The policy's
                   name is in English in both languages, like the policy. */}
               <button className="setting-row as-btn" onClick={() => onNavigate("privacy")}>
-                <div className="setting-ico" style={{ background: "var(--tanim-sk)" }}><ShieldCheck size={16} color="var(--tanim)" /></div>
-                <div style={{ flex: 1 }}>
-                  <div className="setting-lbl" lang="en">{PRIVACY.title}</div>
-                  <div className="setting-sub">{t("prof_privacy_sub")}</div>
-                </div>
-                <ChevronRight size={16} color="var(--line-strong)" />
+                {ico(<ShieldCheck {...I} />)}
+                <span className="setting-lbl" lang="en">{PRIVACY.title}</span>
+                {chev}
               </button>
               {/* The terms agreed to at sign-up, readable again any time.
                   A sheet over Profile, like the delete step below. */}
               <button className="setting-row as-btn" onClick={() => setShowTerms(true)}>
-                <div className="setting-ico" style={{ background: "var(--paper-alt)" }}><FileText size={16} color="var(--tanim-deep)" /></div>
-                <div style={{ flex: 1 }}>
-                  <div className="setting-lbl" lang="en">{TERMS.title}</div>
-                  <div className="setting-sub">{t("prof_terms_sub")}</div>
-                </div>
-                <ChevronRight size={16} color="var(--line-strong)" />
+                {ico(<FileText {...I} />)}
+                <span className="setting-lbl" lang="en">{TERMS.title}</span>
+                {chev}
               </button>
               {onDeleteAccount && <DeleteAccount role={userRole} onDelete={onDeleteAccount} />}
-            </div>
+            </>, { card: "manage", list: true })}
             <LegalSheet doc={showTerms ? TERMS : null} onClose={() => setShowTerms(false)} />
 
-            <div className="card" data-card="preferences">
-              {head("tint-slate", <SlidersHorizontal size={20} strokeWidth={2.2} />, t("prof_preferences"))}
+            {group("prefs", t("prof_preferences"), <>
               <div className="setting-row">
-                <div className="setting-ico" style={{ background: "var(--gold-sk)" }}><Bell size={16} color="var(--gold-text)" /></div>
-                <div style={{ flex: 1 }}>
-                  <div className="setting-lbl">{t("prof_notifications")}</div>
-                  <div className="setting-sub">{t("prof_notifications_sub")}</div>
-                </div>
-                <ChevronRight size={16} color="var(--line-strong)" />
+                {ico(<Bell {...I} />)}
+                <span className="setting-lbl">{t("prof_notifications")}</span>
+                {chev}
               </div>
-              <div className="setting-row" style={{ cursor: "default", flexDirection: "column", alignItems: "stretch", gap: 10 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 13 }}>
-                  <div className="setting-ico" style={{ background: "var(--paper-alt)" }}><Globe size={16} color="var(--tanim-deep)" /></div>
-                  <div style={{ flex: 1 }}>
-                    <div className="setting-lbl">{t("prof_language")}</div>
-                    <div className="setting-sub">{t("prof_language_sub")}</div>
-                  </div>
+              {/* The language switch under its name, lined up with the words. */}
+              <div className="setting-row is-stack">
+                <div className="setting-line">
+                  {ico(<Globe {...I} />)}
+                  <span className="setting-lbl">{t("prof_language")}</span>
                 </div>
-                <LanguageToggle />
+                <div className="setting-ctl"><LanguageToggle /></div>
               </div>
-            </div>
+            </>, { card: "preferences", list: true })}
 
-            <div className="card">
-              {head("tint-violet", <Info size={20} strokeWidth={2.2} />, t("prof_support"))}
-              {supportSettings.map(s => {
-                const body = (
-                  <>
-                    <div className="setting-ico" style={{ background: s.bg }}>{s.ico}</div>
-                    <div style={{ flex: 1 }}>
-                      <div className="setting-lbl">{s.label}</div>
-                      <div className="setting-sub">{s.sub}</div>
-                    </div>
-                    <ChevronRight size={16} color="var(--line-strong)" />
-                  </>
-                );
-                return s.go
-                  ? <button key={s.label} className="setting-row as-btn" onClick={s.go}>{body}</button>
-                  : <div key={s.label} className="setting-row">{body}</div>;
-              })}
-            </div>
+            {group("support", t("prof_support"), supportSettings.map(r => {
+              const body = (
+                <>
+                  {ico(r.ico)}
+                  <span className="setting-lbl">{r.label}</span>
+                  {r.go ? chev : r.value && <span className="setting-val">{r.value}</span>}
+                </>
+              );
+              return r.go
+                ? <button key={r.label} className="setting-row as-btn" onClick={r.go}>{body}</button>
+                : <div key={r.label} className="setting-row">{body}</div>;
+            }), { list: true })}
 
             <button className="signout-btn" onClick={onSignOut} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
               <LogOut size={18} strokeWidth={2.4} aria-hidden="true" /> {t("prof_sign_out")}
