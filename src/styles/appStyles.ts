@@ -2189,6 +2189,17 @@ export const appCss = `
       inset 0 -1px 1px rgba(0,0,0,.35);
   }
   .ff-badge-coin svg { filter: drop-shadow(0 1px 0 rgba(0,0,0,.35)); }
+  /* On the farmer's profile: in line with the name below it, and level with
+     the close button across the top. The photo grows to make room for it:
+     the name block stacks up from the foot as before, but now in the flow
+     under a reserved band (18px + the plate + 14px), so even a name long
+     enough to wrap can't climb into the plate. */
+  .seller-modal-sheet .spf-hero > .ff-badge { left: 20px; top: 18px; }
+  .seller-modal-sheet .spf-hero.is-week {
+    height: auto; min-height: 236px; padding: 66px 0 44px;
+    display: flex; flex-direction: column; justify-content: flex-end;
+  }
+  .seller-modal-sheet .spf-hero.is-week .spf-id { position: relative; left: auto; right: auto; bottom: auto; margin: 0 64px 0 20px; }
   .ff-spot-body { position: relative; display: flex; flex-direction: column; gap: 12px; padding: 16px 16px 16px; }
   /* The list's avatars: the profile's colours and ring, at list size. */
   .ff-ava {

@@ -1,4 +1,4 @@
-import { ChevronRight, MapPin, Star, Award, RotateCcw, ArrowLeft, ArrowRight, TrendingUp, TrendingDown, ArrowLeftRight } from "lucide-react";
+import { ChevronRight, MapPin, Star, RotateCcw, ArrowLeft, ArrowRight, TrendingUp, TrendingDown, ArrowLeftRight } from "lucide-react";
 import { useLang, translations } from "../../i18n";
 import { CROPS, CROP_GROUP_BY_ID, familyCropNames } from "../../data/crops";
 import familyCrops from "../../assets/families/family-crops.webp";
@@ -7,6 +7,7 @@ import familyVegetables from "../../assets/families/family-vegetables.webp";
 import { useMarket } from "../../store/market";
 import { SkeletonShelf, SkeletonMediaRows } from "../states";
 import { featuredLineup, townOf } from "../../lib/featured";
+import { FarmerOfTheWeekBadge } from "../marketplace/FarmerOfTheWeekBadge";
 import { cropPhoto, cropPhotoFor, cropGroupPhoto } from "../../data/cropPhotos";
 import { CropEmoji } from "../icons/CropEmoji";
 import { Listing, TradeIntent } from "../../types";
@@ -293,10 +294,7 @@ export function FeaturedFarmers({ onShop, buyerLocation }: { onShop: Shop; buyer
         <article className="ff-spot">
           <div className="spf-hero ff-hero">
             <img className="spf-mark" src={leafMask} alt="" aria-hidden="true" />
-            <span className="ff-badge">
-              <span className="ff-badge-coin" aria-hidden="true"><Award size={14} strokeWidth={2.4} /></span>
-              {en("ff_week")}
-            </span>
+            <FarmerOfTheWeekBadge />
             <div className="spf-id">
               <span className="spf-ava" style={{ background: tone(spot.name) }} aria-hidden="true">{spot.initials}</span>
               <div className="spf-name">{spot.name}</div>

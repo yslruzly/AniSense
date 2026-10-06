@@ -25,6 +25,8 @@ import { MUNICIPALITIES } from "../data/locations";
 import { useViewer } from "../store/viewer";
 import { useMarket, sellerKeyOfDetail } from "../store/market";
 import { FeaturedFarmersRow } from "../components/marketplace/FeaturedFarmersRow";
+import { FarmerOfTheWeekBadge } from "../components/marketplace/FarmerOfTheWeekBadge";
+import { farmerOfTheWeek } from "../lib/featured";
 import { orderErrorOf } from "../services/transactions";
 import { peso } from "../lib/money";
 
@@ -362,6 +364,10 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
   // live state, not the seed data, so a listing just posted or edited
   // appears here as well.
   const sellerListings = shownSeller ? listings.filter(l => market.sellerKeyOf(l) === sellerKeyOfDetail(shownSeller)) : [];
+  // Whether the open profile is this week's AniSense Farmer of the Week: the
+  // same rule Home and Featured farmers use, so the plate is on the profile
+  // exactly when it is on their card.
+  const shownIsWeek = !!shownSeller && farmerOfTheWeek(market.sellers)?.key === sellerKeyOfDetail(shownSeller);
   // From a profile into one of its listings: the profile leaves first, then
   // the listing arrives. Both sheets share a layer, so opening the second
   // over the first would put it underneath; this reads as a hand-off
@@ -1074,9 +1080,11 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
               const tel = shownSeller.phone.replace(/[^\d+]/g, "");
               return (<>
                 {/* AniSense's own ground: the brand green with the leaf mark
-                    as a large watermark. */}
-                <div className="spf-hero">
+                    as a large watermark. This week's Farmer of the Week
+                    wears the gold plate in the top corner, as on Home. */}
+                <div className={`spf-hero${shownIsWeek ? " is-week" : ""}`}>
                   <img className="spf-mark" src={leafMask} alt="" aria-hidden="true" />
+                  {shownIsWeek && <FarmerOfTheWeekBadge />}
                   <button className="spf-x" onClick={() => setSellerDetail(null)} aria-label={en("close")}>
                     <X size={20} strokeWidth={2.6} />
                   </button>
