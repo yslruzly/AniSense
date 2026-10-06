@@ -175,7 +175,8 @@ erDiagram
 - `crop_forecasts`: what ARIMA and LSTM expect for the months ahead, per variety, with the likely range and each model's tested error (`mape`). Written by `seed.sql`, never by the app.
 
 **2. Accounts.**
-- `profiles`: one per person, created automatically at sign-up.
+- `profiles`: one per person, created automatically at sign-up. `member_no` is the number on their ID card, like `2026-00001`: the year they joined (Philippine time) and their place in that year's count, given by the database, never reused, and not editable by anyone.
+- `member_counters`: how far each year's member count has got. Only the numbering function uses it.
 - `profile_crops`: which crop types each farmer grows.
 
 **3. Market.**
@@ -204,6 +205,7 @@ erDiagram
 | Function | Does |
 |---|---|
 | `handle_new_user()` | Trigger: builds the profile and crop list from the sign-up form |
+| `next_member_no(at)` / `set_member_no()` | Gives each new profile the next member number of its year (`2026-00001`, `2026-00002`, …), one at a time even when people join at once. Closed to the app |
 | `place_order(items)` | Checkout, all or nothing: checks stock, lowers it, writes the order at the listing's price |
 | `set_my_crops(names)` | Replaces the farmer's crop list |
 | `replace_my_sales / plantings / price_alerts / harvest_plans` | Saves one of the farmer's lists in one step (used by the app, also after being offline) |
@@ -219,7 +221,7 @@ Row Level Security is on for every table; the database enforces it, not the app.
 - Farmers manage only their own listings and records.
 - A buyer's phone number is visible only to farmers they have ordered from.
 - Orders can only be made through `place_order()`.
-- Nobody can edit their own rating or sales count.
+- Nobody can edit their own rating, sales count or member number.
 - Farmers can move their own order lines to confirmed or completed, and change nothing else about them.
 - Anyone can delete their own account, and only their own, through `delete_my_account()`.
 

@@ -63,7 +63,7 @@ The study behind the app focuses on four crops: rice, onion, garlic and calamans
 - Sign up and sign in with a mobile number or Gmail address, as a farmer or a buyer.
 - Conversational sign-up: one question per screen, with a progress bar.
 - A guided first-run walkthrough, replayable from the in-app guide.
-- A member ID card generated at sign-up.
+- A member ID card, numbered by the database in the order people join (`2026-00001`).
 - English and Tagalog throughout. The privacy policy and the terms of service are the exception: they are English only.
 - Creating an account starts with first and last name and agreeing to the Terms of Service and Privacy Policy; the next page asks for a CP number or a Gmail address.
 - Profile has a Manage account section with the privacy policy, the terms of service and account deletion.

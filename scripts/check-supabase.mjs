@@ -12,6 +12,7 @@
 //   ✓ the crop catalog, price records, forecasts and badges are loaded
 //     (seed.sql ran)
 //   ✓ the listing-photos bucket exists
+//   ✓ member numbers: profiles carry the database's member_no
 //   ✓ (optional) real Gmail codes: the verify-code Edge Function is deployed,
 //     open to the app, has its Brevo key, and its table exists
 //   ✓ (optional) real CP-number codes: verify-code has its Semaphore key
@@ -125,6 +126,12 @@ for (const [fn, args] of Object.entries(FUNCTIONS)) {
 }
 if (noFn.length) bad(`Missing functions: ${noFn.join(", ")}`, "Run the latest supabase/schema.sql again (safe to re-run).");
 else ok("Functions: checkout, crop list, farm-record sync, and account deletion");
+
+// 3a. Member numbers (2026-00001) on the profiles. Signed out, no row comes
+//     back, but asking for the column proves it is there.
+const memberCol = await get("/rest/v1/profiles?select=member_no&limit=1");
+if (memberCol.status === 200) ok("Member numbers: each profile gets the next one (2026-00001…)");
+else bad("Profiles have no member numbers yet", "Run the latest supabase/schema.sql again (safe to re-run): it numbers existing accounts in the order they joined.");
 
 // 3b. Starter data. catalog_status() only counts rows, so it answers without
 //     an account: were the crops, prices and badges loaded?

@@ -4,6 +4,7 @@
 // .env holds a Supabase project; without one the app keeps its demo sign-in.
 
 import { Session } from "@supabase/supabase-js";
+import { Preferences } from "@capacitor/preferences";
 import { supabase } from "../lib/supabase";
 import { UserRole, FarmerProfile } from "../types";
 
@@ -241,6 +242,9 @@ export interface ProfileRow {
   bio: string | null;
   rating: number;
   total_sales: number;
+  /** "2026-00001": given by the database when the account is made (schema.sql, Member numbers). */
+  member_no?: string | null;
+  created_at?: string;
 }
 
 export async function getMyProfile(): Promise<ProfileRow | null> {
@@ -320,13 +324,20 @@ export function accountFromSession(session: Session): { role: UserRole; profile:
   return { role, profile: toFarmerProfile(row, session.user.email ?? "") };
 }
 
-/**
- * A member number that belongs to the account, not to the moment: the same
- * ID card on every phone and every sign-in. Year joined, then five digits
- * taken from the account's id.
- */
-export function memberIdFor(session: Session): { id: string; since: Date } {
-  const since = new Date(session.user.created_at ?? Date.now());
-  const n = parseInt(session.user.id.replace(/-/g, "").slice(0, 8), 16) % 100000;
-  return { id: `AS-${since.getFullYear()}-${String(n).padStart(5, "0")}`, since };
+// ─── Member number ────────────────────────────────────────────────────────────
+// The number on the ID card ("2026-00001") is the database's: profiles.member_no,
+// given in the order people join (supabase/schema.sql, "Member numbers"). This
+// phone keeps the last one it saw for the account, so the card opens with it
+// straight away, offline included, until the profile row arrives. The key
+// carries the account's id, so deleting the account wipes it with the rest
+// (wipeAccountData).
+
+const memberKey = (accountId: string) => `member_no:${accountId}`;
+
+export async function rememberedMemberNo(accountId: string): Promise<string | null> {
+  try { return (await Preferences.get({ key: memberKey(accountId) })).value; } catch { return null; }
+}
+
+export async function rememberMemberNo(accountId: string, memberNo: string): Promise<void> {
+  try { await Preferences.set({ key: memberKey(accountId), value: memberNo }); } catch { /* storage unavailable: it is fetched again next time */ }
 }

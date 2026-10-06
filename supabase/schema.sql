@@ -14,7 +14,7 @@
 --    0. Types          the fixed lists: roles, crop families, statuses
 --    1. Catalog        crop_groups ─< crops ─< crop_prices   (+ crop_prices_latest)
 --                                           └─< crop_forecasts
---    2. Accounts       profiles ─< profile_crops >─ crop_groups
+--    2. Accounts       profiles ─< profile_crops >─ crop_groups   (+ member_counters)
 --    3. Market         listings ─< order_items >─ orders
 --    4. Farm records   expenses · sales · plantings · price_alerts · harvest_plans
 --    5. Rewards        achievements ─< user_achievements
@@ -127,6 +127,23 @@ create table if not exists public.profiles (
 -- For a database built when the limit was 0 to 80.
 alter table public.profiles drop constraint if exists profiles_years_farming_check;
 alter table public.profiles add constraint profiles_years_farming_check check (years_farming between 0 and 79);
+
+-- The member number on a person's AniSense ID card: "2026-00001", the year
+-- they joined (Philippine time) and their place in that year's count. The
+-- database gives it when the profile is made (section 7), never the app; it
+-- is never reused, even after an account is deleted, and nobody can change
+-- it (section 6 grants no update on it).
+alter table public.profiles add column if not exists member_no text;
+create unique index if not exists profiles_member_no_key on public.profiles (member_no);
+alter table public.profiles drop constraint if exists profiles_member_no_format;
+alter table public.profiles add constraint profiles_member_no_format check (member_no ~ '^[0-9]{4}-[0-9]{5,}$');
+
+-- How far each year's count has got. Read and written only by the database
+-- itself, when it numbers a new profile.
+create table if not exists public.member_counters (
+  year  int primary key,
+  last  int not null default 0 check (last >= 0)
+);
 
 -- The crops a farmer grows: one row per farmer per crop type.
 create table if not exists public.profile_crops (
@@ -302,6 +319,9 @@ alter table public.price_alerts       enable row level security;
 alter table public.harvest_plans      enable row level security;
 alter table public.achievements       enable row level security;
 alter table public.user_achievements  enable row level security;
+alter table public.member_counters    enable row level security;
+-- No rules for the counter: only the numbering function (section 7) uses it.
+revoke all on public.member_counters from anon, authenticated;
 
 -- Helpers that look across tables without tripping each other's rules.
 create or replace function public.can_see_order(p_order uuid)
@@ -445,6 +465,51 @@ drop trigger if exists award_first_sale on public.sales;
 create trigger award_first_sale after insert on public.sales for each row execute function public.award_on_sale();
 drop trigger if exists award_first_market_sale on public.order_items;
 create trigger award_first_market_sale after insert on public.order_items for each row execute function public.award_on_order_item();
+
+-- ─── Member numbers ─────────────────────────────────────────────────────────
+-- The next number in a year's count, taken in one step (the counter's row is
+-- locked while it moves), so two people joining at the same moment never get
+-- the same one. Five digits, more only if a year ever passes 99,999.
+create or replace function public.next_member_no(p_at timestamptz)
+returns text language plpgsql security definer set search_path = public as $$
+declare
+  y int := extract(year from p_at at time zone 'Asia/Manila')::int;
+  n int;
+begin
+  insert into member_counters as c (year, last) values (y, 1)
+  on conflict (year) do update set last = c.last + 1
+  returning c.last into n;
+  return y::text || '-' || lpad(n::text, greatest(5, length(n::text)), '0');
+end;
+$$;
+revoke all on function public.next_member_no(timestamptz) from public, anon, authenticated;
+
+-- Every new profile gets the next number, however the profile is made.
+create or replace function public.set_member_no()
+returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  if new.member_no is null then
+    new.member_no := next_member_no(coalesce(new.created_at, now()));
+  end if;
+  return new;
+end;
+$$;
+revoke all on function public.set_member_no() from public, anon, authenticated;
+drop trigger if exists profiles_member_no on public.profiles;
+create trigger profiles_member_no before insert on public.profiles
+  for each row execute function public.set_member_no();
+
+-- Accounts made before member numbers existed get theirs now, in the order
+-- they joined. Only where one is missing, so running this file again
+-- changes nobody's number.
+do $$
+declare r record;
+begin
+  for r in select id, created_at from public.profiles where member_no is null order by created_at, id loop
+    update public.profiles set member_no = public.next_member_no(r.created_at) where id = r.id;
+  end loop;
+end $$;
+alter table public.profiles alter column member_no set not null;
 
 -- ─── Sign-up: the profile, complete from its first second ───────────────────
 -- Everything the sign-up form asked arrives as metadata from createAccount()

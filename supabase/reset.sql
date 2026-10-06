@@ -35,7 +35,8 @@ drop table if exists
   public.crop_prices,
   public.crops,
   public.crop_groups,
-  public.verification_codes
+  public.verification_codes,
+  public.member_counters
 cascade;
 
 drop function if exists
@@ -56,7 +57,9 @@ drop function if exists
   public.replace_my_harvest_plans(jsonb),
   public.delete_my_account(),
   public.catalog_status(),
-  public.auth_user_id_by_email(text)
+  public.auth_user_id_by_email(text),
+  public.next_member_no(timestamptz),
+  public.set_member_no()
 cascade;
 
 drop type if exists

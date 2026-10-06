@@ -29,9 +29,11 @@ export type WelcomeInfo = { id: string; since: Date };
  *  A buyer elsewhere keeps their province as written. */
 export const shortPlace = (place: string) => place.replace(/\bNueva\s+Ecija\b\.?/i, "N.E.");
 
-/** AS-2026-04817: "AS" for AniSense, the year joined, five digits. */
+/** The demo's member number, in the database's form: the year joined, then
+ *  five digits ("2026-04817"). A real account's is profiles.member_no, given
+ *  by the database in the order people join ("2026-00001"). */
 export function makeMemberId(d = new Date()) {
-  return `AS-${d.getFullYear()}-${String(Math.floor(Math.random() * 100000)).padStart(5, "0")}`;
+  return `${d.getFullYear()}-${String(1 + Math.floor(Math.random() * 99999)).padStart(5, "0")}`;
 }
 
 export function WelcomeID({ open, onClose, mode = "welcome", name, initials, role, location, info, photo, onPhoto }: {
@@ -63,8 +65,12 @@ export function WelcomeID({ open, onClose, mode = "welcome", name, initials, rol
 
   if (!info) return null;
 
+  // The number is the database's; for a moment after signing in on a new
+  // phone it may not have arrived yet. The card shows a dash meanwhile, and
+  // there is nothing to download until it is there.
+  const idNo = info.id || "—";
   const download = async () => {
-    if (dl === "busy") return;
+    if (dl === "busy" || !info.id) return;
     setDl("busy");
     try {
       const blob = await renderMemberId({
@@ -95,7 +101,7 @@ export function WelcomeID({ open, onClose, mode = "welcome", name, initials, rol
 
         {/* The card. aria-label reads it as one thing; its parts are visual. */}
         <div className="wid-card" role="img"
-          aria-label={`Member ID: ${name}, ${roleLabel}, ID No. ${info.id}`}>
+          aria-label={`Member ID: ${name}, ${roleLabel}, ID No. ${info.id || "not yet"}`}>
           <span className="wid-slot" aria-hidden="true" />
           <div className="wid-band">
             <span className="wid-mark"><AniSenseLogo size={20} /></span>
@@ -126,7 +132,7 @@ export function WelcomeID({ open, onClose, mode = "welcome", name, initials, rol
           <div className="wid-foot">
             <div className="wid-field">
               <span className="wid-lbl">ID No.</span>
-              <span className="wid-val">{info.id}</span>
+              <span className="wid-val">{idNo}</span>
             </div>
             <div className="wid-field end">
               <span className="wid-lbl">Member since</span>
@@ -141,7 +147,7 @@ export function WelcomeID({ open, onClose, mode = "welcome", name, initials, rol
           {/* Viewing your ID is when you'd want a copy of it. */}
           {mode === "view" && (
             <button type="button" className={`wid-btn ghost ${dl === "done" ? "is-done" : ""} ${dl === "failed" ? "is-failed" : ""}`}
-              onClick={download} aria-busy={dl === "busy"}>
+              onClick={download} disabled={!info.id} aria-busy={dl === "busy"}>
               {/* Keyed on the state so each label arrives with a short
                   blur-in rather than cutting. */}
               <span className="wid-btn-lbl" key={dl}>

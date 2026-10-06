@@ -33,7 +33,7 @@ import { ViewerContext } from "./store/viewer";
 import { isSupabaseConfigured } from "./lib/supabase";
 import {
   getSession, onAuthChange, signOut, deleteMyAccount, getMyProfile, updateMyProfile,
-  toFarmerProfile, accountFromSession, memberIdFor, toE164Phone,
+  toFarmerProfile, accountFromSession, rememberedMemberNo, rememberMemberNo, toE164Phone,
 } from "./services/auth";
 import { FarmerProfile } from "./types";
 import { Sale } from "./lib/sales";
@@ -310,8 +310,9 @@ export default function App() {
     }));
     // Every account has a member ID (Profile can show it any time). New
     // accounts also land on Home with it open; closing leaves them there.
-    // Until the database is wired, a signed-in account's ID and "since" are
-    // made at sign-in; they should come from the user's record.
+    // This is the demo (no database): the number is made here, in the
+    // database's form. A real account's comes from its profile row
+    // (applySession, below).
     setWelcome({ id: makeMemberId(), since: new Date() });
     justJoined.current = isNew;
     // A new account always gets the walkthrough after its welcome ID. The
@@ -337,7 +338,11 @@ export default function App() {
     setUserName(profile.name);
     setUserRole(role);
     setFarmerProfile(profile);
-    setWelcome(memberIdFor(session));
+    // The member number comes from the profile row. Until it arrives, the
+    // number this phone last saw for the account, or a dash on the card.
+    const since = new Date(session.user.created_at ?? Date.now());
+    setWelcome({ id: "", since });
+    void rememberedMemberNo(session.user.id).then(no => { if (no) setWelcome(w => (w && !w.id ? { ...w, id: no } : w)); });
     justJoined.current = isNew;
     // A new account always gets the walkthrough after its welcome ID. The
     // "seen" flag is kept per phone and role, so without this, a second
@@ -355,6 +360,11 @@ export default function App() {
         setUserName(row.full_name);
         setUserRole(row.role);
         setFarmerProfile(toFarmerProfile(row, session.user.email ?? ""));
+        if (row.member_no) {
+          const memberNo = row.member_no;
+          setWelcome(w => (w ? { id: memberNo, since: row.created_at ? new Date(row.created_at) : since } : w));
+          void rememberMemberNo(session.user.id, memberNo);
+        }
       })
       .catch(() => { /* offline or not yet reachable: the session's copy stands */ });
   };
