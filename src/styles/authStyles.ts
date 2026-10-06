@@ -689,6 +689,33 @@ export const authCss = `
   }
   @keyframes a-spin { to { transform: rotate(360deg); } }
 
+  /* Working on it (signing in, making the account, saving a password): one
+     circle in the middle of the screen, on a white disc so it reads over the
+     green header and the page alike, over a light veil that stops a second
+     tap. It fades in after a beat, so a quick sign-in never flashes it. No
+     blur behind it: a blurred full screen is slow to draw on a cheap phone,
+     and the circle should appear the moment the wait begins. */
+  .a-busy {
+    position: fixed; inset: 0; z-index: 80; display: grid; place-items: center;
+    background: rgba(242, 243, 244, .6);
+    opacity: 0; animation: a-busy-in 200ms var(--ease-out) 150ms forwards;
+  }
+  @keyframes a-busy-in { to { opacity: 1; } }
+  .a-busy-disc {
+    width: 76px; height: 76px; border-radius: 24px; display: grid; place-items: center; background: #fff;
+    box-shadow: 0 0 0 1px rgba(22,33,27,.06), 0 18px 40px -16px rgba(22,33,27,.35), 0 2px 6px rgba(22,33,27,.12);
+  }
+  .a-busy-ring {
+    width: 38px; height: 38px; border-radius: 50%;
+    border: 4px solid var(--tanim-sk, #D7EADD); border-top-color: var(--tanim, #0B6B41);
+    animation: a-spin 700ms linear infinite;
+  }
+  /* Read out, not shown: what the wait is for. */
+  .a-busy-t { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  @media (prefers-reduced-motion: reduce) {
+    .a-busy { animation: none; opacity: 1; }
+  }
+
   /* ── Fields ────────────────────────────────────────────────────────────── */
   /* iOS fields: white, softly rounded, held on the grey page by a hairline
      and a whisper of a shadow instead of a drawn border. Focus answers with

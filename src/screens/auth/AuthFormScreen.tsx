@@ -471,15 +471,28 @@ export function AuthFormScreen({
 
   // The main button. Its words swap with a short blur when they change, so
   // "Continue" turning into "Create Account" on the last question is seen.
+  // While it works, its words stay and the screen shows the wait (busyOverlay).
   // waiting: grey until the page's own step is done (the code on the CP
   // number / Gmail question), so the green button on the page is plainly
   // the next tap. It still answers a tap, with the reason.
-  const primary = (label: string, busyLabel = t("please_wait"), waiting = false) => (
+  const primary = (label: string, waiting = false) => (
     <button type="submit" className={`a-btn a-btn-green${waiting ? " a-btn-wait" : ""}`} disabled={loading} aria-busy={loading}
       aria-disabled={waiting || undefined}>
-      {loading ? busy(busyLabel) : <span className="a-swap" key={label}>{label}</span>}
+      <span className="a-swap" key={label}>{label}</span>
     </button>
   );
+
+  // Signing in, making the account, saving a new password: one circle in
+  // the middle of the screen, over a light veil that also stops a second tap,
+  // rather than words in the button. Send code keeps its own small spinner:
+  // it works on one field, and the rest of the page stays as it is.
+  const busyText = page === "crops" ? t("crops_setting_up") : page === "newpass" ? t("reset_saving") : t("please_wait");
+  const busyOverlay = loading ? (
+    <div className="a-busy" role="status" aria-live="polite">
+      <span className="a-busy-disc" aria-hidden="true"><span className="a-busy-ring" /></span>
+      <span className="a-busy-t">{busyText}</span>
+    </div>
+  ) : null;
 
   // Back beside the primary action, as on the earlier steps, so the whole
   // setup is driven from one place under the thumb.
@@ -643,6 +656,7 @@ export function AuthFormScreen({
       // A real form, so the keyboard's Go key submits and password managers
       // recognise the sign-in.
       <form className="a-screen a-setup a-askscreen" noValidate onSubmit={e => { e.preventDefault(); next(); }}>
+        {busyOverlay}
         <div className="a-inkhead a-formhead a-askhead">
           <div className="a-swap" key="signin">
             <h1 className="a-title on-ink">{greeting}</h1>
@@ -716,6 +730,7 @@ export function AuthFormScreen({
   // for an answer that needs the room (the crop grid is ten tiles long).
   const ask = (q: string, why: string | undefined, body: ReactNode, main: ReactNode, onSubmit = next, beforeDock?: ReactNode, plain = false) => (
     <form className="a-screen a-setup a-askscreen" noValidate onSubmit={e => { e.preventDefault(); onSubmit(); }}>
+      {busyOverlay}
       <div className={`a-inkhead a-formhead a-askhead${plain ? " plain" : ""}`}>
         {plain ? (
           <div className="a-swap" key={`q-${page}`}>
@@ -853,6 +868,7 @@ export function AuthFormScreen({
   // eye already is and where it stays in view with the keyboard up.
   const resetPage = (title: string, sub: string, say: string, body: ReactNode, button: ReactNode) => (
     <form className="a-screen a-setup a-askscreen a-reset" noValidate onSubmit={e => { e.preventDefault(); next(); }}>
+      {busyOverlay}
       <div className="a-inkhead a-formhead a-askhead">
         <button type="button" className="a-iconbtn a-reset-back" onClick={back} aria-label={t("back")}>
           <ChevronLeft size={26} color="#fff" strokeWidth={2.4} />
@@ -874,9 +890,11 @@ export function AuthFormScreen({
       </div>
     </form>
   );
-  const resetButton = (label: string, working: boolean, workingLabel: string) => (
+  // workingLabel: only Send code says its wait in the button; the others
+  // keep their words and the screen shows it (busyOverlay).
+  const resetButton = (label: string, working: boolean, workingLabel?: string) => (
     <button type="submit" className="a-btn a-btn-green a-inline-btn" disabled={working} aria-busy={working}>
-      {working ? busy(workingLabel) : <span className="a-swap" key={label}>{label}</span>}
+      {working && workingLabel ? busy(workingLabel) : <span className="a-swap" key={label}>{label}</span>}
     </button>
   );
 
@@ -892,7 +910,7 @@ export function AuthFormScreen({
       {verifyBlock(false)}
     </>,
     codeSent || verified
-      ? resetButton(t("continue"), false, "")
+      ? resetButton(t("continue"), false)
       : resetButton(t("auth_send_code"), sending, t("auth_sending_code")),
   );
 
@@ -902,7 +920,7 @@ export function AuthFormScreen({
     t("reset_new_sub"),
     t("reset_say_new"),
     passwordFields({ pw: t("reset_new_lbl"), confirm: t("reset_confirm_lbl") }),
-    resetButton(t("reset_save"), loading, t("reset_saving")),
+    resetButton(t("reset_save"), loading),
   );
 
   // ── 1. Name ──
@@ -977,7 +995,7 @@ export function AuthFormScreen({
         {contactInput(true)}
         {verifyBlock()}
       </>,
-      primary(t("continue"), undefined, !verified),
+      primary(t("continue"), !verified),
     );
   }
 
@@ -1093,7 +1111,7 @@ export function AuthFormScreen({
           );
         })}
       </div>,
-      primary(t("auth_create_btn"), t("crops_setting_up")),
+      primary(t("auth_create_btn")),
       next,
       undefined,
       true,
