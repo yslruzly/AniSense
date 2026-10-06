@@ -1109,7 +1109,8 @@ export const translations: Dict = {
   },
   auth_send_code: { en: "Send code", tl: "Ipadala ang code" },
   auth_sending_code: { en: "Sending…", tl: "Ipinapadala…" },
-  auth_code_sent: { en: "We sent a 6-digit code to {to}.", tl: "Nagpadala kami ng 6-digit na code sa {to}." },
+  // Over the number or address, which follows on a line of its own.
+  auth_code_sent_to: { en: "We sent a 6-digit code to", tl: "Nagpadala kami ng 6-digit na code sa" },
   // While nothing is really sent (services/verification.ts).
   auth_code_demo: { en: "Demo only, nothing is sent yet. Your code is {code}.", tl: "Demo lamang, wala pang naipapadala. Ang code mo ay {code}." },
   auth_resend_in: { en: "You can send a new code in {s}s", tl: "Makakapagpadala ng bagong code sa loob ng {s}s" },

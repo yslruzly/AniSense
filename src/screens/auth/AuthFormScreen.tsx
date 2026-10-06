@@ -518,8 +518,9 @@ export function AuthFormScreen({
   };
   // The "we'll send a code here" line is about checking a number, said
   // under the field on sign-up; Sign in has no need of it, and the reset
-  // page says it in its own words at the top.
-  const contactHelp = page !== "signin" && page !== "forgot";
+  // page says it in its own words at the top. Only until a code is out:
+  // after that the card below says where it went, in the past tense.
+  const contactHelp = page !== "signin" && page !== "forgot" && !codeSent && !verified;
   const contactInput = (autoFocus: boolean, label = false) => (
     <>
       <div className="a-seg" role="radiogroup" aria-label={t("auth_contact_method")} data-mode={mode}>
@@ -622,10 +623,22 @@ export function AuthFormScreen({
     </button>
   ) : (
     <div className="a-codebox">
-      <p className="a-codebox-t" role="status">{t("auth_code_sent").replace("{to}", who)}</p>
+      {/* Where the code went, as one card: the way it was sent, the line,
+          the number or address in bold on a line of its own (a long Gmail
+          wraps there, not mid-sentence), and for Gmail the Spam tip, since
+          a real email from a new sender can land there. Read out as one
+          status as it arrives. */}
+      <div className="a-sent" role="status">
+        <span className="a-sent-ico" aria-hidden="true">
+          {mode === "gmail" ? <Mail size={20} strokeWidth={2.2} /> : <Smartphone size={20} strokeWidth={2.2} />}
+        </span>
+        <span className="a-sent-txt">
+          <span className="a-sent-k">{t("auth_code_sent_to")}</span>
+          <span className="a-sent-to">{who}</span>
+          {!demoCode && mode === "gmail" && <span className="a-sent-tip">{t("auth_code_spam")}</span>}
+        </span>
+      </div>
       {demoCode && <p className="a-demo-code">{t("auth_code_demo").replace("{code}", demoCode)}</p>}
-      {/* A real email can land in Spam, more so from a new sender. */}
-      {!demoCode && mode === "gmail" && <p className="a-codebox-t">{t("auth_code_spam")}</p>}
       <label className="a-lbl" htmlFor="f-vcode">{t("verify_lbl")}</label>
       <input id="f-vcode" className={`a-inp num a-code ${bad("vcode")}`} type="text" inputMode="numeric"
         autoComplete="one-time-code" maxLength={6} placeholder="000000"
