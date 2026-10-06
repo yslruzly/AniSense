@@ -1,42 +1,55 @@
 # Image credits
 
-Crop photographs in `src/assets/crops/`. Every file is public domain or CC0,
-so none carries an attribution requirement. This record exists so the
+Crop photographs in `src/assets/crops/`. This record exists so the
 provenance of each file can be checked later.
+
+Since 2026-10-06, every crop photo except rice comes from the AniSense team's
+own folder of photos (`AniSense_Crop-images`), cropped to 4:3 and saved at
+most 720 x 540 by the conversion script described below. Before the app is
+published, confirm that the team has the right to use each of these photos
+(taken by the team, or licensed for commercial use).
+
+| File | Variety | Source file |
+| --- | --- | --- |
+| `ampalaya-galaxy.webp` | Galaxy Ampalaya | GalaxyAmpalaya.png |
+| `ampalaya-native.webp` | Native Ampalaya | NativeAmpalaya.png |
+| `cala-regular.webp` | Regular Calamansi | Calamansi.png |
+| `corn-sweet.webp` | Sweet Corn | SweetCorn.png |
+| `corn-white.webp` | White Corn | WhiteCorn.png |
+| `corn-yellow.webp` | Yellow Corn | YellowCorn.png |
+| `garlic-native.webp` | Native Garlic | NativeGarlic.png |
+| `mango-carab.webp` | Carabao Mango | CarabaoMango.png (333 px wide: shown as is, not enlarged) |
+| `mango-indian.webp` | Indian Mango | IndianMango.png |
+| `melon-seedless.webp` | Seedless Watermelon | SeedlessWatermelon.png |
+| `melon-sweet.webp` | Sweet Watermelon | SweetWatermelon.png |
+| `melon-yellow.webp` | Yellow Watermelon | YellowWatermelon.png |
+| `onion-red.webp` | Red Onion | RedOnion.png |
+| `onion-spring.webp` | Spring Onion | SpringOnion.png |
+| `onion-white.webp` | Yellow/White Onion | YellowOnion.png |
+| `onion-yellow.webp` | Shallots Onion | ShallotsOnion.png |
+| `squash-kalabasa.webp` | Kalabasa | KalabasaSquash.png |
+| `tom-baguio.webp` | Kamatis Baguio | KamatisBaguio.png (on white: widened with white, not cropped) |
+| `tom-cherry.webp` | Diamante Max F1 Tomato | DiamanteMaxTomato.png |
+| `tom-tagalog.webp` | Kamatis Tagalog | TagalogTomato.png |
+
+Rice is the one photo not from the team's folder:
 
 | File | Source | License | Original title |
 | --- | --- | --- | --- |
-| `ampalaya-galaxy.webp` | Unsplash | Unsplash License | Pile of fresh, bumpy green bitter melons, Louise Tomczak (unsplash.com/photos/1766714534617) |
-| `ampalaya-native.webp` | Unsplash | Unsplash License | Pile of bumpy green bitter melons, Imad 786 (unsplash.com/photos/1763266065684) |
-| `cala-regular.webp` | Pexels | Pexels License | Calamansi on the branch (pexels.com/photo/35307299) |
-| `corn-sweet.webp` | Unsplash | Unsplash License | Sweet corn cobs (unsplash.com/photos/1634467524884) |
-| `corn-white.webp` | Unsplash | Unsplash License | White corn cobs (unsplash.com/photos/1594099632993) |
-| `corn-yellow.webp` | openverse/rawpixel | cc0 | Free yellow corn cob close |
-| `garlic-native.webp` | openverse/flickr | cc0 | Group of Garlic Bulbs |
-| `mango-carab.webp` | WordPress Photo Directory | CC0 | A close-up image of a pile of ripe yellow mangoes |
-| `mango-indian.webp` | openverse/wikimedia | cc0 | Unripe green mangoes (local wild variety - Gaauti Aam) of Nandurbar district |
-| `melon-seedless.webp` | Unsplash | Unsplash License | Watermelon fruit on white table, Art Rachen (unsplash.com/photos/1587049352846) |
-| `melon-sweet.webp` | Unsplash | Unsplash License | A large pile of watermelon with a piece of watermelon on top, Crina-Miriam Cretu (unsplash.com/photos/1708982553355) |
-| `onion-red.webp` | openverse/flickr | cc0 | Red Onions |
-| `onion-spring.webp` | openverse/flickr | cc0 | Spring onions |
-| `onion-white.webp` | openverse/wikimedia | cc0 | Alibag White Onions from Pezari village of Alibag taluka |
-| `onion-yellow.webp` | wikimedia | Public domain | Shallots - sliced and whole.jpg |
 | `rice-special.webp` | openverse/wordpress | cc0 | Short white rice grains are displayed in bulk at a hypermarket in Kozhikode. The smooth, polished grains are a common rice variety used in Kerala homes for breakfasts like dosa and idli. |
-| `squash-kalabasa.webp` | wikimedia | CC0 | Red Kabocha Squash.jpg |
-| `tom-cherry.webp` | openverse/flickr | cc0 | Handful of Cherry Tomatoes |
-| `tom-roma.webp` | openverse/flickr | cc0 | Roma Tomatoes |
 
-## Shared images
+The three rice grades (Special, Well Milled, Regular Milled) share it: they
+are all milled white rice, and the difference does not photograph.
 
-These varieties do not photograph differently, so they reuse another row's
-image rather than implying a distinction the picture cannot show.
+## Replacing a photo
 
-- `rice-well-milled` uses `rice-special.webp`
-- `rice-regular-milled` uses `rice-special.webp`
-- `tom-tagalog` (Kamatis Tagalog) uses `tom-cherry.webp`
-- `tom-baguio` (Kamatis Baguio) uses `tom-roma.webp`
+Put the new photo in a folder, crop it to 4:3 around the crop (the fruit,
+bulbs or ears in frame), and save it here as WebP, at most 720 x 540 and
+never enlarged, under the variety's id (the names above). `src/data/cropPhotos.ts`
+maps each variety's id to its file.
 
-`melon-yellow` (Yellow Watermelon) has no photo yet: both watermelon photos
-show red flesh. Add a CC0, public-domain, Unsplash or Pexels photo of a cut
-yellow watermelon as `melon-yellow.webp` and map it in `src/data/cropPhotos.ts`.
+## Other images
+
+| File | Source | License | Original title |
+| --- | --- | --- | --- |
 | `src/assets/expenses-bg.webp` | StockSnap | CC0 | Accounting Finance (calculator at a desk) |

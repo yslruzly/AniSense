@@ -1,13 +1,11 @@
 // ─── Crop photos ──────────────────────────────────────────────────────────────
-// One photograph per crop row in the market list. Public domain, CC0, Unsplash
-// or Pexels licence, so none of them carries an attribution obligation;
-// provenance is recorded in ../assets/crops/CREDITS.md.
+// One photograph per crop row, shown in the price list, the Market, Featured
+// products, the crop picker and a crop's price sheet. All but rice are the
+// AniSense team's own photos (AniSense_Crop-images), cropped to 4:3 and at
+// most 720 x 540; provenance is in ../assets/crops/CREDITS.md.
 //
-// 19 photographs cover 22 of the 23 rows. The rows that share an image do so
-// because the difference does not photograph: all three rice grades are
-// milled white rice, and Kamatis Tagalog is a small red tomato like the
-// Diamante Max F1. Yellow Watermelon has none yet: every watermelon photo
-// here shows red flesh, so it keeps the line icon rather than a wrong picture.
+// 21 photographs cover all 23 rows. The three rice grades share one: they are
+// all milled white rice, and the difference does not photograph.
 
 import ampalaya_galaxy from "../assets/crops/ampalaya-galaxy.webp";
 import ampalaya_native from "../assets/crops/ampalaya-native.webp";
@@ -20,14 +18,16 @@ import mango_carab from "../assets/crops/mango-carab.webp";
 import mango_indian from "../assets/crops/mango-indian.webp";
 import melon_seedless from "../assets/crops/melon-seedless.webp";
 import melon_sweet from "../assets/crops/melon-sweet.webp";
+import melon_yellow from "../assets/crops/melon-yellow.webp";
 import onion_red from "../assets/crops/onion-red.webp";
 import onion_spring from "../assets/crops/onion-spring.webp";
 import onion_white from "../assets/crops/onion-white.webp";
 import onion_yellow from "../assets/crops/onion-yellow.webp";
 import rice_special from "../assets/crops/rice-special.webp";
 import squash_kalabasa from "../assets/crops/squash-kalabasa.webp";
+import tom_baguio from "../assets/crops/tom-baguio.webp";
 import tom_cherry from "../assets/crops/tom-cherry.webp";
-import tom_roma from "../assets/crops/tom-roma.webp";
+import tom_tagalog from "../assets/crops/tom-tagalog.webp";
 import { CROPS, CROP_GROUPS } from "./crops";
 
 export const CROP_PHOTOS: Record<string, string> = {
@@ -43,8 +43,8 @@ export const CROP_PHOTOS: Record<string, string> = {
   "mango-indian": mango_indian,
   "garlic-native": garlic_native,
   "tom-cherry": tom_cherry,
-  "tom-tagalog": tom_cherry,
-  "tom-baguio": tom_roma,
+  "tom-tagalog": tom_tagalog,
+  "tom-baguio": tom_baguio,
   "corn-yellow": corn_yellow,
   "corn-white": corn_white,
   "corn-sweet": corn_sweet,
@@ -53,6 +53,7 @@ export const CROP_PHOTOS: Record<string, string> = {
   "ampalaya-galaxy": ampalaya_galaxy,
   "melon-sweet": melon_sweet,
   "melon-seedless": melon_seedless,
+  "melon-yellow": melon_yellow,
 };
 
 /** Falls back to undefined so the caller can keep showing the line icon. */
@@ -70,8 +71,8 @@ export function cropPhotoFor(crop: string, variety?: string): string | undefined
 
   // A listing whose crop or variety is itself a priced crop ("Special Rice",
   // "Yellow Corn") resolves straight to that row's photo.
-  // A row with no photo of its own (Yellow Watermelon) keeps the icon,
-  // rather than borrowing a sibling's picture that shows the wrong fruit.
+  // A row with no photo of its own keeps the icon, rather than borrowing a
+  // sibling's picture that could show the wrong fruit.
   for (const n of [variety, crop]) {
     if (!n) continue;
     const hit = CROPS.find(c => norm(c.name) === norm(n));
