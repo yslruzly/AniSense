@@ -1,8 +1,9 @@
 import { SellerDetail } from "../types";
 
 // ─── AniSense Farmer of the Week ──────────────────────────────────────────────
-// One rule, used by Home's Featured farmers (to show them) and the farmer's
-// Profile achievements (to award it), so the two can never disagree.
+// One rule, used by Home's and the Market's Featured farmers (to show them)
+// and the farmer's Profile achievements (to award it), so they can never
+// disagree.
 //
 // Everyone with something on sale, best-rated first, then by sales. The
 // spotlight rotates weekly through the top four, which is what makes "of the
@@ -21,4 +22,28 @@ export function farmerOfTheWeek(sellers: Record<string, SellerDetail>, now = Dat
   if (!ranked.length) return undefined;
   const week = Math.floor(now / (7 * 864e5));
   return ranked[week % Math.min(4, ranked.length)];
+}
+
+/** "Talavera, Nueva Ecija" → "Talavera". */
+export const townOf = (loc: string) => loc.split(",")[0].trim();
+
+export type FeaturedFarmer = RankedSeller & { near: boolean };
+
+/**
+ * Who Featured farmers shows, on Home and in the Market alike: the Farmer of
+ * the Week, then three more from the ranking, anyone growing in the viewer's
+ * own town first (near, so the screen can say why). A farmer with no town
+ * on record is never "near".
+ */
+export function featuredLineup(sellers: Record<string, SellerDetail>, viewerLocation = "", now = Date.now()):
+  { spot?: FeaturedFarmer; rest: FeaturedFarmer[] } {
+  const spot = farmerOfTheWeek(sellers, now);
+  if (!spot) return { rest: [] };
+  const near = (loc: string) => { const town = townOf(loc); return !!viewerLocation && !!town && viewerLocation.includes(town); };
+  const rest = rankSellers(sellers)
+    .filter(s => s.key !== spot.key)
+    .map(s => ({ ...s, near: near(s.location) }))
+    .sort((a, b) => Number(b.near) - Number(a.near))
+    .slice(0, 3);
+  return { spot: { ...spot, near: near(spot.location) }, rest };
 }

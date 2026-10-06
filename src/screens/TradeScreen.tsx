@@ -24,6 +24,7 @@ import { PickerField } from "../components/ui/PickerField";
 import { MUNICIPALITIES } from "../data/locations";
 import { useViewer } from "../store/viewer";
 import { useMarket, sellerKeyOfDetail } from "../store/market";
+import { FeaturedFarmersRow } from "../components/marketplace/FeaturedFarmersRow";
 import { orderErrorOf } from "../services/transactions";
 import { peso } from "../lib/money";
 
@@ -516,6 +517,12 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
             </div>
           )}
         </div>
+
+        {/* Who grows it, before the harvests: only while browsing everything,
+            since a search or a filter means the buyer knows what they want. */}
+        {!search.trim() && family === "All" && category === "All Crops" && (
+          <FeaturedFarmersRow onOpen={key => setSellerDetail(market.sellers[key] ?? null)} />
+        )}
 
         {/* How the list is sorted, at the head of the list it sorts. */}
         <div className="mp-list-head" ref={resultsRef}>

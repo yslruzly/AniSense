@@ -6,7 +6,7 @@ import familyFruits from "../../assets/families/family-fruits.webp";
 import familyVegetables from "../../assets/families/family-vegetables.webp";
 import { useMarket } from "../../store/market";
 import { SkeletonShelf, SkeletonMediaRows } from "../states";
-import { rankSellers, farmerOfTheWeek } from "../../lib/featured";
+import { featuredLineup, townOf } from "../../lib/featured";
 import { cropPhoto, cropPhotoFor, cropGroupPhoto } from "../../data/cropPhotos";
 import { CropEmoji } from "../icons/CropEmoji";
 import { Listing, TradeIntent } from "../../types";
@@ -250,7 +250,6 @@ const en = (key: keyof typeof translations) => translations[key].en;
 
 // The same colour a farmer has in their profile sheet.
 const tone = avatarTone;
-const townOf = (loc: string) => loc.split(",")[0].trim();
 
 export function FeaturedFarmers({ onShop, buyerLocation }: { onShop: Shop; buyerLocation: string }) {
   // Always in English, like the profile sheet it opens: a farmer's public
@@ -259,8 +258,8 @@ export function FeaturedFarmers({ onShop, buyerLocation }: { onShop: Shop; buyer
   // marketplace finds a seller again: account id, or initials in the demo.
   // The spotlight is the same pick that awards the Profile achievement.
   const { sellers, loadPhase } = useMarket();
-  const ranked = rankSellers(sellers);
-  const spot = farmerOfTheWeek(sellers);
+  // The Farmer of the Week, then three more, the buyer's neighbours first.
+  const { spot, rest } = featuredLineup(sellers, buyerLocation);
   // Still loading: three farmers' rows under the title.
   if (loadPhase !== "ready") {
     return loadPhase === "skeleton" ? (
@@ -274,14 +273,6 @@ export function FeaturedFarmers({ onShop, buyerLocation }: { onShop: Shop; buyer
     ) : null;
   }
   if (!spot) return null;
-
-  // Then three more: anyone growing in the buyer's own town first (tagged, so
-  // the reason for the order is visible), then by rating.
-  const isNear = (loc: string) => !!buyerLocation && buyerLocation.includes(townOf(loc));
-  const rest = ranked
-    .filter(s => s.key !== spot.key)
-    .sort((a, b) => Number(isNear(b.location)) - Number(isNear(a.location)))
-    .slice(0, 3);
 
   const open = (s: { key: string; name: string }) => onShop({ seller: s.key, search: s.name });
 
@@ -343,7 +334,7 @@ export function FeaturedFarmers({ onShop, buyerLocation }: { onShop: Shop; buyer
               <span className="ff-row-body">
                 <span className="ff-row-name">
                   {s.name}
-                  {isNear(s.location) && <span className="ff-near">{en("ff_near")}</span>}
+                  {s.near && <span className="ff-near">{en("ff_near")}</span>}
                 </span>
                 <span className="ff-row-meta">
                   <span className="ff-star"><Star size={13} fill="currentColor" strokeWidth={0} /> {s.rating}</span>

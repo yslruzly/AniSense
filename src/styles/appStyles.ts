@@ -2204,6 +2204,45 @@ export const appCss = `
   .ff-row-meta { font-size: 14px; color: var(--text-muted); }
   .ff-chev { color: var(--line-strong); flex-shrink: 0; }
 
+  /* ── Featured farmers, in the Market ──
+     The same four as Home's, as a short row of cards above the harvests:
+     the growers are met without the produce being pushed out of sight. The
+     Farmer of the Week leads, in palay gold. The row runs to the screen's
+     edges like Home's product shelf, so a card cut at the edge says "more". */
+  .mpf { display: flex; flex-direction: column; }
+  .mpf-row {
+    display: flex; gap: 10px; margin: 12px -16px 0; padding: 4px 16px 8px;
+    overflow-x: auto; overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity; scroll-padding-left: 16px; -webkit-overflow-scrolling: touch;
+  }
+  .mpf-row::-webkit-scrollbar { height: 0; }
+  .mpf-card {
+    flex: 0 0 152px; scroll-snap-align: start;
+    display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-width: 0;
+    padding: 14px 12px; border: none; border-radius: 16px; background: var(--card);
+    text-align: left; font: inherit; color: inherit; cursor: pointer;
+    box-shadow: inset 0 0 0 1px var(--line), 0 8px 18px -14px rgba(22,33,27,.35);
+    transition: transform 190ms var(--ease-out);
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .mpf-card:active { transform: scale(.97); transition-duration: var(--dur-press); }
+  .mpf-card .ff-ava { margin: 2px 0 4px; }
+  .mpf-card.is-week {
+    background: linear-gradient(180deg, #FFF6DE 0%, var(--card) 72%);
+    box-shadow: inset 0 0 0 1.5px #F2B32C, 0 10px 20px -14px rgba(138,93,12,.45);
+  }
+  .mpf-week {
+    display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px 4px 7px; border-radius: 99px;
+    background: #F2B32C; color: var(--ink); font-family: var(--font-display); font-size: 13px; font-weight: 800; line-height: 1.2;
+  }
+  .mpf-name {
+    font-family: var(--font-display); font-size: 16px; font-weight: 700; line-height: 1.25; color: var(--text);
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .mpf-meta { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; color: var(--text-muted); }
+  .mpf-meta svg { color: #C98A1B; flex-shrink: 0; }
+  @media (prefers-reduced-motion: reduce) { .mpf-card:active { transform: none; } }
+
   /* The banner that opens the buyer's Home. Not a button: it is the page's
      own masthead, and a tap that navigated from here would surprise. */
   .hm-banner {
