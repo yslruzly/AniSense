@@ -312,6 +312,7 @@ export const translations: Dict = {
   // Buyer Home.
   fp_title: { en: "Featured products", tl: "Mga tampok na produkto" },
   fp_sub: { en: "From the best-rated farmers selling today.", tl: "Mula sa may pinakamataas na rating na nagbebenta ngayon." },
+  fp_sub_sample: { en: "Sample harvests, until farmers start posting.", tl: "Mga sample na ani, hanggang mag-post na ang mga magsasaka." },
   fp_see_all: { en: "See all", tl: "Lahat" },
   home_poster_alt: {
     en: "AniSense: fresh local produce, from our farms to your table.",
@@ -325,6 +326,8 @@ export const translations: Dict = {
   home_shop_by_crop: { en: "Browse marketplace", tl: "Tumingin sa merkado" },
   ff_title: { en: "Featured farmers", tl: "Mga tampok na magsasaka" },
   ff_sub: { en: "Top-rated growers selling on AniSense", tl: "Mga pinakamataas ang rating na nagbebenta sa AniSense" },
+  ff_sub_sample: { en: "Sample farmers, until real ones start selling", tl: "Mga sample na magsasaka, hanggang may totoong nagbebenta na" },
+  seller_sample_call: { en: "Sample farmer: no number to call", tl: "Sample na magsasaka: walang numerong matatawagan" },
   ff_week: { en: "AniSense Farmer of the Week", tl: "AniSense Magsasaka ng Linggo" },
   ff_sales: { en: "sales", tl: "benta" },
   ff_years: { en: "yrs farming", tl: "taon sa bukid" },
@@ -451,6 +454,15 @@ export const translations: Dict = {
     tl: "Naubos o tinanggal na ang isa sa mga ani na ito. Alisin ito sa cart at subukan ulit.",
   },
   order_err_own: { en: "You can't order your own harvest.", tl: "Hindi mo puwedeng i-order ang sarili mong ani." },
+  order_err_sample: {
+    en: "Sample harvests can't be ordered. Remove them from your cart: real ones show in the Market as soon as farmers post.",
+    tl: "Hindi puwedeng i-order ang sample na ani. Alisin ang mga ito sa cart: lalabas sa Merkado ang totoong ani kapag nag-post na ang mga magsasaka.",
+  },
+  mp_sample: { en: "Sample", tl: "Sample" },
+  mp_samples_note: {
+    en: "These are sample harvests, to show how the Market works. Real ones replace them as soon as farmers post.",
+    tl: "Mga sample na ani ito, para makita kung paano gumagana ang Merkado. Papalitan sila ng totoong ani kapag nag-post na ang mga magsasaka.",
+  },
   order_err_failed: { en: "The order didn't go through. Please try again.", tl: "Hindi natuloy ang order. Pakisubukan ulit." },
   trade_posting: { en: "Saving…", tl: "Sine-save…" },
   err_post_failed: { en: "Couldn't save your listing. Please try again.", tl: "Hindi na-save ang listing mo. Pakisubukan ulit." },
@@ -1235,6 +1247,11 @@ export const translations: Dict = {
   tour_prices_b: {
     en: "The retail price of the crops you grow, and whether it rose or fell from the month before. Tap one to see its prices this year and the forecast.",
     tl: "Ang presyong tingi ng mga tinatanim mo, at kung tumaas o bumaba mula sa nakaraang buwan. Pindutin ang isa para makita ang presyo nito ngayong taon at ang taya.",
+  },
+  tour_featured_t: { en: "What's selling", tl: "Ang mabenta" },
+  tour_featured_b: {
+    en: "The best-rated harvests in the Market right now, and what they ask per kilo. Swipe to compare with your own.",
+    tl: "Ang pinakamataas ang rating na ani sa Merkado ngayon, at ang presyo kada kilo. Mag-swipe para ikumpara sa iyo.",
   },
   tour_forecast_t: { en: "Sell, hold, or wait", tl: "Ibenta, itago, o maghintay" },
   tour_forecast_b: {

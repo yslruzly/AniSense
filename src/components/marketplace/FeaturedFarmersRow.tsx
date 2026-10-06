@@ -15,7 +15,7 @@ import { avatarTone } from "../../lib/avatar";
 
 export function FeaturedFarmersRow({ onOpen }: { onOpen: (sellerKey: string) => void }) {
   const { t } = useLang();
-  const { sellers, loadPhase } = useMarket();
+  const { sellers, loadPhase, showingSamples } = useMarket();
   const { location } = useViewer();
   // Nothing while the Market loads: the list under it shows the wait.
   if (loadPhase !== "ready") return null;
@@ -26,7 +26,7 @@ export function FeaturedFarmersRow({ onOpen }: { onOpen: (sellerKey: string) => 
   return (
     <section className="mpf" aria-labelledby="mpf-t">
       <h2 className="hm-sec-title" id="mpf-t">{t("ff_title")}</h2>
-      <p className="hm-sec-sub">{t("ff_sub")}</p>
+      <p className="hm-sec-sub">{t(showingSamples ? "ff_sub_sample" : "ff_sub")}</p>
       <div className="mpf-row">
         {lineup.map((s, i) => {
           const week = i === 0;

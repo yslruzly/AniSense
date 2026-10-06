@@ -50,9 +50,10 @@ const FARMER_STEPS: Step[] = [
   { id: "intro" },
   { id: "harvest", targets: ['[data-tour="harvest"]'] },
   { id: "prices", targets: ['[data-tour="prices"]'] },
-  // No stop at the Featured shelf a farmer's Home also shows: it is other
-  // farmers' harvests, the buyer's tour's to explain, and when the Market has
-  // none to feature the light would stay on the prices under the wrong words.
+  // The marketplace's best, which a farmer's Home shows under their own
+  // prices: the same section the buyer's tour points at. Never empty: while
+  // no farmer has posted, the sample harvests fill it (SAMPLE_MARKET).
+  { id: "featured", targets: ['[data-tour="b-featured"]'] },
   // The heading and the card under it: one light over the pair, because the
   // heading alone explains nothing and the card alone looks unannounced.
   { id: "forecast", targets: ['[data-tour="forecast"]', ".adv-card"] },

@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { BuyerTransaction, CartItem, Expense, IncomingOrder, Listing, SellerDetail, UserRole } from "../types";
-import { LISTINGS, SELLER_DETAILS } from "../data/demo/marketplace";
+import { LISTINGS, SELLER_DETAILS, SAMPLE_MARKET } from "../data/demo/marketplace";
 import { EXPENSES, BUYER_TRANSACTIONS } from "../data/demo/expenses";
 import { sampleIncomingOrders } from "../data/demo/orders";
 import { CROPS, CROP_GROUP_BY_ID, applyPrices } from "../data/crops";
@@ -58,6 +58,9 @@ export interface Market {
   listings: Listing[];
   /** Keyed by sellerKeyOf(listing): the account id live, the initials in the demo. */
   sellers: Record<string, SellerDetail>;
+  /** A real account whose Market has no listings yet, showing the sample
+   *  farmers and harvests instead (SAMPLE_MARKET). Screens say so. */
+  showingSamples: boolean;
   purchases: BuyerTransaction[];
   expenses: Expense[];
   /** What this farmer sold through the marketplace (live only). */
@@ -134,8 +137,13 @@ export function useMarketStore({ accountId, role, name, initials }: {
     const g = gen.current;
     const r = await fetchMarket();
     if (g !== gen.current) return false;
-    setListings(r.data.listings);
-    setSellers(r.data.sellers);
+    // Nobody has posted yet (a new Market): the sample farmers and their
+    // harvests stand in, each marked as a sample, so Home, the Market and the
+    // walkthrough show what they will look like. The first real listing
+    // replaces them all.
+    const empty = r.data.listings.length === 0;
+    setListings(empty ? SAMPLE_MARKET.listings : r.data.listings);
+    setSellers(empty ? SAMPLE_MARKET.sellers : r.data.sellers);
     return r.fromCache;
   }, []);
 
@@ -266,6 +274,9 @@ export function useMarketStore({ accountId, role, name, initials }: {
   };
 
   const placeOrder = async (lines: CartItem[]) => {
+    // A sample harvest can be put in the cart, to see how it works, but never
+    // ordered: there is no farmer behind it.
+    if (lines.some(c => listings.find(l => l.id === c.listingId)?.sample)) throw new Error("SAMPLE_LISTING");
     if (live) {
       await sendOrder(lines);
       // The order is in. Catching up the stock and the history is a courtesy
@@ -318,7 +329,7 @@ export function useMarketStore({ accountId, role, name, initials }: {
 
   return {
     live, loading, loadPhase, fromCache,
-    listings, sellers, purchases, expenses, marketSales,
+    listings, sellers, showingSamples: listings.some(l => l.sample), purchases, expenses, marketSales,
     incomingOrders, confirmOrder,
     sales, setSales, plantings, setPlantings, priceAlerts, setPriceAlerts, harvestPlans, setHarvestPlans,
     awards, pricesVersion,

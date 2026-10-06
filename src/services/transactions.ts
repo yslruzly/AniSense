@@ -87,10 +87,12 @@ export async function fetchMySales(): Promise<FetchResult<Sale[]>> {
 }
 
 /** Why an order didn't go through, as a key the screen can translate. */
-export type OrderError = "offline" | "stock" | "gone" | "own" | "failed";
+export type OrderError = "offline" | "stock" | "gone" | "own" | "sample" | "failed";
 
 export function orderErrorOf(err: unknown): OrderError {
   const msg = err instanceof Error ? err.message : String((err as { message?: string })?.message ?? err);
+  // Refused on the phone before anything is sent, whatever the signal.
+  if (msg.includes("SAMPLE_LISTING")) return "sample";
   if (!navigator.onLine || /fetch|network|timeout|internet connection/i.test(msg)) return "offline";
   if (msg.includes("NOT_ENOUGH")) return "stock";
   if (msg.includes("LISTING_GONE")) return "gone";

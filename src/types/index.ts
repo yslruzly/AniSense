@@ -27,6 +27,9 @@ export interface Listing {
   /** The seller's own photo of this harvest: its Storage URL, or a data URL
    *  on a demo listing. */
   photo?: string;
+  /** A sample harvest, shown in a real account while no farmer has posted
+   *  (SAMPLE_MARKET): it can be looked at, not ordered. */
+  sample?: boolean;
 }
 export interface CartItem {
   listingId: string; crop: string; variety: string; pricePerKg: number;
@@ -38,6 +41,8 @@ export interface SellerDetail {
   id?: string;
   name: string; initials: string; phone: string; location: string;
   yearsfarming: number; rating: number; totalSales: number; crops: string[]; bio: string;
+  /** A sample farmer (SAMPLE_MARKET): never offered to call. */
+  sample?: boolean;
 }
 export interface CropGroup { group: string; varieties: CropPrice[]; }
 export type FarmerProfile = { name: string; phone: string; email: string; location: string; experience: string; crops: string[]; };

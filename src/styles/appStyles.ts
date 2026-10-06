@@ -1752,6 +1752,14 @@ export const appCss = `
     background: rgba(10,14,12,.62); color: #fff; font-size: 11.5px; font-weight: 700;
     backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
   }
+  /* A sample harvest, in palay gold so it is never mistaken for a real one. */
+  .mp-mine.is-sample { background: #F2B32C; color: var(--ink); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  /* Said once, over the list, while the samples stand in. */
+  .mp-sample-note {
+    display: flex; align-items: flex-start; gap: 10px; margin: 0; padding: 12px 14px; border-radius: 14px;
+    background: #FDF6E3; color: #6B4A08; font-size: 15px; line-height: 1.45; box-shadow: inset 0 0 0 1px rgba(242,179,44,.45);
+  }
+  .mp-sample-note svg { flex-shrink: 0; margin-top: 1px; color: #B87A0B; }
   .mp-card-body { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px 12px; min-width: 0; }
   .mp-card-name {
     font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--text); line-height: 1.2;
@@ -3509,6 +3517,8 @@ export const appCss = `
     cursor:pointer; display:flex; align-items:center; justify-content:center; gap:9px;
     box-shadow:var(--shadow-md);
   }
+  /* A sample farmer: the button's place, saying why there is nothing to call. */
+  .call-seller-btn.is-sample { margin: 0; background: var(--paper-alt); color: var(--text-muted); box-shadow: none; cursor: default; }
 
   /* ── Sheet chrome ────────────────────────────────────────────────────────
      Four sheets each hand-rolled their own close button and action pair in

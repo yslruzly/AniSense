@@ -163,7 +163,7 @@ export function PriceMoves({ onOpen }: { onOpen: () => void }) {
 
 export function FeaturedProducts({ onShop }: { onShop: Shop }) {
   const { t, tn } = useLang();
-  const { listings, loadPhase } = useMarket();
+  const { listings, loadPhase, showingSamples } = useMarket();
   // Best-rated first, but one per crop: ranking alone filled the shelf with
   // four sacks of rice, because the top-rated sellers here all grow rice.
   // A featured shelf that shows the same thing four times is a shelf of one.
@@ -204,7 +204,8 @@ export function FeaturedProducts({ onShop }: { onShop: Shop }) {
           {t("fp_see_all")} <ChevronRight size={16} strokeWidth={2.6} />
         </button>
       </div>
-      <p className="hm-sec-sub">{t("fp_sub")}</p>
+      {/* Says so while the sample harvests stand in for a Market nobody has posted to yet. */}
+      <p className="hm-sec-sub">{t(showingSamples ? "fp_sub_sample" : "fp_sub")}</p>
 
       <div className="fp-row">
         {picks.map(l => {
@@ -257,7 +258,7 @@ export function FeaturedFarmers({ onShop, buyerLocation }: { onShop: Shop; buyer
   // Everyone with something on sale, best-rated first. Keyed the way the
   // marketplace finds a seller again: account id, or initials in the demo.
   // The spotlight is the same pick that awards the Profile achievement.
-  const { sellers, loadPhase } = useMarket();
+  const { sellers, loadPhase, showingSamples } = useMarket();
   // The Farmer of the Week, then three more, the buyer's neighbours first.
   const { spot, rest } = featuredLineup(sellers, buyerLocation);
   // Still loading: three farmers' rows under the title.
@@ -279,7 +280,7 @@ export function FeaturedFarmers({ onShop, buyerLocation }: { onShop: Shop; buyer
   return (
     <section className="hm-sec" aria-labelledby="ff-t" data-tour="b-farmers">
       <h2 className="hm-sec-title" id="ff-t">{en("ff_title")}</h2>
-      <p className="hm-sec-sub">{en("ff_sub")}</p>
+      <p className="hm-sec-sub">{en(showingSamples ? "ff_sub_sample" : "ff_sub")}</p>
 
       <div className="ff">
         {/* The spotlight is a profile to read, not a button: only "See their

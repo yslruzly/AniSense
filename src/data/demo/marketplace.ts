@@ -1,34 +1,52 @@
 import { Listing, SellerDetail } from "../../types";
 
+// ─── Sample farmers and their harvests ────────────────────────────────────────
+// Five farmers, three harvests each. They fill the whole demo (an app built
+// without .env), and in a real account they stand in, marked as samples,
+// while no farmer has posted yet (SAMPLE_MARKET, below): Home's Featured
+// farmers and products, the Market, the walkthrough all have something to
+// show. The first real listing replaces them all.
+//
+// Ranked by rating, then sales: Oliver, Christian, Ivan, Marc, Ruzly. The
+// phone numbers are made up (+63 900 000 000x); a real account never offers
+// to call a sample farmer.
+
 export const LISTINGS: Listing[] = [
-  { id: "1", crop: "Special Rice", variety: "Special Rice", desc: "Premium quality rice, freshly harvested", pricePerKg: 65, kg: 230, date: "2025-10-02", seller: "Doroteo Jose", sellerInitials: "DJ", rating: 4.8, location: "Cabanatuan City" },
-  { id: "2", crop: "Corn", variety: "Yellow Corn", desc: "Fresh yellow corn", pricePerKg: 70, kg: 154, date: "2025-10-01", seller: "Jose Reyes", sellerInitials: "MR", rating: 4.5, location: "Talavera" },
-  { id: "3", crop: "Onions", variety: "Red", desc: "Locally grown red onions, dry and ready for market", pricePerKg: 45, kg: 120, date: "2025-09-30", seller: "Betty Go", sellerInitials: "BG", rating: 4.9, location: "Guimba" },
-  { id: "4", crop: "Tomatoes", variety: "", desc: "Fresh tomatoes, bulk quantity available for buyers", pricePerKg: 38, kg: 350, date: "2025-09-29", seller: "Bong Marcos", sellerInitials: "BM", rating: 4.6, location: "Palayan City" },
-  { id: "5", crop: "Squash", variety: "", desc: "Large heads, freshly harvested", pricePerKg: 12, kg: 100, date: "2025-09-28", seller: "Ruiz Papa", sellerInitials: "RP", rating: 4.3, location: "Science City of Muñoz" },
-  { id: "6", crop: "Well Milled", variety: "Well Milled", desc: "Well-milled rice, clean and ready for market", pricePerKg: 52, kg: 500, date: "2025-10-03", seller: "Mario Santos", sellerInitials: "MS", rating: 4.7, location: "Talavera" },
-  { id: "7", crop: "Special Rice", variety: "Special Rice", desc: "Premium special rice, freshly harvested and clean", pricePerKg: 65, kg: 180, date: "2025-10-03", seller: "Mariano Garapon", sellerInitials: "MG", rating: 4.9, location: "Bongabon" },
-  { id: "8", crop: "Regular Milled", variety: "Regular Milled", desc: "Regular milled rice, good quality and affordable", pricePerKg: 42, kg: 300, date: "2025-10-02", seller: "Rodrigo Cruz", sellerInitials: "RC", rating: 4.6, location: "San Jose City" },
-  { id: "9", crop: "Well Milled", variety: "Well Milled", desc: "Well-milled white rice, fluffy and clean", pricePerKg: 52, kg: 90, date: "2025-10-01", seller: "Nena Bautista", sellerInitials: "NB", rating: 4.5, location: "Gapan City" },
-  { id: "10", crop: "Special Rice", variety: "Special Rice", desc: "Top-grade special rice from organic upland farms", pricePerKg: 65, kg: 60, date: "2025-09-30", seller: "Pedro Flores", sellerInitials: "PF", rating: 4.8, location: "Laur" },
-  { id: "14", crop: "Ampalaya", variety: "Native Ampalaya", desc: "Native ampalaya, firm and dark green", pricePerKg: 60, kg: 85, date: "2025-10-04", seller: "Ruiz Papa", sellerInitials: "RP", rating: 4.3, location: "Science City of Muñoz" },
-  { id: "15", crop: "Watermelon", variety: "Sweet Watermelon", desc: "Sweet watermelon, picked this week", pricePerKg: 28, kg: 400, date: "2025-10-03", seller: "Rodrigo Cruz", sellerInitials: "RC", rating: 4.6, location: "San Jose City" },
-  { id: "12", crop: "Mango", variety: "Carabao Mango", desc: "Sweet carabao mangoes, tree-ripened", pricePerKg: 80, kg: 140, date: "2025-10-04", seller: "Bong Marcos", sellerInitials: "BM", rating: 4.6, location: "Palayan City" },
-  { id: "13", crop: "Calamansi", variety: "Regular Calamansi", desc: "Freshly picked calamansi, juicy and firm", pricePerKg: 160, kg: 45, date: "2025-10-03", seller: "Betty Go", sellerInitials: "BG", rating: 4.9, location: "Guimba" },
-  { id: "11", crop: "Regular Milled", variety: "Regular Milled", desc: "Regular milled rice paddy, freshly harvested in bulk", pricePerKg: 42, kg: 420, date: "2025-10-04", seller: "Antonio Reyes", sellerInitials: "AR", rating: 4.4, location: "Cabanatuan City" },
+  // Oliver Baldeo · Cabanatuan City · rice
+  { id: "1", crop: "Special Rice", variety: "Special Rice", desc: "Premium quality rice, freshly harvested", pricePerKg: 65, kg: 230, date: "2025-10-02", seller: "Oliver Baldeo", sellerInitials: "OB", rating: 4.9, location: "Cabanatuan City" },
+  { id: "7", crop: "Special Rice", variety: "Special Rice", desc: "Premium special rice, freshly harvested and clean", pricePerKg: 65, kg: 180, date: "2025-10-03", seller: "Oliver Baldeo", sellerInitials: "OB", rating: 4.9, location: "Cabanatuan City" },
+  { id: "11", crop: "Regular Milled", variety: "Regular Milled", desc: "Regular milled rice paddy, freshly harvested in bulk", pricePerKg: 42, kg: 420, date: "2025-10-04", seller: "Oliver Baldeo", sellerInitials: "OB", rating: 4.9, location: "Cabanatuan City" },
+  // Christian Tiburcio · Guimba · onions, calamansi, upland rice
+  { id: "3", crop: "Onions", variety: "Red", desc: "Locally grown red onions, dry and ready for market", pricePerKg: 45, kg: 120, date: "2025-09-30", seller: "Christian Tiburcio", sellerInitials: "CT", rating: 4.8, location: "Guimba" },
+  { id: "13", crop: "Calamansi", variety: "Regular Calamansi", desc: "Freshly picked calamansi, juicy and firm", pricePerKg: 160, kg: 45, date: "2025-10-03", seller: "Christian Tiburcio", sellerInitials: "CT", rating: 4.8, location: "Guimba" },
+  { id: "10", crop: "Special Rice", variety: "Special Rice", desc: "Top-grade special rice from organic upland farms", pricePerKg: 65, kg: 60, date: "2025-09-30", seller: "Christian Tiburcio", sellerInitials: "CT", rating: 4.8, location: "Guimba" },
+  // Ivan Pestanas · Science City of Muñoz · vegetables and corn
+  { id: "5", crop: "Squash", variety: "", desc: "Large heads, freshly harvested", pricePerKg: 12, kg: 100, date: "2025-09-28", seller: "Ivan Pestanas", sellerInitials: "IP", rating: 4.8, location: "Science City of Muñoz" },
+  { id: "14", crop: "Ampalaya", variety: "Native Ampalaya", desc: "Native ampalaya, firm and dark green", pricePerKg: 60, kg: 85, date: "2025-10-04", seller: "Ivan Pestanas", sellerInitials: "IP", rating: 4.8, location: "Science City of Muñoz" },
+  { id: "2", crop: "Corn", variety: "Yellow Corn", desc: "Fresh yellow corn", pricePerKg: 70, kg: 154, date: "2025-10-01", seller: "Ivan Pestanas", sellerInitials: "IP", rating: 4.8, location: "Science City of Muñoz" },
+  // Marc Bawalan · Palayan City · tomatoes and fruit
+  { id: "4", crop: "Tomatoes", variety: "", desc: "Fresh tomatoes, bulk quantity available for buyers", pricePerKg: 38, kg: 350, date: "2025-09-29", seller: "Marc Bawalan", sellerInitials: "MB", rating: 4.7, location: "Palayan City" },
+  { id: "12", crop: "Mango", variety: "Carabao Mango", desc: "Sweet carabao mangoes, tree-ripened", pricePerKg: 80, kg: 140, date: "2025-10-04", seller: "Marc Bawalan", sellerInitials: "MB", rating: 4.7, location: "Palayan City" },
+  { id: "15", crop: "Watermelon", variety: "Sweet Watermelon", desc: "Sweet watermelon, picked this week", pricePerKg: 28, kg: 400, date: "2025-10-03", seller: "Marc Bawalan", sellerInitials: "MB", rating: 4.7, location: "Palayan City" },
+  // Ruzly Macatula · Talavera · milled rice
+  { id: "6", crop: "Well Milled", variety: "Well Milled", desc: "Well-milled rice, clean and ready for market", pricePerKg: 52, kg: 500, date: "2025-10-03", seller: "Ruzly Macatula", sellerInitials: "RM", rating: 4.6, location: "Talavera" },
+  { id: "9", crop: "Well Milled", variety: "Well Milled", desc: "Well-milled white rice, fluffy and clean", pricePerKg: 52, kg: 90, date: "2025-10-01", seller: "Ruzly Macatula", sellerInitials: "RM", rating: 4.6, location: "Talavera" },
+  { id: "8", crop: "Regular Milled", variety: "Regular Milled", desc: "Regular milled rice, good quality and affordable", pricePerKg: 42, kg: 300, date: "2025-10-02", seller: "Ruzly Macatula", sellerInitials: "RM", rating: 4.6, location: "Talavera" },
 ];
 
 // ─── Seller Details ───────────────────────────────────────────────────────────
 export const SELLER_DETAILS: Record<string, SellerDetail> = {
-  "DJ": { name: "Doroteo Jose", initials: "DJ", phone: "+63 912 001 1001", location: "Cabanatuan City, Nueva Ecija", yearsfarming: 18, rating: 4.8, totalSales: 312, crops: ["Special Rice", "Regular Milled"], bio: "Third-generation rice farmer from Cabanatuan. Known for premium-grade palay and reliable bulk deliveries." },
-  "MR": { name: "Jose Reyes", initials: "MR", phone: "+63 917 002 2002", location: "Talavera, Nueva Ecija", yearsfarming: 11, rating: 4.5, totalSales: 178, crops: ["Yellow Corn", "Sweet Corn"], bio: "Corn specialist with over a decade of experience. Supplies local feeds and fresh corn markets." },
-  "BG": { name: "Betty Go", initials: "BG", phone: "+63 918 003 3003", location: "Guimba, Nueva Ecija", yearsfarming: 22, rating: 4.9, totalSales: 430, crops: ["Red Onion", "Yellow/White Onion", "Regular Calamansi"], bio: "Award-winning onion grower from Guimba. Produces dry, well-cured onions ideal for long-term storage." },
-  "BM": { name: "Bong Marcos", initials: "BM", phone: "+63 919 004 4004", location: "Palayan City, Nueva Ecija", yearsfarming: 8, rating: 4.6, totalSales: 95, crops: ["Tomatoes", "Squash", "Carabao Mango"], bio: "Young farmer growing high-yield tomatoes using modern drip irrigation. Bulk orders accommodated." },
-  "RP": { name: "Ruiz Papa", initials: "RP", phone: "+63 920 005 5005", location: "Science City of Muñoz, NE", yearsfarming: 14, rating: 4.3, totalSales: 141, crops: ["Squash", "Corn", "Native Ampalaya"], bio: "Mixed-crop farmer near the PhilRice campus. Practices integrated pest management for quality produce." },
-  "MS": { name: "Mario Santos", initials: "MS", phone: "+63 921 006 6006", location: "Talavera, Nueva Ecija", yearsfarming: 20, rating: 4.7, totalSales: 260, crops: ["Well Milled", "Regular Milled"], bio: "Veteran rice miller with his own small mill. Ensures clean, properly milled rice every batch." },
-  "MG": { name: "Mariano Garapon", initials: "MG", phone: "+63 922 007 7007", location: "Bongabon, Nueva Ecija", yearsfarming: 15, rating: 4.9, totalSales: 398, crops: ["Special Rice"], bio: "Organic upland rice farmer certified by the DA, with special rice that consistently tops quality checks." },
-  "RC": { name: "Rodrigo Cruz", initials: "RC", phone: "+63 923 008 8008", location: "San Jose City, Nueva Ecija", yearsfarming: 16, rating: 4.6, totalSales: 209, crops: ["Regular Milled", "Well Milled", "Sweet Watermelon"], bio: "Family-run rice farm in San Jose City. Offers competitive prices for bulk buyers and cooperatives." },
-  "NB": { name: "Nena Bautista", initials: "NB", phone: "+63 924 009 9009", location: "Gapan City, Nueva Ecija", yearsfarming: 12, rating: 4.5, totalSales: 164, crops: ["Well Milled"], bio: "Known in Gapan for consistently fluffy and clean white rice. Runs a small family cooperative." },
-  "PF": { name: "Pedro Flores", initials: "PF", phone: "+63 925 010 1010", location: "Laur, Nueva Ecija", yearsfarming: 25, rating: 4.8, totalSales: 510, crops: ["Special Rice"], bio: "The most experienced farmer in Laur barangay. Grows heirloom and premium upland rice varieties." },
-  "AR": { name: "Antonio Reyes", initials: "AR", phone: "+63 926 011 1011", location: "Cabanatuan City, Nueva Ecija", yearsfarming: 9, rating: 4.4, totalSales: 118, crops: ["Regular Milled"], bio: "Efficient paddy producer with harvest-ready stockpiles. Good option for last-minute bulk orders." },
+  "OB": { name: "Oliver Baldeo", initials: "OB", phone: "+63 900 000 0001", location: "Cabanatuan City, Nueva Ecija", yearsfarming: 18, rating: 4.9, totalSales: 412, crops: ["Special Rice", "Regular Milled"], bio: "Third-generation rice farmer from Cabanatuan City. Known for premium-grade palay and reliable bulk deliveries." },
+  "CT": { name: "Christian Tiburcio", initials: "CT", phone: "+63 900 000 0002", location: "Guimba, Nueva Ecija", yearsfarming: 22, rating: 4.8, totalSales: 365, crops: ["Red Onion", "Regular Calamansi", "Special Rice"], bio: "Onion and calamansi grower from Guimba. His dry, well-cured onions keep for months." },
+  "IP": { name: "Ivan Pestanas", initials: "IP", phone: "+63 900 000 0003", location: "Science City of Muñoz, Nueva Ecija", yearsfarming: 12, rating: 4.8, totalSales: 238, crops: ["Squash", "Native Ampalaya", "Yellow Corn"], bio: "Mixed-crop farmer near the PhilRice campus. Practices integrated pest management for clean, quality produce." },
+  "MB": { name: "Marc Bawalan", initials: "MB", phone: "+63 900 000 0004", location: "Palayan City, Nueva Ecija", yearsfarming: 9, rating: 4.7, totalSales: 190, crops: ["Tomatoes", "Carabao Mango", "Sweet Watermelon"], bio: "Young farmer growing high-yield tomatoes with drip irrigation, and mangoes and watermelon in season." },
+  "RM": { name: "Ruzly Macatula", initials: "RM", phone: "+63 900 000 0005", location: "Talavera, Nueva Ecija", yearsfarming: 7, rating: 4.6, totalSales: 156, crops: ["Well Milled", "Regular Milled"], bio: "Rice farmer in Talavera with a small family mill. Clean, properly milled rice in every sack." },
+};
+
+// ─── In a real account, while nobody has posted yet ───────────────────────────
+// The same farmers and harvests, each marked as a sample: the Market says so,
+// checkout refuses them, and their phone numbers are never offered to call.
+export const SAMPLE_MARKET: { listings: Listing[]; sellers: Record<string, SellerDetail> } = {
+  listings: LISTINGS.map(l => ({ ...l, sample: true })),
+  sellers: Object.fromEntries(Object.entries(SELLER_DETAILS).map(([k, s]) => [k, { ...s, sample: true }])),
 };

@@ -9,11 +9,11 @@ export const EXPENSES: Expense[] = [
 ];
 
 export const BUYER_TRANSACTIONS: BuyerTransaction[] = [
-  { id: "bt1", crop: "Rice", variety: "Well Milled", kg: 50, amount: 3250, date: "2025-10-02", seller: "Doroteo Jose", sellerInitials: "DJ", location: "Cabanatuan City" },
-  { id: "bt2", crop: "Rice", variety: "Special Rice", kg: 25, amount: 1800, date: "2025-10-03", seller: "Mariano Garapon", sellerInitials: "MG", location: "Bongabon" },
-  { id: "bt3", crop: "Onions", variety: "Red Onion", kg: 20, amount: 900, date: "2025-09-30", seller: "Betty Go", sellerInitials: "BG", location: "Guimba" },
-  { id: "bt4", crop: "Corn", variety: "Yellow Corn", kg: 30, amount: 2100, date: "2025-09-28", seller: "Jose Reyes", sellerInitials: "JR", location: "Talavera" },
-  { id: "bt5", crop: "Tomatoes", variety: "Diamante Max F1 Tomato", kg: 15, amount: 570, date: "2025-09-25", seller: "Bong Marcos", sellerInitials: "BM", location: "Palayan City" },
+  { id: "bt1", crop: "Rice", variety: "Well Milled", kg: 50, amount: 3250, date: "2025-10-02", seller: "Ruzly Macatula", sellerInitials: "RM", location: "Talavera" },
+  { id: "bt2", crop: "Rice", variety: "Special Rice", kg: 25, amount: 1800, date: "2025-10-03", seller: "Christian Tiburcio", sellerInitials: "CT", location: "Guimba" },
+  { id: "bt3", crop: "Onions", variety: "Red Onion", kg: 20, amount: 900, date: "2025-09-30", seller: "Christian Tiburcio", sellerInitials: "CT", location: "Guimba" },
+  { id: "bt4", crop: "Corn", variety: "Yellow Corn", kg: 30, amount: 2100, date: "2025-09-28", seller: "Ivan Pestanas", sellerInitials: "IP", location: "Science City of Muñoz" },
+  { id: "bt5", crop: "Tomatoes", variety: "Diamante Max F1 Tomato", kg: 15, amount: 570, date: "2025-09-25", seller: "Marc Bawalan", sellerInitials: "MB", location: "Palayan City" },
 ];
 
 export const PIE_DATA = [

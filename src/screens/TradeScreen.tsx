@@ -524,6 +524,12 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
           <FeaturedFarmersRow onOpen={key => setSellerDetail(market.sellers[key] ?? null)} />
         )}
 
+        {/* While nobody has posted yet: the harvests below are samples, said
+            once, plainly, where the list starts. */}
+        {market.showingSamples && (
+          <p className="mp-sample-note" role="note"><Sprout size={18} strokeWidth={2.4} aria-hidden="true" /> {t("mp_samples_note")}</p>
+        )}
+
         {/* How the list is sorted, at the head of the list it sorts. */}
         <div className="mp-list-head" ref={resultsRef}>
           {/* Four options, so a plain menu under the button: the sheet we use
@@ -562,7 +568,9 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                       {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropIcon crop={l.crop} size={30} />}
                       {mine
                         ? <span className="mp-mine">{t("mp_your_listing")}</span>
-                        : l.photo && <span className="mp-mine"><Camera size={12} strokeWidth={2.4} /> {t("mp_seller_photo")}</span>}
+                        : l.sample
+                          ? <span className="mp-mine is-sample">{t("mp_sample")}</span>
+                          : l.photo && <span className="mp-mine"><Camera size={12} strokeWidth={2.4} /> {t("mp_seller_photo")}</span>}
                     </span>
                     <span className="mp-card-body">
                       <span className="mp-card-name">{titleOf(l)}</span>
@@ -1145,14 +1153,17 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                       card each: they are read together, once. */}
                   <section className="spf-card spf-facts">
                     <div className="spf-h">{en("seller_details")}</div>
-                    <a className="spf-fact" href={`tel:${tel}`}>
-                      <span className="spf-fact-ico green"><Phone size={18} strokeWidth={2.4} /></span>
-                      <span className="spf-fact-txt">
-                        <span className="spf-fact-l">{en("seller_phone")}</span>
-                        <span className="spf-fact-v">{shownSeller.phone}</span>
-                      </span>
-                      <ChevronRight size={18} strokeWidth={2.4} className="sml-chev" aria-hidden="true" />
-                    </a>
+                    {/* A sample farmer has no phone: the row is left out. */}
+                    {!shownSeller.sample && (
+                      <a className="spf-fact" href={`tel:${tel}`}>
+                        <span className="spf-fact-ico green"><Phone size={18} strokeWidth={2.4} /></span>
+                        <span className="spf-fact-txt">
+                          <span className="spf-fact-l">{en("seller_phone")}</span>
+                          <span className="spf-fact-v">{shownSeller.phone}</span>
+                        </span>
+                        <ChevronRight size={18} strokeWidth={2.4} className="sml-chev" aria-hidden="true" />
+                      </a>
+                    )}
                     <div className="spf-fact">
                       <span className="spf-fact-ico blue"><MapPin size={18} strokeWidth={2.4} /></span>
                       <span className="spf-fact-txt">
@@ -1173,9 +1184,16 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                 {/* Call: it used to be a button that did nothing. It opens the
                     phone's dialer with the number already in. */}
                 <div className="seller-modal-footer spf-foot">
-                  <a className="call-seller-btn" href={`tel:${tel}`}>
-                    <Phone size={20} strokeWidth={2.4} /> {en("seller_call")} {shownSeller.name.split(" ")[0]}
-                  </a>
+                  {/* A sample farmer is nobody's phone: no number is offered. */}
+                  {shownSeller.sample ? (
+                    <p className="call-seller-btn is-sample" role="note">
+                      <Phone size={20} strokeWidth={2.4} aria-hidden="true" /> {en("seller_sample_call")}
+                    </p>
+                  ) : (
+                    <a className="call-seller-btn" href={`tel:${tel}`}>
+                      <Phone size={20} strokeWidth={2.4} /> {en("seller_call")} {shownSeller.name.split(" ")[0]}
+                    </a>
+                  )}
                 </div>
               </>);
             })()}
