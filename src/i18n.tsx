@@ -333,7 +333,6 @@ export const translations: Dict = {
   ff_years: { en: "yrs farming", tl: "taon sa bukid" },
   ff_cta: { en: "See their harvest", tl: "Tingnan ang ani nila" },
   ff_near: { en: "Near you", tl: "Malapit sa iyo" },
-  mpf_week: { en: "Farmer of the Week", tl: "Magsasaka ng Linggo" },
   yp_title: { en: "Your purchases", tl: "Mga binili mo" },
   yp_history: { en: "History", tl: "Kasaysayan" },
   yp_farmers: { en: "farmers", tl: "magsasaka" },

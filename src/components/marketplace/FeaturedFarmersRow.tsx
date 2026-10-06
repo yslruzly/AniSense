@@ -1,4 +1,4 @@
-import { Award, Star } from "lucide-react";
+import { Star } from "lucide-react";
 import { useLang } from "../../i18n";
 import { useMarket } from "../../store/market";
 import { useViewer } from "../../store/viewer";
@@ -7,7 +7,8 @@ import { avatarTone } from "../../lib/avatar";
 
 // ── Featured farmers, in the Market ──────────────────────────────────────────
 // The same four as Home's (src/lib/featured.ts): the Farmer of the Week, then
-// three more, anyone in the viewer's own town first. Here they are a short
+// three more, anyone in the viewer's own town first. The first card keeps a
+// gold glow but no "Farmer of the Week" label. Here they are a short
 // row of cards above the harvests, so meeting the growers never pushes the
 // produce out of sight. A tap opens the farmer's profile, with everything they
 // have on sale. The Market shows it only while browsing everything: a search
@@ -33,8 +34,7 @@ export function FeaturedFarmersRow({ onOpen }: { onOpen: (sellerKey: string) => 
           const town = townOf(s.location);
           return (
             <button key={s.key} type="button" className={`mpf-card${week ? " is-week" : ""}`} onClick={() => onOpen(s.key)}
-              aria-label={[s.name, week ? t("mpf_week") : "", `${s.rating.toFixed(1)} ★`, town, s.near ? t("ff_near") : ""].filter(Boolean).join(", ")}>
-              {week && <span className="mpf-week" aria-hidden="true"><Award size={14} strokeWidth={2.6} /> {t("mpf_week")}</span>}
+              aria-label={[s.name, `${s.rating.toFixed(1)} ★`, town, s.near ? t("ff_near") : ""].filter(Boolean).join(", ")}>
               <span className="ff-ava" style={{ background: avatarTone(s.name) }} aria-hidden="true">{s.initials}</span>
               <span className="mpf-name" aria-hidden="true">{s.name}</span>
               <span className="mpf-meta" aria-hidden="true">

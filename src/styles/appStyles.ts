@@ -2239,10 +2239,6 @@ export const appCss = `
     background: linear-gradient(180deg, #FFF6DE 0%, var(--card) 72%);
     box-shadow: inset 0 0 0 1.5px #F2B32C, 0 10px 20px -14px rgba(138,93,12,.45);
   }
-  .mpf-week {
-    display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px 4px 7px; border-radius: 99px;
-    background: #F2B32C; color: var(--ink); font-family: var(--font-display); font-size: 13px; font-weight: 800; line-height: 1.2;
-  }
   .mpf-name {
     font-family: var(--font-display); font-size: 16px; font-weight: 700; line-height: 1.25; color: var(--text);
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
