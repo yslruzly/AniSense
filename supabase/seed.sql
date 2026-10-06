@@ -6,8 +6,8 @@
 --  for prices), run  node scripts/build-seed.mjs , and run this file again.
 --  Safe to re-run: every row is added or brought up to date.
 --
---  10 crop groups · 24 varieties · 320 price records (2021-01 to 2026-09)
---  · 19 sample prices · 30 forecasts · 6 badges
+--  10 crop groups · 23 varieties · 320 price records (2021-01 to 2026-09)
+--  · 18 sample prices · 30 forecasts · 6 badges
 -- ═══════════════════════════════════════════════════════════════════════════
 
 -- ─── Crop groups ─────────────────────────────────────────────────────────────
@@ -38,22 +38,30 @@ insert into public.crops (id, group_id, name, sort_order) values
   ('cala-regular', 'calamansi', 'Regular Calamansi', 8),
   ('mango-carab', 'mango', 'Carabao Mango', 9),
   ('mango-indian', 'mango', 'Indian Mango', 10),
-  ('mango-horse', 'mango', 'Horse Mango', 11),
-  ('mango-pahutan', 'mango', 'Pahutan', 12),
-  ('garlic-native', 'garlic', 'Native Garlic', 13),
-  ('tom-cherry', 'tomatoes', 'Diamante Max F1 Tomato', 14),
-  ('tom-roma', 'tomatoes', 'Platinum F1 Tomato', 15),
-  ('tom-beef', 'tomatoes', 'Assila F1 Tomato', 16),
-  ('corn-yellow', 'corn', 'Yellow Corn', 17),
-  ('corn-white', 'corn', 'White Corn', 18),
-  ('corn-sweet', 'corn', 'Sweet Corn', 19),
-  ('ampalaya-native', 'ampalaya', 'Native Ampalaya', 20),
-  ('ampalaya-galaxy', 'ampalaya', 'Galaxy Ampalaya', 21),
-  ('melon-sweet', 'watermelon', 'Sweet Watermelon', 22),
-  ('melon-seedless', 'watermelon', 'Seedless Watermelon', 23),
-  ('squash-kalabasa', 'squash', 'Kalabasa', 24)
+  ('garlic-native', 'garlic', 'Native Garlic', 11),
+  ('tom-cherry', 'tomatoes', 'Diamante Max F1 Tomato', 12),
+  ('tom-tagalog', 'tomatoes', 'Kamatis Tagalog', 13),
+  ('tom-baguio', 'tomatoes', 'Kamatis Baguio', 14),
+  ('corn-yellow', 'corn', 'Yellow Corn', 15),
+  ('corn-white', 'corn', 'White Corn', 16),
+  ('corn-sweet', 'corn', 'Sweet Corn', 17),
+  ('ampalaya-native', 'ampalaya', 'Native Ampalaya', 18),
+  ('ampalaya-galaxy', 'ampalaya', 'Galaxy Ampalaya', 19),
+  ('melon-sweet', 'watermelon', 'Sweet Watermelon', 20),
+  ('melon-seedless', 'watermelon', 'Seedless Watermelon', 21),
+  ('melon-yellow', 'watermelon', 'Yellow Watermelon', 22),
+  ('squash-kalabasa', 'squash', 'Kalabasa', 23)
 on conflict (id) do update set
   group_id = excluded.group_id, name = excluded.name, sort_order = excluded.sort_order;
+
+-- Varieties taken out of the app (src/data/crops.ts) leave the database too,
+-- with their prices and forecasts. Not while a listing, an order or a price
+-- alert still names one: those keep it, so no one's history is lost.
+delete from public.crops c
+where c.id not in ('rice-special', 'rice-well-milled', 'rice-regular-milled', 'onion-red', 'onion-white', 'onion-yellow', 'onion-spring', 'cala-regular', 'mango-carab', 'mango-indian', 'garlic-native', 'tom-cherry', 'tom-tagalog', 'tom-baguio', 'corn-yellow', 'corn-white', 'corn-sweet', 'ampalaya-native', 'ampalaya-galaxy', 'melon-sweet', 'melon-seedless', 'melon-yellow', 'squash-kalabasa')
+  and not exists (select 1 from public.listings l where l.crop_id = c.id)
+  and not exists (select 1 from public.order_items o where o.crop_id = c.id)
+  and not exists (select 1 from public.price_alerts a where a.crop_id = c.id);
 
 -- ─── Price records ───────────────────────────────────────────────────────────
 -- The study's varieties: one row per recorded month, dated the 1st, from
@@ -394,11 +402,9 @@ insert into public.crop_prices (crop_id, price_date, price_per_kg, change_pct, i
   ('onion-spring', current_date, 20, -1, true),
   ('mango-carab', current_date, 80, 3.5, true),
   ('mango-indian', current_date, 40, 1, true),
-  ('mango-horse', current_date, 25, -0.5, true),
-  ('mango-pahutan', current_date, 35, 2, true),
   ('tom-cherry', current_date, 25, 3.2, true),
-  ('tom-roma', current_date, 15, 2, true),
-  ('tom-beef', current_date, 20, -0.5, true),
+  ('tom-tagalog', current_date, 60, 2.4, true),
+  ('tom-baguio', current_date, 90, -1.2, true),
   ('corn-yellow', current_date, 70, 1.5, true),
   ('corn-white', current_date, 65, 1, true),
   ('corn-sweet', current_date, 30, 2.5, true),
@@ -406,6 +412,7 @@ insert into public.crop_prices (crop_id, price_date, price_per_kg, change_pct, i
   ('ampalaya-galaxy', current_date, 55, -0.8, true),
   ('melon-sweet', current_date, 28, 1.4, true),
   ('melon-seedless', current_date, 35, 0.6, true),
+  ('melon-yellow', current_date, 45, 1, true),
   ('squash-kalabasa', current_date, 12, -1.3, true)
 on conflict (crop_id, price_date) do update set
   price_per_kg = excluded.price_per_kg, change_pct = excluded.change_pct, is_sample = true;

@@ -111,6 +111,15 @@ ${varieties.map((v, i) => `  (${q(v.id)}, ${q(groupId(v.group))}, ${q(v.name)}, 
 on conflict (id) do update set
   group_id = excluded.group_id, name = excluded.name, sort_order = excluded.sort_order;
 
+-- Varieties taken out of the app (src/data/crops.ts) leave the database too,
+-- with their prices and forecasts. Not while a listing, an order or a price
+-- alert still names one: those keep it, so no one's history is lost.
+delete from public.crops c
+where c.id not in (${varieties.map(v => q(v.id)).join(", ")})
+  and not exists (select 1 from public.listings l where l.crop_id = c.id)
+  and not exists (select 1 from public.order_items o where o.crop_id = c.id)
+  and not exists (select 1 from public.price_alerts a where a.crop_id = c.id);
+
 -- ─── Price records ───────────────────────────────────────────────────────────
 -- The study's varieties: one row per recorded month, dated the 1st, from
 -- data/historical-prices.csv. change_pct is the move from the record before.

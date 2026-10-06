@@ -76,7 +76,7 @@ The app is feature-complete on the client. Some data sources are still sample da
 |---|---|
 | Accounts, profiles, listings, orders, expenses, farm records, achievements | Live on Supabase once a project is configured. |
 | Demo mode | Without a `.env` file the app runs on built-in sample data, so a build without keys still works for demonstrations. |
-| Crop prices | **Real monthly retail prices** for the study's five varieties (`data/historical-prices.csv`, January 2021 to September 2026), bundled in the app and loaded into the database by the seed file. The other 19 varieties still show **sample values**. |
+| Crop prices | **Real monthly retail prices** for the study's five varieties (`data/historical-prices.csv`, January 2021 to September 2026), bundled in the app and loaded into the database by the seed file. The other 18 varieties still show **sample values**. |
 | Price forecasts (ARIMA, LSTM) | Trained on the price records by `ml/train_forecasts.py` (statsmodels and PyTorch, run locally, free). Three months ahead for the five varieties. Tested on the last 12 months: rice is 3 to 9% off on average; onion and calamansi are 28 to 52% off. Results are in `ml/REPORT.md`, known limits in `ml/README.md`. The phone runs no model: it reads the finished forecasts. |
 | Weather | **Sample values.** No forecast service is connected yet. |
 | Order alerts for farmers | **Sample data.** Two invented orders, shown to the demo farmer only. Not yet connected to checkout or the database, and there are no push notifications. |

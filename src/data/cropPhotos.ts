@@ -3,9 +3,11 @@
 // or Pexels licence, so none of them carries an attribution obligation;
 // provenance is recorded in ../assets/crops/CREDITS.md.
 //
-// 20 photographs cover 24 rows. The 4 rows that share an image do so because
-// the difference does not photograph: all three rice grades are milled white
-// rice, and a Diamante Max F1 and an Assila F1 are both a red tomato.
+// 19 photographs cover 22 of the 23 rows. The rows that share an image do so
+// because the difference does not photograph: all three rice grades are
+// milled white rice, and Kamatis Tagalog is a small red tomato like the
+// Diamante Max F1. Yellow Watermelon has none yet: every watermelon photo
+// here shows red flesh, so it keeps the line icon rather than a wrong picture.
 
 import ampalaya_galaxy from "../assets/crops/ampalaya-galaxy.webp";
 import ampalaya_native from "../assets/crops/ampalaya-native.webp";
@@ -16,7 +18,6 @@ import corn_yellow from "../assets/crops/corn-yellow.webp";
 import garlic_native from "../assets/crops/garlic-native.webp";
 import mango_carab from "../assets/crops/mango-carab.webp";
 import mango_indian from "../assets/crops/mango-indian.webp";
-import mango_pahutan from "../assets/crops/mango-pahutan.webp";
 import melon_seedless from "../assets/crops/melon-seedless.webp";
 import melon_sweet from "../assets/crops/melon-sweet.webp";
 import onion_red from "../assets/crops/onion-red.webp";
@@ -40,12 +41,10 @@ export const CROP_PHOTOS: Record<string, string> = {
   "cala-regular": cala_regular,
   "mango-carab": mango_carab,
   "mango-indian": mango_indian,
-  "mango-horse": mango_carab,
-  "mango-pahutan": mango_pahutan,
   "garlic-native": garlic_native,
   "tom-cherry": tom_cherry,
-  "tom-roma": tom_roma,
-  "tom-beef": tom_cherry,
+  "tom-tagalog": tom_cherry,
+  "tom-baguio": tom_roma,
   "corn-yellow": corn_yellow,
   "corn-white": corn_white,
   "corn-sweet": corn_sweet,
@@ -71,10 +70,12 @@ export function cropPhotoFor(crop: string, variety?: string): string | undefined
 
   // A listing whose crop or variety is itself a priced crop ("Special Rice",
   // "Yellow Corn") resolves straight to that row's photo.
+  // A row with no photo of its own (Yellow Watermelon) keeps the icon,
+  // rather than borrowing a sibling's picture that shows the wrong fruit.
   for (const n of [variety, crop]) {
     if (!n) continue;
     const hit = CROPS.find(c => norm(c.name) === norm(n));
-    if (hit && CROP_PHOTOS[hit.id]) return CROP_PHOTOS[hit.id];
+    if (hit) return CROP_PHOTOS[hit.id];
   }
 
   // Otherwise the crop is a group ("Onions") and the variety is a fragment
@@ -83,7 +84,7 @@ export function cropPhotoFor(crop: string, variety?: string): string | undefined
   if (group) {
     if (variety) {
       const v = group.varieties.find(x => norm(x.name).includes(norm(variety)));
-      if (v && CROP_PHOTOS[v.id]) return CROP_PHOTOS[v.id];
+      if (v) return CROP_PHOTOS[v.id];
     }
     const first = group.varieties.find(x => CROP_PHOTOS[x.id]);
     if (first) return CROP_PHOTOS[first.id];

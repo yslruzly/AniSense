@@ -53,9 +53,9 @@ Two files, in this order, each in its own query:
    This creates the 17 tables, the security rules, the functions (checkout,
    sign-up, farm-record sync, badges) and the `listing-photos` storage bucket.
 2. **New query** again. Open `supabase/seed.sql`, copy all of it, paste,
-   **Run**. This fills the catalog: 10 crop types, 24 varieties, 320 monthly
+   **Run**. This fills the catalog: 10 crop types, 23 varieties, 320 monthly
    price records for the study's five varieties (January 2021 to September
-   2026), one sample price for each of the other 19 varieties, 30 forecasts
+   2026), one sample price for each of the other 18 varieties, 30 forecasts
    and the 6 badges.
 
 Both are safe to run again. If anything went wrong, or a file changes later,

@@ -15,7 +15,6 @@ provenance of each file can be checked later.
 | `garlic-native.webp` | openverse/flickr | cc0 | Group of Garlic Bulbs |
 | `mango-carab.webp` | WordPress Photo Directory | CC0 | A close-up image of a pile of ripe yellow mangoes |
 | `mango-indian.webp` | openverse/wikimedia | cc0 | Unripe green mangoes (local wild variety - Gaauti Aam) of Nandurbar district |
-| `mango-pahutan.webp` | Unsplash | Unsplash License | Mangoes on the tree (unsplash.com/photos/1705723115413) |
 | `melon-seedless.webp` | Unsplash | Unsplash License | Watermelon fruit on white table, Art Rachen (unsplash.com/photos/1587049352846) |
 | `melon-sweet.webp` | Unsplash | Unsplash License | A large pile of watermelon with a piece of watermelon on top, Crina-Miriam Cretu (unsplash.com/photos/1708982553355) |
 | `onion-red.webp` | openverse/flickr | cc0 | Red Onions |
@@ -34,6 +33,10 @@ image rather than implying a distinction the picture cannot show.
 
 - `rice-well-milled` uses `rice-special.webp`
 - `rice-regular-milled` uses `rice-special.webp`
-- `mango-horse` uses `mango-carab.webp`
-- `tom-beef` uses `tom-cherry.webp`
+- `tom-tagalog` (Kamatis Tagalog) uses `tom-cherry.webp`
+- `tom-baguio` (Kamatis Baguio) uses `tom-roma.webp`
+
+`melon-yellow` (Yellow Watermelon) has no photo yet: both watermelon photos
+show red flesh. Add a CC0, public-domain, Unsplash or Pexels photo of a cut
+yellow watermelon as `melon-yellow.webp` and map it in `src/data/cropPhotos.ts`.
 | `src/assets/expenses-bg.webp` | StockSnap | CC0 | Accounting Finance (calculator at a desk) |

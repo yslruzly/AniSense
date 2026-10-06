@@ -170,7 +170,7 @@ erDiagram
 
 **1. Catalog.** What can be grown, sold and priced. Reference data, changed by the admin only.
 - `crop_groups`: the 10 crop types (Rice, Corn, Onions…), their family and typical days to harvest.
-- `crops`: the 24 varieties (Special Rice, Red Onion, Carabao Mango…).
+- `crops`: the 23 varieties (Special Rice, Red Onion, Carabao Mango…).
 - `crop_prices`: the retail price records, one per variety per date. The study's five varieties have one record a month from 2021, dated the 1st; `change_pct` is the move from the record before. A variety with no records holds one placeholder marked `is_sample`. The view `crop_prices_latest` gives the newest price of each variety.
 - `crop_forecasts`: what ARIMA and LSTM expect for the months ahead, per variety, with the likely range and each model's tested error (`mape`). Written by `seed.sql`, never by the app.
 

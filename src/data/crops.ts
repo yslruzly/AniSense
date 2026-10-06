@@ -39,8 +39,6 @@ export const CROP_GROUPS: CropGroup[] = [
     varieties: [
       { id: "mango-carab", name: "Carabao Mango", pricePerKg: 80, change: 3.5, volume: 4.5, color: "#2f9e63" },
       { id: "mango-indian", name: "Indian Mango", pricePerKg: 40, change: 1.0, volume: 3.0, color: "#2f9e63" },
-      { id: "mango-horse", name: "Horse Mango", pricePerKg: 25, change: -0.5, volume: 1.5, color: "#d4553f" },
-      { id: "mango-pahutan", name: "Pahutan", pricePerKg: 35, change: 2.0, volume: 1.0, color: "#2f9e63" },
     ],
   },
   {
@@ -53,8 +51,8 @@ export const CROP_GROUPS: CropGroup[] = [
     group: "Tomatoes",
     varieties: [
       { id: "tom-cherry", name: "Diamante Max F1 Tomato", pricePerKg: 25, change: 3.2, volume: 0.8, color: "#2f9e63" },
-      { id: "tom-roma", name: "Platinum F1 Tomato", pricePerKg: 15, change: 2.0, volume: 1.2, color: "#2f9e63" },
-      { id: "tom-beef", name: "Assila F1 Tomato", pricePerKg: 20, change: -0.5, volume: 0.6, color: "#d4553f" },],
+      { id: "tom-tagalog", name: "Kamatis Tagalog", pricePerKg: 60, change: 2.4, volume: 1.1, color: "#2f9e63" },
+      { id: "tom-baguio", name: "Kamatis Baguio", pricePerKg: 90, change: -1.2, volume: 0.9, color: "#d4553f" },],
   },
   {
     group: "Corn",
@@ -75,6 +73,7 @@ export const CROP_GROUPS: CropGroup[] = [
     varieties: [
       { id: "melon-sweet", name: "Sweet Watermelon", pricePerKg: 28, change: 1.4, volume: 12.0, color: "#2f9e63" },
       { id: "melon-seedless", name: "Seedless Watermelon", pricePerKg: 35, change: 0.6, volume: 6.5, color: "#2f9e63" },
+      { id: "melon-yellow", name: "Yellow Watermelon", pricePerKg: 45, change: 1.0, volume: 2.0, color: "#2f9e63" },
     ],
   },
   {
@@ -107,12 +106,12 @@ export const CROP_FILTER_MAP: Record<string, string[]> = {
   "Onions": ["Red Onion", "Yellow/White Onion", "Shallots(Sibuyas Tagalog)", "Spring Onion", "Onions"],
   "Calamansi": ["Regular Calamansi", "Calamansi"],
   "Corn": ["Yellow Corn", "White Corn", "Sweet Corn", "Corn"],
-  "Mango": ["Carabao Mango", "Indian Mango", "Horse Mango", "Pahutan", "Mango"],
+  "Mango": ["Carabao Mango", "Indian Mango", "Mango"],
   "Garlic": ["Native Garlic", "Garlic"],
-  "Tomatoes": ["Diamante Max F1 Tomato", "Platinum F1 Tomato", "Assila F1 Tomato", "Tomatoes"],
+  "Tomatoes": ["Diamante Max F1 Tomato", "Kamatis Tagalog", "Kamatis Baguio", "Tomatoes"],
   "Squash": ["Kalabasa"],
   "Ampalaya": ["Native Ampalaya", "Galaxy Ampalaya", "Ampalaya"],
-  "Watermelon": ["Sweet Watermelon", "Seedless Watermelon", "Watermelon"],
+  "Watermelon": ["Sweet Watermelon", "Seedless Watermelon", "Yellow Watermelon", "Watermelon"],
 };
 export const CROP_CATEGORIES = ["All Crops", ...Object.keys(CROP_FILTER_MAP)];
 

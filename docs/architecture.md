@@ -201,7 +201,7 @@ Every interface string is an entry in `src/i18n.tsx` with English and Tagalog te
 | `src/data/generated/forecasts.json` | The finished forecasts and each model's tested error, written by `ml/train_forecasts.py`. Bundled. |
 | `src/data/forecast.ts` | Reads the forecasts. Hides a forecast month once a real record exists for it, and marks a forecast as unreliable when its tested error is above `RELIABLE_MAPE` (20%). |
 
-- The catalog in `src/data/crops.ts` takes the price of the study's five varieties from the records as it loads. The other 19 varieties have no records, and their prices are sample values.
+- The catalog in `src/data/crops.ts` takes the price of the study's five varieties from the records as it loads. The other 18 varieties have no records, and their prices are sample values.
 - The LSTM forecast drives the price charts; the ARIMA forecast drives the sell-or-wait advice and the Home card.
 - The phone runs no model and holds no machine-learning library.
 
@@ -492,7 +492,7 @@ flowchart LR
 
 | Area | Current state | Plan |
 |---|---|---|
-| Crop prices | Monthly records for five varieties, added to a CSV by hand; sample values for the other 19 | Records for the remaining varieties; ingestion from government sources on a schedule. |
+| Crop prices | Monthly records for five varieties, added to a CSV by hand; sample values for the other 18 | Records for the remaining varieties; ingestion from government sources on a schedule. |
 | Price forecasts | ARIMA and LSTM trained on the five varieties' records. The ARIMA search picks the differencing order by AIC, which is not the right tool for it; the LSTM's settings were not tuned; neither model can foresee a price shock. | Choose the differencing order with a stationarity test; tune the LSTM with a small grid scored inside the training months; test a seasonal ARIMA; consider extra inputs (weather, costs) as later work. |
 | Order alerts | A mockup with sample orders, in demo mode only | Read a farmer's incoming orders and the buyer's contact from the database, save the confirmation, and send a push notification. |
 | Weather | Sample values in `src/data/demo/weather.ts` | Connect a forecast service. PAGASA's TenDay API needs a token that PAGASA approves on request, and it gives daily forecasts, not current conditions. |
