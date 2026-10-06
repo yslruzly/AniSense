@@ -2254,8 +2254,10 @@ export const appCss = `
      thing), the leaf mark faint in the top corner, the brand small on the top
      edge as on the member card, and the farmers as white cards on it. The
      ground is deepest at the top left, where the words are: white text there
-     stays above 4.5:1. The first card keeps its palay gold. The row runs to
-     the poster's edges, so a card cut at the edge says "more". */
+     stays above 4.5:1. Each card is centred like a profile: the avatar,
+     the name under it, then the rating and town. The first card keeps its
+     palay gold. The row runs to the poster's edges, so a card cut at the
+     edge says "more". */
   .mpf {
     position: relative; isolation: isolate; overflow: hidden;
     display: flex; flex-direction: column; padding: 14px 16px 0;
@@ -2290,9 +2292,9 @@ export const appCss = `
   .mpf-row::-webkit-scrollbar { height: 0; }
   .mpf-card {
     flex: 0 0 152px; scroll-snap-align: start;
-    display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-width: 0;
+    display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0;
     padding: 14px 12px; border: none; border-radius: 16px; background: var(--card);
-    text-align: left; font: inherit; color: inherit; cursor: pointer;
+    text-align: center; font: inherit; color: inherit; cursor: pointer;
     box-shadow: 0 1px 2px rgba(4,30,18,.28), 0 12px 22px -14px rgba(0,0,0,.6);
     transition: transform 190ms var(--ease-out);
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
@@ -2310,7 +2312,7 @@ export const appCss = `
     font-family: var(--font-display); font-size: 16px; font-weight: 700; line-height: 1.25; color: var(--text);
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
   }
-  .mpf-meta { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; color: var(--text-muted); }
+  .mpf-meta { display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px; font-size: 14px; color: var(--text-muted); }
   .mpf-meta svg { color: #C98A1B; flex-shrink: 0; }
   @media (prefers-reduced-motion: reduce) { .mpf-card:active { transform: none; } }
 
