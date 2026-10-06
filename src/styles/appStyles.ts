@@ -2214,12 +2214,42 @@ export const appCss = `
 
   /* ── Featured farmers, in the Market ──
      The same four as Home's, as a short row of cards above the harvests:
-     the growers are met without the produce being pushed out of sight. The
-     Farmer of the Week leads, in palay gold. The row runs to the screen's
-     edges like Home's product shelf, so a card cut at the edge says "more". */
-  .mpf { display: flex; flex-direction: column; }
+     the growers are met without the produce being pushed out of sight.
+     The section is a small AniSense poster: the green ground of the farmer's
+     profile (the sheet a tap opens, so the card and the sheet look like one
+     thing), the leaf mark faint in the top corner, the brand small on the top
+     edge as on the member card, and the farmers as white cards on it. The
+     ground is deepest at the top left, where the words are: white text there
+     stays above 4.5:1. The first card keeps its palay gold. The row runs to
+     the poster's edges, so a card cut at the edge says "more". */
+  .mpf {
+    position: relative; isolation: isolate; overflow: hidden;
+    display: flex; flex-direction: column; padding: 14px 16px 0;
+    border-radius: var(--radius-lg); color: #fff;
+    background:
+      repeating-linear-gradient(135deg, rgba(255,255,255,.035) 0 1px, transparent 1px 11px),
+      radial-gradient(80% 70% at 100% 0%, rgba(126,196,120,.26), transparent 62%),
+      radial-gradient(70% 80% at 0% 100%, rgba(242,179,44,.16), transparent 62%),
+      linear-gradient(160deg, #0F5E3A 0%, #0B4A2E 52%, #08331F 100%);
+    box-shadow: 0 16px 30px -20px rgba(8,51,31,.75), inset 0 1px 0 rgba(255,255,255,.1);
+  }
+  .mpf-mark {
+    position: absolute; right: -30px; top: -26px; z-index: -1; width: 150px; height: auto;
+    opacity: .09; transform: rotate(-14deg); pointer-events: none; user-select: none;
+  }
+  .mpf-brand { display: flex; align-items: center; gap: 8px; }
+  .mpf-brand-mark {
+    width: 26px; height: 26px; border-radius: 8px; background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .mpf-brand-name { font-family: var(--font-display); font-size: 14px; font-weight: 700; letter-spacing: -.01em; color: rgba(255,255,255,.92); }
+  .mpf .hm-sec-title { margin-top: 10px; color: #fff; }
+  .mpf .hm-sec-sub { color: rgba(255,255,255,.9); }
+  /* Room above and below the cards, so their shadows and the gold glow are
+     not cut by the row's scrolling edge. */
   .mpf-row {
-    display: flex; gap: 10px; margin: 12px -16px 0; padding: 4px 16px 8px;
+    display: flex; gap: 10px; margin: 2px -16px 0; padding: 12px 16px 18px;
     overflow-x: auto; overscroll-behavior-x: contain;
     scroll-snap-type: x proximity; scroll-padding-left: 16px; -webkit-overflow-scrolling: touch;
   }
@@ -2229,15 +2259,18 @@ export const appCss = `
     display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-width: 0;
     padding: 14px 12px; border: none; border-radius: 16px; background: var(--card);
     text-align: left; font: inherit; color: inherit; cursor: pointer;
-    box-shadow: inset 0 0 0 1px var(--line), 0 8px 18px -14px rgba(22,33,27,.35);
+    box-shadow: 0 1px 2px rgba(4,30,18,.28), 0 12px 22px -14px rgba(0,0,0,.6);
     transition: transform 190ms var(--ease-out);
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
   .mpf-card:active { transform: scale(.97); transition-duration: var(--dur-press); }
+  /* The app's green focus ring would vanish on the green ground. */
+  .mpf-card:focus-visible { outline-color: var(--palay); }
   .mpf-card .ff-ava { margin: 2px 0 4px; }
+  /* On the green, the gold also glows outward a little. */
   .mpf-card.is-week {
     background: linear-gradient(180deg, #FFF6DE 0%, var(--card) 72%);
-    box-shadow: inset 0 0 0 1.5px #F2B32C, 0 10px 20px -14px rgba(138,93,12,.45);
+    box-shadow: inset 0 0 0 1.5px #F2B32C, 0 0 14px -2px rgba(242,179,44,.5), 0 12px 22px -14px rgba(0,0,0,.6);
   }
   .mpf-name {
     font-family: var(--font-display); font-size: 16px; font-weight: 700; line-height: 1.25; color: var(--text);
