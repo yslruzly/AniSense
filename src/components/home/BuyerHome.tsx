@@ -293,7 +293,10 @@ export function FeaturedFarmers({ onShop, buyerLocation }: { onShop: Shop; buyer
         <article className="ff-spot">
           <div className="spf-hero ff-hero">
             <img className="spf-mark" src={leafMask} alt="" aria-hidden="true" />
-            <span className="ff-badge"><Award size={15} strokeWidth={2.6} /> {en("ff_week")}</span>
+            <span className="ff-badge">
+              <span className="ff-badge-coin" aria-hidden="true"><Award size={14} strokeWidth={2.4} /></span>
+              {en("ff_week")}
+            </span>
             <div className="spf-id">
               <span className="spf-ava" style={{ background: tone(spot.name) }} aria-hidden="true">{spot.initials}</span>
               <div className="spf-name">{spot.name}</div>

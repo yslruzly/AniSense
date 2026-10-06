@@ -2150,11 +2150,45 @@ export const appCss = `
   .ff .ff-hero { border-radius: 0; height: 230px; }
   .ff-hero .spf-id { right: 20px; }
   .ff .spf-stats { margin: -30px 14px 0; }
+  /* The Farmer of the Week plate, in polished gold. What makes it read as
+     metal rather than yellow paint:
+       - the fill: bright at the top, a hard reflection line across the
+         middle (the horizon a curved metal surface mirrors), then light
+         bouncing back up at the foot
+       - a streak of light across it, at an angle
+       - a bevelled rim: a gradient border, pale where it faces the light
+         and dark where it turns away
+       - lips: a bright line on the top edge, a shaded one on the bottom
+       - the words stamped in: dark brown with a pale line under each letter
+     The award sits in a green enamel coin with a gold rim, like a medal's
+     inlay, in AniSense's own green. Nothing moves: Home is opened often, and
+     a shine that keeps sweeping would pull the eye from the farmer. */
   .ff-badge {
-    position: absolute; z-index: 2; left: 12px; top: 12px; display: inline-flex; align-items: center; gap: 6px;
-    padding: 6px 12px 6px 9px; border-radius: 99px; background: #F2B32C; color: var(--ink);
-    font-family: var(--font-display); font-size: 13.5px; font-weight: 800; box-shadow: 0 4px 12px rgba(0,0,0,.22);
+    position: absolute; z-index: 2; left: 12px; top: 12px; display: inline-flex; align-items: center; gap: 7px;
+    padding: 4px 13px 4px 4px; border-radius: 99px; border: 1.5px solid transparent;
+    color: #3F2A06; font-family: var(--font-display); font-size: 14px; font-weight: 800; letter-spacing: .005em; line-height: 1.2;
+    text-shadow: 0 1px 0 rgba(255,246,214,.75);
+    background:
+      linear-gradient(105deg, rgba(255,255,255,0) 30%, rgba(255,255,255,.5) 42%, rgba(255,255,255,0) 55%) padding-box,
+      linear-gradient(180deg, #FFF4C9 0%, #FAD772 18%, #F0BA3E 46%, #D99A22 50%, #E5AA30 72%, #F6CC5E 100%) padding-box,
+      linear-gradient(180deg, #FFF8DC 0%, #D9A136 40%, #8E5C0B 58%, #F2C55A 100%) border-box;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.8),
+      inset 0 -1px 1px rgba(120,74,4,.35),
+      0 1px 1px rgba(40,24,0,.35),
+      0 6px 14px -4px rgba(0,0,0,.45);
   }
+  .ff-badge-coin {
+    flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center; color: #FFD978;
+    background: radial-gradient(circle at 35% 28%, #23955E 0%, #0E6A40 55%, #084A2C 100%);
+    box-shadow:
+      0 0 0 1.5px #C48A1E,
+      0 1px 0 1.5px rgba(255,244,205,.6),
+      inset 0 1px 1px rgba(255,255,255,.35),
+      inset 0 -1px 1px rgba(0,0,0,.35);
+  }
+  .ff-badge-coin svg { filter: drop-shadow(0 1px 0 rgba(0,0,0,.35)); }
   .ff-spot-body { position: relative; display: flex; flex-direction: column; gap: 12px; padding: 16px 16px 16px; }
   /* The list's avatars: the profile's colours and ring, at list size. */
   .ff-ava {
