@@ -154,7 +154,8 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
         {/* Buyers: the brand banner follows it, two posters taking turns:
             "Fresh local produce" first, then "Fresh produce, better prices,
             stronger communities", cropped to the same 2:1 frame (a little
-            sky and field off its foot, none of its words). */}
+            sky and field off its foot, none of its words). A tap on either
+            shows it whole and large. */}
         {isBuyer && (
           <PosterCarousel posters={[
             { src: homePoster, alt: t("home_poster_alt"), width: 1000, height: 500 },

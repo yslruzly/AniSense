@@ -2353,7 +2353,16 @@ export const appCss = `
     position: relative; isolation: isolate; margin: 0; aspect-ratio: 1000 / 500; overflow: hidden;
     border-radius: var(--radius); background: #EAF3E6; box-shadow: 0 10px 24px -18px rgba(22,33,27,.4);
     touch-action: pan-y; -webkit-user-select: none; user-select: none;
+    transition: transform 190ms var(--ease-out);
   }
+  /* The posters are a button: the whole frame gives under the finger. */
+  .hm-banner-hit {
+    position: absolute; inset: 0; display: block; width: 100%; height: 100%; padding: 0;
+    border: none; border-radius: inherit; background: none; cursor: pointer;
+    -webkit-tap-highlight-color: transparent; touch-action: pan-y;
+  }
+  .hm-banner:has(> .hm-banner-hit:active) { transform: scale(.98); transition-duration: var(--dur-press); }
+  .hm-banner-hit:focus-visible { outline: 3px solid var(--tanim); outline-offset: -3px; }
   .hm-banner-slide {
     position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;
     opacity: 0; transition: opacity 600ms ease; pointer-events: none;
@@ -2377,7 +2386,41 @@ export const appCss = `
   }
   .hm-banner-dot.on::before { width: 18px; background: #fff; }
   .hm-banner-dot:focus-visible { outline: 2px solid #fff; outline-offset: -2px; border-radius: 99px; }
+  /* ── A poster, seen whole (PosterViewer) ──
+     The poster on a near-black screen, as wide as the phone allows, the X
+     at the top right on glass, and a quiet line at the foot saying how to
+     zoom, which fades once it is zoomed. The stage takes every touch itself
+     (pinch, double tap, drag), so the page under it never moves. */
+  .shm-center:has(> .pv) { padding: 0; background: rgba(6,10,8,.94); }
+  .shm-panel.pv { position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; }
+  .pv-stage {
+    flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center;
+    overflow: hidden; touch-action: none; -webkit-user-select: none; user-select: none;
+  }
+  .pv-img {
+    display: block; width: auto; height: auto; max-width: calc(100% - 24px); max-height: 100%;
+    border-radius: 12px; transform-origin: center; will-change: transform;
+    box-shadow: 0 24px 60px -24px rgba(0,0,0,.7); -webkit-user-drag: none;
+  }
+  .pv-x {
+    position: absolute; z-index: 2; top: calc(12px + var(--safe-top)); right: 12px;
+    width: 48px; height: 48px; border-radius: 50%; border: none; color: #fff; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,.14); box-shadow: inset 0 0 0 1px rgba(255,255,255,.24);
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+    transition: transform 160ms var(--ease-out), background-color 160ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .pv-x:active { transform: scale(.92); background: rgba(255,255,255,.26); transition-duration: var(--dur-press); }
+  .pv-x:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+  .pv-hint {
+    position: absolute; left: 16px; right: 16px; bottom: calc(24px + var(--safe-bottom)); margin: 0;
+    text-align: center; font-size: var(--fs-label); line-height: 1.4; color: rgba(255,255,255,.8);
+    pointer-events: none; transition: opacity 200ms ease;
+  }
   @media (prefers-reduced-motion: reduce) {
+    .pv-img { transition: none !important; }
+    .hm-banner:has(> .hm-banner-hit:active) { transform: none; }
     .hm-banner-slide { transition-duration: 200ms; }
     .hm-banner-dot::before { transition: none; }
   }

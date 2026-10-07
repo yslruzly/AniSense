@@ -1,12 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { useLang } from "../../i18n";
+import { PosterViewer } from "./PosterViewer";
 
 // ─── The buyer's banner, under the search bar ─────────────────────────────────
 // AniSense's posters, one at a time, turning over on their own every few
 // seconds with a cross-fade. Small dots on the poster say how many there are
 // and which one is showing; tapping a dot, or a swipe across the poster,
-// turns to another. It holds still while a finger rests on it, and while the
-// app is in the background, so nobody returns to find it moved on.
+// turns to another. A tap on the poster itself shows it whole and large
+// (PosterViewer). It holds still while a finger rests on it, while one is
+// open large, and while the app is in the background, so nobody returns to
+// find it moved on.
 //
 // Posters of another shape are cropped to the frame (2:1), placed by
 // `position` so their words stay in.
@@ -21,8 +24,12 @@ export function PosterCarousel({ posters }: { posters: Poster[] }) {
   const n = posters.length;
   const [at, setAt] = useState(0);
   const [held, setHeld] = useState(false);
+  const [viewing, setViewing] = useState<number | null>(null);
   const [away, setAway] = useState(() => typeof document !== "undefined" && document.visibilityState === "hidden");
   const startX = useRef<number | null>(null);
+  // A finger that travelled was a swipe, not a tap: the click that may
+  // follow it opens nothing.
+  const moved = useRef(false);
   const go = (i: number) => setAt(((i % n) + n) % n);
 
   useEffect(() => {
@@ -34,26 +41,32 @@ export function PosterCarousel({ posters }: { posters: Poster[] }) {
   // The next one after a full turn on screen. Any change of poster (by the
   // clock, a dot or a swipe) starts the count again.
   useEffect(() => {
-    if (n < 2 || held || away) return;
+    if (n < 2 || held || away || viewing !== null) return;
     const id = window.setTimeout(() => setAt(a => (a + 1) % n), EVERY);
     return () => window.clearTimeout(id);
-  }, [at, held, away, n]);
+  }, [at, held, away, viewing, n]);
 
-  return (
+  return (<>
     <section className="hm-banner" aria-roledescription="carousel" aria-label={t("home_posters")}
-      onPointerDown={e => { startX.current = e.clientX; setHeld(true); }}
+      onPointerDown={e => { startX.current = e.clientX; moved.current = false; setHeld(true); }}
       onPointerUp={e => {
         const dx = startX.current === null ? 0 : e.clientX - startX.current;
         startX.current = null; setHeld(false);
+        if (Math.abs(dx) > 10) moved.current = true;
         if (Math.abs(dx) > 40) go(at + (dx < 0 ? 1 : -1));
       }}
       onPointerCancel={() => { startX.current = null; setHeld(false); }}
       onPointerLeave={() => { startX.current = null; setHeld(false); }}>
-      {posters.map((p, i) => (
-        <img key={p.src} src={p.src} alt={p.alt} width={p.width} height={p.height} decoding="async" draggable={false}
-          className={`hm-banner-slide${i === at ? " on" : ""}`} aria-hidden={i !== at}
-          style={p.position ? { objectPosition: p.position } : undefined} />
-      ))}
+      {/* The posters are one button: it says what is showing and that a
+          tap shows it whole. The dots sit above it and keep their own taps. */}
+      <button type="button" className="hm-banner-hit" onClick={() => { if (!moved.current) setViewing(at); }}
+        aria-label={`${posters[at].alt} ${t("home_poster_view")}`}>
+        {posters.map((p, i) => (
+          <img key={p.src} src={p.src} alt={p.alt} width={p.width} height={p.height} decoding="async" draggable={false}
+            className={`hm-banner-slide${i === at ? " on" : ""}`} aria-hidden={i !== at}
+            style={p.position ? { objectPosition: p.position } : undefined} />
+        ))}
+      </button>
       {n > 1 && (
         <div className="hm-banner-dots">
           {posters.map((p, i) => (
@@ -64,5 +77,7 @@ export function PosterCarousel({ posters }: { posters: Poster[] }) {
         </div>
       )}
     </section>
-  );
+    {/* Outside the banner, so its gestures never reach the banner's own. */}
+    <PosterViewer poster={viewing === null ? null : posters[viewing]} onClose={() => setViewing(null)} />
+  </>);
 }

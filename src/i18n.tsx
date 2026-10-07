@@ -316,6 +316,8 @@ export const translations: Dict = {
   },
   home_posters: { en: "AniSense posters", tl: "Mga poster ng AniSense" },
   home_poster_n: { en: "Poster {n} of {total}", tl: "Poster {n} sa {total}" },
+  home_poster_view: { en: "Tap to see the whole poster.", tl: "Pindutin para makita ang buong poster." },
+  pv_hint: { en: "Tap twice or pinch to zoom in", tl: "Pindutin nang dalawang beses o i-pinch para lumaki" },
   poster_alt: {
     en: "AniSense: fresh produce, better prices, stronger communities. Browse the marketplace.",
     tl: "AniSense: sariwang ani, mas magandang presyo, mas matibay na komunidad. Buksan ang bentahan.",
