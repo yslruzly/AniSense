@@ -432,7 +432,7 @@ export const translations: Dict = {
   cart_items_selected: { en: "items selected", tl: "napiling item" },
   cart_add: { en: "Add to Cart", tl: "Idagdag sa Cart" },
   cart_in_cart: { en: "In Cart", tl: "Nasa Cart" },
-  cart_buy_now: { en: "Buy Now", tl: "Bilhin Ngayon" },
+  mp_call_now: { en: "Call Now", tl: "Tumawag Ngayon" },
   cart_total: { en: "Total Amount", tl: "Kabuuang Halaga" },
   cart_across: { en: "across", tl: "mula sa" },
   cart_seller: { en: "seller", tl: "nagbebenta" },
@@ -1502,7 +1502,7 @@ export const translations: Dict = {
   gdb_order_t: { en: "Order a harvest", tl: "Mag-order ng ani" },
   gdb_order_s: { en: "From a listing to your cart", tl: "Mula sa listing papunta sa cart mo" },
   gdb_order_1: { en: "Tap a listing to see its photo, the price per kilo and how much the farmer has.", tl: "Pindutin ang isang listing para makita ang litrato, presyo kada kilo, at kung ilan ang meron ang magsasaka." },
-  gdb_order_2: { en: "Set the kilos with − and +, then tap Add to Cart. Buy Now adds it and opens your cart straight away.", tl: "Itakda ang kilo gamit ang − at +, tapos pindutin ang Idagdag sa Cart. Ang Bilhin Ngayon ay idinadagdag ito at binubuksan agad ang cart mo." },
+  gdb_order_2: { en: "Set the kilos with − and +, then tap Add to Cart. Call Now rings the farmer, if you want to ask first.", tl: "Itakda ang kilo gamit ang − at +, tapos pindutin ang Idagdag sa Cart. Ang Tumawag Ngayon ay tatawag sa magsasaka, kung may gusto kang itanong muna." },
   gdb_order_3: { en: "Tap the cart at the top of the Market to see everything you picked, from every farmer.", tl: "Pindutin ang cart sa itaas ng Merkado para makita ang lahat ng napili mo, mula sa bawat magsasaka." },
   gdb_order_4: { en: "Tap Confirm Order. Your receipt appears.", tl: "Pindutin ang Kumpirmahin ang Order. Lalabas ang resibo mo." },
   gdb_order_note: {

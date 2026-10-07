@@ -3017,7 +3017,7 @@ export const appCss = `
   .seller-end svg { flex-shrink:0; }
   .listing-btns { display:flex; gap:11px; }
   /* Listing actions, farmer side. Same size, shape and type as the buyer's
-     Add to Cart / Buy Now, so the card's bottom edge looks the same for
+     Add to Cart / Call Now, so the card's bottom edge looks the same for
      everyone; only the fill says which button leads. */
   .btn-call, .btn-details {
     flex: 1; min-width: 0; min-height: 50px; padding: 0 14px; border: none; border-radius: 14px;
@@ -3207,12 +3207,12 @@ export const appCss = `
   }
   /* ── Buyer actions ── */
   /* Same size, same shape, different weight. Size stays equal so neither
-     looks like an afterthought; weight (fill, shadow) says which one moves
-     the purchase forward. */
-  .add-cart-btn, .buy-now-btn {
+     looks like an afterthought; weight (fill, shadow) says which one leads. */
+  .add-cart-btn, .call-now-btn {
     flex: 1; min-width: 0; min-height: 50px; padding: 0 14px; border: none; border-radius: 14px;
     font-family: var(--font-display); font-size: var(--fs-label); font-weight: 700; letter-spacing: -.005em;
     cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap;
+    text-decoration: none;
   }
   /* Secondary: tinted, no shadow. Still clearly a button, just a quieter one. */
   .add-cart-btn {
@@ -3226,10 +3226,14 @@ export const appCss = `
   .act-chev { margin-left: -2px; opacity: .7; }
   @keyframes act-lbl-in { from { opacity: 0; transform: scale(.94); filter: blur(2px); } to { opacity: 1; transform: none; filter: none; } }
   /* Primary: solid, with a soft green lift so it reads as the one to press. */
-  .buy-now-btn {
+  .call-now-btn {
     background: var(--tanim); color: #fff;
     box-shadow: 0 8px 18px -10px rgba(11,107,65,.75), inset 0 1px 0 rgba(255,255,255,.14);
   }
+  /* A sample farmer has no number: the button greys out like any disabled
+     one (buttonStyles.ts), and the reason is said right under it. */
+  .call-now-btn:disabled { cursor: default; }
+  .mp-call-none { margin: 8px 2px 0; text-align: right; font-size: var(--fs-label); color: var(--text-muted); }
   @media (prefers-reduced-motion: reduce) {
     .act-lbl { animation: none; }
   }
@@ -4428,7 +4432,7 @@ export const appCss = `
   .cat-tab, .var-tab, .crop-pick,
   .hdr-back, .alerts-close, .prof-edit-btn,
   .qty-pick-btn,
-  .btn-call, .btn-details, .add-cart-btn, .buy-now-btn, .cart-checkout-btn, .call-seller-btn {
+  .btn-call, .btn-details, .add-cart-btn, .call-now-btn, .cart-checkout-btn, .call-seller-btn {
     transition: transform 190ms var(--ease-out), background-color var(--dur-fast) ease;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
@@ -4440,7 +4444,7 @@ export const appCss = `
   .hdr-back:active, .alerts-close:active,
   .prof-edit-btn:active, .qty-pick-btn:active,
   .btn-call:active, .btn-details:active,
-  .add-cart-btn:active, .buy-now-btn:active, .cart-checkout-btn:active, .call-seller-btn:active {
+  .add-cart-btn:active, .call-now-btn:active, .cart-checkout-btn:active, .call-seller-btn:active {
     transition-duration: var(--dur-press);
   }
   /* Scale is proportional, so the same ratio reads as more movement the wider
@@ -4449,7 +4453,7 @@ export const appCss = `
   .cat-tab:active, .crop-pick:active { transform: scale(0.975); }
   .var-tab:active,
   .add-btn:active, .post-btn:active, .signout-btn:active,
-  .btn-call:active, .btn-details:active, .add-cart-btn:active, .buy-now-btn:active,
+  .btn-call:active, .btn-details:active, .add-cart-btn:active, .call-now-btn:not(:disabled):active,
   .cart-checkout-btn:active, .call-seller-btn:active { transform: scale(0.97); }
   .hdr-back:active, .alerts-close:active,
   .prof-edit-btn:active, .qty-pick-btn:active { transform: scale(0.92); }

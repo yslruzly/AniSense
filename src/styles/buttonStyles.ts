@@ -21,7 +21,7 @@
 export const buttonCss = `
   /* Shared shape and motion for every filled button in the app. */
   .a-btn, .btn-primary, .btn-secondary, .btn-danger,
-  .buy-now-btn, .add-cart-btn, .btn-call, .btn-details, .call-seller-btn,
+  .call-now-btn, .add-cart-btn, .btn-call, .btn-details, .call-seller-btn,
   .cart-checkout-btn, .cart-empty-btn, .mp-sell-btn, .add-btn, .post-btn,
   .calc-use, .wid-btn, .prof-id-btn, .signout-btn, .hm-shop-btn, .pick-field {
     transition:
@@ -31,7 +31,7 @@ export const buttonCss = `
       filter 140ms ease;
   }
   .a-btn:active, .btn-primary:active, .btn-secondary:active, .btn-danger:active,
-  .buy-now-btn:active, .add-cart-btn:active, .btn-call:active, .btn-details:active,
+  .call-now-btn:active, .add-cart-btn:active, .btn-call:active, .btn-details:active,
   .call-seller-btn:active, .cart-checkout-btn:active, .cart-empty-btn:active,
   .mp-sell-btn:active, .add-btn:active, .post-btn:active, .calc-use:active,
   .wid-btn:active, .prof-id-btn:active, .signout-btn:active, .pick-field:active {
@@ -39,7 +39,7 @@ export const buttonCss = `
   }
 
   /* ── Primary: the green ones ────────────────────────────────────────────── */
-  .a-btn-green, .btn-primary, .buy-now-btn, .btn-call, .call-seller-btn,
+  .a-btn-green, .btn-primary, .call-now-btn, .btn-call, .call-seller-btn,
   .cart-checkout-btn, .mp-sell-btn, .add-btn, .post-btn, .calc-use, .wid-btn.primary {
     background-image: linear-gradient(180deg, #14875A 0%, var(--tanim) 54%, #075232 100%);
     box-shadow:
@@ -48,7 +48,7 @@ export const buttonCss = `
       inset 0 0 0 1px rgba(4,40,24,.22),
       0 1px 2px rgba(6,38,23,.30);
   }
-  .a-btn-green:active, .btn-primary:active, .buy-now-btn:active, .btn-call:active,
+  .a-btn-green:active, .btn-primary:active, .call-now-btn:active, .btn-call:active,
   .call-seller-btn:active, .cart-checkout-btn:active, .mp-sell-btn:active,
   .add-btn:active, .post-btn:active, .calc-use:active, .wid-btn.primary:active {
     /* The contact shadow tightens and the top highlight dims: pressed in,
@@ -194,7 +194,7 @@ export const buttonCss = `
   /* Everything above is what "pressable" looks like here, so a button that
      can't be pressed drops all of it: no gradient, no lift, no glow. */
   .a-btn:disabled, .btn-primary:disabled, .btn-secondary:disabled, .btn-danger:disabled,
-  .buy-now-btn:disabled, .add-cart-btn:disabled, .btn-call:disabled, .btn-details:disabled,
+  .call-now-btn:disabled, .add-cart-btn:disabled, .btn-call:disabled, .btn-details:disabled,
   .cart-checkout-btn:disabled, .mp-sell-btn:disabled, .add-btn:disabled, .post-btn:disabled,
   .calc-use:disabled, .wid-btn:disabled, .pick-field:disabled,
   .a-btn.a-btn-wait, .a-btn.a-btn-wait:active {
@@ -206,7 +206,7 @@ export const buttonCss = `
   }
   /* Icons inside a disabled button follow the same grey as its text, rather
      than staying in their own colour. */
-  .a-btn:disabled svg, .btn-primary:disabled svg, .buy-now-btn:disabled svg,
+  .a-btn:disabled svg, .btn-primary:disabled svg, .call-now-btn:disabled svg,
   .mp-sell-btn:disabled svg, .add-btn:disabled svg, .post-btn:disabled svg,
   .cart-checkout-btn:disabled svg, .calc-use:disabled svg, .wid-btn:disabled svg { color: #8B9089; }
   .pick-field:disabled { background-color: var(--paper-alt); color: #8F958E; box-shadow: inset 0 0 0 2px var(--line); }
@@ -268,7 +268,7 @@ export const buttonCss = `
     /* The press still answers, it just stops moving: the shadow collapse
        alone is enough to read as a press. */
     .a-btn:active, .btn-primary:active, .btn-secondary:active, .btn-danger:active,
-    .buy-now-btn:active, .add-cart-btn:active, .btn-call:active, .btn-details:active,
+    .call-now-btn:active, .add-cart-btn:active, .btn-call:active, .btn-details:active,
     .cart-checkout-btn:active, .mp-sell-btn:active, .add-btn:active, .post-btn:active,
     .calc-use:active, .wid-btn:active, .prof-id-btn:active, .signout-btn:active,
     .pick-field:active { transform: none; }

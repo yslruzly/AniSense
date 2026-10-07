@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { ShoppingCart, Plus, Minus, X, Check, Search, Pencil, Trash2, ChevronRight, Package, Calendar, Star, MapPin, Phone, ShoppingBag, CreditCard, AlertTriangle, Wheat, Sprout, ArrowUpDown, Camera, ImageOff } from "lucide-react";
+import { ShoppingCart, Plus, Minus, X, Check, Search, Pencil, Trash2, ChevronRight, Package, Calendar, Star, MapPin, Phone, AlertTriangle, Wheat, Sprout, ArrowUpDown, Camera, ImageOff } from "lucide-react";
 import { haptic } from "../lib/platform";
 import { useLang, translations } from "../i18n";
 import { UserRole, CartItem, SellerDetail, TradeIntent, Listing } from "../types";
@@ -198,7 +198,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
   const sellerCount = new Set(activeCart.map(c => c.seller)).size;
 
   // Adding is idempotent. A listing already in the cart is left as it is, so
-  // a second tap (or Buy Now after Add) can never quietly stack the quantity.
+  // a second tap can never quietly stack the quantity.
   const addToCart = (l: Listing) => {
     const qty = getQty(l.id);
     if (tomb.includes(l.id)) { undoRemove(l.id); return; }
@@ -624,6 +624,9 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
           const mine = market.isMine(l);
           const inC = isInCart(l.id);
           const qty = getQty(l.id);
+          // Who to ring for Call Now. A sample farmer is nobody's phone.
+          const seller = market.sellers[market.sellerKeyOf(l)];
+          const tel = seller && !seller.sample ? seller.phone.replace(/[^\d+]/g, "") : "";
           return (
             <>
               <div className="pr-sheet-hero">
@@ -688,19 +691,29 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                       </div>
                       <span className="mp-qty-total">{peso(qty * l.pricePerKg)}</span>
                     </div>
+                    {/* Add to Cart, and beside it Call Now: the farmer's
+                        number in the phone's dialer, to ask before ordering,
+                        the way buying from a farmer is usually done here. */}
                     <div className="listing-btns mp-actions">
                       <button className={`add-cart-btn${inC ? " in-cart" : ""}`}
                         onClick={() => (inC ? (setOpenId(null), setShowCart(true)) : addToCart(l))}>
                         <span className="act-lbl" key={inC ? "in" : "add"}>
                           {inC
                             ? <><Check size={18} strokeWidth={2.6} /> {t("cart_in_cart")} <ChevronRight size={16} strokeWidth={2.4} className="act-chev" /></>
-                            : <><ShoppingBag size={18} strokeWidth={2.2} /> {t("cart_add")}</>}
+                            : <><ShoppingCart size={18} strokeWidth={2.2} /> {t("cart_add")}</>}
                         </span>
                       </button>
-                      <button className="buy-now-btn" onClick={() => { addToCart(l); setOpenId(null); setShowCart(true); }}>
-                        <CreditCard size={18} strokeWidth={2.2} /> {t("cart_buy_now")}
-                      </button>
+                      {tel ? (
+                        <a className="call-now-btn" href={`tel:${tel}`} aria-label={`${t("mp_call_now")}: ${l.seller}`}>
+                          <Phone size={18} strokeWidth={2.2} /> {t("mp_call_now")}
+                        </a>
+                      ) : (
+                        <button className="call-now-btn" disabled aria-describedby="mp-call-none">
+                          <Phone size={18} strokeWidth={2.2} /> {t("mp_call_now")}
+                        </button>
+                      )}
                     </div>
+                    {!tel && <p className="mp-call-none" id="mp-call-none">{t("seller_sample_call")}</p>}
                   </>
                 ) : (
                   <div className="listing-btns mp-actions">
