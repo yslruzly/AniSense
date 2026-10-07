@@ -23,7 +23,7 @@ import { UserRole } from "../../types";
 // two setup steps read as one flow.
 export function RoleScreen({ onBack, onSelect, flow }: { onBack: () => void; onSelect: (role: UserRole, flow: "signin" | "signup") => void; flow: "signin" | "signup" }) {
   const [role, setRole] = useState<UserRole>(null);
-  const { t } = useLang();
+  const { t, lang } = useLang();
 
   // Each role on its own coloured tile, as in iOS Settings: the farmer in the
   // app's green, the buyer in the market's amber.
@@ -32,6 +32,7 @@ export function RoleScreen({ onBack, onSelect, flow }: { onBack: () => void; onS
     { id: "buyer", icon: <ShoppingCart size={27} color="#fff" strokeWidth={2.2} />, title: t("role_buyer"), desc: t("role_buyer_desc") },
   ];
   const picked = roles.find(r => r.id === role);
+  const continueLabel = picked && lang !== "tl" ? `${t("role_continue_as")} ${picked.title}` : t("continue");
 
   // Tapping the row that's already chosen changes nothing, so it gets no
   // haptic: feedback only for something that happened.
@@ -95,18 +96,18 @@ export function RoleScreen({ onBack, onSelect, flow }: { onBack: () => void; onS
       </div>
 
       {/* Back sits beside Continue, as on the language step, so the whole flow
-          moves from the same place. Continue names the choice once one is made:
-          the button confirms what will happen, not just that something will.
-          Keyed by the choice, so the new wording swaps in with a short blur. */}
+          moves from the same place. In English, Continue names the choice once
+          one is made ("Continue as Farmer"); in Filipino it stays a plain
+          "Magpatuloy", the tile above already showing which one is picked.
+          Keyed by the wording, so a new wording swaps in with a short blur
+          and an unchanged one stays still. */}
       <div className="a-dock">
         <div className="a-dockrow">
           <button className="a-iconbtn on-paper" onClick={onBack} aria-label={t("back")}>
             <ChevronLeft size={28} color="var(--ink)" strokeWidth={2.4} />
           </button>
           <button className="a-btn a-btn-green" disabled={!role} onClick={() => role && onSelect(role, flow)}>
-            <span className="a-swap" key={role ?? "none"}>
-              {picked ? `${t("role_continue_as")} ${picked.title}` : t("continue")}
-            </span>
+            <span className="a-swap" key={continueLabel}>{continueLabel}</span>
           </button>
         </div>
       </div>

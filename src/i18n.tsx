@@ -1083,6 +1083,7 @@ export const translations: Dict = {
     en: "Tap one. We'll set up the app to match.",
     tl: "Pumili lamang ng isa.",
   },
+  // Shown in English only: in Filipino the button stays a plain "Magpatuloy".
   role_continue_as: { en: "Continue as", tl: "Magpatuloy bilang" },
   role_say_farmer: { en: "Ready to sell your harvest?", tl: "Handa ka nang magbenta ng ani?" },
   role_say_buyer: { en: "Looking for fresh veggies?", tl: "Naghahanap ng sariwang gulay?" },
