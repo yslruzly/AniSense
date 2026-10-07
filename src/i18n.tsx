@@ -314,6 +314,8 @@ export const translations: Dict = {
     en: "AniSense: fresh local produce, from our farms to your table.",
     tl: "AniSense: sariwang ani mula sa lokal na bukid, diretso sa hapag mo.",
   },
+  home_posters: { en: "AniSense posters", tl: "Mga poster ng AniSense" },
+  home_poster_n: { en: "Poster {n} of {total}", tl: "Poster {n} sa {total}" },
   poster_alt: {
     en: "AniSense: fresh produce, better prices, stronger communities. Browse the marketplace.",
     tl: "AniSense: sariwang ani, mas magandang presyo, mas matibay na komunidad. Buksan ang bentahan.",

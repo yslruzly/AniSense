@@ -2345,11 +2345,42 @@ export const appCss = `
 
   /* The banner that opens the buyer's Home. Not a button: it is the page's
      own masthead, and a tap that navigated from here would surprise. */
+  /* The buyer's banner: posters stacked in one 2:1 frame, taking turns
+     with a cross-fade (PosterCarousel). The frame keeps its shape before any
+     image arrives, so nothing below jumps. A sideways swipe turns it; an
+     up-and-down one still scrolls the page. */
   .hm-banner {
-    margin: 0; aspect-ratio: 1000 / 500; overflow: hidden; border-radius: var(--radius);
-    background: #EAF3E6; box-shadow: 0 10px 24px -18px rgba(22,33,27,.4);
+    position: relative; isolation: isolate; margin: 0; aspect-ratio: 1000 / 500; overflow: hidden;
+    border-radius: var(--radius); background: #EAF3E6; box-shadow: 0 10px 24px -18px rgba(22,33,27,.4);
+    touch-action: pan-y; -webkit-user-select: none; user-select: none;
   }
-  .hm-banner img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .hm-banner-slide {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;
+    opacity: 0; transition: opacity 600ms ease; pointer-events: none;
+  }
+  .hm-banner-slide.on { opacity: 1; }
+  /* Where it is in the turn: a dot per poster on a small dark pill, the one
+     showing drawn long and white. Each dot is a 24px target. */
+  .hm-banner-dots {
+    position: absolute; z-index: 1; left: 50%; bottom: 8px; transform: translateX(-50%);
+    display: flex; padding: 0 5px; border-radius: 99px;
+    background: rgba(12,22,16,.34); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  }
+  .hm-banner-dot {
+    width: 24px; height: 22px; padding: 0; border: none; background: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .hm-banner-dot::before {
+    content: ""; width: 7px; height: 7px; border-radius: 99px; background: rgba(255,255,255,.55);
+    transition: width 300ms var(--ease-out), background-color 300ms ease;
+  }
+  .hm-banner-dot.on::before { width: 18px; background: #fff; }
+  .hm-banner-dot:focus-visible { outline: 2px solid #fff; outline-offset: -2px; border-radius: 99px; }
+  @media (prefers-reduced-motion: reduce) {
+    .hm-banner-slide { transition-duration: 200ms; }
+    .hm-banner-dot::before { transition: none; }
+  }
 
   /* The brand poster. aspect-ratio reserves its exact shape up front, so
      the page does not jump when the image arrives. */

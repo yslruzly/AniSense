@@ -29,6 +29,7 @@ import { AniSenseLogo } from "../components/brand/AniSenseLogo";
 import { useIsNight } from "../hooks/useIsNight";
 import anisensePoster from "../assets/anisense-poster.webp";
 import homePoster from "../assets/anisense-poster-home.webp";
+import { PosterCarousel } from "../components/home/PosterCarousel";
 import { peso, toCents } from "../lib/money";
 
 // ─── Home ─────────────────────────────────────────────────────────────────────
@@ -150,11 +151,15 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
           </button>
         )}
 
-        {/* Buyers: the brand banner follows it. */}
+        {/* Buyers: the brand banner follows it, two posters taking turns:
+            "Fresh local produce" first, then "Fresh produce, better prices,
+            stronger communities", cropped to the same 2:1 frame (a little
+            sky and field off its foot, none of its words). */}
         {isBuyer && (
-          <figure className="hm-banner">
-            <img src={homePoster} alt={t("home_poster_alt")} width={1000} height={500} decoding="async" />
-          </figure>
+          <PosterCarousel posters={[
+            { src: homePoster, alt: t("home_poster_alt"), width: 1000, height: 500 },
+            { src: anisensePoster, alt: t("poster_alt"), width: 1000, height: 562, position: "50% 35%" },
+          ]} />
         )}
 
         {/* 1 ── Greeting, farmer only. A buyer opens on the search bar and
@@ -294,15 +299,16 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
             from whom and for how much, right under their own prices. */}
         {!isBuyer && <FeaturedProducts onShop={shop} />}
 
-        {/* The brand poster, as a mid-page break, for both sides of the
-            market: for a buyer after the day's cheapest, for a farmer after
-            the marketplace's best. A picture, not a button: the marketplace is one
-            tab away and already has its own doors on this page. The frame
-            holds the poster's shape before the image loads, so nothing below
-            jumps. */}
-        <figure className="hm-poster">
-          <img src={anisensePoster} alt={t("poster_alt")} width={1000} height={562} loading="lazy" decoding="async" />
-        </figure>
+        {/* The brand poster, as a mid-page break for a farmer, after the
+            marketplace's best. (A buyer sees it at the top, in the banner.)
+            A picture, not a button: the marketplace is one tab away and
+            already has its own doors on this page. The frame holds the
+            poster's shape before the image loads, so nothing below jumps. */}
+        {!isBuyer && (
+          <figure className="hm-poster">
+            <img src={anisensePoster} alt={t("poster_alt")} width={1000} height={562} loading="lazy" decoding="async" />
+          </figure>
+        )}
 
         {/* Who grows it: the trust half of a marketplace. */}
         {isBuyer && <FeaturedFarmers onShop={shop} buyerLocation={buyerLocation} />}
