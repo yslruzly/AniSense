@@ -712,8 +712,7 @@ export function AuthFormScreen({
             {fieldErr("password")}
           </div>
           {/* For someone who lands here without an account: under the last
-              field, the mirror of "Already have an account? Sign In" on the
-              first sign-up question, and away from the Sign In button. */}
+              field, away from the Sign In button. */}
           <p className="a-switch">
             {t("signin_new_q")} <button type="button" className="a-link" onClick={onCreateAccount ?? (() => go("name"))}>{t("signin_new_btn")}</button>
           </p>
@@ -990,9 +989,6 @@ export function AuthFormScreen({
         </div>
         {fieldErr("terms")}
 
-        <p className="a-switch">
-          {t("auth_have_account")} <button type="button" className="a-link" onClick={() => go("signin")}>{t("auth_signin_btn")}</button>
-        </p>
         <LegalSheet doc={legal} onClose={() => setLegal(null)} />
       </>,
       onward,

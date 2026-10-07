@@ -859,10 +859,9 @@ export const authCss = `
     transition: opacity 140ms ease; -webkit-tap-highlight-color: transparent;
   }
   .a-link:active { opacity: .55; transition-duration: 0ms; }
-  /* The line that swaps between Sign in and Create account, under the last
-     field of each ("New here? Create an account", "Already have an account?
-     Sign In"): a quiet question and a link, centred. The link keeps a 44px
-     target without making the line taller. */
+  /* The way from Sign in to Create account, under its last field ("New
+     here? Create an account"): a quiet question and a link, centred. The
+     link keeps a 44px target without making the line taller. */
   .a-switch { text-align: center; font-size: var(--fs-body); color: var(--text-muted); margin-top: 18px; }
   .a-switch .a-link { min-height: 44px; margin: -10px 0; }
 
@@ -891,9 +890,8 @@ export const authCss = `
   .a-askscreen .a-reveal { height: 44px; min-width: 80px; }
   .a-askscreen .a-lbl { font-size: var(--fs-label); margin-bottom: 6px; padding-left: 6px; }
   .a-namefield + .a-namefield { margin-top: 14px; }
-  /* Tighter steps between the parts, so the whole first page (two names,
-     the agreement, the way back to Sign in) fits a small phone without
-     scrolling. */
+  /* Tighter steps between the parts, so the whole first page (two names
+     and the agreement) fits a small phone without scrolling. */
   .a-askscreen .a-ask-body { padding-top: 18px; }
   .a-askscreen .a-scroll { padding-bottom: 16px; }
   .a-askscreen .a-switch { margin-top: 8px; }

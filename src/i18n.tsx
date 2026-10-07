@@ -103,7 +103,6 @@ export const translations: Dict = {
   auth_confirm_password_ph: { en: "Re-enter password", tl: "Ilagay muli ang password" },
   auth_create_btn: { en: "Create Account", tl: "Gumawa ng Account" },
   auth_signin_btn: { en: "Sign In", tl: "Mag-sign In" },
-  auth_have_account: { en: "Already have an account?", tl: "May account ka na ba?" },
   auth_or: { en: "or", tl: "o" },
 
   // ── Crop picker ───────────────────────────────────────────────────────────
