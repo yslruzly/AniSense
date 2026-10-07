@@ -33,6 +33,7 @@ export const translations: Dict = {
   delete: { en: "Delete", tl: "Burahin" },
   edit: { en: "Edit", tl: "I-edit" },
   close: { en: "Close", tl: "Isara" },
+  to_top: { en: "Back to top", tl: "Bumalik sa itaas" },
   search: { en: "Search", tl: "Maghanap" },
   all: { en: "All", tl: "Lahat" },
   online: { en: "Online", tl: "Online" },

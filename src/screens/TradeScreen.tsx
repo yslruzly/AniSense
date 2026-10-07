@@ -25,6 +25,7 @@ import { MUNICIPALITIES } from "../data/locations";
 import { useViewer } from "../store/viewer";
 import { useMarket, sellerKeyOfDetail } from "../store/market";
 import { FeaturedFarmersRow } from "../components/marketplace/FeaturedFarmersRow";
+import { BackToTop } from "../components/ui/BackToTop";
 import { FarmerOfTheWeekBadge } from "../components/marketplace/FarmerOfTheWeekBadge";
 import { farmerOfTheWeek } from "../lib/featured";
 import { orderErrorOf } from "../services/transactions";
@@ -49,6 +50,8 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
   const searchRef = useRef<HTMLInputElement>(null);
   // Where "search" takes the eye: the head of the results.
   const resultsRef = useRef<HTMLDivElement>(null);
+  // The page itself, for the back-to-top button.
+  const scrollRef = useRef<HTMLDivElement>(null);
   // The listing open in the detail sheet. Held by id, so an edit or a cart
   // change shows in the sheet straight away.
   const [openId, setOpenId] = useState<string | null>(null);
@@ -420,7 +423,9 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
           </button>
         ) : undefined}
       />
-      <div className="scroll screen-enter">
+      {/* Back to the top, once the list is a long way down. */}
+      <BackToTop scroller={scrollRef} />
+      <div className="scroll screen-enter" ref={scrollRef}>
         {/* Each side opens on its own poster: buyers on "connect with local
             farmers", farmers on "marketplace for farmers: sell your harvest,
             reach more buyers" — the thing each of them came here to do, said

@@ -316,6 +316,32 @@ export const appCss = `
   }
   .scroll > * { flex-shrink: 0; }
   .scroll::-webkit-scrollbar { display: none; }
+  /* Back to top hands the focus to the page itself; no ring round all of it. */
+  .scroll:focus { outline: none; }
+
+  /* ── Back to top (BackToTop) ──
+     A white disc with a green arrow, centred 12px above the tab bar, over
+     the page's fade (z 39) and beside nothing. It rises in from a little
+     below and slightly small, and sinks away quicker than it came; while
+     hidden it takes no taps. */
+  .to-top {
+    position: absolute; z-index: 41; left: 50%; bottom: calc(var(--bnav-h) + 24px + var(--safe-bottom));
+    width: 52px; height: 52px; padding: 0; border: none; border-radius: 50%; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--card); color: var(--tanim);
+    box-shadow: 0 0 0 1px rgba(22,33,27,.08), 0 2px 6px rgba(22,33,27,.12), 0 12px 26px -10px rgba(22,33,27,.4);
+    opacity: 0; transform: translate(-50%, 12px) scale(.9); pointer-events: none;
+    transition: opacity 150ms ease, transform 150ms var(--ease-out);
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .to-top[data-show="true"] {
+    opacity: 1; transform: translate(-50%, 0) scale(1); pointer-events: auto;
+    transition-duration: 220ms;
+  }
+  .to-top[data-show="true"]:active { transform: translate(-50%, 0) scale(.92); transition-duration: var(--dur-press); }
+  @media (prefers-reduced-motion: reduce) {
+    .to-top, .to-top[data-show="true"], .to-top[data-show="true"]:active { transform: translate(-50%, 0); }
+  }
 
   /* ── Card ── */
   /* ── Surfaces ────────────────────────────────────────────────────────────
