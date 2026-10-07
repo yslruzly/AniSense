@@ -115,6 +115,9 @@ erDiagram
     numeric price_per_kg "at the time of sale"
     numeric amount "generated"
     order_item_status status "placed / confirmed / completed / cancelled"
+    numeric sold_amount "the farmer's figure, said when confirming"
+    numeric paid_amount "the buyer's figure, what they paid"
+    timestamptz confirmed_at
   }
   expenses {
     uuid id PK
@@ -184,7 +187,7 @@ erDiagram
 - `orders`: one per checkout.
 - `order_items`: one line per listing bought. Price, crop and seller are copied at the moment of sale, so history never changes. Its `status` starts at `placed`; the farmer may move it to `confirmed` or `completed`.
 
-> The app's order alert for farmers (name, number, Call, Confirm) is still a mockup with sample orders. It does not read or change these tables yet. When it is connected, a new order is an `order_items` row with `status = 'placed'` for that farmer, the buyer's name and number come from `profiles` (which a farmer may read for buyers who ordered from them), and Confirm sets the status to `confirmed`.
+> The farmer's order alert (name, number, Call, Confirm) reads these lines: a new order is an `order_items` row with `status = 'placed'` for that farmer, and the buyer's name, number and town come from `profiles` (which a farmer may read for buyers who ordered from them). After the call each side keeps its own figure, set through its own function: **`confirm_order_item(item, sold)`**, the farmer's, moves the line to `confirmed` with `sold_amount` (what it sold for, which is what counts in their earnings; a line still `placed` is not a sale yet), and **`record_order_payment(item, paid)`**, the buyer's, sets `paid_amount` (what they paid, which is what their spending counts; `null` clears it). Neither column can be written directly.
 
 **4. Farm records.** Private to each farmer.
 - `expenses`: costs by category and crop.
@@ -222,7 +225,8 @@ Row Level Security is on for every table; the database enforces it, not the app.
 - A buyer's phone number is visible only to farmers they have ordered from.
 - Orders can only be made through `place_order()`.
 - Nobody can edit their own rating, sales count or member number.
-- Farmers can move their own order lines to confirmed or completed, and change nothing else about them.
+- Farmers can move their own order lines to confirmed or completed, and change nothing else about them; the amount they sold a line for is set only through `confirm_order_item`, and only on their own lines.
+- A buyer sets what they paid for a line only through `record_order_payment`, and only on their own orders.
 - Anyone can delete their own account, and only their own, through `delete_my_account()`.
 
 ## Everyday admin

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { EmptyState, Skeleton, SkeletonMediaRows } from "../components/states";
-import { PhilippinePeso, PieChart as PieIcon, CalendarDays, MapPin, Pencil, Trash2, X, ChevronRight, Calendar, Calculator, Receipt, Plus, CheckCircle, AlertTriangle, Sprout, Tag, Wheat, FlaskConical, User, Tractor, Waves, Package, ShoppingCart, Filter, Store } from "lucide-react";
+import { PhilippinePeso, PieChart as PieIcon, CalendarDays, MapPin, Pencil, Trash2, X, ChevronRight, Calendar, Calculator, Receipt, Plus, CheckCircle, AlertTriangle, Sprout, Tag, Wheat, FlaskConical, User, Tractor, Waves, Package, ShoppingCart, Filter, Store, Clock, Check, HandCoins } from "lucide-react";
 import { useLang } from "../i18n";
 import { Expense, BuyerTransaction } from "../types";
 import { useMarket } from "../store/market";
@@ -17,6 +17,9 @@ import { useRetained } from "../hooks/usePresence";
 import { DateField, localISO } from "../components/ui/DateField";
 import { ProfitCard, estimateFor, spentOn } from "../components/expenses/ProfitCard";
 import { Sale } from "../lib/sales";
+import { costOf, totalSpent } from "../lib/purchases";
+import { peso } from "../lib/money";
+import { PaymentSheet } from "../components/marketplace/PaymentSheet";
 
 // ─── Expenses Screen ──────────────────────────────────────────────────────────
 export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = "JD", isBuyer = false, sales = [] }: { onProfile: () => void; onBack: () => void; farmerCrops: string[]; userInitials?: string; isBuyer?: boolean; sales?: Sale[] }) {
@@ -30,6 +33,9 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
   const busy = market.loadPhase !== "ready";
   const showSkeleton = market.loadPhase === "skeleton";
   const buyerTransactions = market.purchases;
+  // The order line whose payment is being written down, by id, so the sheet
+  // follows the row if the history is fetched again while it is open.
+  const [payingId, setPayingId] = useState<string | null>(null);
   const ICONS: Record<string, string> = { Seeds: "Seeds", Fertilizer: "Fertilizer", Labor: "Labor", Equipment: "Equipment", Irrigation: "Irrigation", Other: "Other" };
   const cats = ["All", "Seeds", "Fertilizer", "Labor", "Equipment", "Irrigation", "Other"];
 
@@ -222,7 +228,7 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
                 showSkeleton && <Skeleton className="on-ink" w={170} h={36} style={{ margin: "4px auto 0" }} />
               ) : (
                 <>
-                  <div className="exp-total">₱{buyerTransactions.reduce((s, tx) => s + tx.amount, 0).toLocaleString()}</div>
+                  <div className="exp-total">{peso(totalSpent(buyerTransactions))}</div>
                   <div style={{ fontSize: "var(--fs-label)", opacity: .7, marginTop: 4 }}>{buyerTransactions.length} {buyerTransactions.length !== 1 ? t("exp_past_txn") : t("exp_past_txn_one")}</div>
                 </>
               )}
@@ -231,7 +237,10 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
                 what you bought, how much of it, who from; the price and the
                 day sit together on the right where a receipt puts them.
                 Grouped by month, so the date is said once per group instead
-                of being repeated on every row. */}
+                of being repeated on every row. Under each, where it stands
+                with the farmer and the way to write down what was paid: the
+                amount on the right is what it cost (lib/purchases.ts), with
+                the order's price under it when the two differ. */}
             <div className="card ph-card">
               <div className="ph-head">
                 <div className="card-title" style={{ margin: 0 }}>{t("exp_purchase_history")}</div>
@@ -241,6 +250,7 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
                   </span>
                 )}
               </div>
+              {!busy && buyerTransactions.length > 0 && <p className="ph-note">{t("ph_note")}</p>}
               {busy
                 ? (showSkeleton ? <SkeletonMediaRows rows={4} tile={46} label={t("state_loading_records")} /> : null)
                 : buyerTransactions.length === 0
@@ -288,11 +298,33 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
                                   </div>
                                 </div>
                                 <div className="ph-end">
-                                  <div className="ph-amt">₱{tx.amount.toLocaleString()}</div>
+                                  <div className="ph-amt">{peso(costOf(tx))}</div>
+                                  {costOf(tx) !== tx.amount && tx.status !== "cancelled" && (
+                                    <div className="ph-was">{t("ph_order_was").replace("{amount}", peso(tx.amount))}</div>
+                                  )}
                                   <div className="ph-date">
                                     {new Date(tx.date).toLocaleDateString(locale, { month: "short", day: "numeric" })}
                                   </div>
                                 </div>
+                                {(tx.status || tx.paid !== undefined) && (
+                                  <div className="ph-foot">
+                                    {tx.status === "placed"
+                                      ? <span className="ph-status is-wait"><Clock size={15} strokeWidth={2.6} aria-hidden="true" /> {t("ph_st_placed")}</span>
+                                      : tx.status === "cancelled"
+                                        ? <span className="ph-status is-off"><X size={15} strokeWidth={2.6} aria-hidden="true" /> {t("ph_st_cancelled")}</span>
+                                        : tx.status
+                                          ? <span className="ph-status is-ok"><Check size={15} strokeWidth={2.8} aria-hidden="true" /> {t("ph_st_confirmed")}</span>
+                                          : null}
+                                    {tx.status !== "cancelled" && (
+                                      <button type="button" className={`ph-pay${tx.paid !== undefined ? " is-done" : ""}`} onClick={() => setPayingId(tx.id)}
+                                        aria-label={`${tx.paid !== undefined ? t("ph_pay_change") : t("ph_pay_record")}: ${title}, ${tx.seller}`}>
+                                        {tx.paid !== undefined
+                                          ? <><Pencil size={15} strokeWidth={2.4} aria-hidden="true" /> {t("ph_pay_change")}</>
+                                          : <><HandCoins size={16} strokeWidth={2.4} aria-hidden="true" /> {t("ph_pay_record")}</>}
+                                      </button>
+                                    )}
+                                  </div>
+                                )}
                               </div>
                             );
                           })}
@@ -305,6 +337,8 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
             </div>
           </>
         )}
+
+        {isBuyer && <PaymentSheet tx={buyerTransactions.find(tx => tx.id === payingId) ?? null} onClose={() => setPayingId(null)} />}
 
         {/* ── FARMER: full expense management ── */}
         {!isBuyer && (

@@ -209,7 +209,9 @@ Every interface string is an entry in `src/i18n.tsx` with English and Tagalog te
 
 The bell in the header counts alerts derived from data the app already holds (`src/lib/alerts.ts`): a farmer's incoming orders, plantings that are due, price targets that were met, rain, and the sharpest price moves. Buyers get a different set.
 
-An incoming order is the only alert with actions: it shows the buyer's name and number, a Call button that opens the dialer, and a Confirm button. **It is a mockup**: two sample orders in demo mode (`src/data/demo/orders.ts`), none on a real account, and not connected to checkout.
+An incoming order is the only alert with actions: it shows the buyer's name and number, a Call button that opens the dialer, and a Confirm button. Confirm asks what it sold for (the order's price already in), and that amount becomes a sale in the farmer's earnings; it can be changed afterwards. The orders come from `order_items` for a real account (`fetchIncomingOrders`), and two sample orders in demo mode (`src/data/demo/orders.ts`).
+
+The buyer's side of the same orders is the Orders page: each line says whether it is still waiting for the farmer's call or confirmed, and "Record payment" writes down what was actually paid. What a purchase cost is one rule (`src/lib/purchases.ts`): what the buyer paid, else what the farmer confirmed, else the order's price; Total Spent and Home's Your purchases both use it.
 
 ### 3.9 Verification codes
 
@@ -494,7 +496,7 @@ flowchart LR
 |---|---|---|
 | Crop prices | Monthly records for five varieties, added to a CSV by hand; sample values for the other 18 | Records for the remaining varieties; ingestion from government sources on a schedule. |
 | Price forecasts | ARIMA and LSTM trained on the five varieties' records. The ARIMA search picks the differencing order by AIC, which is not the right tool for it; the LSTM's settings were not tuned; neither model can foresee a price shock. | Choose the differencing order with a stationarity test; tune the LSTM with a small grid scored inside the training months; test a seasonal ARIMA; consider extra inputs (weather, costs) as later work. |
-| Order alerts | A mockup with sample orders, in demo mode only | Read a farmer's incoming orders and the buyer's contact from the database, save the confirmation, and send a push notification. |
+| Order alerts | Read from the database, confirmed with what it sold for; sample orders in demo mode | Send a push notification when an order arrives. |
 | Weather | Sample values in `src/data/demo/weather.ts` | Connect a forecast service. PAGASA's TenDay API needs a token that PAGASA approves on request, and it gives daily forecasts, not current conditions. |
 | Phone and Gmail verification | Real once set up: Gmail through Brevo, CP numbers through Semaphore (both in `verify-code`). Sign-up is gated by the form, not by the server: a modified app could still create an account without a code. | Have account creation itself require a passed code (sign-up through the function), and a domain of our own in Brevo so codes don't land in Spam. |
 | Password reset | Real once set up, for Gmail and (with Semaphore) CP-number accounts. | — |

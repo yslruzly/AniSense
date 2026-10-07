@@ -9,11 +9,11 @@ export const EXPENSES: Expense[] = [
 ];
 
 export const BUYER_TRANSACTIONS: BuyerTransaction[] = [
-  { id: "bt1", crop: "Rice", variety: "Well Milled", kg: 50, amount: 3250, date: "2025-10-02", seller: "Ruzly Macatula", sellerInitials: "RM", location: "Talavera" },
-  { id: "bt2", crop: "Rice", variety: "Special Rice", kg: 25, amount: 1800, date: "2025-10-03", seller: "Christian Tiburcio", sellerInitials: "CT", location: "Guimba" },
-  { id: "bt3", crop: "Onions", variety: "Red Onion", kg: 20, amount: 900, date: "2025-09-30", seller: "Christian Tiburcio", sellerInitials: "CT", location: "Guimba" },
-  { id: "bt4", crop: "Corn", variety: "Yellow Corn", kg: 30, amount: 2100, date: "2025-09-28", seller: "Ivan Pestanas", sellerInitials: "IP", location: "Science City of Muñoz" },
-  { id: "bt5", crop: "Tomatoes", variety: "Diamante Max F1 Tomato", kg: 15, amount: 570, date: "2025-09-25", seller: "Marc Bawalan", sellerInitials: "MB", location: "Palayan City" },
+  { id: "bt1", crop: "Rice", variety: "Well Milled", kg: 50, amount: 3250, date: "2025-10-02", seller: "Ruzly Macatula", sellerInitials: "RM", location: "Talavera", status: "confirmed", agreed: 3250 },
+  { id: "bt2", crop: "Rice", variety: "Special Rice", kg: 25, amount: 1800, date: "2025-10-03", seller: "Christian Tiburcio", sellerInitials: "CT", location: "Guimba", status: "placed" },
+  { id: "bt3", crop: "Onions", variety: "Red Onion", kg: 20, amount: 900, date: "2025-09-30", seller: "Christian Tiburcio", sellerInitials: "CT", location: "Guimba", status: "completed", agreed: 860, paid: 860 },
+  { id: "bt4", crop: "Corn", variety: "Yellow Corn", kg: 30, amount: 2100, date: "2025-09-28", seller: "Ivan Pestanas", sellerInitials: "IP", location: "Science City of Muñoz", status: "completed", agreed: 2100, paid: 2100 },
+  { id: "bt5", crop: "Tomatoes", variety: "Diamante Max F1 Tomato", kg: 15, amount: 570, date: "2025-09-25", seller: "Marc Bawalan", sellerInitials: "MB", location: "Palayan City", status: "completed", agreed: 570, paid: 570 },
 ];
 
 export const PIE_DATA = [

@@ -17,7 +17,20 @@ export interface CropPrice {
   volume: number; color: string;
 }
 export interface Expense { id: string; category: string; description: string; amount: number; date: string; icon: string; crop: string; }
-export interface BuyerTransaction { id: string; crop: string; variety: string; kg: number; amount: number; date: string; seller: string; sellerInitials: string; location: string; }
+/** Where an order line stands between buyer and farmer. */
+export type OrderStatus = "placed" | "confirmed" | "completed" | "cancelled";
+export interface BuyerTransaction {
+  id: string; crop: string; variety: string; kg: number;
+  /** The order's price: kg × the listing's price at checkout. */
+  amount: number;
+  date: string; seller: string; sellerInitials: string; location: string;
+  /** Where it stands with the farmer. None on the demo's older history. */
+  status?: OrderStatus;
+  /** What the farmer confirmed selling it for, once they have. */
+  agreed?: number;
+  /** What the buyer recorded paying, if they have. */
+  paid?: number;
+}
 export interface Listing {
   id: string; crop: string; variety: string; desc: string;
   /** The seller's account id; only on listings from the database. */
@@ -51,9 +64,8 @@ export type FarmerProfile = { name: string; phone: string; email: string; locati
 export type WxIcon = "Sunny" | "PartlyCloudy" | "Cloudy" | "LightRain" | "Rainy" | "Stormy";
 
 /** An order a buyer has placed with a farmer, as the farmer's alert shows it:
- *  who ordered, how to reach them, and what they want. Sample orders fill it
- *  for now (data/demo/orders.ts); with the database, order_items and the
- *  buyer's profile will. */
+ *  who ordered, how to reach them, and what they want. From order_items and
+ *  the buyer's profile; sample orders in the demo (data/demo/orders.ts). */
 export interface IncomingOrder {
   id: string;
   /** The buyer: who to ask for when calling. */
@@ -72,4 +84,6 @@ export interface IncomingOrder {
   placedAt: string;
   /** 'placed' until the farmer confirms it. */
   status: "placed" | "confirmed";
+  /** What the farmer sold it for, said when confirming. */
+  soldAmount?: number;
 }

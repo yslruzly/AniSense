@@ -13,7 +13,8 @@ import { PriceAlert, loadAlerts, saveAlerts as keepAlerts } from "../lib/priceAl
 import { HarvestPlans, loadHarvestPlans, saveHarvestPlans as keepPlans } from "../lib/harvestPlans";
 import type { AchievementId } from "../lib/achievements";
 import { fetchMarket, createListing, updateListing, removeListing, ListingInput } from "../services/listings";
-import { fetchMyPurchases, fetchMySales, placeOrder as sendOrder } from "../services/transactions";
+import { fetchMyPurchases, fetchMySales, fetchIncomingOrders, confirmOrderItem, recordPayment as sendPayment, placeOrder as sendOrder } from "../services/transactions";
+import { toCents } from "../lib/money";
 import { fetchExpenses, addExpense, updateExpense, deleteExpense as dropExpense, ExpenseForm } from "../services/expenses";
 import { syncNow } from "../services/sync";
 import { fetchFarmRecords, saveSales as storeSales, savePlantings as storePlantings, saveAlerts as storeAlerts, savePlans as storePlans } from "../services/farmRecords";
@@ -65,11 +66,15 @@ export interface Market {
   expenses: Expense[];
   /** What this farmer sold through the marketplace (live only). */
   marketSales: Sale[];
-  /** Orders buyers have placed with this farmer, newest first. A mockup for
-   *  now: sample orders in the demo, none on a real account (data/demo/orders.ts). */
+  /** Orders buyers have placed with this farmer, newest first: from the
+   *  database for a real account, sample orders in the demo (data/demo/orders.ts). */
   incomingOrders: IncomingOrder[];
-  /** The farmer has spoken to the buyer and takes the order. */
-  confirmOrder: (id: string) => void;
+  /** The farmer has spoken to the buyer and takes the order, saying what it
+   *  sold for: it becomes a sale in their earnings. Online only, live. */
+  confirmOrder: (id: string, sold: number) => Promise<void>;
+  /** The buyer records what they paid for a line of an order (null clears it):
+   *  it is what their spending counts. Online only, live. */
+  recordPayment: (id: string, paid: number | null) => Promise<void>;
   /** A farmer's own records, and how to change them (saved for them). */
   sales: Sale[];
   setSales: (next: Sale[]) => void;
@@ -174,6 +179,7 @@ export function useMarketStore({ accountId, role, name, initials }: {
       jobs.push(synced.then(() => fetchExpenses())
         .then(r => { if (g === gen.current) setExpenses(r.data); return r.fromCache; }));
       jobs.push(fetchMySales().then(r => { if (g === gen.current) setMarketSales(r.data); return r.fromCache; }));
+      jobs.push(fetchIncomingOrders().then(r => { if (g === gen.current) setIncomingOrders(r.data); return r.fromCache; }));
       jobs.push(synced.then(() => fetchFarmRecords()).then(r => {
         if (g !== gen.current) return r.fromCache;
         setSalesState(r.data.sales);
@@ -232,16 +238,38 @@ export function useMarketStore({ accountId, role, name, initials }: {
     return () => window.removeEventListener("online", back);
   }, [live, accountId, loadAll]);
 
-  // Orders waiting for a farmer. Until the database serves them, the demo
-  // farmer gets two sample orders and a real account gets none: an invented
+  // Orders waiting for a farmer. The demo farmer gets two sample orders; a
+  // real account starts empty and loadAll() brings its own: an invented
   // buyer must never appear on a real farmer's phone.
   useEffect(() => {
     setIncomingOrders(!live && role === "farmer" ? sampleIncomingOrders() : []);
   }, [live, role, accountId]);
 
-  const confirmOrder = useCallback((id: string) => {
-    setIncomingOrders(os => os.map(o => (o.id === id ? { ...o, status: "confirmed" } : o)));
-  }, []);
+  const confirmOrder = useCallback(async (id: string, sold: number) => {
+    const done = (os: IncomingOrder[]) => os.map(o => (o.id === id ? { ...o, status: "confirmed" as const, soldAmount: sold } : o));
+    if (live) {
+      await confirmOrderItem(id, sold);
+      setIncomingOrders(done);
+      // The new sale, in the earnings, from where it is now kept.
+      void fetchMySales().then(r => setMarketSales(r.data)).catch(() => {});
+      return;
+    }
+    // Demo: the same, in memory. Confirming again only corrects the amount;
+    // the sale keeps the day it was first confirmed.
+    const o = incomingOrders.find(x => x.id === id);
+    setIncomingOrders(done);
+    if (!o) return;
+    setMarketSales(ms => {
+      const was = ms.find(s => s.id === `tx-${id}`);
+      const sale: Sale = { id: `tx-${id}`, crop: groupOf(o.crop), kg: o.kg, pricePerKg: toCents(sold / o.kg), amount: sold, date: was?.date ?? localISO(), buyer: o.buyer };
+      return [sale, ...ms.filter(s => s.id !== sale.id)];
+    });
+  }, [live, incomingOrders]);
+
+  const recordPayment = async (id: string, paid: number | null) => {
+    if (live) await sendPayment(id, paid);
+    setPurchases(ps => ps.map(p => (p.id === id ? { ...p, paid: paid ?? undefined } : p)));
+  };
 
   const refresh = useCallback(async () => {
     if (!live) return;
@@ -294,6 +322,7 @@ export function useMarketStore({ accountId, role, name, initials }: {
       ...lines.map((c, i) => ({
         id: `local-${Date.now()}-${i}`, crop: groupOf(c.crop), variety: c.variety || c.crop, kg: c.qty,
         amount: c.qty * c.pricePerKg, date: today, seller: c.seller, sellerInitials: c.sellerInitials, location: c.location,
+        status: "placed" as const,
       })),
       ...ps,
     ]);
@@ -330,7 +359,7 @@ export function useMarketStore({ accountId, role, name, initials }: {
   return {
     live, loading, loadPhase, fromCache,
     listings, sellers, showingSamples: listings.some(l => l.sample), purchases, expenses, marketSales,
-    incomingOrders, confirmOrder,
+    incomingOrders, confirmOrder, recordPayment,
     sales, setSales, plantings, setPlantings, priceAlerts, setPriceAlerts, harvestPlans, setHarvestPlans,
     awards, pricesVersion,
     isMine, sellerKeyOf,

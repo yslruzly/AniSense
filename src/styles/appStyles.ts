@@ -293,10 +293,47 @@ export const appCss = `
   }
   @keyframes ord-done-in { from { opacity: 0; transform: translateY(4px) scale(.98); } to { opacity: 1; transform: none; } }
   .alert-order.done .ord-name, .alert-order.done .ord-what { color: var(--text-muted); }
+  /* Confirming: one question in the card, on the same paper panel as the
+     buyer's details, with the order's price already in the field. It rises
+     in like the confirmed line does, so the change under the thumb is seen. */
+  .ord-ask {
+    display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border-radius: 14px;
+    background: var(--paper); animation: ord-done-in 220ms var(--ease-out) both;
+  }
+  .ord-ask-q { font-family: var(--font-display); font-size: 17px; font-weight: 700; line-height: 1.3; color: var(--text); }
+  .ord-ask-hint { margin: 0 2px; font-size: var(--fs-label); line-height: 1.4; color: var(--text-muted); }
+  .ord-err { margin: 0 2px; font-size: var(--fs-label); line-height: 1.4; font-weight: 600; color: var(--error); }
+  .ord-btn:disabled { opacity: .7; cursor: default; transform: none; }
+  /* Under the confirmed line: a quiet way back to the amount. */
+  .ord-change {
+    align-self: center; min-height: 44px; padding: 0 14px; border: none; background: none; cursor: pointer;
+    font-family: var(--font-display); font-size: var(--fs-label); font-weight: 700; color: var(--tanim);
+    transition: opacity 140ms ease; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .ord-change:active { opacity: .55; transition-duration: 0ms; }
   @media (prefers-reduced-motion: reduce) {
-    .ord-done { animation: none; }
+    .ord-done, .ord-ask { animation: none; }
     .ord-btn:active { transform: none; }
   }
+
+  /* ── A peso amount (PesoField) ──
+     White, the ₱ inside on the left in grey, the figure large and bold so it
+     can be checked at a glance. Focus rings it in green with a soft halo; a
+     wrong amount, in red. */
+  .peso-field {
+    display: flex; align-items: center; gap: 6px; min-height: 56px; padding: 0 16px; border-radius: 14px;
+    background: var(--card); box-shadow: inset 0 0 0 1.5px var(--line-strong);
+    transition: box-shadow 160ms ease;
+  }
+  .peso-field:focus-within { box-shadow: inset 0 0 0 2px var(--tanim), 0 0 0 4px rgba(11,107,65,.14); }
+  .peso-field.bad, .peso-field.bad:focus-within { box-shadow: inset 0 0 0 2px var(--error), 0 0 0 4px rgba(165,35,27,.12); }
+  .peso-field-cur { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--text-muted); }
+  .peso-field-inp {
+    flex: 1; min-width: 0; height: 54px; padding: 0; border: none; background: none; outline: none;
+    font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--text);
+    font-variant-numeric: tabular-nums; caret-color: var(--tanim);
+  }
+  .peso-field-inp:focus-visible { outline: none; }
   .alerts-empty { padding: 30px 12px 12px; text-align: center; display: flex; flex-direction: column; align-items: center; }
   .alerts-empty-ico {
     width: 60px; height: 60px; border-radius: 50%; margin-bottom: 12px;
@@ -641,6 +678,45 @@ export const appCss = `
     font-variant-numeric: tabular-nums; white-space: nowrap; line-height: 1.25;
   }
   .ph-date { margin-top: 3px; font-size: 13.5px; color: var(--text-faint); white-space: nowrap; }
+  /* The order's price, under what it actually cost, when the two differ. */
+  .ph-was { margin-top: 2px; font-size: 13.5px; color: var(--text-faint); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .ph-note { margin: 2px 0 4px; font-size: var(--fs-label); line-height: 1.45; color: var(--text-muted); }
+  /* Under a purchase, across the text and the amount: where it stands with
+     the farmer on the left, the way to write down what was paid on the
+     right. Gold while it waits for the call, green once confirmed. */
+  .ph-foot {
+    grid-column: 2 / -1; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+    gap: 8px; margin-top: 10px;
+  }
+  .ph-status {
+    display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 99px;
+    font-size: 13.5px; font-weight: 700; line-height: 1.2;
+  }
+  .ph-status.is-wait { background: var(--gold-sk); color: var(--gold-text); }
+  .ph-status.is-ok { background: var(--tanim-sk); color: var(--tanim-deep); }
+  .ph-status.is-off { background: var(--paper-alt); color: var(--text-muted); }
+  .ph-pay {
+    display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 16px; margin-left: auto;
+    border: none; border-radius: 99px; cursor: pointer; background: var(--card); color: var(--tanim);
+    box-shadow: inset 0 0 0 1.5px var(--tanim);
+    font-family: var(--font-display); font-size: 14.5px; font-weight: 700; white-space: nowrap;
+    transition: transform 160ms var(--ease-out), background-color 160ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .ph-pay:active { transform: scale(.96); background: var(--tanim-sk); transition-duration: var(--dur-press); }
+  /* Once written down, it steps back: grey, a change rather than a task. */
+  .ph-pay.is-done { color: var(--text-soft); box-shadow: inset 0 0 0 1.5px var(--line-strong); }
+  @media (prefers-reduced-motion: reduce) { .ph-pay:active { transform: none; } }
+  /* The payment sheet: which order, the amount, what to check it against. */
+  .pay-what { margin: -4px 0 14px; font-size: var(--fs-label); line-height: 1.4; color: var(--text-muted); }
+  .pay-what b { color: var(--text); font-weight: 700; }
+  .pay-hint { margin: 8px 2px 0; font-size: var(--fs-label); line-height: 1.4; color: var(--text-muted); }
+  .pay-clear {
+    display: block; width: 100%; min-height: 48px; margin-top: 6px; border: none; background: none; cursor: pointer;
+    font-family: var(--font-display); font-size: var(--fs-label); font-weight: 700; color: var(--text-soft);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .pay-clear:active { opacity: .55; }
 
   /* ── Tappable history rows (farmer expenses) ─────────────────────────────
      Same anatomy as the purchase history, plus a chevron that says "opens".

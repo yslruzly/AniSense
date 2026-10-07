@@ -263,8 +263,10 @@ If no text arrives:
 - [ ] Sign up as a buyer on another phone: the farmer's harvest is in the marketplace, and the farmer is under Featured farmers
 - [ ] Buyer orders 5 kg: the receipt shows, the listing drops by 5 kg, and a row appears in **orders** with its line in **order_items**
 - [ ] Buyer asks for more kilos than are left: "A farmer has less left than you asked for"
-- [ ] Buyer's Home shows the order under Your purchases
-- [ ] Farmer's Profit snapshot counts the sale
+- [ ] Buyer's Home shows the order under Your purchases, and the Orders page shows it as "Waiting for the farmer's call"
+- [ ] Farmer's bell shows the order with the buyer's name and number; Confirm order asks "How much did you sell it for?" with the order's price in. Confirm a different amount: the line in **order_items** is `confirmed` with that `sold_amount`
+- [ ] Farmer's Profit snapshot counts the sale at the amount they confirmed (and did not count it before they confirmed)
+- [ ] Buyer's Orders page now says "Confirmed by the farmer". Record payment with another amount: **order_items** has that `paid_amount`, and Total Spent and Your purchases use it
 - [ ] Farmer adds an expense in airplane mode: it shows at once; turn the internet back on and it appears in **expenses**
 - [ ] Two farmer accounts each see only their own expenses
 - [ ] Farmer records a sale, adds a planting and a price alert: rows appear in **sales**, **plantings** and **price_alerts**; they are still there after reinstalling the app

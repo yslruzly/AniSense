@@ -11,11 +11,12 @@ import { IncomingOrder } from "../types";
 // values through six screens for one component is plumbing, not design.
 export type Viewer = {
   role: UserRole; location: string; priceAlerts: PriceAlert[]; plantings: Planting[];
-  /** Orders buyers have placed with this farmer, and how to confirm one. */
+  /** Orders buyers have placed with this farmer, and how to confirm one
+   *  with what it sold for (rejects with the reason if it couldn't). */
   orders: IncomingOrder[];
-  confirmOrder: (id: string) => void;
+  confirmOrder: (id: string, sold: number) => Promise<void>;
 };
 
-export const ViewerContext = createContext<Viewer>({ role: null, location: "", priceAlerts: [], plantings: [], orders: [], confirmOrder: () => {} });
+export const ViewerContext = createContext<Viewer>({ role: null, location: "", priceAlerts: [], plantings: [], orders: [], confirmOrder: async () => {} });
 
 export const useViewer = () => useContext(ViewerContext);

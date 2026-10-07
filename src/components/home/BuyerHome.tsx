@@ -14,6 +14,7 @@ import { Listing, TradeIntent } from "../../types";
 import { avatarTone } from "../../lib/avatar";
 import leafMask from "../../assets/anisense-leaf-mask.png";
 import { peso } from "../../lib/money";
+import { costOf, totalSpent } from "../../lib/purchases";
 
 // ─── Buyer Home sections ──────────────────────────────────────────────────────
 // The pieces of the buyer's Home that the farmer never sees. Each one opens
@@ -369,14 +370,15 @@ export function YourPurchases({ onShop, onHistory }: { onShop: Shop; onHistory: 
   if (purchases.length === 0) return null;
   const locale = lang === "tl" ? "fil-PH" : "en-PH";
 
-  const spent = purchases.reduce((sum, tx) => sum + tx.amount, 0);
+  // What each cost, as paid when the buyer has written it down (lib/purchases.ts).
+  const spent = totalSpent(purchases);
   const orders = purchases.length;
   const farmers = new Set(purchases.map(tx => tx.seller)).size;
 
   // Spend per crop, biggest first. Past four, the tail folds into "Other"
   // rather than becoming a fifth, sixth, seventh bar.
   const byCrop = new Map<string, number>();
-  purchases.forEach(tx => byCrop.set(tx.crop, (byCrop.get(tx.crop) || 0) + tx.amount));
+  purchases.forEach(tx => byCrop.set(tx.crop, (byCrop.get(tx.crop) || 0) + costOf(tx)));
   let parts = [...byCrop.entries()].map(([crop, amount]) => ({ crop, amount })).sort((a, b) => b.amount - a.amount);
   if (parts.length > 4) {
     const other = parts.slice(3).reduce((sum, p) => sum + p.amount, 0);
@@ -401,7 +403,7 @@ export function YourPurchases({ onShop, onHistory }: { onShop: Shop; onHistory: 
       <div className="yp">
         {/* The one number, big, with the sentence that makes it mean
             something right under it. */}
-        <div className="yp-total">₱{spent.toLocaleString()}</div>
+        <div className="yp-total">{peso(spent)}</div>
         <p className="yp-summary">{summary}</p>
 
         <h3 className="yp-h">{t("yp_where")}</h3>
@@ -412,7 +414,7 @@ export function YourPurchases({ onShop, onHistory }: { onShop: Shop; onHistory: 
               <span className="yp-bar-track" aria-hidden="true">
                 <span className="yp-bar" style={{ width: `${Math.max(4, (p.amount / top) * 100)}%` }} />
               </span>
-              <span className="yp-bar-amt">₱{p.amount.toLocaleString()}</span>
+              <span className="yp-bar-amt">{peso(p.amount)}</span>
             </li>
           ))}
         </ul>
@@ -435,7 +437,7 @@ export function YourPurchases({ onShop, onHistory }: { onShop: Shop; onHistory: 
                 <span className="yp-item-body">
                   <span className="yp-item-name">{tx.variety || tn(tx.crop)}</span>
                   <span className="yp-item-meta">{tx.seller}</span>
-                  <span className="yp-item-meta">{tx.kg} kg · <b>₱{tx.amount.toLocaleString()}</b></span>
+                  <span className="yp-item-meta">{tx.kg} kg · <b>{peso(costOf(tx))}</b></span>
                 </span>
                 <span className="yp-again-btn"><RotateCcw size={16} strokeWidth={2.6} /> {t("home_buy_again")}</span>
               </button>

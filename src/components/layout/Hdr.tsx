@@ -7,6 +7,8 @@ import { IncomingOrder } from "../../types";
 import { Sheet } from "../ui/Sheet";
 import { useViewer } from "../../store/viewer";
 import { peso } from "../../lib/money";
+import { isNetworkError } from "../../lib/cache";
+import { PesoField, pesoText, pesoValue } from "../ui/PesoField";
 
 // ─── An order from a buyer ────────────────────────────────────────────────────
 // The one alert that asks the farmer to do something, so it is the one alert
@@ -16,20 +18,47 @@ import { peso } from "../../lib/money";
 // the filled one, because it comes first; nothing is agreed until they have
 // spoken.
 //
-// Confirmed, the card settles: a tick and "You confirmed this order" where
-// Confirm was, and Call stays, quieter, in case the farmer needs the buyer
-// again. It no longer counts on the bell.
-function OrderAlert({ order, onConfirm }: { order: IncomingOrder; onConfirm: (id: string) => void }) {
+// Confirm asks one thing first, in the card: how much did it sell for? The
+// order's price is already in, to keep or change (they may have agreed on
+// less, or on more), and that amount is what goes into the farmer's
+// earnings, as a sale to this buyer.
+//
+// Confirmed, the card settles: a tick and "Sold for ₱…, in your earnings"
+// where Confirm was, a way to change the amount, and Call stays, quieter, in
+// case the farmer needs the buyer again. It no longer counts on the bell.
+function OrderAlert({ order, onConfirm }: { order: IncomingOrder; onConfirm: (id: string, sold: number) => Promise<void> }) {
   const { t, lang } = useLang();
   const done = order.status === "confirmed";
   const tel = order.phone.replace(/[^\d+]/g, "");
-  const peso = `₱${order.amount.toLocaleString("en-PH", { maximumFractionDigits: 2 })}`;
+  const [asking, setAsking] = useState(false);
+  const [draft, setDraft] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const sold = order.soldAmount ?? order.amount;
   // "12 min ago", "2 hr ago", then the date.
   const mins = Math.max(0, Math.round((Date.now() - new Date(order.placedAt).getTime()) / 60_000));
   const when = mins < 1 ? t("ord_just_now")
     : mins < 60 ? t("ord_min_ago").replace("{n}", String(mins))
     : mins < 24 * 60 ? t("ord_hr_ago").replace("{n}", String(Math.round(mins / 60)))
     : new Date(order.placedAt).toLocaleDateString(lang === "tl" ? "fil-PH" : "en-PH", { month: "short", day: "numeric" });
+
+  const ask = () => { haptic.select(); setDraft(pesoText(done ? sold : order.amount)); setError(""); setAsking(true); };
+  const save = async () => {
+    const n = pesoValue(draft);
+    if (!(n > 0) || n > 1e8) { setError(t("ord_amount_bad")); return; }
+    setSaving(true); setError("");
+    try {
+      await onConfirm(order.id, Math.round(n * 100) / 100);
+      haptic.success();
+      setAsking(false);
+    } catch (e) {
+      setError(t(isNetworkError(e) ? "err_offline_action" : "ord_save_failed"));
+    } finally {
+      setSaving(false);
+    }
+  };
+  const fieldId = `ord-amt-${order.id}`;
+
   return (
     <div className={`alert-row alert-order green ${done ? "done" : ""}`}>
       <div className="ord-top">
@@ -41,33 +70,58 @@ function OrderAlert({ order, onConfirm }: { order: IncomingOrder; onConfirm: (id
           <span className="ord-name">{order.buyer}</span>
           <span className="ord-what">{order.kg} kg {order.crop}</span>
         </span>
-        <span className="alert-chip">{peso}</span>
+        <span className="alert-chip">{peso(done ? sold : order.amount)}</span>
       </div>
 
       {/* The buyer's number and town, written out: the farmer may want to
           read the number, save it, or call from another phone. */}
       <div className="ord-facts">
-        <span className="ord-fact"><Phone size={17} strokeWidth={2.4} aria-hidden="true" /><span className="ord-phone">{order.phone}</span></span>
-        <span className="ord-fact"><MapPin size={17} strokeWidth={2.4} aria-hidden="true" />{order.location}</span>
+        <span className="ord-fact"><Phone size={17} strokeWidth={2.4} aria-hidden="true" /><span className="ord-phone">{order.phone || t("ord_no_phone")}</span></span>
+        {order.location && <span className="ord-fact"><MapPin size={17} strokeWidth={2.4} aria-hidden="true" />{order.location}</span>}
       </div>
 
-      {!done && <p className="ord-hint">{t("ord_hint")}</p>}
-
-      <div className="ord-actions">
-        <a className={`ord-btn call ${done ? "quiet" : ""}`} href={`tel:${tel}`} onClick={() => haptic.tap()}
-          aria-label={`${t("ord_call")}: ${order.buyer}, ${order.phone}`}>
-          <Phone size={20} strokeWidth={2.4} aria-hidden="true" /> {t("ord_call")}
-        </a>
-        {done ? (
-          <div className="ord-done" role="status">
-            <Check size={20} strokeWidth={2.8} aria-hidden="true" /> {t("ord_confirmed")}
+      {asking ? (
+        <>
+          {/* What it sold for: the order's price already in, to keep or change. */}
+          <div className="ord-ask">
+            <label className="ord-ask-q" htmlFor={fieldId}>{t("ord_sold_q")}</label>
+            <PesoField id={fieldId} value={draft} onChange={v => { setDraft(v); setError(""); }} bad={!!error}
+              describedBy={`${fieldId}-hint${error ? ` ${fieldId}-err` : ""}`} autoFocus />
+            <p className="ord-ask-hint" id={`${fieldId}-hint`}>{t("ord_sold_hint").replace("{amount}", peso(order.amount))}</p>
+            {error && <p className="ord-err" id={`${fieldId}-err`} role="alert">{error}</p>}
           </div>
-        ) : (
-          <button type="button" className="ord-btn confirm" onClick={() => { haptic.success(); onConfirm(order.id); }}>
-            <Check size={20} strokeWidth={2.6} aria-hidden="true" /> {t("ord_confirm")}
-          </button>
-        )}
-      </div>
+          <div className="ord-actions">
+            <button type="button" className="ord-btn call" onClick={() => { void save(); }} disabled={saving} aria-busy={saving}>
+              <Check size={20} strokeWidth={2.6} aria-hidden="true" /> {t("ord_confirm_sale")}
+            </button>
+            <button type="button" className="ord-btn confirm" onClick={() => setAsking(false)} disabled={saving}>{t("cancel")}</button>
+          </div>
+        </>
+      ) : (
+        <>
+          {!done && <p className="ord-hint">{t("ord_hint")}</p>}
+          <div className="ord-actions">
+            {tel ? (
+              <a className={`ord-btn call ${done ? "quiet" : ""}`} href={`tel:${tel}`} onClick={() => haptic.tap()}
+                aria-label={`${t("ord_call")}: ${order.buyer}, ${order.phone}`}>
+                <Phone size={20} strokeWidth={2.4} aria-hidden="true" /> {t("ord_call")}
+              </a>
+            ) : null}
+            {done ? (
+              <>
+                <div className="ord-done" role="status">
+                  <Check size={20} strokeWidth={2.8} aria-hidden="true" /> {t("ord_sold_for").replace("{amount}", peso(sold))}
+                </div>
+                <button type="button" className="ord-change" onClick={ask}>{t("ord_change")}</button>
+              </>
+            ) : (
+              <button type="button" className="ord-btn confirm" onClick={ask}>
+                <Check size={20} strokeWidth={2.6} aria-hidden="true" /> {t("ord_confirm")}
+              </button>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }

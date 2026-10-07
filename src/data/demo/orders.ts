@@ -5,12 +5,11 @@
 // carries who ordered, their number, and what they want; the farmer calls,
 // agrees on pickup and payment, and confirms.
 //
-// MOCKUP: there is no backend for this yet, so these are sample orders, shown
-// only in the demo (no real account). The names and numbers are invented.
-// With the database they will come from order_items and the buyer's profile,
-// which a farmer may already read for buyers who have ordered from them
-// (schema.sql, "profiles: read"), and Confirm will move the line from
-// 'placed' to 'confirmed'. The shape is IncomingOrder in src/types.
+// These are sample orders, shown only in the demo (no real account); the
+// names and numbers are invented. A real account reads its own from
+// order_items and the buyer's profile (services/transactions.ts,
+// fetchIncomingOrders), and Confirm, with what it sold for, moves the line
+// from 'placed' to 'confirmed'. The shape is IncomingOrder in src/types.
 
 import { IncomingOrder } from "../../types";
 

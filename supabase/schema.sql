@@ -204,6 +204,16 @@ create table if not exists public.order_items (
   created_at    timestamptz not null default now()
 );
 
+-- After the two have spoken, each side's own figure for the line (the price
+-- at checkout is only where the talk starts). Each is set through its own
+-- call in section 7, by its own side only: the farmer's when confirming
+-- (what they sold it for, which counts in their earnings), the buyer's when
+-- recording what they paid (which counts in their spending). Added to an
+-- existing database by running this file again.
+alter table public.order_items add column if not exists sold_amount  numeric(12,2) check (sold_amount >= 0);
+alter table public.order_items add column if not exists paid_amount  numeric(12,2) check (paid_amount >= 0);
+alter table public.order_items add column if not exists confirmed_at timestamptz;
+
 
 -- ═══ 4. FARM RECORDS ═════════════════════════════════════════════════════════
 -- A farmer's own books. Private: only the farmer who wrote a row can see it.
@@ -608,6 +618,41 @@ begin
 end;
 $$;
 
+-- ─── After the call ─────────────────────────────────────────────────────────
+-- The farmer confirms a line of an order they sold, with what they sold it
+-- for: the line becomes a sale in their earnings. Confirming again only
+-- corrects the amount (the day it was confirmed stays). Only the farmer of
+-- that line can; NOT_FOUND for anyone else, or a cancelled line.
+create or replace function public.confirm_order_item(p_item uuid, p_sold numeric)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if auth.uid() is null then raise exception 'NOT_SIGNED_IN'; end if;
+  if p_sold is null or p_sold < 0 or p_sold > 100000000 then raise exception 'BAD_AMOUNT'; end if;
+  update order_items
+     set status = case when status = 'placed' then 'confirmed'::order_item_status else status end,
+         sold_amount = round(p_sold, 2),
+         confirmed_at = coalesce(confirmed_at, now())
+   where id = p_item and seller_id = auth.uid() and status <> 'cancelled';
+  if not found then raise exception 'NOT_FOUND'; end if;
+end;
+$$;
+
+-- The buyer records what they actually paid for a line of their order, or
+-- clears it (null) to go back to the order's price. Only the buyer of that
+-- order can.
+create or replace function public.record_order_payment(p_item uuid, p_paid numeric)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if auth.uid() is null then raise exception 'NOT_SIGNED_IN'; end if;
+  if p_paid is not null and (p_paid < 0 or p_paid > 100000000) then raise exception 'BAD_AMOUNT'; end if;
+  update order_items i
+     set paid_amount = round(p_paid, 2)
+    from orders o
+   where i.id = p_item and o.id = i.order_id and o.buyer_id = auth.uid();
+  if not found then raise exception 'NOT_FOUND'; end if;
+end;
+$$;
+
 -- ─── Farm-record sync ───────────────────────────────────────────────────────
 -- The app keeps each of these lists whole and sends the whole list when it
 -- changes (they are short: a few dozen rows at most). Each call replaces the
@@ -715,6 +760,8 @@ revoke all on function public.can_see_order(uuid)               from public, ano
 revoke all on function public.is_my_buyer(uuid)                 from public, anon;
 revoke all on function public.set_my_crops(text[])              from public, anon;
 revoke all on function public.place_order(jsonb)                from public, anon;
+revoke all on function public.confirm_order_item(uuid, numeric)  from public, anon;
+revoke all on function public.record_order_payment(uuid, numeric) from public, anon;
 revoke all on function public.replace_my_sales(jsonb)           from public, anon;
 revoke all on function public.replace_my_plantings(jsonb)       from public, anon;
 revoke all on function public.replace_my_price_alerts(jsonb)    from public, anon;
@@ -724,6 +771,8 @@ grant execute on function public.can_see_order(uuid)             to authenticate
 grant execute on function public.is_my_buyer(uuid)               to authenticated;
 grant execute on function public.set_my_crops(text[])            to authenticated;
 grant execute on function public.place_order(jsonb)              to authenticated;
+grant execute on function public.confirm_order_item(uuid, numeric) to authenticated;
+grant execute on function public.record_order_payment(uuid, numeric) to authenticated;
 grant execute on function public.replace_my_sales(jsonb)         to authenticated;
 grant execute on function public.replace_my_plantings(jsonb)     to authenticated;
 grant execute on function public.replace_my_price_alerts(jsonb)  to authenticated;
