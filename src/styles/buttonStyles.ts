@@ -23,7 +23,7 @@ export const buttonCss = `
   .a-btn, .btn-primary, .btn-secondary, .btn-danger,
   .call-now-btn, .add-cart-btn, .btn-call, .btn-details, .call-seller-btn,
   .cart-checkout-btn, .cart-empty-btn, .mp-sell-btn, .add-btn, .post-btn,
-  .calc-use, .wid-btn, .prof-id-btn, .signout-btn, .hm-shop-btn, .pick-field {
+  .calc-use, .wid-btn, .prof-id-btn, .signout-btn, .pick-field {
     transition:
       transform 190ms var(--ease-out),
       box-shadow 190ms var(--ease-out),
@@ -62,7 +62,7 @@ export const buttonCss = `
   }
 
   /* ── Gold: the accent action ────────────────────────────────────────────── */
-  .a-btn-gold, .hm-shop-btn {
+  .a-btn-gold {
     background-image: linear-gradient(180deg, #FFCB5B 0%, var(--palay) 52%, #D79A11 100%);
     box-shadow:
       inset 0 1px 0 rgba(255,255,255,.55),
@@ -70,7 +70,7 @@ export const buttonCss = `
       inset 0 0 0 1px rgba(120,78,0,.22),
       0 1px 2px rgba(95,62,0,.24);
   }
-  .a-btn-gold:active, .hm-shop-btn:active {
+  .a-btn-gold:active {
     box-shadow:
       inset 0 1px 0 rgba(255,255,255,.3),
       inset 0 -1px 0 rgba(120,78,0,.34),

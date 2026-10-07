@@ -2871,27 +2871,8 @@ export const appCss = `
   .hm-tool-t { font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--text); }
   .hm-tool-s { font-size: 13.5px; color: var(--text-faint); }
 
-  /* Buyer: the marketplace, with the buyer mascot standing at the edge. */
-  .hm-shop {
-    position: relative; overflow: hidden; display: flex; align-items: stretch; width: 100%; min-height: 150px;
-    padding: 0; border: none; border-radius: var(--radius-lg); cursor: pointer; text-align: left; font: inherit; color: #fff;
-    background: radial-gradient(120% 100% at 100% 0%, rgba(126,196,120,.3), transparent 60%), linear-gradient(150deg, #1D2E25, var(--ink));
-    transition: transform 180ms var(--ease-out);
-    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-  }
-  .hm-shop:active { transform: scale(.98); transition-duration: 90ms; }
-  .hm-shop-copy { position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column; gap: 4px; padding: 18px 0 18px 18px; max-width: 64%; }
-  .hm-shop-t { font-family: var(--font-display); font-size: 19px; font-weight: 700; line-height: 1.2; }
-  .hm-shop-s { font-size: 14px; color: rgba(255,255,255,.8); line-height: 1.4; }
-  .hm-shop-btn {
-    align-self: flex-start; margin-top: 8px; display: inline-flex; align-items: center; gap: 2px;
-    padding: 8px 8px 8px 14px; border-radius: 99px; background: var(--palay); color: var(--ink);
-    font-family: var(--font-display); font-size: 14px; font-weight: 700;
-  }
-  .hm-shop-img { position: absolute; right: -10px; bottom: -6px; height: 140px; width: auto; pointer-events: none; }
-
   @media (prefers-reduced-motion: reduce) {
-    .hm-wx:active, .hm-link:active, .hm-spend:active, .hm-tool:active, .hm-shop:active { transform: none; }
+    .hm-wx:active, .hm-link:active, .hm-spend:active, .hm-tool:active { transform: none; }
   }
 
   /* Purchase history thumbnail: same rounded-square photo as the cart line,

@@ -27,7 +27,6 @@ import { PredictedPriceCard } from "../components/analytics/PredictedPriceCard";
 import { Hdr } from "../components/layout/Hdr";
 import { AniSenseLogo } from "../components/brand/AniSenseLogo";
 import { useIsNight } from "../hooks/useIsNight";
-import buyerMascot from "../assets/buyer-mascot.webp";
 import anisensePoster from "../assets/anisense-poster.webp";
 import homePoster from "../assets/anisense-poster-home.webp";
 import { peso, toCents } from "../lib/money";
@@ -117,7 +116,6 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
     .map(l => { const m = marketPrice(l.crop, l.variety); return { l, save: m ? toCents(m - l.pricePerKg) : 0 }; });
   const { location: buyerLocation } = useViewer();
   const shop = (intent: TradeIntent) => (onShop ? onShop(intent) : onNavigate("trade"));
-  const sellerCount = new Set(listings.map(l => l.seller)).size;
 
   // This month's spend, last month's, and six months of trend for the line.
   const monthTotal = (offset: number) => {
@@ -308,22 +306,6 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
 
         {/* Who grows it: the trust half of a marketplace. */}
         {isBuyer && <FeaturedFarmers onShop={shop} buyerLocation={buyerLocation} />}
-
-        {/* The way back into the marketplace and the day's price moves, as
-            the last stop before "my buying": having seen the picks and the
-            farmers, browse everything, check what moved, then buy again. */}
-        {isBuyer && (
-          <button className="hm-shop" onClick={() => onNavigate("trade")}>
-            <span className="hm-shop-copy">
-              <span className="hm-shop-t">{t("home_buyer_cta_t")}</span>
-              <span className="hm-shop-s">
-                {t("home_market_chip").replace("{n}", String(listings.length)).replace("{s}", String(sellerCount))}
-              </span>
-              <span className="hm-shop-btn">{t("cart_browse")} <ChevronRight size={16} strokeWidth={2.6} /></span>
-            </span>
-            <img className="hm-shop-img" src={buyerMascot} alt="" aria-hidden="true" />
-          </button>
-        )}
 
         {/* The day's price moves, as one light chart. */}
         {isBuyer && <PriceMoves onOpen={() => onNavigate("market")} />}
