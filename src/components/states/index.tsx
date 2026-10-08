@@ -164,6 +164,26 @@ export function SkeletonCards({ count = 6, label }: { count?: number; label: str
   );
 }
 
+/** Home's featured farmers: big profile cards in a row, the next one past
+ *  the edge: the photo, then the three numbers under it. */
+export function SkeletonFarmerCards({ count = 2, label }: { count?: number; label: string }) {
+  return (
+    <div className="ffb-row is-skel" role="status" aria-busy="true">
+      <span className="sr-only">{label}</span>
+      {Array.from({ length: count }, (_, i) => (
+        <div className="ffb is-skel" key={i} aria-hidden="true">
+          <Skeleton h={236} radius={0} />
+          <div className="ffb-skel-stats">
+            {[0, 1, 2].map(k => (
+              <div key={k}><Skeleton w={52} h={18} /><Skeleton w={64} h={12} /></div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /** The featured shelf on Home: a row of small cards, photo on top. */
 export function SkeletonShelf({ count = 3, label }: { count?: number; label: string }) {
   return (

@@ -2294,43 +2294,6 @@ export const appCss = `
   /* Narrow phones: the longest name, "Vegetables", keeps to one line. */
   @media (max-width: 370px) { .fam-name { font-size: 14.5px; } .fam-foot { padding: 0 8px 10px; } }
 
-  /* Featured farmers: one spotlight, three rows, one card. */
-  .ff {
-    margin-top: 14px; border-radius: var(--radius); overflow: hidden; background: var(--card);
-    box-shadow: inset 0 0 0 1px var(--line), 0 14px 30px -20px rgba(22,33,27,.4);
-  }
-  .ff-spot {
-    display: flex; width: 100%; padding: 0; border: none; background: none; cursor: pointer;
-    text-align: left; font: inherit; color: inherit;
-    transition: background-color 160ms ease;
-    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-  }
-  /* The spotlight opens the farmer, like a row: one button laid over the
-     whole of it (the card itself holds the profile's own pieces, which a
-     button can't contain). Pressed, the card dims a shade and the arrow on
-     the photo steps forward. */
-  .ff-spot { position: relative; flex-direction: column; }
-  .ff-spot-hit {
-    position: absolute; inset: 0; z-index: 3; width: 100%; padding: 0; border: none; background: transparent;
-    cursor: pointer; transition: background-color 160ms ease;
-    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-  }
-  .ff-spot-hit:active { background: rgba(16,24,20,.07); transition-duration: var(--dur-press); }
-  .ff-spot-hit:focus-visible { outline: 3px solid var(--tanim); outline-offset: -3px; border-radius: var(--radius) var(--radius) 0 0; }
-  .ff-spot-go {
-    position: absolute; z-index: 2; right: 16px; bottom: 46px; width: 44px; height: 44px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center; color: #fff;
-    background: rgba(255,255,255,.16); box-shadow: inset 0 0 0 1px rgba(255,255,255,.26);
-    transition: transform 190ms var(--ease-out), background-color 160ms ease;
-  }
-  .ff-spot:has(> .ff-spot-hit:active) .ff-spot-go { transform: translateX(3px); background: rgba(255,255,255,.28); transition-duration: var(--dur-press); }
-  @media (prefers-reduced-motion: reduce) { .ff-spot:has(> .ff-spot-hit:active) .ff-spot-go { transform: none; } }
-  /* The spotlight borrows the profile sheet's pieces (.spf-*): only the
-     corners and spacing differ, because here it sits inside a card. The
-     name keeps clear of the arrow. */
-  .ff .ff-hero { border-radius: 0; height: 230px; }
-  .ff-hero .spf-id { right: 72px; }
-  .ff .spf-stats { margin: -30px 14px 14px; }
   /* The Farmer of the Week plate, in polished gold. What makes it read as
      metal rather than yellow paint:
        - the fill: bright at the top, a hard reflection line across the
@@ -2381,8 +2344,8 @@ export const appCss = `
     display: flex; flex-direction: column; justify-content: flex-end;
   }
   .seller-modal-sheet .spf-hero.is-week .spf-id { position: relative; left: auto; right: auto; bottom: auto; margin: 0 64px 0 20px; }
-  /* ── The other featured farmers: a row to swipe ──
-     Each card a small copy of the spotlight: the profile's green ground
+  /* ── Featured farmers in the Market: a row of small cards ──
+     Each card a small copy of the farmer's profile: its green ground
      (.spf-hero) and faint leaf, the ringed avatar, the name and town in
      white, an arrow on the photo, and the three numbers on a white card
      riding over the photo's edge. 236px wide, so on a phone the next one
@@ -2482,6 +2445,52 @@ export const appCss = `
   @keyframes ffc-lap { to { --ffc-a: 360deg; } }
   /* Room above and below, so the glow, at its widest, isn't cut where the row scrolls. */
   .ffc-row.has-glow { margin-top: 0; padding-top: 20px; padding-bottom: 24px; }
+  /* ── Home's Featured farmers: big profile cards in a row that slides ──
+     Each card the farmer's profile, small enough that the next one shows
+     past the edge (the whole row runs to the screen's edges): the green
+     ground and leaf, the ringed avatar, the name on one line, the town, an
+     arrow on the photo, and the three numbers on a card over its edge. The
+     Farmer of the Week's wears the gold plate (.ff-badge). One button lies
+     over each card; pressed, the card dims a shade and the arrow steps
+     forward. The row slides on its own (useAutoScroll), so it doesn't snap,
+     which would tug against the steady glide; a swipe still moves it. */
+  .ffb-row {
+    display: flex; gap: 12px; margin: 14px -16px 0; padding: 4px 16px 18px;
+    overflow-x: auto; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch;
+  }
+  .ffb-row::-webkit-scrollbar { height: 0; }
+  .ffb {
+    position: relative; flex: 0 0 min(340px, calc(100% - 40px)); min-width: 0;
+    display: flex; flex-direction: column; overflow: hidden;
+    border-radius: var(--radius); background: var(--card);
+    box-shadow: inset 0 0 0 1px var(--line), 0 14px 30px -20px rgba(22,33,27,.4);
+  }
+  .ffb .ffb-hero { border-radius: 0; height: 236px; }
+  /* The name keeps to one line and clear of the arrow, so a long one can't
+     climb into the gold plate above it. */
+  .ffb .spf-id { right: 72px; }
+  .ffb .spf-name { max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ffb .spf-loc { max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ffb .spf-stats { margin: -30px 14px 14px; }
+  .ffb-hit {
+    position: absolute; inset: 0; z-index: 3; width: 100%; padding: 0; border: none; background: transparent;
+    cursor: pointer; transition: background-color 160ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .ffb-hit:active { background: rgba(16,24,20,.07); transition-duration: var(--dur-press); }
+  .ffb-hit:focus-visible { outline: 3px solid var(--tanim); outline-offset: -3px; border-radius: var(--radius); }
+  .ffb-go {
+    position: absolute; z-index: 2; right: 16px; bottom: 46px; width: 44px; height: 44px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; color: #fff;
+    background: rgba(255,255,255,.16); box-shadow: inset 0 0 0 1px rgba(255,255,255,.26);
+    transition: transform 190ms var(--ease-out), background-color 160ms ease;
+  }
+  .ffb:has(> .ffb-hit:active) .ffb-go { transform: translateX(3px); background: rgba(255,255,255,.28); transition-duration: var(--dur-press); }
+  .ffb-near {
+    position: absolute; z-index: 2; left: 14px; top: 14px; padding: 4px 10px; border-radius: 99px;
+    background: #DCEAF8; color: #2F6FA8; font-size: 13px; font-weight: 800;
+  }
+  @media (prefers-reduced-motion: reduce) { .ffb:has(> .ffb-hit:active) .ffb-go { transform: none; } }
   @media (prefers-reduced-motion: reduce) {
     .ffc.is-week::before, .ffc.is-week::after { animation: none; }
     .ffc.is-week::before { opacity: 1; transform: none; }
@@ -4598,6 +4607,10 @@ export const appCss = `
   .mp-card.is-skel .mp-card-body, .fp-card.is-skel .fp-body { gap: 9px; }
   .fp-card.is-skel { cursor: default; }
   .fp-row.is-skel { overflow: hidden; }
+  /* Home's featured farmers, loading: the big cards' outline, the same size. */
+  .ffb-row.is-skel { overflow: hidden; }
+  .ffb-skel-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 9px 14px; }
+  .ffb-skel-stats > div { display: flex; flex-direction: column; align-items: center; gap: 6px; }
   /* On the dark hero of Expenses and Orders: a lighter bar, a softer sweep. */
   .skel.on-ink { background: rgba(255,255,255,.2); }
   .skel.on-ink::after { background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.28) 50%, transparent 100%); }

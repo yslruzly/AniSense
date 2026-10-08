@@ -13,10 +13,10 @@ import leafMask from "../../assets/anisense-leaf-mask.png";
 // sales) on a white card riding over the photo's edge. The whole card is one
 // button, and opens the farmer.
 //
-// The Farmer of the Week, in the Market's row, is marked by its border alone:
-// a palay-gold ring that glows a little (`week`). `say` is the screen's words:
-// Home's card reads in English like the profile it opens; the Market's in
-// the app's language.
+// The Farmer of the Week, first in the Market's row, is marked by its border alone:
+// a palay-gold ring with light running round it and a glow (`week`). `say` is
+// the screen's words, in the app's language. (Home draws its farmers big:
+// home/FeaturedFarmerBig.tsx.)
 
 export function FeaturedFarmerCard({ farmer: s, onOpen, say, week = false }: {
   farmer: FeaturedFarmer;

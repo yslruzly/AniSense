@@ -1,22 +1,21 @@
-import { ChevronRight, MapPin, Star, RotateCcw, ArrowLeft, ArrowRight, TrendingUp, TrendingDown, ArrowLeftRight } from "lucide-react";
+import { useRef } from "react";
+import { ChevronRight, MapPin, RotateCcw, ArrowLeft, ArrowRight, TrendingUp, TrendingDown, ArrowLeftRight } from "lucide-react";
 import { useLang, translations } from "../../i18n";
 import { CROPS, CROP_GROUP_BY_ID, familyCropNames } from "../../data/crops";
 import familyCrops from "../../assets/families/family-crops.webp";
 import familyFruits from "../../assets/families/family-fruits.webp";
 import familyVegetables from "../../assets/families/family-vegetables.webp";
 import { useMarket } from "../../store/market";
-import { SkeletonShelf, SkeletonMediaRows } from "../states";
+import { SkeletonShelf, SkeletonFarmerCards } from "../states";
 import { featuredLineup } from "../../lib/featured";
-import { FarmerOfTheWeekBadge } from "../marketplace/FarmerOfTheWeekBadge";
-import { FeaturedFarmerCard } from "../marketplace/FeaturedFarmerCard";
+import { FeaturedFarmerBig } from "./FeaturedFarmerBig";
+import { useAutoScroll } from "../../hooks/useAutoScroll";
 import { cropPhoto, cropPhotoFor, cropGroupPhoto } from "../../data/cropPhotos";
 import { CropEmoji } from "../icons/CropEmoji";
 import { Listing, TradeIntent } from "../../types";
-import { avatarTone } from "../../lib/avatar";
-import leafMask from "../../assets/anisense-leaf-mask.png";
 import { peso } from "../../lib/money";
 import { costOf, totalSpent } from "../../lib/purchases";
-import { rankOf, unrated } from "../../lib/rating";
+import { rankOf } from "../../lib/rating";
 
 // ─── Buyer Home sections ──────────────────────────────────────────────────────
 // The pieces of the buyer's Home that the farmer never sees. Each one opens
@@ -250,92 +249,55 @@ const en = (key: keyof typeof translations) => translations[key].en;
 // ── Featured farmers ─────────────────────────────────────────────────────────
 // The trust half of a marketplace: who is growing this food. Only real fields
 // are shown (rating, sales, years, town); no "verified" badge the data cannot
-// back up. The spotlight rotates weekly through the four best-rated growers,
-// which is what makes "Farmer of the week" true rather than decorative.
-
-// The same colour a farmer has in their profile sheet.
-const tone = avatarTone;
+// back up. The Farmer of the Week, first in the row, rotates weekly through
+// the four best-rated growers, which is what makes "of the week" true rather
+// than decorative.
 
 export function FeaturedFarmers({ onShop, buyerLocation }: { onShop: Shop; buyerLocation: string }) {
   // Always in English, like the profile sheet it opens: a farmer's public
   // card reads the same to every buyer, crop names included.
   // Everyone with something on sale, best-rated first. Keyed the way the
   // marketplace finds a seller again: account id, or initials in the demo.
-  // The spotlight is the same pick that awards the Profile achievement.
+  // The Farmer of the Week is the same pick that awards the Profile achievement.
   const { sellers, loadPhase, showingSamples } = useMarket();
   // The Farmer of the Week, then four more, the buyer's neighbours first.
   const { spot, rest } = featuredLineup(sellers, buyerLocation);
-  // Still loading: three farmers' rows under the title.
+  // The row slides on its own (hooks/useAutoScroll.ts); called before any
+  // early return, as hooks must be.
+  const autoRow = useRef<HTMLDivElement>(null);
+  useAutoScroll(autoRow, { enabled: loadPhase === "ready" && !!spot });
+  // Still loading: the outlines of the big cards under the title.
   if (loadPhase !== "ready") {
     return loadPhase === "skeleton" ? (
       <section className="hm-sec" aria-labelledby="ff-t" data-tour="b-farmers">
         <h2 className="hm-sec-title" id="ff-t">{en("ff_title")}</h2>
         <p className="hm-sec-sub">{en("ff_sub")}</p>
-        <div className="card" style={{ marginTop: 14 }}>
-          <SkeletonMediaRows rows={3} tile={46} round end={false} label={en("state_loading_farmers")} />
-        </div>
+        <SkeletonFarmerCards label={en("state_loading_farmers")} />
       </section>
     ) : null;
   }
   if (!spot) return null;
 
   const open = (s: { key: string; name: string }) => onShop({ seller: s.key, search: s.name });
+  const lineup = [spot, ...rest];
 
   return (
     <section className="hm-sec" aria-labelledby="ff-t" data-tour="b-farmers">
       <h2 className="hm-sec-title" id="ff-t">{en("ff_title")}</h2>
       <p className="hm-sec-sub">{en(showingSamples ? "ff_sub_sample" : "ff_sub")}</p>
 
-      <div className="ff">
-        {/* Drawn like the farmer's own profile sheet, so tapping through
-            from here lands on something that already looks familiar: their
-            harvest blurred into light, the ringed avatar, the three numbers
-            on a card over the photo's edge. Short: who they are and their
-            numbers; the bio and the crops are in the profile it opens. The
-            whole card is the way in, like the rows under it, with an arrow
-            on the photo to say so. */}
-        <article className="ff-spot">
-          <button type="button" className="ff-spot-hit" onClick={() => open(spot)}
-            aria-label={`${spot.name}, ${en("ff_week")}. ${en("ff_cta")}`} />
-          <div className="spf-hero ff-hero">
-            <img className="spf-mark" src={leafMask} alt="" aria-hidden="true" />
-            <FarmerOfTheWeekBadge />
-            <span className="ff-spot-go" aria-hidden="true"><ArrowRight size={20} strokeWidth={2.6} /></span>
-            <div className="spf-id">
-              <span className="spf-ava" style={{ background: tone(spot.name) }} aria-hidden="true">{spot.initials}</span>
-              <div className="spf-name">{spot.name}</div>
-              <div className="spf-loc"><MapPin size={14} strokeWidth={2.4} /> {spot.location}</div>
-            </div>
-          </div>
-          <div className="spf-stats">
-            <div className="spf-stat">
-              <span className="spf-stat-v">{unrated(spot) ? en("rating_new") : <><Star size={16} strokeWidth={0} fill="#C98A1B" /> {spot.rating.toFixed(1)}</>}</span>
-              <span className="spf-stat-l">{spot.ratingCount ? `${spot.ratingCount} ${en(spot.ratingCount === 1 ? "rating_one" : "rating_n")}` : en("seller_rating")}</span>
-            </div>
-            <div className="spf-stat">
-              <span className="spf-stat-v">{spot.yearsfarming}<small> {en("seller_years_suffix")}</small></span>
-              <span className="spf-stat-l">{en("seller_experience")}</span>
-            </div>
-            <div className="spf-stat">
-              <span className="spf-stat-v">{spot.totalSales}+</span>
-              <span className="spf-stat-l">{en("seller_sales")}</span>
-            </div>
-          </div>
-        </article>
-
+      {/* All five as big profile cards in one row: the Farmer of the Week
+          first, with the gold plate, then the other four, the same card
+          without it. The next card shows past the edge. The row slides
+          right to left on its own, slowly and without end (the five are
+          drawn twice, and it steps back a set at the seam), and stops for a
+          finger: it can be swiped either way, and carries on a moment
+          after. Each card opens that farmer. */}
+      <div className="ffb-row" ref={autoRow}>
+        {[0, 1].flatMap(pass => lineup.map((s, i) => (
+          <FeaturedFarmerBig key={`${pass}-${s.key}`} farmer={s} week={i === 0} copy={pass === 1} onOpen={() => open(s)} />
+        )))}
       </div>
-
-      {/* The other four, as a row to swipe: each a small copy of the card
-          above (the same green ground and leaf, the ringed avatar, the name
-          and town, the three numbers on a card over the photo's edge), so
-          they read as the same kind of thing, smaller. The row runs to the
-          screen's edges and the next card shows past the edge, which is
-          what says "more this way". Each card opens that farmer. */}
-      {rest.length > 0 && (
-        <div className="ffc-row stagger-list">
-          {rest.map(s => <FeaturedFarmerCard key={s.key} farmer={s} say={en} onOpen={() => open(s)} />)}
-        </div>
-      )}
     </section>
   );
 }
