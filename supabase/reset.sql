@@ -53,6 +53,8 @@ drop function if exists
   public.place_order(jsonb),
   public.confirm_order_item(uuid, numeric),
   public.record_order_payment(uuid, numeric),
+  public.rate_order_item(uuid, int),
+  public.refresh_rating(uuid),
   public.replace_my_sales(jsonb),
   public.replace_my_plantings(jsonb),
   public.replace_my_price_alerts(jsonb),

@@ -30,6 +30,8 @@ export interface BuyerTransaction {
   agreed?: number;
   /** What the buyer recorded paying, if they have. */
   paid?: number;
+  /** The stars the buyer gave the farmer for it, 1 to 5, once they have. */
+  rating?: number;
 }
 export interface Listing {
   id: string; crop: string; variety: string; desc: string;
@@ -37,6 +39,8 @@ export interface Listing {
   sellerId?: string;
   pricePerKg: number; kg: number; date: string;
   seller: string; sellerInitials: string; rating: number; location: string;
+  /** How many buyers have rated the seller; 0 is "New" (lib/rating.ts). None in the demo. */
+  ratingCount?: number;
   /** The seller's own photo of this harvest: its Storage URL, or a data URL
    *  on a demo listing. */
   photo?: string;
@@ -54,6 +58,8 @@ export interface SellerDetail {
   id?: string;
   name: string; initials: string; phone: string; location: string;
   yearsfarming: number; rating: number; totalSales: number; crops: string[]; bio: string;
+  /** How many buyers have rated them; 0 is "New" (lib/rating.ts). None in the demo. */
+  ratingCount?: number;
   /** A sample farmer (SAMPLE_MARKET): never offered to call. */
   sample?: boolean;
 }
@@ -86,4 +92,6 @@ export interface IncomingOrder {
   status: "placed" | "confirmed";
   /** What the farmer sold it for, said when confirming. */
   soldAmount?: number;
+  /** The stars the buyer gave them for it, once settled and rated. */
+  rating?: number;
 }

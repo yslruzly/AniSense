@@ -6,9 +6,8 @@ import { peso } from "../../lib/money";
 // ─── My farm at a glance ──────────────────────────────────────────────────────
 // Four numbers the farmer can check against their own notebook: years on the
 // land, what they sold this month, what is on sale now, and every sale so
-// far. Each is worked out from their own records; none is made up. (There is
-// no seller rating yet: ratings need buyers to leave them, so it is not shown
-// until they can.)
+// far. Each is worked out from their own records; none is made up. (Their
+// rating, from the stars buyers give, is on the profile buyers see.)
 //
 // Set like a ledger page rather than a row of badges: a 2 × 2 grid split by
 // hairlines, the label first and quiet, the number large in ink, and a short

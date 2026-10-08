@@ -15,6 +15,7 @@ import { avatarTone } from "../../lib/avatar";
 import leafMask from "../../assets/anisense-leaf-mask.png";
 import { peso } from "../../lib/money";
 import { costOf, totalSpent } from "../../lib/purchases";
+import { rankOf, ratingText, unrated } from "../../lib/rating";
 
 // ─── Buyer Home sections ──────────────────────────────────────────────────────
 // The pieces of the buyer's Home that the farmer never sees. Each one opens
@@ -175,7 +176,7 @@ export function FeaturedProducts({ onShop }: { onShop: Shop }) {
   // A row holds more than a grid of four did, and the ones past the edge are
   // the reason to push it along.
   const picks = [...listings]
-    .sort((a, b) => b.rating - a.rating || new Date(b.date).getTime() - new Date(a.date).getTime())
+    .sort((a, b) => rankOf(b) - rankOf(a) || new Date(b.date).getTime() - new Date(a.date).getTime())
     .filter(l => {
       const group = groupOf(l);
       if (seen.has(group)) return false;
@@ -307,8 +308,8 @@ export function FeaturedFarmers({ onShop, buyerLocation }: { onShop: Shop; buyer
           </div>
           <div className="spf-stats">
             <div className="spf-stat">
-              <span className="spf-stat-v"><Star size={16} strokeWidth={0} fill="#C98A1B" /> {spot.rating.toFixed(1)}</span>
-              <span className="spf-stat-l">{en("seller_rating")}</span>
+              <span className="spf-stat-v">{unrated(spot) ? en("rating_new") : <><Star size={16} strokeWidth={0} fill="#C98A1B" /> {spot.rating.toFixed(1)}</>}</span>
+              <span className="spf-stat-l">{spot.ratingCount ? `${spot.ratingCount} ${en(spot.ratingCount === 1 ? "rating_one" : "rating_n")}` : en("seller_rating")}</span>
             </div>
             <div className="spf-stat">
               <span className="spf-stat-v">{spot.yearsfarming}<small> {en("seller_years_suffix")}</small></span>
@@ -331,7 +332,7 @@ export function FeaturedFarmers({ onShop, buyerLocation }: { onShop: Shop; buyer
                   {s.near && <span className="ff-near">{en("ff_near")}</span>}
                 </span>
                 <span className="ff-row-meta">
-                  <span className="ff-star"><Star size={13} fill="currentColor" strokeWidth={0} /> {s.rating}</span>
+                  <span className="ff-star"><Star size={13} fill="currentColor" strokeWidth={0} /> {ratingText(s, en("rating_new"))}</span>
                   {" · "}{townOf(s.location)}
                 </span>
               </span>

@@ -19,7 +19,12 @@ import { BuyerTransaction } from "../../types";
 // when it differs, to check against. Recorded once, it can be changed, or
 // cleared to go back to the order's price.
 
-export function PaymentSheet({ tx, onClose }: { tx: BuyerTransaction | null; onClose: () => void }) {
+export function PaymentSheet({ tx, onClose, onSaved }: {
+  tx: BuyerTransaction | null;
+  onClose: () => void;
+  /** A payment was written down (not cleared): the page can now offer the stars. */
+  onSaved?: (id: string) => void;
+}) {
   const { t } = useLang();
   const { recordPayment } = useMarket();
   // Kept through the closing slide, so the sheet doesn't empty as it goes.
@@ -44,6 +49,7 @@ export function PaymentSheet({ tx, onClose }: { tx: BuyerTransaction | null; onC
     try {
       await recordPayment(shown.id, paid === null ? null : Math.round(paid * 100) / 100);
       haptic.success();
+      if (paid !== null) onSaved?.(shown.id);
       onClose();
     } catch (e) {
       setError(t(isNetworkError(e) ? "err_offline_action" : "ord_save_failed"));

@@ -1,11 +1,13 @@
 import { SellerDetail } from "../types";
+import { rankOf } from "./rating";
 
 // ─── AniSense Farmer of the Week ──────────────────────────────────────────────
 // One rule, used by Home's and the Market's Featured farmers (to show them)
 // and the farmer's Profile achievements (to award it), so they can never
 // disagree.
 //
-// Everyone with something on sale, best-rated first, then by sales. The
+// Everyone with something on sale, best-rated first (a farmer nobody has
+// rated yet after every rated one, lib/rating.ts), then by sales. The
 // spotlight rotates weekly through the top four, which is what makes "of the
 // week" true rather than the same name forever.
 
@@ -14,7 +16,7 @@ export type RankedSeller = SellerDetail & { key: string };
 export function rankSellers(sellers: Record<string, SellerDetail>): RankedSeller[] {
   return Object.entries(sellers)
     .map(([key, s]) => ({ key, ...s }))
-    .sort((a, b) => b.rating - a.rating || b.totalSales - a.totalSales);
+    .sort((a, b) => rankOf(b) - rankOf(a) || b.totalSales - a.totalSales);
 }
 
 export function farmerOfTheWeek(sellers: Record<string, SellerDetail>, now = Date.now()): RankedSeller | undefined {

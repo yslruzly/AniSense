@@ -124,6 +124,11 @@ create table if not exists public.profiles (
   created_at      timestamptz not null default now(),
   updated_at      timestamptz not null default now()
 );
+-- A farmer's rating is the average of the stars their buyers gave
+-- (rate_order_item, section 7), and rating_count how many gave them. With
+-- none yet, the count is 0 and the app says "New" rather than the 5.0 the
+-- column starts at.
+alter table public.profiles add column if not exists rating_count int not null default 0 check (rating_count >= 0);
 -- For a database built when the limit was 0 to 80.
 alter table public.profiles drop constraint if exists profiles_years_farming_check;
 alter table public.profiles add constraint profiles_years_farming_check check (years_farming between 0 and 79);
@@ -213,6 +218,10 @@ create table if not exists public.order_items (
 alter table public.order_items add column if not exists sold_amount  numeric(12,2) check (sold_amount >= 0);
 alter table public.order_items add column if not exists paid_amount  numeric(12,2) check (paid_amount >= 0);
 alter table public.order_items add column if not exists confirmed_at timestamptz;
+-- The buyer's stars for the farmer, on this line, once both sides have
+-- settled it (the farmer confirmed, the buyer recorded paying).
+alter table public.order_items add column if not exists rating   smallint check (rating between 1 and 5);
+alter table public.order_items add column if not exists rated_at timestamptz;
 
 
 -- ═══ 4. FARM RECORDS ═════════════════════════════════════════════════════════
@@ -653,6 +662,38 @@ begin
 end;
 $$;
 
+-- A farmer's rating, worked out again from every star their buyers gave:
+-- the average to one decimal, and how many. With none, back to 5.0 and 0.
+-- Only the functions here call it.
+create or replace function public.refresh_rating(p_seller uuid)
+returns void language sql security definer set search_path = public as $$
+  update profiles set
+    rating = coalesce((select round(avg(rating)::numeric, 1) from order_items where seller_id = p_seller and rating is not null), 5.0),
+    rating_count = (select count(*) from order_items where seller_id = p_seller and rating is not null)
+  where id = p_seller;
+$$;
+
+-- The buyer rates the farmer of one line of their order, 1 to 5 stars, or
+-- changes the stars they gave. Only once the line is settled on both sides:
+-- the farmer has confirmed it and the buyer has recorded paying (NOT_YET
+-- before that). Only the buyer of that order (NOT_FOUND for anyone else).
+create or replace function public.rate_order_item(p_item uuid, p_stars int)
+returns void language plpgsql security definer set search_path = public as $$
+declare
+  line order_items%rowtype;
+begin
+  if auth.uid() is null then raise exception 'NOT_SIGNED_IN'; end if;
+  if p_stars is null or p_stars < 1 or p_stars > 5 then raise exception 'BAD_RATING'; end if;
+  select i.* into line from order_items i join orders o on o.id = i.order_id
+   where i.id = p_item and o.buyer_id = auth.uid()
+   for update of i;
+  if not found then raise exception 'NOT_FOUND'; end if;
+  if line.status not in ('confirmed', 'completed') or line.paid_amount is null then raise exception 'NOT_YET'; end if;
+  update order_items set rating = p_stars, rated_at = now() where id = p_item;
+  if line.seller_id is not null then perform refresh_rating(line.seller_id); end if;
+end;
+$$;
+
 -- ─── Farm-record sync ───────────────────────────────────────────────────────
 -- The app keeps each of these lists whole and sends the whole list when it
 -- changes (they are short: a few dozen rows at most). Each call replaces the
@@ -762,6 +803,8 @@ revoke all on function public.set_my_crops(text[])              from public, ano
 revoke all on function public.place_order(jsonb)                from public, anon;
 revoke all on function public.confirm_order_item(uuid, numeric)  from public, anon;
 revoke all on function public.record_order_payment(uuid, numeric) from public, anon;
+revoke all on function public.rate_order_item(uuid, int)         from public, anon;
+revoke all on function public.refresh_rating(uuid)               from public, anon, authenticated;
 revoke all on function public.replace_my_sales(jsonb)           from public, anon;
 revoke all on function public.replace_my_plantings(jsonb)       from public, anon;
 revoke all on function public.replace_my_price_alerts(jsonb)    from public, anon;
@@ -773,6 +816,7 @@ grant execute on function public.set_my_crops(text[])            to authenticate
 grant execute on function public.place_order(jsonb)              to authenticated;
 grant execute on function public.confirm_order_item(uuid, numeric) to authenticated;
 grant execute on function public.record_order_payment(uuid, numeric) to authenticated;
+grant execute on function public.rate_order_item(uuid, int)       to authenticated;
 grant execute on function public.replace_my_sales(jsonb)         to authenticated;
 grant execute on function public.replace_my_plantings(jsonb)     to authenticated;
 grant execute on function public.replace_my_price_alerts(jsonb)  to authenticated;

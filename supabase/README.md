@@ -82,7 +82,8 @@ erDiagram
     text phone
     text location
     int years_farming
-    numeric rating
+    numeric rating "average of buyers' stars"
+    int rating_count "how many rated; 0 shows as New"
     int total_sales
   }
   profile_crops {
@@ -118,6 +119,8 @@ erDiagram
     numeric sold_amount "the farmer's figure, said when confirming"
     numeric paid_amount "the buyer's figure, what they paid"
     timestamptz confirmed_at
+    smallint rating "the buyer's stars for the farmer, 1 to 5"
+    timestamptz rated_at
   }
   expenses {
     uuid id PK
@@ -224,7 +227,8 @@ Row Level Security is on for every table; the database enforces it, not the app.
 - Farmers manage only their own listings and records.
 - A buyer's phone number is visible only to farmers they have ordered from.
 - Orders can only be made through `place_order()`.
-- Nobody can edit their own rating, sales count or member number.
+- Nobody can edit their own rating, sales count or member number. A farmer's `rating` and `rating_count` are worked out from the stars buyers gave (`order_items.rating`) every time one is given or changed.
+- A buyer rates a farmer only through `rate_order_item(item, stars)`: only for a line of their own order, 1 to 5 stars, and only once it is settled on both sides (the farmer confirmed it, the buyer recorded what they paid; `NOT_YET` before that). Rating again changes the stars.
 - Farmers can move their own order lines to confirmed or completed, and change nothing else about them; the amount they sold a line for is set only through `confirm_order_item`, and only on their own lines.
 - A buyer sets what they paid for a line only through `record_order_payment`, and only on their own orders.
 - Anyone can delete their own account, and only their own, through `delete_my_account()`.

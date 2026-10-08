@@ -893,6 +893,17 @@ export const translations: Dict = {
   ord_amount_bad: { en: "Type how much it sold for.", tl: "Ilagay kung magkano ito naibenta." },
   ord_save_failed: { en: "It wasn't saved. Try again.", tl: "Hindi ito na-save. Subukan ulit." },
   ord_no_phone: { en: "No number on their account", tl: "Walang numero sa account nila" },
+  ord_rated: { en: "{name} rated you", tl: "Ni-rate ka ni {name}" },
+  // Ratings: a buyer's stars for a farmer, once an order is settled.
+  rate_q: { en: "How was {name}? Tap a star.", tl: "Kumusta si {name}? Pindutin ang isang bituin." },
+  rate_done: { en: "You rated {name}. Tap to change it.", tl: "Na-rate mo si {name}. Pindutin para palitan." },
+  rate_after_pay: { en: "Record what you paid, then you can rate {name}.", tl: "Itala ang ibinayad mo, saka mo ma-rate si {name}." },
+  rate_thanks: { en: "Thank you! Your stars help other buyers choose.", tl: "Salamat! Nakakatulong ang bituin mo sa ibang mamimili." },
+  rate_star_one: { en: "1 star", tl: "1 bituin" },
+  rate_star_n: { en: "{n} stars", tl: "{n} bituin" },
+  rating_new: { en: "New", tl: "Bago" },
+  rating_one: { en: "rating", tl: "rating" },
+  rating_n: { en: "ratings", tl: "rating" },
   // The buyer's Orders page: where each order stands, and what was paid.
   ph_note: { en: "After you pay the farmer, record what you paid. Your total counts it.", tl: "Kapag nabayaran mo na ang magsasaka, itala ang ibinayad mo. Ito ang bibilangin sa kabuuan mo." },
   ph_st_placed: { en: "Waiting for the farmer's call", tl: "Hinihintay ang tawag ng magsasaka" },

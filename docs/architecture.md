@@ -211,7 +211,7 @@ The bell in the header counts alerts derived from data the app already holds (`s
 
 An incoming order is the only alert with actions: it shows the buyer's name and number, a Call button that opens the dialer, and a Confirm button. Confirm asks what it sold for (the order's price already in), and that amount becomes a sale in the farmer's earnings; it can be changed afterwards. The orders come from `order_items` for a real account (`fetchIncomingOrders`), and two sample orders in demo mode (`src/data/demo/orders.ts`).
 
-The buyer's side of the same orders is the Orders page: each line says whether it is still waiting for the farmer's call or confirmed, and "Record payment" writes down what was actually paid. What a purchase cost is one rule (`src/lib/purchases.ts`): what the buyer paid, else what the farmer confirmed, else the order's price; Total Spent and Home's Your purchases both use it.
+The buyer's side of the same orders is the Orders page: each line says whether it is still waiting for the farmer's call or confirmed, and "Record payment" writes down what was actually paid. Once a line is settled on both sides (confirmed and paid), five stars ask how the farmer was (`StarRating`); a farmer's rating is the average of those stars, with a count, and a farmer nobody has rated shows "New" and ranks after rated ones (`src/lib/rating.ts`). What a purchase cost is one rule (`src/lib/purchases.ts`): what the buyer paid, else what the farmer confirmed, else the order's price; Total Spent and Home's Your purchases both use it.
 
 ### 3.9 Verification codes
 

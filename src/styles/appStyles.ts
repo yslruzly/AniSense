@@ -311,6 +311,11 @@ export const appCss = `
     transition: opacity 140ms ease; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
   .ord-change:active { opacity: .55; transition-duration: 0ms; }
+  /* Under the confirmed line, once the buyer has rated: their stars, and who. */
+  .ord-rated {
+    display: flex; align-items: center; justify-content: center; gap: 8px; margin: 0;
+    font-size: var(--fs-label); font-weight: 600; line-height: 1.3; color: var(--text-soft);
+  }
   @media (prefers-reduced-motion: reduce) {
     .ord-done, .ord-ask { animation: none; }
     .ord-btn:active { transform: none; }
@@ -707,6 +712,64 @@ export const appCss = `
   /* Once written down, it steps back: grey, a change rather than a task. */
   .ph-pay.is-done { color: var(--text-soft); box-shadow: inset 0 0 0 1.5px var(--line-strong); }
   @media (prefers-reduced-motion: reduce) { .ph-pay:active { transform: none; } }
+
+  /* ── Rating a farmer (StarRating) ────────────────────────────────────────
+     Five 44px targets, each round a 30px star. Empty: a grey outline dark
+     enough to read as a shape (3:1 on white). Chosen: palay gold, the
+     outline a shade deeper. A pick fills them from the left, 45ms apart, and
+     each pops a little past full size and back: 420ms with a strong
+     ease-out, the delight kept for something done now and then. Pressed, a
+     star gives under the finger. Pointed at on a desktop, a paler gold
+     previews the choice. Reduced motion: colour only. */
+  .stars { display: flex; margin: 0 -7px; }
+  .star {
+    width: 44px; height: 44px; padding: 0; border: none; background: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; color: #8F959B;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .star svg { fill: transparent; transition: fill 200ms ease, color 200ms ease; }
+  .star.on { color: #D99A22; }
+  .star.on svg { fill: var(--palay); }
+  .stars[data-pop] .star.on svg { transition-delay: calc(var(--i) * 45ms); }
+  .star.preview { color: #E2B451; }
+  .star.preview svg { fill: #F7DE9C; transition-delay: 0ms; }
+  .star-ico { display: inline-flex; transition: transform 160ms var(--ease-out); }
+  .star:active .star-ico { transform: scale(.86); transition-duration: var(--dur-press); }
+  .star-ico.pop { animation: star-pop 420ms var(--ease-out) both; animation-delay: calc(var(--i) * 45ms); }
+  @keyframes star-pop {
+    0%   { transform: scale(.72); }
+    45%  { transform: scale(1.24); }
+    100% { transform: scale(1); }
+  }
+  .star:focus-visible { outline: 3px solid var(--tanim); outline-offset: -3px; border-radius: 12px; }
+  /* Stars only to read: what a buyer gave, on the farmer's card. */
+  .stars-shown { display: inline-flex; gap: 2px; }
+  .stars-shown svg { color: #8F959B; fill: transparent; }
+  .stars-shown svg.on { color: #D99A22; fill: var(--palay); }
+
+  /* On a buyer's order, settled on both sides: a warm panel across the row
+     with the question and the stars. Once rated it cools to paper, the
+     question becomes "You rated …", and the stars stay to change. The panel
+     that has just become ratable (a payment just written down) rises in;
+     the thank-you after a rating does too. */
+  .ph-rate {
+    grid-column: 2 / -1; display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+    margin-top: 10px; padding: 10px 12px 6px; border-radius: 14px; background: var(--gold-sk);
+  }
+  .ph-rate.is-rated { background: var(--paper); }
+  .ph-rate.is-new { animation: ph-rate-in 320ms var(--ease-out) both; }
+  .ph-rate-q { font-family: var(--font-display); font-size: var(--fs-label); font-weight: 700; line-height: 1.35; color: var(--text); }
+  .ph-rate-thanks {
+    margin: 0 0 4px; font-size: var(--fs-label); line-height: 1.4; font-weight: 600; color: var(--tanim-deep);
+    animation: ph-rate-in 240ms var(--ease-out) both;
+  }
+  .ph-rate-hint { grid-column: 2 / -1; margin: 8px 0 0; font-size: 14.5px; line-height: 1.4; color: var(--text-muted); }
+  @keyframes ph-rate-in { from { opacity: 0; transform: translateY(6px) scale(.98); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    .star-ico.pop, .ph-rate.is-new, .ph-rate-thanks { animation: none; }
+    .star:active .star-ico { transform: none; }
+    .stars[data-pop] .star.on svg { transition-delay: 0ms; }
+  }
   /* The payment sheet: which order, the amount, what to check it against. */
   .pay-what { margin: -4px 0 14px; font-size: var(--fs-label); line-height: 1.4; color: var(--text-muted); }
   .pay-what b { color: var(--text); font-weight: 700; }

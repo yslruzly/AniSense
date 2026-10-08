@@ -25,6 +25,7 @@ interface OrderItemRow {
   sold_amount?: number | null;
   paid_amount?: number | null;
   confirmed_at?: string | null;
+  rating?: number | null;
   crop: { name: string; group: { name: string } | null } | null;
   seller?: { full_name: string } | null;
   order?: { buyer_id: string; buyer?: { full_name: string; phone?: string | null; location?: string | null } | null } | null;
@@ -44,7 +45,7 @@ export async function fetchMyPurchases(): Promise<FetchResult<BuyerTransaction[]
     if (!u.user) throw new Error("NOT_SIGNED_IN");
     const { data, error } = await supabase
       .from("order_items")
-      .select("id, quantity_kg, price_per_kg, amount, location, created_at, status, sold_amount, paid_amount, " +
+      .select("id, quantity_kg, price_per_kg, amount, location, created_at, status, sold_amount, paid_amount, rating, " +
         "crop:crops(name, group:crop_groups(name)), seller:profiles!seller_id(full_name), orders!inner(buyer_id)")
       .eq("orders.buyer_id", u.user.id)
       .order("created_at", { ascending: false });
@@ -64,6 +65,7 @@ export async function fetchMyPurchases(): Promise<FetchResult<BuyerTransaction[]
         status: row.status,
         agreed: num(row.sold_amount),
         paid: num(row.paid_amount),
+        rating: num(row.rating),
       };
     });
   });
@@ -117,7 +119,7 @@ export async function fetchIncomingOrders(): Promise<FetchResult<IncomingOrder[]
     const weekAgo = new Date(Date.now() - 7 * 864e5).toISOString();
     const { data, error } = await supabase
       .from("order_items")
-      .select("id, quantity_kg, price_per_kg, amount, location, created_at, status, sold_amount, " +
+      .select("id, quantity_kg, price_per_kg, amount, location, created_at, status, sold_amount, rating, " +
         "crop:crops(name, group:crop_groups(name)), order:orders(buyer_id, buyer:profiles(full_name, phone, location))")
       .eq("seller_id", u.user.id)
       .or(`status.eq.placed,and(status.eq.confirmed,confirmed_at.gte.${weekAgo})`)
@@ -136,6 +138,7 @@ export async function fetchIncomingOrders(): Promise<FetchResult<IncomingOrder[]
       placedAt: row.created_at,
       status: row.status === "placed" ? "placed" : "confirmed",
       soldAmount: num(row.sold_amount),
+      rating: num(row.rating),
     }));
   });
 }
@@ -151,6 +154,16 @@ export async function confirmOrderItem(id: string, sold: number): Promise<void> 
 export async function recordPayment(id: string, paid: number | null): Promise<void> {
   requireOnline("Recording a payment");
   const { error } = await supabase.rpc("record_order_payment", { p_item: id, p_paid: paid });
+  if (error) throw error;
+}
+
+/**
+ * The buyer rates the farmer of a line, 1 to 5 stars (again, to change it).
+ * Only once it is settled on both sides: NOT_YET before. Online only.
+ */
+export async function rateOrderItem(id: string, stars: number): Promise<void> {
+  requireOnline("Rating a farmer");
+  const { error } = await supabase.rpc("rate_order_item", { p_item: id, p_stars: stars });
   if (error) throw error;
 }
 

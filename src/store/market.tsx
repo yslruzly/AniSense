@@ -13,7 +13,7 @@ import { PriceAlert, loadAlerts, saveAlerts as keepAlerts } from "../lib/priceAl
 import { HarvestPlans, loadHarvestPlans, saveHarvestPlans as keepPlans } from "../lib/harvestPlans";
 import type { AchievementId } from "../lib/achievements";
 import { fetchMarket, createListing, updateListing, removeListing, ListingInput } from "../services/listings";
-import { fetchMyPurchases, fetchMySales, fetchIncomingOrders, confirmOrderItem, recordPayment as sendPayment, placeOrder as sendOrder } from "../services/transactions";
+import { fetchMyPurchases, fetchMySales, fetchIncomingOrders, confirmOrderItem, recordPayment as sendPayment, rateOrderItem, placeOrder as sendOrder } from "../services/transactions";
 import { toCents } from "../lib/money";
 import { fetchExpenses, addExpense, updateExpense, deleteExpense as dropExpense, ExpenseForm } from "../services/expenses";
 import { syncNow } from "../services/sync";
@@ -75,6 +75,9 @@ export interface Market {
   /** The buyer records what they paid for a line of an order (null clears it):
    *  it is what their spending counts. Online only, live. */
   recordPayment: (id: string, paid: number | null) => Promise<void>;
+  /** The buyer rates the farmer of a settled line, 1 to 5 stars (again to
+   *  change it). Online only, live; the farmer's average follows. */
+  rateOrder: (id: string, stars: number) => Promise<void>;
   /** A farmer's own records, and how to change them (saved for them). */
   sales: Sale[];
   setSales: (next: Sale[]) => void;
@@ -271,6 +274,15 @@ export function useMarketStore({ accountId, role, name, initials }: {
     setPurchases(ps => ps.map(p => (p.id === id ? { ...p, paid: paid ?? undefined } : p)));
   };
 
+  const rateOrder = async (id: string, stars: number) => {
+    if (live) {
+      await rateOrderItem(id, stars);
+      // The farmer's new average, wherever the Market shows it.
+      void refresh();
+    }
+    setPurchases(ps => ps.map(p => (p.id === id ? { ...p, rating: stars } : p)));
+  };
+
   const refresh = useCallback(async () => {
     if (!live) return;
     try { setFromCache(await loadMarket()); } catch { /* the list on screen stands */ }
@@ -359,7 +371,7 @@ export function useMarketStore({ accountId, role, name, initials }: {
   return {
     live, loading, loadPhase, fromCache,
     listings, sellers, showingSamples: listings.some(l => l.sample), purchases, expenses, marketSales,
-    incomingOrders, confirmOrder, recordPayment,
+    incomingOrders, confirmOrder, recordPayment, rateOrder,
     sales, setSales, plantings, setPlantings, priceAlerts, setPriceAlerts, harvestPlans, setHarvestPlans,
     awards, pricesVersion,
     isMine, sellerKeyOf,

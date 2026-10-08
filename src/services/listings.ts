@@ -19,6 +19,7 @@ interface SellerRow {
   id: string;
   full_name: string;
   rating: number;
+  rating_count?: number | null;
   phone: string | null;
   location: string | null;
   years_farming: number | null;
@@ -63,6 +64,7 @@ function toListing(row: ListingRow): Listing {
     seller: name,
     sellerInitials: initialsOf(name),
     rating: Number(row.seller?.rating ?? 5),
+    ratingCount: Number(row.seller?.rating_count ?? 0),
     location: row.location,
     photo: row.photo_url ?? undefined,
   };
@@ -78,6 +80,7 @@ function toSeller(row: SellerRow): SellerDetail {
     location: row.location ?? "",
     yearsfarming: row.years_farming ?? 0,
     rating: Number(row.rating ?? 5),
+    ratingCount: Number(row.rating_count ?? 0),
     totalSales: row.total_sales ?? 0,
     crops: (row.profile_crops ?? []).map(pc => pc.crop_groups?.name).filter((n): n is string => !!n),
     bio: row.bio ?? "",
@@ -100,7 +103,7 @@ export async function fetchMarket(): Promise<FetchResult<MarketSnapshot>> {
       .from("listings")
       .select("id, seller_id, description, price_per_kg, quantity_kg, location, photo_url, created_at, " +
         "crop:crops(id, name), " +
-        "seller:profiles!seller_id(id, full_name, rating, phone, location, years_farming, total_sales, bio, profile_crops(crop_groups(name)))")
+        "seller:profiles!seller_id(id, full_name, rating, rating_count, phone, location, years_farming, total_sales, bio, profile_crops(crop_groups(name)))")
       .eq("status", "active")
       .gt("quantity_kg", 0)
       .order("created_at", { ascending: false });

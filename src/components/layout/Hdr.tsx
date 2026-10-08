@@ -9,6 +9,7 @@ import { useViewer } from "../../store/viewer";
 import { peso } from "../../lib/money";
 import { isNetworkError } from "../../lib/cache";
 import { PesoField, pesoText, pesoValue } from "../ui/PesoField";
+import { StarsShown } from "../ui/StarRating";
 
 // ─── An order from a buyer ────────────────────────────────────────────────────
 // The one alert that asks the farmer to do something, so it is the one alert
@@ -112,6 +113,14 @@ function OrderAlert({ order, onConfirm }: { order: IncomingOrder; onConfirm: (id
                 <div className="ord-done" role="status">
                   <Check size={20} strokeWidth={2.8} aria-hidden="true" /> {t("ord_sold_for").replace("{amount}", peso(sold))}
                 </div>
+                {/* Once the buyer has rated them for it. */}
+                {order.rating ? (
+                  <p className="ord-rated">
+                    <StarsShown value={order.rating} />
+                    <span>{t("ord_rated").replace("{name}", order.buyer.split(" ")[0])}</span>
+                    <span className="sr-only">{t(order.rating === 1 ? "rate_star_one" : "rate_star_n").replace("{n}", String(order.rating))}</span>
+                  </p>
+                ) : null}
                 <button type="button" className="ord-change" onClick={ask}>{t("ord_change")}</button>
               </>
             ) : (

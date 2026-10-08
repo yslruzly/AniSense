@@ -5,6 +5,7 @@ import { useMarket } from "../../store/market";
 import { useViewer } from "../../store/viewer";
 import { featuredLineup, townOf } from "../../lib/featured";
 import { avatarTint, avatarTone } from "../../lib/avatar";
+import { ratingText } from "../../lib/rating";
 import { AniSenseLogo } from "../brand/AniSenseLogo";
 import leafMask from "../../assets/anisense-leaf-mask.png";
 
@@ -46,11 +47,11 @@ export function FeaturedFarmersRow({ onOpen }: { onOpen: (sellerKey: string) => 
           return (
             <button key={s.key} type="button" className={`mpf-card${week ? " is-week" : ""}`} onClick={() => onOpen(s.key)}
               style={{ "--tint": avatarTint(s.name) } as CSSProperties}
-              aria-label={[s.name, `${s.rating.toFixed(1)} ★`, town, s.near ? t("ff_near") : ""].filter(Boolean).join(", ")}>
+              aria-label={[s.name, `${ratingText(s, t("rating_new"))} ★`, town, s.near ? t("ff_near") : ""].filter(Boolean).join(", ")}>
               <span className="ff-ava" style={{ background: avatarTone(s.name) }} aria-hidden="true">{s.initials}</span>
               <span className="mpf-name" aria-hidden="true">{s.name}</span>
               <span className="mpf-meta" aria-hidden="true">
-                <Star size={13} fill="currentColor" strokeWidth={0} /> {s.rating.toFixed(1)}{town && <> · {town}</>}
+                <Star size={13} fill="currentColor" strokeWidth={0} /> {ratingText(s, t("rating_new"))}{town && <> · {town}</>}
               </span>
               {s.near && <span className="ff-near" aria-hidden="true">{t("ff_near")}</span>}
             </button>

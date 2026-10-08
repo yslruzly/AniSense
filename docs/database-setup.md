@@ -267,6 +267,8 @@ If no text arrives:
 - [ ] Farmer's bell shows the order with the buyer's name and number; Confirm order asks "How much did you sell it for?" with the order's price in. Confirm a different amount: the line in **order_items** is `confirmed` with that `sold_amount`
 - [ ] Farmer's Profit snapshot counts the sale at the amount they confirmed (and did not count it before they confirmed)
 - [ ] Buyer's Orders page now says "Confirmed by the farmer". Record payment with another amount: **order_items** has that `paid_amount`, and Total Spent and Your purchases use it
+- [ ] Right after, five stars appear on that order ("How was …?"). Tap the 4th: **order_items** has `rating = 4`, and the farmer's **profiles** row has `rating = 4.0` and `rating_count = 1`; the farmer's confirmed order card shows the four stars
+- [ ] A farmer nobody has rated shows **New** instead of a number in the Market and on their profile
 - [ ] Farmer adds an expense in airplane mode: it shows at once; turn the internet back on and it appears in **expenses**
 - [ ] Two farmer accounts each see only their own expenses
 - [ ] Farmer records a sale, adds a planting and a price alert: rows appear in **sales**, **plantings** and **price_alerts**; they are still there after reinstalling the app

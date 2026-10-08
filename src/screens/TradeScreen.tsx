@@ -26,6 +26,7 @@ import { useViewer } from "../store/viewer";
 import { useMarket, sellerKeyOfDetail } from "../store/market";
 import { FeaturedFarmersRow } from "../components/marketplace/FeaturedFarmersRow";
 import { BackToTop } from "../components/ui/BackToTop";
+import { rankOf, ratingText, unrated } from "../lib/rating";
 import { FarmerOfTheWeekBadge } from "../components/marketplace/FarmerOfTheWeekBadge";
 import { farmerOfTheWeek } from "../lib/featured";
 import { orderErrorOf } from "../services/transactions";
@@ -280,7 +281,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
   const sorted = [...filtered].sort((a, b) => {
     if (sortBy === "price-asc") return a.pricePerKg - b.pricePerKg;
     if (sortBy === "price-desc") return b.pricePerKg - a.pricePerKg;
-    if (sortBy === "rating") return b.rating - a.rating;
+    if (sortBy === "rating") return rankOf(b) - rankOf(a);
     return new Date(b.date).getTime() - new Date(a.date).getTime();
   });
 
@@ -590,7 +591,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                       <span className="mp-card-seller">
                         {/* The rating is the one number a buyer weighs a
                             stranger by, so it gets the gold chip. */}
-                        <span className="mp-rate"><Star size={12} fill="currentColor" strokeWidth={0} aria-hidden="true" /> {l.rating}</span>
+                        <span className="mp-rate"><Star size={12} fill="currentColor" strokeWidth={0} aria-hidden="true" /> {ratingText(l, t("rating_new"))}</span>
                         <span className="mp-ellipsis">{l.seller}</span>
                       </span>
                     </span>
@@ -663,7 +664,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                   <span className="mp-seller-who">
                     <span className="mp-seller-name">{l.seller}</span>
                     <span className="mp-seller-meta">
-                      <span className="mp-rate"><Star size={12} fill="currentColor" strokeWidth={0} /> {l.rating}</span>
+                      <span className="mp-rate"><Star size={12} fill="currentColor" strokeWidth={0} /> {ratingText(l, t("rating_new"))}</span>
                       <span className="mp-dot">·</span> <MapPin size={13} strokeWidth={2.2} /> <span className="mp-ellipsis">{l.location}</span>
                     </span>
                   </span>
@@ -1117,8 +1118,8 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                     that rides up over the photo's edge. */}
                 <div className="spf-stats">
                   <div className="spf-stat">
-                    <span className="spf-stat-v"><Star size={16} strokeWidth={0} fill="#C98A1B" /> {shownSeller.rating.toFixed(1)}</span>
-                    <span className="spf-stat-l">{en("seller_rating")}</span>
+                    <span className="spf-stat-v">{unrated(shownSeller) ? en("rating_new") : <><Star size={16} strokeWidth={0} fill="#C98A1B" /> {shownSeller.rating.toFixed(1)}</>}</span>
+                    <span className="spf-stat-l">{shownSeller.ratingCount ? `${shownSeller.ratingCount} ${en(shownSeller.ratingCount === 1 ? "rating_one" : "rating_n")}` : en("seller_rating")}</span>
                   </div>
                   <div className="spf-stat">
                     <span className="spf-stat-v">{shownSeller.yearsfarming}<small> {en("seller_years_suffix")}</small></span>

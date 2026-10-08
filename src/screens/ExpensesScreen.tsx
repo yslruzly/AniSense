@@ -20,6 +20,8 @@ import { Sale } from "../lib/sales";
 import { costOf, totalSpent } from "../lib/purchases";
 import { peso } from "../lib/money";
 import { PaymentSheet } from "../components/marketplace/PaymentSheet";
+import { StarRating } from "../components/ui/StarRating";
+import { isNetworkError } from "../lib/cache";
 
 // ─── Expenses Screen ──────────────────────────────────────────────────────────
 export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = "JD", isBuyer = false, sales = [] }: { onProfile: () => void; onBack: () => void; farmerCrops: string[]; userInitials?: string; isBuyer?: boolean; sales?: Sale[] }) {
@@ -36,6 +38,29 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
   // The order line whose payment is being written down, by id, so the sheet
   // follows the row if the history is fetched again while it is open.
   const [payingId, setPayingId] = useState<string | null>(null);
+  // Ratings. A line can be rated once it is settled on both sides: the farmer
+  // confirmed it and the buyer wrote down what they paid. The one that has
+  // just become ratable rises in; the one just rated says thank you for a
+  // few seconds; one that couldn't be saved says why.
+  const settled = (tx: BuyerTransaction) => (tx.status === "confirmed" || tx.status === "completed") && tx.paid !== undefined;
+  const [freshRate, setFreshRate] = useState<string | null>(null);
+  const [thanked, setThanked] = useState<string | null>(null);
+  const [rateError, setRateError] = useState<{ id: string; msg: string } | null>(null);
+  const thanksTimer = useRef(0);
+  useEffect(() => () => window.clearTimeout(thanksTimer.current), []);
+  const rate = async (tx: BuyerTransaction, n: number) => {
+    setRateError(null);
+    try {
+      await market.rateOrder(tx.id, n);
+      setThanked(tx.id);
+      window.clearTimeout(thanksTimer.current);
+      thanksTimer.current = window.setTimeout(() => setThanked(null), 4000);
+    } catch (e) {
+      setRateError({ id: tx.id, msg: t(isNetworkError(e) ? "err_offline_action" : "ord_save_failed") });
+      throw e;
+    }
+  };
+  const firstName = (name: string) => name.split(" ")[0];
   const ICONS: Record<string, string> = { Seeds: "Seeds", Fertilizer: "Fertilizer", Labor: "Labor", Equipment: "Equipment", Irrigation: "Irrigation", Other: "Other" };
   const cats = ["All", "Seeds", "Fertilizer", "Labor", "Equipment", "Irrigation", "Other"];
 
@@ -316,7 +341,7 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
                                           ? <span className="ph-status is-ok"><Check size={15} strokeWidth={2.8} aria-hidden="true" /> {t("ph_st_confirmed")}</span>
                                           : null}
                                     {tx.status !== "cancelled" && (
-                                      <button type="button" className={`ph-pay${tx.paid !== undefined ? " is-done" : ""}`} onClick={() => setPayingId(tx.id)}
+                                      <button type="button" className={`ph-pay${tx.paid !== undefined ? " is-done" : ""}`} onClick={() => { setFreshRate(null); setPayingId(tx.id); }}
                                         aria-label={`${tx.paid !== undefined ? t("ph_pay_change") : t("ph_pay_record")}: ${title}, ${tx.seller}`}>
                                         {tx.paid !== undefined
                                           ? <><Pencil size={15} strokeWidth={2.4} aria-hidden="true" /> {t("ph_pay_change")}</>
@@ -324,6 +349,21 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
                                       </button>
                                     )}
                                   </div>
+                                )}
+                                {/* Settled on both sides: how was the farmer? Five
+                                    stars to tap. Confirmed but not yet paid: a line
+                                    saying what comes first. */}
+                                {settled(tx) ? (
+                                  <div className={`ph-rate${freshRate === tx.id ? " is-new" : ""}${tx.rating ? " is-rated" : ""}`}>
+                                    <span className="ph-rate-q" id={`rq-${tx.id}`}>
+                                      {t(tx.rating ? "rate_done" : "rate_q").replace("{name}", firstName(tx.seller))}
+                                    </span>
+                                    <StarRating value={tx.rating ?? 0} labelledBy={`rq-${tx.id}`} onRate={n => rate(tx, n)} />
+                                    {thanked === tx.id && <p className="ph-rate-thanks" role="status">{t("rate_thanks")}</p>}
+                                    {rateError?.id === tx.id && <p className="ord-err" role="alert">{rateError.msg}</p>}
+                                  </div>
+                                ) : (tx.status === "confirmed" || tx.status === "completed") && (
+                                  <p className="ph-rate-hint">{t("rate_after_pay").replace("{name}", firstName(tx.seller))}</p>
                                 )}
                               </div>
                             );
@@ -338,7 +378,8 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
           </>
         )}
 
-        {isBuyer && <PaymentSheet tx={buyerTransactions.find(tx => tx.id === payingId) ?? null} onClose={() => setPayingId(null)} />}
+        {isBuyer && <PaymentSheet tx={buyerTransactions.find(tx => tx.id === payingId) ?? null} onClose={() => setPayingId(null)}
+          onSaved={id => setFreshRate(id)} />}
 
         {/* ── FARMER: full expense management ── */}
         {!isBuyer && (
