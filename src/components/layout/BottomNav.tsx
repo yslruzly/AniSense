@@ -27,8 +27,9 @@ export function BottomNav({ active, onNavigate }: { active: Screen; onNavigate: 
   return (
     <nav className="bnav">
       <div className="bnav-track" data-tour="nav" style={{ "--n": items.length } as React.CSSProperties}>
-        {/* Hidden on screens that aren't tabs (Weather, Analytics), rather
-            than parked on a tab the user isn't on. */}
+        {/* On a page opened from a tab (Privacy from Profile, Weather from
+            Home), that tab stays lit: it is where the page lives, and
+            tapping it goes back to the tab's first page. */}
         <span
           className="bnav-pill"
           aria-hidden="true"

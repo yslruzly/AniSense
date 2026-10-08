@@ -13,9 +13,10 @@
 //   · run supabase/schema.sql again (it adds the verification_codes table)
 //   · Edge Functions → Secrets:
 //       Gmail:  BREVO_API_KEY, BREVO_SENDER_EMAIL, BREVO_SENDER_NAME (optional, "AniSense")
-//       Texts:  SEMAPHORE_API_KEY, SEMAPHORE_SENDER_NAME (optional: only once
-//               Semaphore has approved it; without it texts come from
-//               Semaphore's own name), SMS_MAX_PER_HOUR (optional, 100)
+//       Texts:  SEMAPHORE_API_KEY, SEMAPHORE_SENDER_NAME (the name Semaphore
+//               approved, exactly as its Sender Names page shows it: without an
+//               approved one Semaphore refuses every text), SMS_MAX_PER_HOUR
+//               (optional, 100)
 //   · deploy this file as a function named  verify-code , with
 //     "Enforce JWT verification" OFF (the app calls it before anyone has an
 //     account, with the publishable key)
@@ -173,7 +174,9 @@ async function sendSms(number: string, code: string, purpose: Purpose, lang: Lan
   const apiKey = Deno.env.get("SEMAPHORE_API_KEY");
   if (!apiKey) return null;
   const form = new URLSearchParams({ apikey: apiKey, number, message: SMS[lang][purpose], code });
-  const sender = Deno.env.get("SEMAPHORE_SENDER_NAME");
+  // As typed into Secrets, less any spaces or quotes pasted round it: those
+  // make Semaphore refuse the name ("The senderName supplied is not valid").
+  const sender = (Deno.env.get("SEMAPHORE_SENDER_NAME") ?? "").trim().replace(/^["'“”]+|["'“”]+$/g, "").trim();
   if (sender) form.set("sendername", sender);
   let res: Response;
   try { res = await fetch("https://api.semaphore.co/api/v4/otp", { method: "POST", body: form }); }
@@ -181,8 +184,13 @@ async function sendSms(number: string, code: string, purpose: Purpose, lang: Lan
   const body = await res.text().catch(() => "");
   let first: Record<string, unknown> | null = null;
   try { const data = JSON.parse(body); first = Array.isArray(data) ? data[0] ?? null : null; } catch { /* not JSON */ }
-  // Semaphore's key is never in a log: only its answer is.
-  if (!res.ok || !first || first.message_id == null) { console.error("Semaphore did not send the text:", res.status, body.slice(0, 300)); return null; }
+  // Semaphore's key is never in a log: only its answer is, with the sender
+  // name it was given (not a secret), which shows at once whether that
+  // matches the one Semaphore approved.
+  if (!res.ok || !first || first.message_id == null) {
+    console.error("Semaphore did not send the text:", res.status, body.slice(0, 300), sender ? `(sender name sent: "${sender}")` : "(no sender name set)");
+    return null;
+  }
   return first.code != null ? String(first.code).padStart(6, "0") : code;
 }
 

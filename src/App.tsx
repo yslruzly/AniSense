@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { Screen, AuthScreen, UserRole, FarmDetails, TradeIntent } from "./types";
 import { useOffline } from "./hooks/useOffline";
@@ -97,6 +97,17 @@ export default function App() {
   // twentieth tab switch of the day.
   const visited = useRef(new Set<Screen>(["home"]));
   const [revisit, setRevisit] = useState(false);
+  // ── Where you were, in each tab ──
+  // Each tab keeps its place, the way a phone's own apps do: how far down
+  // each page was scrolled, and the page last open in it (Privacy, opened
+  // from Profile; Weather, from Home). Leave a tab and come back, and it is
+  // as you left it; a Back button returns to the spot it left. A page opened
+  // fresh from a button starts at its top. Tapping the tab you are on goes
+  // to its first page, or, already there, glides to the top. Kept for the
+  // session, and forgotten on signing out.
+  const scrollAt = useRef<Partial<Record<Screen, number>>>({});
+  const openedFrom = useRef<Partial<Record<Screen, Screen>>>({});
+  const lastIn = useRef<Partial<Record<Screen, Screen>>>({});
   // ── The guided tour ──
   // Runs once per role on this phone, on the first Home the account lands
   // on. It is held back until the welcome ID is out of the way, because two
@@ -237,15 +248,54 @@ export default function App() {
   // later tap on the Market tab opens the plain marketplace, not the last
   // filter Home asked for.
   const [tradeIntent, setTradeIntent] = useState<TradeIntent | null>(null);
-  const navigate = (next: Screen) => {
+  // The tab a screen belongs to: a tab is its own; a page, the tab it was opened from.
+  const tabOf = (s: Screen): Screen => (TABS.includes(s) ? s : openedFrom.current[s] ?? "home");
+  const scroller = () => document.querySelector<HTMLElement>(".shell > .screen .scroll");
+  // `resume`: back to a page as it was left (the tab bar), not opened afresh.
+  const navigate = (next: Screen, resume = false) => {
     if (next === active) return;
+    // Note where this page was left, and that it was the last one seen in its tab.
+    const here = scroller();
+    if (here) scrollAt.current[active] = here.scrollTop;
+    lastIn.current[tabOf(active)] = active;
+    // A page opened from a button belongs to the tab it was opened from, and starts at its top.
+    if (!resume && !TABS.includes(next)) {
+      openedFrom.current[next] = tabOf(active);
+      delete scrollAt.current[next];
+    }
     setTradeIntent(null);
-    setNav(!TABS.includes(next) ? "push" : !TABS.includes(active) ? "pop" : "tab");
+    setNav(resume ? "tab" : !TABS.includes(next) ? "push" : !TABS.includes(active) ? "pop" : "tab");
     setRevisit(visited.current.has(next));
     visited.current.add(next);
     setActive(next);
   };
-  const openMarketplace = (intent: TradeIntent) => { navigate("trade"); setTradeIntent(intent); };
+  // The tab bar. Another tab: back to where you were in it. The tab you are
+  // in: from a page opened in it, its first page; on that page already, up
+  // to the top.
+  const navigateTab = (tab: Screen) => {
+    if (tab === active) {
+      const still = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+      scroller()?.scrollTo({ top: 0, behavior: still ? "auto" : "smooth" });
+      return;
+    }
+    if (tabOf(active) === tab) { navigate(tab); return; }
+    const last = lastIn.current[tab];
+    navigate(last ?? tab, !!last && last !== tab);
+  };
+  // Home sending the buyer to particular harvests: the Market opens fresh, at its top.
+  const openMarketplace = (intent: TradeIntent) => { delete scrollAt.current.trade; navigate("trade"); setTradeIntent(intent); };
+
+  // Back on a page that was left part-way down: the same spot. Set before the
+  // first paint, then once more a frame later in case the page was still
+  // settling (a photo taking its height).
+  useLayoutEffect(() => {
+    const y = scrollAt.current[active];
+    const el = scroller();
+    if (!el || !y) return;
+    el.scrollTop = y;
+    const id = requestAnimationFrame(() => { if (Math.abs(el.scrollTop - y) > 1) el.scrollTop = y; });
+    return () => cancelAnimationFrame(id);
+  }, [active]);
   const { isOffline, lastUpdated } = useOffline();
 
   useEffect(() => { initKeyboard(); }, []);
@@ -432,6 +482,7 @@ export default function App() {
     setWelcome(null);
     setUserPhoto(null);
     visited.current = new Set(["home"]);
+    scrollAt.current = {}; openedFrom.current = {}; lastIn.current = {};
     setRevisit(false);
     setNav("tab");
     // The next account on this phone may be the other role, with its own
@@ -536,7 +587,7 @@ export default function App() {
       <div className="outer">
         <div className="shell" data-nav={nav} data-revisit={revisit || undefined}>
           {renderScreen()}
-          <BottomNav active={active} onNavigate={navigate} />
+          <BottomNav active={tabOf(active)} onNavigate={navigateTab} />
           <WelcomeID
             open={showWelcome}
             onClose={() => setShowWelcome(false)}
