@@ -2397,14 +2397,14 @@ export const appCss = `
   .ffc-row::-webkit-scrollbar { height: 0; }
   .ffc {
     flex: 0 0 236px; scroll-snap-align: start; position: relative;
-    display: flex; flex-direction: column; min-width: 0; padding: 0; overflow: hidden;
+    display: flex; flex-direction: column; min-width: 0; padding: 0;
     border: none; border-radius: 18px; background: var(--card); text-align: left; font: inherit; color: inherit; cursor: pointer;
     box-shadow: inset 0 0 0 1px var(--line), 0 10px 22px -16px rgba(22,33,27,.45);
     transition: transform 190ms var(--ease-out);
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
   .ffc:active { transform: scale(.97); transition-duration: var(--dur-press); }
-  .ffc .ffc-hero { display: block; height: 134px; border-radius: 0; }
+  .ffc .ffc-hero { display: block; height: 134px; border-radius: 18px 18px 0 0; }
   .ffc .spf-mark { width: 150px; right: -30px; top: -20px; }
   .ffc-id {
     position: absolute; left: 14px; right: 52px; bottom: 30px; z-index: 1;
@@ -2452,12 +2452,40 @@ export const appCss = `
      the whole card (over the photo too, which a plain border would sit
      under), and a soft gold glow round it. The row gives it room above and
      below, so the glow isn't cut where the row scrolls. */
-  .ffc.is-week { box-shadow: 0 0 16px -2px rgba(242,179,44,.6), 0 10px 22px -16px rgba(22,33,27,.45); }
+  /* Alive, slowly. A band of pale light runs round the ring, one lap in
+     4.5s at an even pace (constant motion, so linear), like light moving on
+     polished gold. The glow outside breathes: a little stronger and wider,
+     then back, 3.2s each way, eased in and out. The glow is its own layer
+     behind the card and moves only by opacity and scale; the ring's light
+     is a gradient angle, repainted on one thin ring. Slow and on one card,
+     so it catches the eye when the Market opens without tugging at it
+     while the buyer reads. With reduced motion, it holds still. */
+  @property --ffc-a { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+  .ffc.is-week { isolation: isolate; }
+  .ffc.is-week::before {
+    content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none;
+    box-shadow: 0 0 16px 1px rgba(242,179,44,.62);
+    animation: ffc-breathe 3.2s ease-in-out infinite alternate;
+  }
+  @keyframes ffc-breathe {
+    from { opacity: .5; transform: scale(.99); }
+    to   { opacity: 1;  transform: scale(1.02); }
+  }
   .ffc.is-week::after {
     content: ""; position: absolute; inset: 0; z-index: 3; border-radius: inherit; pointer-events: none;
-    box-shadow: inset 0 0 0 2px #F2B32C;
+    padding: 2px;
+    background: conic-gradient(from var(--ffc-a), #F2B32C 0deg, #F2B32C 210deg, #FFDF8A 255deg, #FFF9E6 285deg, #FFDF8A 315deg, #F2B32C 360deg);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+    animation: ffc-lap 4.5s linear infinite;
   }
-  .ffc-row.has-glow { margin-top: 4px; padding-top: 14px; padding-bottom: 18px; }
+  @keyframes ffc-lap { to { --ffc-a: 360deg; } }
+  /* Room above and below, so the glow, at its widest, isn't cut where the row scrolls. */
+  .ffc-row.has-glow { margin-top: 0; padding-top: 20px; padding-bottom: 24px; }
+  @media (prefers-reduced-motion: reduce) {
+    .ffc.is-week::before, .ffc.is-week::after { animation: none; }
+    .ffc.is-week::before { opacity: 1; transform: none; }
+  }
   @media (prefers-reduced-motion: reduce) { .ffc:active, .ffc:active .ffc-go { transform: none; } }
 
   /* ── Featured farmers, in the Market ──
