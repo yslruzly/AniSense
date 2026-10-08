@@ -13,6 +13,8 @@
 //     (seed.sql ran)
 //   ✓ the listing-photos bucket exists
 //   ✓ member numbers: profiles carry the database's member_no
+//   ✓ orders after the call: confirm with what it sold for, record what was
+//     paid, rate the farmer (the latest schema.sql ran)
 //   ✓ (optional) real Gmail codes: the verify-code Edge Function is deployed,
 //     open to the app, has its Brevo key, and its table exists
 //   ✓ (optional) real CP-number codes: verify-code has its Semaphore key
@@ -132,6 +134,26 @@ else ok("Functions: checkout, crop list, farm-record sync, and account deletion"
 const memberCol = await get("/rest/v1/profiles?select=member_no&limit=1");
 if (memberCol.status === 200) ok("Member numbers: each profile gets the next one (2026-00001…)");
 else bad("Profiles have no member numbers yet", "Run the latest supabase/schema.sql again (safe to re-run): it numbers existing accounts in the order they joined.");
+
+// 3a2. After the call: the farmer's "sold for", the buyer's "paid", and the
+//      buyer's stars (2026-10-07). Signed out, the three calls are refused
+//      and no row comes back, but both prove the pieces are there.
+const AFTER_CALL = {
+  confirm_order_item: { p_item: "00000000-0000-0000-0000-000000000000", p_sold: 1 },
+  record_order_payment: { p_item: "00000000-0000-0000-0000-000000000000", p_paid: 1 },
+  rate_order_item: { p_item: "00000000-0000-0000-0000-000000000000", p_stars: 5 },
+};
+const noAfter = [];
+for (const [fn, args] of Object.entries(AFTER_CALL)) {
+  const r = await get(`/rest/v1/rpc/${fn}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(args) });
+  if (r.body?.code === "PGRST202" || r.status === 404) noAfter.push(fn);
+}
+const lineCols = (await get("/rest/v1/order_items?select=sold_amount,paid_amount,confirmed_at,rating,rated_at&limit=1")).status === 200;
+const ratingCount = (await get("/rest/v1/profiles?select=rating_count&limit=1")).status === 200;
+if (noAfter.length || !lineCols || !ratingCount)
+  bad(`Orders after the call are not set up yet${noAfter.length ? ` (missing: ${noAfter.join(", ")})` : ""}${!lineCols ? " (order_items has no sold/paid/rating columns)" : ""}${!ratingCount ? " (profiles has no rating_count)" : ""}`,
+    "SQL Editor → paste all of the latest supabase/schema.sql over your saved query → Run (safe to re-run).");
+else ok("Orders after the call: confirm with what it sold for, record what was paid, rate the farmer");
 
 // 3b. Starter data. catalog_status() only counts rows, so it answers without
 //     an account: were the crops, prices and badges loaded?
