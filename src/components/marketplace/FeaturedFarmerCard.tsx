@@ -18,15 +18,19 @@ import leafMask from "../../assets/anisense-leaf-mask.png";
 // the screen's words, in the app's language. (Home draws its farmers big:
 // home/FeaturedFarmerBig.tsx.)
 
-export function FeaturedFarmerCard({ farmer: s, onOpen, say, week = false }: {
+export function FeaturedFarmerCard({ farmer: s, onOpen, say, week = false, copy = false }: {
   farmer: FeaturedFarmer;
   onOpen: () => void;
   say: (key: keyof typeof translations) => string;
   week?: boolean;
+  /** The second drawing in a row that loops: seen and tappable, but neither
+   *  read out nor reached with Tab, so each farmer is met once. */
+  copy?: boolean;
 }) {
   const town = townOf(s.location);
   return (
     <button type="button" className={`ffc${week ? " is-week" : ""}`} onClick={onOpen}
+      aria-hidden={copy || undefined} tabIndex={copy ? -1 : undefined}
       aria-label={[s.name, `${ratingText(s, say("rating_new"))} ★`, town, s.near ? say("ff_near") : ""].filter(Boolean).join(", ")}>
       <span className="spf-hero ffc-hero" aria-hidden="true">
         <img className="spf-mark" src={leafMask} alt="" />

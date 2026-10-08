@@ -10,8 +10,9 @@ import { useEffect, useRef, type RefObject } from "react";
 // It never fights the user, and costs nothing when it can't be seen:
 //   · a touch, a press, the wheel or keyboard focus stops it; it starts
 //     again a moment after the hand has gone (resumeMs)
-//   · it stops off screen (IntersectionObserver) and when the app is in the
-//     background
+//   · off screen (IntersectionObserver) or with the app in the background it
+//     sleeps: no frames at all until it can be seen again, and the row is
+//     marked data-asleep, so CSS can rest anything else moving in it
 //   · with reduced motion it doesn't move by itself at all
 //
 // `pxPerSecond` is slow on purpose: a card passes in about nine seconds, time
@@ -44,15 +45,19 @@ export function useAutoScroll(row: RefObject<HTMLElement | null>, { enabled = tr
     };
 
     const tick = (now: number) => {
+      frame = 0;
+      if (!onScreen || document.hidden) return;
       frame = requestAnimationFrame(tick);
       const dt = last ? Math.min(now - last, 64) : 0;
       last = now;
-      if (held.current || !onScreen || document.hidden || now < resumeAt) { pos = el.scrollLeft; return; }
+      if (held.current || now < resumeAt) { pos = el.scrollLeft; return; }
       pos += (pxPerSecond * dt) / 1000;
       wrap();
       el.scrollLeft = pos;
     };
-    frame = requestAnimationFrame(tick);
+    // Wakes it, from wherever the row now is.
+    const run = () => { if (frame || !onScreen || document.hidden) return; last = 0; pos = el.scrollLeft; frame = requestAnimationFrame(tick); };
+    run();
 
     // Hands on: stop. Hands off: carry on from wherever the finger left it.
     const hold = () => { held.current = true; };
@@ -78,12 +83,15 @@ export function useAutoScroll(row: RefObject<HTMLElement | null>, { enabled = tr
     el.addEventListener("wheel", onWheel, { passive: true });
     el.addEventListener("focusin", onFocusIn);
     el.addEventListener("focusout", onFocusOut);
-    const seen = new IntersectionObserver(([e]) => { onScreen = e.isIntersecting; }, { threshold: 0.1 });
+    const seen = new IntersectionObserver(([e]) => { onScreen = e.isIntersecting; el.toggleAttribute("data-asleep", !onScreen); run(); }, { threshold: 0.1 });
     seen.observe(el);
+    document.addEventListener("visibilitychange", run);
 
     return () => {
       cancelAnimationFrame(frame);
       seen.disconnect();
+      el.removeAttribute("data-asleep");
+      document.removeEventListener("visibilitychange", run);
       el.removeEventListener("pointerdown", hold);
       el.removeEventListener("touchstart", hold);
       window.removeEventListener("pointerup", letGo);

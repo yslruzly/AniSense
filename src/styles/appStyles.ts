@@ -2445,6 +2445,11 @@ export const appCss = `
   @keyframes ffc-lap { to { --ffc-a: 360deg; } }
   /* Room above and below, so the glow, at its widest, isn't cut where the row scrolls. */
   .ffc-row.has-glow { margin-top: 0; padding-top: 20px; padding-bottom: 24px; }
+  /* A row that slides on its own (useAutoScroll): no snapping, which would
+     tug against the steady glide; a swipe still moves it freely. */
+  .ffc-row.is-auto { scroll-snap-type: none; }
+  /* Out of sight, the ring and glow rest too (useAutoScroll marks the row). */
+  .ffc-row[data-asleep] .ffc.is-week::before, .ffc-row[data-asleep] .ffc.is-week::after { animation-play-state: paused; }
   /* ── Home's Featured farmers: big profile cards in a row that slides ──
      Each card the farmer's profile, small enough that the next one shows
      past the edge (the whole row runs to the screen's edges): the green
