@@ -212,10 +212,10 @@ all (change it with the `SMS_MAX_PER_HOUR` secret).
    codes go out on Semaphore's OTP route, which reaches phones ahead of bulk
    texts and costs more credits per text than a normal message: see their
    pricing page. A small top-up is enough to start.
-2. **Sender name (recommended).** Under **Sender Names**, ask for
-   `AniSense` (11 characters at most). Semaphore reviews it, which can take
-   a few days. Until it is approved, texts come from Semaphore's own name
-   and still work.
+2. **Sender name (needed).** Under **Sender Names**, ask for `AniSense`
+   (11 characters at most). Semaphore reviews it, which took about a week.
+   Until one is approved, Semaphore refuses every text ("No active sender
+   name found"), so CP numbers keep the on-screen demo code until then.
 3. **API key.** In the dashboard's account / API page, copy your API key.
    Keep it to yourself; it goes only into Supabase (B1), never into the app
    or GitHub.
