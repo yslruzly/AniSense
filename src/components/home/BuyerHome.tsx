@@ -262,7 +262,7 @@ export function FeaturedFarmers({ onShop, buyerLocation }: { onShop: Shop; buyer
   // marketplace finds a seller again: account id, or initials in the demo.
   // The spotlight is the same pick that awards the Profile achievement.
   const { sellers, loadPhase, showingSamples } = useMarket();
-  // The Farmer of the Week, then three more, the buyer's neighbours first.
+  // The Farmer of the Week, then four more, the buyer's neighbours first.
   const { spot, rest } = featuredLineup(sellers, buyerLocation);
   // Still loading: three farmers' rows under the title.
   if (loadPhase !== "ready") {
@@ -322,25 +322,50 @@ export function FeaturedFarmers({ onShop, buyerLocation }: { onShop: Shop; buyer
           </div>
         </article>
 
-        <div className="ff-list stagger-list">
-          {rest.map(s => (
-            <button key={s.key} className="ff-row" onClick={() => open(s)}>
-              <span className="ff-ava" style={{ background: tone(s.name) }} aria-hidden="true">{s.initials}</span>
-              <span className="ff-row-body">
-                <span className="ff-row-name">
-                  {s.name}
-                  {s.near && <span className="ff-near">{en("ff_near")}</span>}
-                </span>
-                <span className="ff-row-meta">
-                  <span className="ff-star"><Star size={13} fill="currentColor" strokeWidth={0} /> {ratingText(s, en("rating_new"))}</span>
-                  {" · "}{townOf(s.location)}
-                </span>
-              </span>
-              <ChevronRight size={20} strokeWidth={2.4} className="ff-chev" aria-hidden="true" />
-            </button>
-          ))}
-        </div>
       </div>
+
+      {/* The other four, as a row to swipe: each a small copy of the card
+          above (the same green ground and leaf, the ringed avatar, the name
+          and town, the three numbers on a card over the photo's edge), so
+          they read as the same kind of thing, smaller. The row runs to the
+          screen's edges and the next card shows past the edge, which is
+          what says "more this way". Each card opens that farmer. */}
+      {rest.length > 0 && (
+        <div className="ffc-row stagger-list">
+          {rest.map(s => {
+            const town = townOf(s.location);
+            return (
+              <button key={s.key} type="button" className="ffc" onClick={() => open(s)}
+                aria-label={[s.name, `${ratingText(s, en("rating_new"))} ★`, town, s.near ? en("ff_near") : ""].filter(Boolean).join(", ")}>
+                <span className="spf-hero ffc-hero" aria-hidden="true">
+                  <img className="spf-mark" src={leafMask} alt="" />
+                  {s.near && <span className="ffc-near">{en("ff_near")}</span>}
+                  <span className="ffc-go"><ArrowRight size={16} strokeWidth={2.6} /></span>
+                  <span className="ffc-id">
+                    <span className="spf-ava ffc-ava" style={{ background: tone(s.name) }}>{s.initials}</span>
+                    <span className="ffc-name">{s.name}</span>
+                    {town && <span className="ffc-loc"><MapPin size={12} strokeWidth={2.4} /> {town}</span>}
+                  </span>
+                </span>
+                <span className="ffc-stats" aria-hidden="true">
+                  <span className="ffc-stat">
+                    <span className="ffc-stat-v">{unrated(s) ? en("rating_new") : <><Star size={13} strokeWidth={0} fill="#C98A1B" /> {s.rating.toFixed(1)}</>}</span>
+                    <span className="ffc-stat-l">{en("seller_rating")}</span>
+                  </span>
+                  <span className="ffc-stat">
+                    <span className="ffc-stat-v">{s.yearsfarming}<small> {en("seller_years_suffix")}</small></span>
+                    <span className="ffc-stat-l">{en("seller_experience")}</span>
+                  </span>
+                  <span className="ffc-stat">
+                    <span className="ffc-stat-v">{s.totalSales}+</span>
+                    <span className="ffc-stat-l">{en("seller_sales")}</span>
+                  </span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
     </section>
   );
 }

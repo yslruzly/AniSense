@@ -10,8 +10,8 @@ import { AniSenseLogo } from "../brand/AniSenseLogo";
 import leafMask from "../../assets/anisense-leaf-mask.png";
 
 // ── Featured farmers, in the Market ──────────────────────────────────────────
-// The same four as Home's (src/lib/featured.ts): the Farmer of the Week, then
-// three more, anyone in the viewer's own town first. Each card has a cover
+// The same five as Home's (src/lib/featured.ts): the Farmer of the Week, then
+// four more, anyone in the viewer's own town first. Each card has a cover
 // band in its farmer's own colour, pale; the first card's is gold, with a
 // gold glow, but no "Farmer of the Week" label. They sit on a small AniSense
 // poster: the green ground of the profile a tap opens, the leaf mark faint,

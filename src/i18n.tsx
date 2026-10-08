@@ -1398,8 +1398,8 @@ export const translations: Dict = {
   },
   tour_b_farmers_t: { en: "The people who grow it", tl: "Ang mga nagtatanim" },
   tour_b_farmers_b: {
-    en: "The AniSense Farmer of the Week and three more, nearest to you first. Tap a farmer to see everything they are selling.",
-    tl: "Ang AniSense Farmer of the Week at tatlo pa, inuuna ang pinakamalapit sa iyo. Pindutin ang isang magsasaka para makita ang lahat ng binebenta nila.",
+    en: "The AniSense Farmer of the Week and four more, nearest to you first. Swipe sideways to see them all, and tap a farmer to see everything they are selling.",
+    tl: "Ang AniSense Farmer of the Week at apat pa, inuuna ang pinakamalapit sa iyo. Mag-swipe pakanan para makita silang lahat, at pindutin ang isang magsasaka para makita ang lahat ng binebenta nila.",
   },
   tour_b_purchases_t: { en: "What you bought", tl: "Ang mga binili mo" },
   tour_b_purchases_b: {
@@ -1554,7 +1554,7 @@ export const translations: Dict = {
 
   gdb_farmer_t: { en: "Get to know a farmer", tl: "Kilalanin ang magsasaka" },
   gdb_farmer_s: { en: "Who grows it, and how to call them", tl: "Sino ang nagtanim, at paano sila tatawagan" },
-  gdb_farmer_1: { en: "On Home, Featured farmers shows the AniSense Farmer of the Week and three more.", tl: "Sa Home, ipinapakita ng Mga tampok na magsasaka ang AniSense Magsasaka ng Linggo at tatlo pa." },
+  gdb_farmer_1: { en: "On Home, Featured farmers shows the AniSense Farmer of the Week and four more. Swipe sideways to see them all.", tl: "Sa Home, ipinapakita ng Mga tampok na magsasaka ang AniSense Magsasaka ng Linggo at apat pa. Mag-swipe pakanan para makita silang lahat." },
   gdb_farmer_2: { en: "Tap a farmer to open their profile and everything they are selling.", tl: "Pindutin ang isang magsasaka para buksan ang profile nila at lahat ng binebenta nila." },
   gdb_farmer_3: { en: "Inside a listing, tap the farmer's name to open the same profile.", tl: "Sa loob ng isang listing, pindutin ang pangalan ng magsasaka para buksan ang parehong profile." },
   gdb_farmer_4: { en: "Tap Call at the bottom of their profile to phone them directly.", tl: "Pindutin ang Tawagan sa ibaba ng profile nila para direktang tawagan sila." },

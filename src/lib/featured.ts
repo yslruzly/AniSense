@@ -33,7 +33,7 @@ export type FeaturedFarmer = RankedSeller & { near: boolean };
 
 /**
  * Who Featured farmers shows, on Home and in the Market alike: the Farmer of
- * the Week, then three more from the ranking, anyone growing in the viewer's
+ * the Week, then four more from the ranking, anyone growing in the viewer's
  * own town first (near, so the screen can say why). A farmer with no town
  * on record is never "near".
  */
@@ -46,6 +46,6 @@ export function featuredLineup(sellers: Record<string, SellerDetail>, viewerLoca
     .filter(s => s.key !== spot.key)
     .map(s => ({ ...s, near: near(s.location) }))
     .sort((a, b) => Number(b.near) - Number(a.near))
-    .slice(0, 3);
+    .slice(0, 4);
   return { spot: { ...spot, near: near(spot.location) }, rest };
 }

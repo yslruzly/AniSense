@@ -2299,7 +2299,7 @@ export const appCss = `
     margin-top: 14px; border-radius: var(--radius); overflow: hidden; background: var(--card);
     box-shadow: inset 0 0 0 1px var(--line), 0 14px 30px -20px rgba(22,33,27,.4);
   }
-  .ff-spot, .ff-row {
+  .ff-spot {
     display: flex; width: 100%; padding: 0; border: none; background: none; cursor: pointer;
     text-align: left; font: inherit; color: inherit;
     transition: background-color 160ms ease;
@@ -2325,7 +2325,6 @@ export const appCss = `
   }
   .ff-spot:has(> .ff-spot-hit:active) .ff-spot-go { transform: translateX(3px); background: rgba(255,255,255,.28); transition-duration: var(--dur-press); }
   @media (prefers-reduced-motion: reduce) { .ff-spot:has(> .ff-spot-hit:active) .ff-spot-go { transform: none; } }
-  .ff-row:active { background: var(--paper); transition-duration: var(--dur-press); }
   /* The spotlight borrows the profile sheet's pieces (.spf-*): only the
      corners and spacing differ, because here it sits inside a card. The
      name keeps clear of the arrow. */
@@ -2388,18 +2387,78 @@ export const appCss = `
     color: #fff; font-family: var(--font-display); font-size: 15px; font-weight: 800; letter-spacing: .02em;
     box-shadow: 0 0 0 2.5px #fff, 0 0 0 3.5px var(--line), 0 8px 14px -8px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.3);
   }
-  .ff-star { display: inline-flex; align-items: center; gap: 3px; color: #A0661A; font-weight: 800; }
-  .ff-list { border-top: 1px solid var(--line); }
-  .ff-row { align-items: center; gap: 12px; min-height: 68px; padding: 12px 16px; }
-  .ff-row + .ff-row { border-top: 1px solid var(--line); }
-  .ff-row-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-  .ff-row-name { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--text); }
+  /* ── The other featured farmers: a row to swipe ──
+     Each card a small copy of the spotlight: the profile's green ground
+     (.spf-hero) and faint leaf, the ringed avatar, the name and town in
+     white, an arrow on the photo, and the three numbers on a white card
+     riding over the photo's edge. 236px wide, so on a phone the next one
+     shows past the edge. The row runs to the screen's edges, like the
+     product shelf above. The whole card is one button; pressed, it gives a
+     little and the arrow steps forward. */
+  .ffc-row {
+    display: flex; gap: 12px; margin: 12px -16px 0; padding: 4px 16px 12px;
+    overflow-x: auto; overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity; scroll-padding-left: 16px; -webkit-overflow-scrolling: touch;
+  }
+  .ffc-row::-webkit-scrollbar { height: 0; }
+  .ffc {
+    flex: 0 0 236px; scroll-snap-align: start; position: relative;
+    display: flex; flex-direction: column; min-width: 0; padding: 0; overflow: hidden;
+    border: none; border-radius: 18px; background: var(--card); text-align: left; font: inherit; color: inherit; cursor: pointer;
+    box-shadow: inset 0 0 0 1px var(--line), 0 10px 22px -16px rgba(22,33,27,.45);
+    transition: transform 190ms var(--ease-out);
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .ffc:active { transform: scale(.97); transition-duration: var(--dur-press); }
+  .ffc .ffc-hero { display: block; height: 134px; border-radius: 0; }
+  .ffc .spf-mark { width: 150px; right: -30px; top: -20px; }
+  .ffc-id {
+    position: absolute; left: 14px; right: 52px; bottom: 30px; z-index: 1;
+    display: flex; flex-direction: column; align-items: flex-start; min-width: 0;
+  }
+  .ffc .ffc-ava {
+    width: 44px; height: 44px; margin-bottom: 7px; font-size: 15px;
+    box-shadow: 0 0 0 2.5px rgba(255,255,255,.92), 0 10px 18px -8px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.3);
+  }
+  .ffc-name {
+    max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    font-family: var(--font-display); font-size: 17px; font-weight: 700; letter-spacing: -.01em; line-height: 1.2;
+    color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.35);
+  }
+  .ffc-loc {
+    display: inline-flex; align-items: center; gap: 4px; max-width: 100%; margin-top: 3px;
+    font-size: 13.5px; color: rgba(255,255,255,.88); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .ffc-loc svg { flex-shrink: 0; }
+  .ffc-near {
+    position: absolute; z-index: 2; left: 12px; top: 12px; padding: 3px 9px; border-radius: 99px;
+    background: #DCEAF8; color: #2F6FA8; font-size: 12.5px; font-weight: 800;
+  }
+  .ffc-go {
+    position: absolute; z-index: 2; right: 12px; bottom: 32px; width: 34px; height: 34px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; color: #fff;
+    background: rgba(255,255,255,.16); box-shadow: inset 0 0 0 1px rgba(255,255,255,.26);
+    transition: transform 190ms var(--ease-out), background-color 160ms ease;
+  }
+  .ffc:active .ffc-go { transform: translateX(2px); background: rgba(255,255,255,.28); transition-duration: var(--dur-press); }
+  .ffc-stats {
+    position: relative; z-index: 2; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: -22px 10px 12px; padding: 10px 2px; background: var(--card); border-radius: 14px;
+    box-shadow: 0 14px 24px -16px rgba(12,20,15,.55), 0 2px 4px -2px rgba(12,20,15,.12), inset 0 0 0 1px var(--line);
+  }
+  .ffc-stat { position: relative; display: flex; flex-direction: column; align-items: center; gap: 1px; min-width: 0; }
+  .ffc-stat + .ffc-stat::before { content: ""; position: absolute; left: 0; top: 5px; bottom: 5px; width: 1px; background: var(--line); }
+  .ffc-stat-v {
+    display: inline-flex; align-items: center; gap: 3px; white-space: nowrap;
+    font-family: var(--font-display); font-size: 16px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums;
+  }
+  .ffc-stat-v small { font-size: 12px; font-weight: 700; color: var(--text-muted); }
+  .ffc-stat-l { font-size: 12px; font-weight: 600; color: var(--text-faint); }
+  @media (prefers-reduced-motion: reduce) { .ffc:active, .ffc:active .ffc-go { transform: none; } }
   .ff-near { padding: 2px 9px; border-radius: 99px; background: #DCEAF8; color: #2F6FA8; font-size: 13px; font-weight: 800; }
-  .ff-row-meta { font-size: 14px; color: var(--text-muted); }
-  .ff-chev { color: var(--line-strong); flex-shrink: 0; }
 
   /* ── Featured farmers, in the Market ──
-     The same four as Home's, as a short row of cards above the harvests:
+     The same five as Home's, as a short row of cards above the harvests:
      the growers are met without the produce being pushed out of sight.
      The section is a small AniSense poster: the green ground of the farmer's
      profile (the sheet a tap opens, so the card and the sheet look like one
