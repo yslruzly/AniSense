@@ -2242,15 +2242,33 @@ export const appCss = `
     transition: background-color 160ms ease;
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
-  /* The spotlight is read, not pressed: no pointer, no tint. Its one action
-     is the button at its foot. */
-  .ff-spot { flex-direction: column; cursor: default; }
+  /* The spotlight opens the farmer, like a row: one button laid over the
+     whole of it (the card itself holds the profile's own pieces, which a
+     button can't contain). Pressed, the card dims a shade and the arrow on
+     the photo steps forward. */
+  .ff-spot { position: relative; flex-direction: column; }
+  .ff-spot-hit {
+    position: absolute; inset: 0; z-index: 3; width: 100%; padding: 0; border: none; background: transparent;
+    cursor: pointer; transition: background-color 160ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .ff-spot-hit:active { background: rgba(16,24,20,.07); transition-duration: var(--dur-press); }
+  .ff-spot-hit:focus-visible { outline: 3px solid var(--tanim); outline-offset: -3px; border-radius: var(--radius) var(--radius) 0 0; }
+  .ff-spot-go {
+    position: absolute; z-index: 2; right: 16px; bottom: 46px; width: 44px; height: 44px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; color: #fff;
+    background: rgba(255,255,255,.16); box-shadow: inset 0 0 0 1px rgba(255,255,255,.26);
+    transition: transform 190ms var(--ease-out), background-color 160ms ease;
+  }
+  .ff-spot:has(> .ff-spot-hit:active) .ff-spot-go { transform: translateX(3px); background: rgba(255,255,255,.28); transition-duration: var(--dur-press); }
+  @media (prefers-reduced-motion: reduce) { .ff-spot:has(> .ff-spot-hit:active) .ff-spot-go { transform: none; } }
   .ff-row:active { background: var(--paper); transition-duration: var(--dur-press); }
   /* The spotlight borrows the profile sheet's pieces (.spf-*): only the
-     corners and spacing differ, because here it sits inside a card. */
+     corners and spacing differ, because here it sits inside a card. The
+     name keeps clear of the arrow. */
   .ff .ff-hero { border-radius: 0; height: 230px; }
-  .ff-hero .spf-id { right: 20px; }
-  .ff .spf-stats { margin: -30px 14px 0; }
+  .ff-hero .spf-id { right: 72px; }
+  .ff .spf-stats { margin: -30px 14px 14px; }
   /* The Farmer of the Week plate, in polished gold. What makes it read as
      metal rather than yellow paint:
        - the fill: bright at the top, a hard reflection line across the
@@ -2301,7 +2319,6 @@ export const appCss = `
     display: flex; flex-direction: column; justify-content: flex-end;
   }
   .seller-modal-sheet .spf-hero.is-week .spf-id { position: relative; left: auto; right: auto; bottom: auto; margin: 0 64px 0 20px; }
-  .ff-spot-body { position: relative; display: flex; flex-direction: column; gap: 12px; padding: 16px 16px 16px; }
   /* The list's avatars: the profile's colours and ring, at list size. */
   .ff-ava {
     width: 46px; height: 46px; flex: 0 0 46px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
@@ -2309,46 +2326,6 @@ export const appCss = `
     box-shadow: 0 0 0 2.5px #fff, 0 0 0 3.5px var(--line), 0 8px 14px -8px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.3);
   }
   .ff-star { display: inline-flex; align-items: center; gap: 3px; color: #A0661A; font-weight: 800; }
-  /* A spotlight is a teaser: three lines of the bio, the rest in the profile. */
-  .ff-bio { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
-  /* The spotlight's action. Full width, so it reads as what the card does
-     rather than a tag inside it, and built like every raised green button:
-     gradient, top highlight, bottom edge, contact shadow, soft cast shadow.
-     The arrow sits in its own pale disc at the far end - where the eye
-     finishes reading the label - and moves forward a step when pressed. */
-  .ff-cta {
-    align-self: stretch; display: flex; align-items: center; justify-content: space-between; gap: 10px;
-    margin-top: 14px; min-height: 54px; padding: 0 7px 0 20px; border-radius: 16px; color: #fff;
-    font-family: var(--font-display); font-size: 16px; font-weight: 700; letter-spacing: -.005em;
-    background-image: linear-gradient(180deg, #14875A 0%, var(--tanim) 54%, #075232 100%);
-    box-shadow:
-      inset 0 1px 0 rgba(255,255,255,.26),
-      inset 0 -1px 0 rgba(0,0,0,.24),
-      inset 0 0 0 1px rgba(4,40,24,.22),
-      0 1px 2px rgba(6,38,23,.30),
-      0 12px 20px -14px rgba(6,38,23,.6);
-    transition: transform 190ms var(--ease-out), box-shadow 190ms var(--ease-out);
-  }
-  .ff-cta-go {
-    flex-shrink: 0; width: 40px; height: 40px; border-radius: 12px;
-    display: inline-flex; align-items: center; justify-content: center;
-    background: rgba(255,255,255,.16); box-shadow: inset 0 0 0 1px rgba(255,255,255,.22);
-    transition: transform 190ms var(--ease-out);
-  }
-  .ff-cta {
-    border: none; cursor: pointer; width: 100%; text-align: left;
-    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-  }
-  .ff-cta:active {
-    transform: scale(.975); transition-duration: var(--dur-press);
-    box-shadow:
-      inset 0 1px 0 rgba(255,255,255,.12),
-      inset 0 -1px 0 rgba(0,0,0,.28),
-      inset 0 0 0 1px rgba(4,40,24,.26),
-      0 1px 1px rgba(6,38,23,.34),
-      0 4px 10px -8px rgba(6,38,23,.5);
-  }
-  .ff-cta:active .ff-cta-go { transform: translateX(3px); transition-duration: var(--dur-press); }
   .ff-list { border-top: 1px solid var(--line); }
   .ff-row { align-items: center; gap: 12px; min-height: 68px; padding: 12px 16px; }
   .ff-row + .ff-row { border-top: 1px solid var(--line); }
@@ -2899,7 +2876,7 @@ export const appCss = `
   .shell[data-revisit] .scroll .yp-bar { animation: none; }
 
   @media (prefers-reduced-motion: reduce) {
-    .hm-search:active, .ff-cta:active, .ff-cta:active .ff-cta-go { transform: none; }
+    .hm-search:active { transform: none; }
   }
 
   /* ── Buyer price moves ─────────────────────────────────────────────────

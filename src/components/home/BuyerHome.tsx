@@ -285,17 +285,20 @@ export function FeaturedFarmers({ onShop, buyerLocation }: { onShop: Shop; buyer
       <p className="hm-sec-sub">{en(showingSamples ? "ff_sub_sample" : "ff_sub")}</p>
 
       <div className="ff">
-        {/* The spotlight is a profile to read, not a button: only "See their
-            harvest" acts, so a thumb resting on the bio or scrolling past the
-            photo doesn't jump the buyer into the marketplace. */}
         {/* Drawn like the farmer's own profile sheet, so tapping through
             from here lands on something that already looks familiar: their
             harvest blurred into light, the ringed avatar, the three numbers
-            on a card over the photo's edge. */}
+            on a card over the photo's edge. Short: who they are and their
+            numbers; the bio and the crops are in the profile it opens. The
+            whole card is the way in, like the rows under it, with an arrow
+            on the photo to say so. */}
         <article className="ff-spot">
+          <button type="button" className="ff-spot-hit" onClick={() => open(spot)}
+            aria-label={`${spot.name}, ${en("ff_week")}. ${en("ff_cta")}`} />
           <div className="spf-hero ff-hero">
             <img className="spf-mark" src={leafMask} alt="" aria-hidden="true" />
             <FarmerOfTheWeekBadge />
+            <span className="ff-spot-go" aria-hidden="true"><ArrowRight size={20} strokeWidth={2.6} /></span>
             <div className="spf-id">
               <span className="spf-ava" style={{ background: tone(spot.name) }} aria-hidden="true">{spot.initials}</span>
               <div className="spf-name">{spot.name}</div>
@@ -316,18 +319,6 @@ export function FeaturedFarmers({ onShop, buyerLocation }: { onShop: Shop; buyer
               <span className="spf-stat-l">{en("seller_sales")}</span>
             </div>
           </div>
-          <span className="ff-spot-body">
-            <span className="spf-bio ff-bio">{spot.bio}</span>
-            <span className="spf-crops">
-              {spot.crops.map(c => <span key={c} className="spf-crop">{c}</span>)}
-            </span>
-            {/* The card's one action, as wide as the card, with a "go" disc
-                at the end that nudges forward under the thumb. */}
-            <button type="button" className="ff-cta" onClick={() => open(spot)}>
-              <span>{en("ff_cta")}</span>
-              <span className="ff-cta-go" aria-hidden="true"><ArrowRight size={18} strokeWidth={2.6} /></span>
-            </button>
-          </span>
         </article>
 
         <div className="ff-list stagger-list">
