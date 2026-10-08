@@ -2381,12 +2381,6 @@ export const appCss = `
     display: flex; flex-direction: column; justify-content: flex-end;
   }
   .seller-modal-sheet .spf-hero.is-week .spf-id { position: relative; left: auto; right: auto; bottom: auto; margin: 0 64px 0 20px; }
-  /* The list's avatars: the profile's colours and ring, at list size. */
-  .ff-ava {
-    width: 46px; height: 46px; flex: 0 0 46px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
-    color: #fff; font-family: var(--font-display); font-size: 15px; font-weight: 800; letter-spacing: .02em;
-    box-shadow: 0 0 0 2.5px #fff, 0 0 0 3.5px var(--line), 0 8px 14px -8px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.3);
-  }
   /* ── The other featured farmers: a row to swipe ──
      Each card a small copy of the spotlight: the profile's green ground
      (.spf-hero) and faint leaf, the ringed avatar, the name and town in
@@ -2453,96 +2447,24 @@ export const appCss = `
     font-family: var(--font-display); font-size: 16px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums;
   }
   .ffc-stat-v small { font-size: 12px; font-weight: 700; color: var(--text-muted); }
-  .ffc-stat-l { font-size: 12px; font-weight: 600; color: var(--text-faint); }
+  .ffc-stat-l { font-size: 12px; font-weight: 600; line-height: 1.25; text-align: center; color: var(--text-faint); }
+  /* The Farmer of the Week in the Market's row: a palay-gold ring laid over
+     the whole card (over the photo too, which a plain border would sit
+     under), and a soft gold glow round it. The row gives it room above and
+     below, so the glow isn't cut where the row scrolls. */
+  .ffc.is-week { box-shadow: 0 0 16px -2px rgba(242,179,44,.6), 0 10px 22px -16px rgba(22,33,27,.45); }
+  .ffc.is-week::after {
+    content: ""; position: absolute; inset: 0; z-index: 3; border-radius: inherit; pointer-events: none;
+    box-shadow: inset 0 0 0 2px #F2B32C;
+  }
+  .ffc-row.has-glow { margin-top: 4px; padding-top: 14px; padding-bottom: 18px; }
   @media (prefers-reduced-motion: reduce) { .ffc:active, .ffc:active .ffc-go { transform: none; } }
-  .ff-near { padding: 2px 9px; border-radius: 99px; background: #DCEAF8; color: #2F6FA8; font-size: 13px; font-weight: 800; }
 
   /* ── Featured farmers, in the Market ──
-     The same five as Home's, as a short row of cards above the harvests:
-     the growers are met without the produce being pushed out of sight.
-     The section is a small AniSense poster: the green ground of the farmer's
-     profile (the sheet a tap opens, so the card and the sheet look like one
-     thing), the leaf mark faint in the top corner, the brand small on the top
-     edge as on the member card, and the farmers as white cards on it. The
-     ground is deepest at the top left, where the words are: white text there
-     stays above 4.5:1. Each card is centred like a profile: the avatar,
-     the name under it, then the rating and town. The first card keeps its
-     palay gold. The row runs to the poster's edges, so a card cut at the
-     edge says "more". */
-  .mpf {
-    position: relative; isolation: isolate; overflow: hidden;
-    display: flex; flex-direction: column; padding: 14px 16px 0;
-    border-radius: var(--radius-lg); color: #fff;
-    background:
-      repeating-linear-gradient(135deg, rgba(255,255,255,.035) 0 1px, transparent 1px 11px),
-      radial-gradient(80% 70% at 100% 0%, rgba(126,196,120,.26), transparent 62%),
-      radial-gradient(70% 80% at 0% 100%, rgba(242,179,44,.16), transparent 62%),
-      linear-gradient(160deg, #0F5E3A 0%, #0B4A2E 52%, #08331F 100%);
-    box-shadow: 0 16px 30px -20px rgba(8,51,31,.75), inset 0 1px 0 rgba(255,255,255,.1);
-  }
-  .mpf-mark {
-    position: absolute; right: -30px; top: -26px; z-index: -1; width: 150px; height: auto;
-    opacity: .09; transform: rotate(-14deg); pointer-events: none; user-select: none;
-  }
-  .mpf-brand { display: flex; align-items: center; gap: 8px; }
-  .mpf-brand-mark {
-    width: 26px; height: 26px; border-radius: 8px; background: #fff;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 2px 6px rgba(0,0,0,.25);
-  }
-  .mpf-brand-name { font-family: var(--font-display); font-size: 14px; font-weight: 700; letter-spacing: -.01em; color: rgba(255,255,255,.92); }
-  .mpf .hm-sec-title { margin-top: 10px; color: #fff; }
-  .mpf .hm-sec-sub { color: rgba(255,255,255,.9); }
-  /* Room above and below the cards, so their shadows and the gold glow are
-     not cut by the row's scrolling edge. */
-  .mpf-row {
-    display: flex; gap: 10px; margin: 2px -16px 0; padding: 12px 16px 18px;
-    overflow-x: auto; overscroll-behavior-x: contain;
-    scroll-snap-type: x proximity; scroll-padding-left: 16px; -webkit-overflow-scrolling: touch;
-  }
-  .mpf-row::-webkit-scrollbar { height: 0; }
-  .mpf-card {
-    flex: 0 0 152px; scroll-snap-align: start;
-    display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0;
-    padding: 14px 12px; border: none; border-radius: 16px;
-    /* A cover band across the top, like the photo on the farmer's profile:
-       their own avatar colour, pale (--tint, from avatarTint), with light
-       from the top left and the fine diagonal weave of the AniSense ground.
-       It ends at the avatar's middle, so the avatar sits on its edge the
-       way the profile's sits on the photo. The words stay on white. */
-    --band: 39px;
-    background:
-      repeating-linear-gradient(135deg, rgba(255,255,255,.5) 0 1px, transparent 1px 8px) top / 100% var(--band) no-repeat,
-      radial-gradient(90% 160% at 0% 0%, rgba(255,255,255,.65), transparent 60%) top / 100% var(--band) no-repeat,
-      linear-gradient(var(--tint, var(--tanim-sk)), var(--tint, var(--tanim-sk))) top / 100% var(--band) no-repeat,
-      var(--card);
-    text-align: center; font: inherit; color: inherit; cursor: pointer;
-    box-shadow: 0 1px 2px rgba(4,30,18,.28), 0 12px 22px -14px rgba(0,0,0,.6);
-    transition: transform 190ms var(--ease-out);
-    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-  }
-  .mpf-card:active { transform: scale(.97); transition-duration: var(--dur-press); }
-  /* The app's green focus ring would vanish on the green ground. */
-  .mpf-card:focus-visible { outline-color: var(--palay); }
-  .mpf-card .ff-ava { margin: 2px 0 4px; }
-  /* The week's farmer: a band of polished gold (the plate's metal, softer:
-     a bright top, a streak of light), cream below fading to white, and on
-     the green the gold also glows outward a little. */
-  .mpf-card.is-week {
-    background:
-      repeating-linear-gradient(135deg, rgba(255,255,255,.4) 0 1px, transparent 1px 8px) top / 100% var(--band) no-repeat,
-      linear-gradient(105deg, rgba(255,255,255,0) 28%, rgba(255,255,255,.55) 44%, rgba(255,255,255,0) 60%) top / 100% var(--band) no-repeat,
-      linear-gradient(180deg, #FFF0C2 0%, #F6D271 62%, #EDBE4E 100%) top / 100% var(--band) no-repeat,
-      linear-gradient(180deg, #FFF6DE var(--band), var(--card) 80%);
-    box-shadow: inset 0 0 0 1.5px #F2B32C, 0 0 14px -2px rgba(242,179,44,.5), 0 12px 22px -14px rgba(0,0,0,.6);
-  }
-  .mpf-name {
-    font-family: var(--font-display); font-size: 16px; font-weight: 700; line-height: 1.25; color: var(--text);
-    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-  }
-  .mpf-meta { display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px; font-size: 14px; color: var(--text-muted); }
-  .mpf-meta svg { color: #C98A1B; flex-shrink: 0; }
-  @media (prefers-reduced-motion: reduce) { .mpf-card:active { transform: none; } }
+     Home's row of small cards (.ffc), the same five, the Farmer of the Week
+     first and ringed in palay gold that glows a little. The title and its
+     line sit on the page, as on Home. */
+  .mpf { display: flex; flex-direction: column; }
 
   /* The banner that opens the buyer's Home. Not a button: it is the page's
      own masthead, and a tap that navigated from here would surprise. */

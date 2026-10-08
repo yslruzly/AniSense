@@ -33,14 +33,6 @@ function hash(s: string): number {
   return h >>> 0;
 }
 
-// The same eight, pale: 30% of each colour's light end over white. For the
-// band behind an avatar, so the card around a farmer carries their colour
-// without competing with their initials or the words under them.
-const TINTS = ["#F1E1C0", "#C9DDF0", "#D7D0F1", "#F1CCC9", "#F8DCC4", "#F2CEDF", "#CED4EA", "#E5D6CA"];
-
 const toneIndex = (name: string) => hash(`231:${name.trim().toLowerCase()}`) % TONES.length;
 
 export const avatarTone = (name: string) => TONES[toneIndex(name)];
-
-/** The farmer's colour, pale, for a background behind their avatar. */
-export const avatarTint = (name: string) => TINTS[toneIndex(name)];

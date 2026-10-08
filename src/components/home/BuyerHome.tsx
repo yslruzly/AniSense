@@ -6,8 +6,9 @@ import familyFruits from "../../assets/families/family-fruits.webp";
 import familyVegetables from "../../assets/families/family-vegetables.webp";
 import { useMarket } from "../../store/market";
 import { SkeletonShelf, SkeletonMediaRows } from "../states";
-import { featuredLineup, townOf } from "../../lib/featured";
+import { featuredLineup } from "../../lib/featured";
 import { FarmerOfTheWeekBadge } from "../marketplace/FarmerOfTheWeekBadge";
+import { FeaturedFarmerCard } from "../marketplace/FeaturedFarmerCard";
 import { cropPhoto, cropPhotoFor, cropGroupPhoto } from "../../data/cropPhotos";
 import { CropEmoji } from "../icons/CropEmoji";
 import { Listing, TradeIntent } from "../../types";
@@ -15,7 +16,7 @@ import { avatarTone } from "../../lib/avatar";
 import leafMask from "../../assets/anisense-leaf-mask.png";
 import { peso } from "../../lib/money";
 import { costOf, totalSpent } from "../../lib/purchases";
-import { rankOf, ratingText, unrated } from "../../lib/rating";
+import { rankOf, unrated } from "../../lib/rating";
 
 // ─── Buyer Home sections ──────────────────────────────────────────────────────
 // The pieces of the buyer's Home that the farmer never sees. Each one opens
@@ -332,38 +333,7 @@ export function FeaturedFarmers({ onShop, buyerLocation }: { onShop: Shop; buyer
           what says "more this way". Each card opens that farmer. */}
       {rest.length > 0 && (
         <div className="ffc-row stagger-list">
-          {rest.map(s => {
-            const town = townOf(s.location);
-            return (
-              <button key={s.key} type="button" className="ffc" onClick={() => open(s)}
-                aria-label={[s.name, `${ratingText(s, en("rating_new"))} ★`, town, s.near ? en("ff_near") : ""].filter(Boolean).join(", ")}>
-                <span className="spf-hero ffc-hero" aria-hidden="true">
-                  <img className="spf-mark" src={leafMask} alt="" />
-                  {s.near && <span className="ffc-near">{en("ff_near")}</span>}
-                  <span className="ffc-go"><ArrowRight size={16} strokeWidth={2.6} /></span>
-                  <span className="ffc-id">
-                    <span className="spf-ava ffc-ava" style={{ background: tone(s.name) }}>{s.initials}</span>
-                    <span className="ffc-name">{s.name}</span>
-                    {town && <span className="ffc-loc"><MapPin size={12} strokeWidth={2.4} /> {town}</span>}
-                  </span>
-                </span>
-                <span className="ffc-stats" aria-hidden="true">
-                  <span className="ffc-stat">
-                    <span className="ffc-stat-v">{unrated(s) ? en("rating_new") : <><Star size={13} strokeWidth={0} fill="#C98A1B" /> {s.rating.toFixed(1)}</>}</span>
-                    <span className="ffc-stat-l">{en("seller_rating")}</span>
-                  </span>
-                  <span className="ffc-stat">
-                    <span className="ffc-stat-v">{s.yearsfarming}<small> {en("seller_years_suffix")}</small></span>
-                    <span className="ffc-stat-l">{en("seller_experience")}</span>
-                  </span>
-                  <span className="ffc-stat">
-                    <span className="ffc-stat-v">{s.totalSales}+</span>
-                    <span className="ffc-stat-l">{en("seller_sales")}</span>
-                  </span>
-                </span>
-              </button>
-            );
-          })}
+          {rest.map(s => <FeaturedFarmerCard key={s.key} farmer={s} say={en} onOpen={() => open(s)} />)}
         </div>
       )}
     </section>
