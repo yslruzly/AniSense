@@ -1,4 +1,4 @@
-import { Preferences } from "@capacitor/preferences";
+import { kvGet, kvSet } from "./localdb";
 import { Listing, SellerDetail } from "../types";
 import { Sale } from "./sales";
 import { farmerOfTheWeek } from "./featured";
@@ -48,7 +48,7 @@ const KEY = (owner: string) => `ach_seen:${owner}`;
 
 export async function loadSeenAchievements(owner: string): Promise<AchievementId[] | null> {
   try {
-    const { value } = await Preferences.get({ key: KEY(owner) });
+    const value = await kvGet(KEY(owner));
     return value ? (JSON.parse(value) as AchievementId[]) : null;
   } catch {
     return null;
@@ -57,7 +57,7 @@ export async function loadSeenAchievements(owner: string): Promise<AchievementId
 
 export async function saveSeenAchievements(owner: string, ids: AchievementId[]): Promise<void> {
   try {
-    await Preferences.set({ key: KEY(owner), value: JSON.stringify([...new Set(ids)]) });
+    await kvSet(KEY(owner), JSON.stringify([...new Set(ids)]));
   } catch {
     // Storage unavailable: the worst case is seeing a celebration twice.
   }

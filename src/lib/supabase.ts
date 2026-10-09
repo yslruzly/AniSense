@@ -39,12 +39,20 @@ const capacitorStorage = {
   },
 };
 
+const projectUrl = supabaseUrl ?? "https://not-configured.supabase.co";
+
+/** Where the session is saved: the key the library itself picks ("sb-<project>-
+ *  auth-token"), named here so the app can read the session back offline
+ *  (services/auth.ts, restoreSession). */
+export const SESSION_KEY = `sb-${new URL(projectUrl).hostname.split(".")[0]}-auth-token`;
+
 export const supabase = createClient(
-  supabaseUrl ?? "https://not-configured.supabase.co",
+  projectUrl,
   supabaseAnonKey ?? "not-configured",
   {
     auth: {
       storage: capacitorStorage,
+      storageKey: SESSION_KEY,
       autoRefreshToken: true,   // keeps the user logged in indefinitely
       persistSession: true,
       detectSessionInUrl: false, // we use OTP codes, not magic links, so no URL handling needed

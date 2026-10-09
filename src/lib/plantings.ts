@@ -1,4 +1,4 @@
-import { Preferences } from "@capacitor/preferences";
+import { kvGet, kvSet } from "./localdb";
 
 // ─── Plantings ────────────────────────────────────────────────────────────────
 // What a farmer has in the ground: a crop, the day it was planted, and how
@@ -37,7 +37,7 @@ export const daysLeft = (p: Planting, now = new Date()) => Math.max(0, p.days - 
 
 export async function loadPlantings(): Promise<Planting[]> {
   try {
-    const { value } = await Preferences.get({ key: KEY });
+    const value = await kvGet(KEY);
     return value ? (JSON.parse(value) as Planting[]) : [];
   } catch {
     return [];
@@ -46,7 +46,7 @@ export async function loadPlantings(): Promise<Planting[]> {
 
 export async function savePlantings(list: Planting[]): Promise<void> {
   try {
-    await Preferences.set({ key: KEY, value: JSON.stringify(list) });
+    await kvSet(KEY, JSON.stringify(list));
   } catch {
     // Storage unavailable: the season still tracks for this session.
   }

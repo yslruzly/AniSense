@@ -1,4 +1,4 @@
-import { Preferences } from "@capacitor/preferences";
+import { kvGet, kvSet } from "./localdb";
 
 // ─── Sales ────────────────────────────────────────────────────────────────────
 // What the farmer sold: the income half of the profit snapshot. The app had no
@@ -28,7 +28,7 @@ export interface Sale {
 
 export async function loadSales(): Promise<Sale[]> {
   try {
-    const { value } = await Preferences.get({ key: KEY });
+    const value = await kvGet(KEY);
     return value ? (JSON.parse(value) as Sale[]) : [];
   } catch {
     return [];
@@ -37,7 +37,7 @@ export async function loadSales(): Promise<Sale[]> {
 
 export async function saveSales(list: Sale[]): Promise<void> {
   try {
-    await Preferences.set({ key: KEY, value: JSON.stringify(list) });
+    await kvSet(KEY, JSON.stringify(list));
   } catch {
     // Storage unavailable: the figures still add up for this session.
   }

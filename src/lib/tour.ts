@@ -1,4 +1,4 @@
-import { Preferences } from "@capacitor/preferences";
+import { kvGet, kvSet } from "./localdb";
 
 // ─── Tour state ───────────────────────────────────────────────────────────────
 // Whether this phone has already been walked through the app. One flag, kept
@@ -22,7 +22,7 @@ const keyFor = (name: TourName) =>
 
 export async function loadTourSeen(role: TourName): Promise<boolean> {
   try {
-    const { value } = await Preferences.get({ key: keyFor(role) });
+    const value = await kvGet(keyFor(role));
     return value === "1";
   } catch {
     // Storage unavailable: treat it as seen rather than showing the tour on
@@ -33,7 +33,7 @@ export async function loadTourSeen(role: TourName): Promise<boolean> {
 
 export async function saveTourSeen(role: TourName): Promise<void> {
   try {
-    await Preferences.set({ key: keyFor(role), value: "1" });
+    await kvSet(keyFor(role), "1");
   } catch {
     // Nothing to do: it replays next launch, which is the harmless direction.
   }

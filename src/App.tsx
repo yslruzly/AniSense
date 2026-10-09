@@ -32,7 +32,7 @@ import { loadTourSeen, saveTourSeen, TourName } from "./lib/tour";
 import { ViewerContext } from "./store/viewer";
 import { isSupabaseConfigured } from "./lib/supabase";
 import {
-  getSession, onAuthChange, signOut, deleteMyAccount, getMyProfile, updateMyProfile,
+  restoreSession, onAuthChange, signOut, deleteMyAccount, getMyProfile, updateMyProfile,
   toFarmerProfile, accountFromSession, rememberedMemberNo, rememberMemberNo, toE164Phone,
 } from "./services/auth";
 import { FarmerProfile } from "./types";
@@ -41,7 +41,7 @@ import { MarketContext, useMarketStore } from "./store/market";
 import { AchievementId, earnedAchievements, loadSeenAchievements, saveSeenAchievements } from "./lib/achievements";
 import { AchievementUnlocked } from "./components/profile/AchievementUnlocked";
 import { useRetained } from "./hooks/usePresence";
-import { Preferences } from "@capacitor/preferences";
+import { kvRemove } from "./lib/localdb";
 import { requireOnline, wipeAccountData } from "./lib/cache";
 import { dropOutboxFor } from "./lib/outbox";
 
@@ -422,8 +422,9 @@ export default function App() {
   useEffect(() => {
     if (!isSupabaseConfigured) return;
     let alive = true;
-    getSession()
-      .then(s => { if (alive && s) applySession(s, false); })
+    // With no signal, the session saved on the phone opens it (services/auth.ts).
+    restoreSession()
+      .then(({ session: s }) => { if (alive && s) applySession(s, false); })
       .catch(() => {})
       .finally(() => { if (alive) setBooting(false); });
     // Signed out somewhere else, or the session could not be renewed: back
@@ -464,7 +465,7 @@ export default function App() {
       await Promise.all([wipeAccountData(accountId), dropOutboxFor(accountId)]).catch(() => {});
     } else {
       await Promise.all(["sales", "plantings", "price_alerts", "harvest-plans", "ach_seen:demo"]
-        .map(key => Preferences.remove({ key }))).catch(() => {});
+        .map(key => kvRemove(key))).catch(() => {});
     }
     localStorage.removeItem(LAST_ROLE);
     resetToSplash();

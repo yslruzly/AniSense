@@ -1,4 +1,4 @@
-import { Preferences } from "@capacitor/preferences";
+import { kvGet, kvSet } from "./localdb";
 
 // ─── Price alerts ─────────────────────────────────────────────────────────────
 // "Tell me when Calamansi hits ₱170." A target a farmer sets on a crop, kept
@@ -34,7 +34,7 @@ export const alertHit = (a: PriceAlert, price: number) =>
 
 export async function loadAlerts(): Promise<PriceAlert[]> {
   try {
-    const { value } = await Preferences.get({ key: KEY });
+    const value = await kvGet(KEY);
     return value ? (JSON.parse(value) as PriceAlert[]) : [];
   } catch {
     return []; // unreadable or corrupted: start clean rather than crash
@@ -43,7 +43,7 @@ export async function loadAlerts(): Promise<PriceAlert[]> {
 
 export async function saveAlerts(alerts: PriceAlert[]): Promise<void> {
   try {
-    await Preferences.set({ key: KEY, value: JSON.stringify(alerts) });
+    await kvSet(KEY, JSON.stringify(alerts));
   } catch {
     // Storage unavailable (private mode, full disk): the alerts still work
     // for this session, they just will not be there next launch.

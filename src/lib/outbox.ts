@@ -11,8 +11,8 @@
 //      happens, the id mapping is applied to any later queued ops that
 //      reference them (edit/delete an expense that was also created offline).
 
-import { Preferences } from "@capacitor/preferences";
 import { cacheScope } from "./cache";
+import { localStore } from "./localdb";
 
 export interface OutboxOp {
   id: string;
@@ -29,35 +29,32 @@ export type OutboxHandler = (
   payload: Record<string, unknown>
 ) => Promise<{ localId: string; realId: string } | void>;
 
-const KEY = "outbox_ops";
+// Kept in the outbox table of the phone's SQLite database (lib/localdb.ts),
+// oldest first.
 const listeners = new Set<(count: number) => void>();
 
-async function load(): Promise<OutboxOp[]> {
-  const { value } = await Preferences.get({ key: KEY });
-  if (!value) return [];
-  try {
-    return JSON.parse(value) as OutboxOp[];
-  } catch {
-    return [];
-  }
-}
+const load = async (): Promise<OutboxOp[]> => (await localStore()).outboxAll();
 
-async function save(ops: OutboxOp[]): Promise<void> {
-  await Preferences.set({ key: KEY, value: JSON.stringify(ops) });
-  const n = ops.filter(mine).length;
+async function notify(): Promise<void> {
+  if (!listeners.size) return;
+  const n = (await load()).filter(mine).length;
   listeners.forEach(cb => cb(n));
 }
 
+async function save(ops: OutboxOp[]): Promise<void> {
+  await (await localStore()).outboxReplace(ops);
+  await notify();
+}
+
 export async function enqueue(type: string, payload: Record<string, unknown>): Promise<void> {
-  const ops = await load();
-  ops.push({
+  await (await localStore()).outboxAdd({
     id: `op-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     type,
     payload,
     queuedAt: new Date().toISOString(),
     owner: cacheScope(),
   });
-  await save(ops);
+  await notify();
 }
 
 const mine = (op: OutboxOp) => (op.owner ?? "") === cacheScope();
@@ -118,7 +115,10 @@ export async function processOutbox(handlers: Record<string, OutboxHandler>): Pr
       if (result) idMap[result.localId] = result.realId;
       synced++;
     } catch {
-      await save([...others, ...ops.slice(i)]); // keep the failed op + the rest, in order
+      // Keep the failed op and the rest, in order, with any ids that got
+      // real ones on this pass already swapped in, so an edit queued after an
+      // offline add still finds its row next time.
+      await save([...others, ...ops.slice(i).map(o => ({ ...o, payload: remapIds(o.payload, idMap) }))]);
       return synced;
     }
   }

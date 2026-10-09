@@ -9,7 +9,7 @@
 // up when the signal returns, landing exactly as the farmer left it.
 
 import { supabase } from "../lib/supabase";
-import { cachedFetch, cacheGet, cacheSet, isNetworkError, FetchResult } from "../lib/cache";
+import { cachedFetch, cacheGet, cacheSet, isNetworkError, throwIfOffline, FetchResult } from "../lib/cache";
 import { enqueue, OutboxHandler } from "../lib/outbox";
 import { groupNameOf } from "../data/crops";
 import type { Sale } from "../lib/sales";
@@ -89,6 +89,7 @@ async function remember<K extends keyof FarmRecords>(key: K, value: FarmRecords[
 async function save<K extends keyof FarmRecords>(kind: K, value: FarmRecords[K], payload: unknown) {
   await remember(kind, value);
   try {
+    throwIfOffline();
     await send(kind, payload);
   } catch (err) {
     if (!isNetworkError(err)) throw err;

@@ -1,4 +1,4 @@
-import { Preferences } from "@capacitor/preferences";
+import { kvGet, kvSet } from "./localdb";
 
 // ─── Expected harvests ────────────────────────────────────────────────────────
 // How many kilos a farmer expects to bring in, per crop. The one number the
@@ -15,7 +15,7 @@ export type HarvestPlans = Record<string, number>;
 
 export async function loadHarvestPlans(): Promise<HarvestPlans> {
   try {
-    const { value } = await Preferences.get({ key: KEY });
+    const value = await kvGet(KEY);
     return value ? (JSON.parse(value) as HarvestPlans) : {};
   } catch {
     return {};
@@ -24,7 +24,7 @@ export async function loadHarvestPlans(): Promise<HarvestPlans> {
 
 export async function saveHarvestPlans(plans: HarvestPlans): Promise<void> {
   try {
-    await Preferences.set({ key: KEY, value: JSON.stringify(plans) });
+    await kvSet(KEY, JSON.stringify(plans));
   } catch {
     // Storage unavailable: the estimate still works for this session.
   }

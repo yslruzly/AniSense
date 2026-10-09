@@ -1,13 +1,14 @@
 // ─── Offline Cache ────────────────────────────────────────────────────────────
-// Read-side of offline support: every successful fetch is saved to native
-// storage (@capacitor/preferences → SharedPreferences on Android), and when a
-// fetch fails (offline / bad signal) the last-known data is served instead.
+// Read-side of offline support: every successful fetch is saved on the phone
+// (the cache table of its SQLite database, lib/localdb.ts), and when a fetch
+// fails (offline / bad signal) the last-known data is served instead. With
+// no signal at all, the saved copy is served at once, without trying.
 //
 // Usage: services wrap their server calls with cachedFetch():
 //   const { data, fromCache, updatedAt } = await fetchMarket();
 //   if (fromCache) → show the "offline, as of {updatedAt}" banner (already in the UI)
 
-import { Preferences } from "@capacitor/preferences";
+import { localStore } from "./localdb";
 
 // Whose data this is. Two accounts on one phone must never see each other's
 // cached expenses or purchases, so every key is filed under the signed-in
@@ -22,8 +23,7 @@ export const cacheScope = () => scope;
  *  the note of which badges it was shown. Every such key carries the
  *  account's id, so nothing of another account on the same phone is touched. */
 export async function wipeAccountData(accountId: string): Promise<void> {
-  const { keys } = await Preferences.keys();
-  await Promise.all(keys.filter(k => k.includes(accountId)).map(key => Preferences.remove({ key })));
+  await (await localStore()).removeAccount(accountId);
 }
 
 interface CacheEntry<T> {
@@ -32,15 +32,14 @@ interface CacheEntry<T> {
 }
 
 export async function cacheSet<T>(key: string, data: T): Promise<void> {
-  const entry: CacheEntry<T> = { data, updatedAt: new Date().toISOString() };
-  await Preferences.set({ key: `cache_${scope}${key}`, value: JSON.stringify(entry) });
+  await (await localStore()).cacheSet(`${scope}${key}`, JSON.stringify(data), new Date().toISOString());
 }
 
 export async function cacheGet<T>(key: string): Promise<CacheEntry<T> | null> {
-  const { value } = await Preferences.get({ key: `cache_${scope}${key}` });
-  if (!value) return null;
+  const row = await (await localStore()).cacheGet(`${scope}${key}`);
+  if (!row) return null;
   try {
-    return JSON.parse(value) as CacheEntry<T>;
+    return { data: JSON.parse(row.data) as T, updatedAt: row.updatedAt };
   } catch {
     return null; // corrupted entry: treat as no cache
   }
@@ -58,11 +57,20 @@ export interface FetchResult<T> {
  * Network-first, cache-fallback. Tries the real fetch; on success caches and
  * returns fresh data. On failure returns the cached copy if one exists,
  * otherwise rethrows (first-ever launch with no connection).
+ *
+ * With no signal at all it doesn't try: a request then only fails, and only
+ * after the sign-in library has spent up to half a minute retrying to renew
+ * an expired session. The saved copy comes at once instead.
  */
 export async function cachedFetch<T>(
   key: string,
   fetcher: () => Promise<T>
 ): Promise<FetchResult<T>> {
+  if (isOffline()) {
+    const cached = await cacheGet<T>(key);
+    if (cached) return { data: cached.data, fromCache: true, updatedAt: cached.updatedAt };
+    throw new TypeError("Offline, and nothing saved on this phone yet");
+  }
   try {
     const data = await fetcher();
     await cacheSet(key, data);
@@ -75,6 +83,18 @@ export async function cachedFetch<T>(
 }
 
 // ─── Connectivity helpers ─────────────────────────────────────────────────────
+
+/** The phone says it has no network at all. */
+export const isOffline = (): boolean => typeof navigator !== "undefined" && navigator.onLine === false;
+
+/**
+ * For changes that can wait (an expense, a sale): with no signal, fail at once,
+ * as a network failure, so the caller queues the change straight away rather
+ * than after the sign-in library's half a minute of retries.
+ */
+export function throwIfOffline(): void {
+  if (isOffline()) throw new TypeError("Offline");
+}
 
 /**
  * True when an error looks like a connectivity failure (fetch throws TypeError

@@ -8,7 +8,7 @@
 
 import { supabase } from "../lib/supabase";
 import { Expense } from "../types";
-import { cachedFetch, cacheGet, cacheSet, isNetworkError, FetchResult } from "../lib/cache";
+import { cachedFetch, cacheGet, cacheSet, isNetworkError, throwIfOffline, FetchResult } from "../lib/cache";
 import { enqueue, OutboxHandler } from "../lib/outbox";
 import { groupIdOf, groupNameOf } from "../data/crops";
 
@@ -101,6 +101,7 @@ export async function fetchExpenses(): Promise<FetchResult<Expense[]>> {
  */
 export async function addExpense(form: ExpenseForm): Promise<Expense> {
   try {
+    throwIfOffline();
     const exp = await serverAdd(form);
     await mutateCache(list => [exp, ...list]);
     return exp;
@@ -135,6 +136,7 @@ export async function updateExpense(id: string, form: ExpenseForm): Promise<void
     return;
   }
   try {
+    throwIfOffline();
     await serverUpdate(id, form);
     await mutateCache(apply);
   } catch (err) {
@@ -153,6 +155,7 @@ export async function deleteExpense(id: string): Promise<void> {
     return;
   }
   try {
+    throwIfOffline();
     await serverDelete(id);
     await mutateCache(apply);
   } catch (err) {

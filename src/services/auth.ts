@@ -3,9 +3,10 @@
 // and the user's profile row. Used by AuthFormScreen and App.tsx whenever
 // .env holds a Supabase project; without one the app keeps its demo sign-in.
 
-import { Session } from "@supabase/supabase-js";
+import { Session, isAuthRetryableFetchError } from "@supabase/supabase-js";
 import { Preferences } from "@capacitor/preferences";
-import { supabase } from "../lib/supabase";
+import { supabase, SESSION_KEY } from "../lib/supabase";
+import { kvGet, kvSet } from "../lib/localdb";
 import { UserRole, FarmerProfile } from "../types";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -194,6 +195,47 @@ export async function getSession(): Promise<Session | null> {
   return data.session;
 }
 
+// ─── Opening without signal ───────────────────────────────────────────────────
+// A session lasts an hour, then the library renews it over the network. With
+// no signal it can't: getSession() keeps retrying for up to half a minute,
+// then answers "no session", though the session is still saved on the phone.
+// That would put a farmer in a field back on the welcome screen, unable to
+// sign in, with everything the phone kept for them out of reach.
+//
+// So with no signal the app opens on the saved session straight away, and
+// works from what the phone kept (lib/cache.ts) and queues what is changed
+// (lib/outbox.ts). Once the signal is back the library renews the session by
+// itself; if the server has ended it (signed out on another phone, password
+// changed), the library signs out, and App goes back to the welcome screen.
+
+/** The session saved on this phone, read straight from where the library keeps it. */
+async function savedSession(): Promise<Session | null> {
+  try {
+    const raw = (await Preferences.get({ key: SESSION_KEY })).value;
+    if (!raw) return null;
+    const s = JSON.parse(raw) as Session;
+    return s?.refresh_token && s.user?.id ? s : null;
+  } catch {
+    return null;
+  }
+}
+
+/** The session to open the app with, and whether it is the saved one, unrenewed. */
+export async function restoreSession(): Promise<{ session: Session | null; offline: boolean }> {
+  if (typeof navigator !== "undefined" && navigator.onLine === false) {
+    const saved = await savedSession();
+    if (saved) return { session: saved, offline: true };
+  }
+  const { data, error } = await supabase.auth.getSession();
+  if (data.session) return { session: data.session, offline: false };
+  // The phone said it had signal, but the renewal couldn't get through.
+  if (error && isAuthRetryableFetchError(error)) {
+    const saved = await savedSession();
+    if (saved) return { session: saved, offline: true };
+  }
+  return { session: null, offline: false };
+}
+
 export function onAuthChange(cb: (session: Session | null, event: string) => void) {
   const { data } = supabase.auth.onAuthStateChange((event, session) => cb(session, event));
   return () => data.subscription.unsubscribe(); // call in useEffect cleanup
@@ -335,9 +377,9 @@ export function accountFromSession(session: Session): { role: UserRole; profile:
 const memberKey = (accountId: string) => `member_no:${accountId}`;
 
 export async function rememberedMemberNo(accountId: string): Promise<string | null> {
-  try { return (await Preferences.get({ key: memberKey(accountId) })).value; } catch { return null; }
+  try { return await kvGet(memberKey(accountId)); } catch { return null; }
 }
 
 export async function rememberMemberNo(accountId: string, memberNo: string): Promise<void> {
-  try { await Preferences.set({ key: memberKey(accountId), value: memberNo }); } catch { /* storage unavailable: it is fetched again next time */ }
+  try { await kvSet(memberKey(accountId), memberNo); } catch { /* storage unavailable: it is fetched again next time */ }
 }
