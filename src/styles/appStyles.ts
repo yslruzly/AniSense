@@ -2901,6 +2901,11 @@ export const appCss = `
     letter-spacing: -.025em; color: var(--text);
   }
   .yp-summary { margin: 5px 0 0; font-size: 15px; color: var(--text-muted); }
+  /* Nothing bought yet: the same gold card, holding the empty state, its
+     icon in the card's own gold rather than the usual grey. */
+  .yp-empty { padding: 8px 16px 20px; }
+  .yp-empty .state-block { padding: 14px 8px 0; }
+  .yp-empty .state-ico { background: #FBEBC4; color: #8A5D0C; }
   .yp-h {
     margin: 18px 0 8px; font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--text);
   }

@@ -1,12 +1,12 @@
 import { useRef } from "react";
-import { ChevronRight, MapPin, RotateCcw, ArrowLeft, ArrowRight, TrendingUp, TrendingDown, ArrowLeftRight } from "lucide-react";
+import { ChevronRight, MapPin, RotateCcw, ArrowLeft, ArrowRight, TrendingUp, TrendingDown, ArrowLeftRight, ShoppingCart } from "lucide-react";
 import { useLang, translations } from "../../i18n";
 import { CROPS, CROP_GROUP_BY_ID, familyCropNames } from "../../data/crops";
 import familyCrops from "../../assets/families/family-crops.webp";
 import familyFruits from "../../assets/families/family-fruits.webp";
 import familyVegetables from "../../assets/families/family-vegetables.webp";
 import { useMarket } from "../../store/market";
-import { SkeletonShelf, SkeletonFarmerCards } from "../states";
+import { SkeletonShelf, SkeletonFarmerCards, EmptyState } from "../states";
 import { featuredLineup } from "../../lib/featured";
 import { FeaturedFarmerBig } from "./FeaturedFarmerBig";
 import { useAutoScroll } from "../../hooks/useAutoScroll";
@@ -312,11 +312,35 @@ export function FeaturedFarmers({ onShop, buyerLocation }: { onShop: Shop; buyer
 // red: ΔE 2.2), and a legend would make an older reader match swatches.
 // One gold, labels beside every bar: nothing to decode. Gold #B87A0B is
 // 3.6:1 on white, over the 3:1 a graphic needs.
+//
+// A new buyer, with nothing bought yet, still finds it: the same gold card,
+// saying what will be here and with the way to the Market. Not while their
+// purchases are still loading, though, or a buyer who has some would be told
+// they have none. It is the last section, so nothing below moves when it
+// comes. No History link then: it would open an empty page.
 
 export function YourPurchases({ onShop, onHistory }: { onShop: Shop; onHistory: () => void }) {
   const { t, tn, lang } = useLang();
-  const { purchases } = useMarket();
-  if (purchases.length === 0) return null;
+  const { purchases, loadPhase } = useMarket();
+  if (purchases.length === 0) {
+    if (loadPhase !== "ready") return null;
+    return (
+      <section className="hm-sec" aria-labelledby="yp-t" data-tour="b-purchases">
+        <div className="hm-sec-row">
+          <h2 className="hm-sec-title" id="yp-t">{t("yp_title")}</h2>
+        </div>
+        <div className="yp yp-empty">
+          <EmptyState
+            icon={<ShoppingCart size={26} aria-hidden="true" />}
+            title={t("state_no_purchases_title")}
+            body={t("yp_empty_body")}
+            action={t("cart_browse")}
+            onAction={() => onShop({})}
+          />
+        </div>
+      </section>
+    );
+  }
   const locale = lang === "tl" ? "fil-PH" : "en-PH";
 
   // What each cost, as paid when the buyer has written it down (lib/purchases.ts).

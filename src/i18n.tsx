@@ -343,6 +343,10 @@ export const translations: Dict = {
   yp_summary: { en: "spent on {orders} from {farmers}", tl: "nagastos sa {orders} mula sa {farmers}" },
   yp_where: { en: "Where it went", tl: "Saan napunta" },
   yp_other: { en: "Other", tl: "Iba pa" },
+  yp_empty_body: {
+    en: "What you buy from farmers shows here: what you spent, and a quick way to buy it again.",
+    tl: "Dito makikita ang mabibili mo sa magsasaka: ang nagastos mo, at madaling paraan para bumili ulit.",
+  },
   mkt_history: { en: "Past {n} months and forecast", tl: "Nakaraang {n} buwan at taya" },
   mkt_history_only: { en: "Past {n} months", tl: "Nakaraang {n} buwan" },
   mkt_history_year: { en: "{year} prices and forecast", tl: "Presyo ng {year} at taya" },
