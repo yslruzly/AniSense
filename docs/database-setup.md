@@ -11,6 +11,7 @@ and the APK is rebuilt, AniSense runs on the database:
 | Seller profiles and Featured farmers | Yes, built from the farmers who have something for sale |
 | Checkout | Yes, all or nothing: stock is checked and lowered, the price comes from the listing |
 | Buyer's purchases (Home and history) | Yes |
+| Orders after the call | Yes: the farmer's bell shows each new order; Confirm records what it sold for (counted in their earnings), the buyer records what they paid, and once both are done the buyer rates the farmer |
 | Farmer's expenses | Yes, and they also work offline, syncing when the signal returns |
 | Farmer's marketplace sales | Yes, counted in the profit figures automatically |
 | Sales typed in, crop tracker, price alerts, expected harvests | Yes, and they work offline too |
@@ -22,10 +23,14 @@ Without `.env` the app runs exactly as before on the built-in sample data, so
 an APK built without keys still works for demos.
 
 **Still kept on the phone only:** the ID photo, and which achievements have
-already been celebrated. **Still sample data:** weather, the prices of the 19
-varieties with no records, and the farmer's order alerts (two invented orders,
-shown in the demo only; a real account sees none until that feature is
-connected to the database).
+already been celebrated. **Still sample data:** weather, and the prices of the
+18 varieties with no records.
+
+**Offline needs nothing here.** The app keeps its own SQLite database on the
+phone (the lists it fetched, and the changes made without signal), and opens
+on the saved sign-in when there is no signal. None of that is in Supabase, so
+there is nothing to set up for it. See section 6 of
+[architecture.md](architecture.md#6-offline-design).
 
 The database is organized in five sections (catalog, accounts, market, farm
 records, rewards). The table diagram and what each table holds are in
@@ -326,7 +331,8 @@ before the release.
 - Free projects **pause after 7 days with no activity**. If sign-in suddenly
   fails for everyone, open the dashboard and press **Restore project**.
 - Two accounts on one phone never see each other's saved data. Offline
-  changes wait for the account that made them.
+  changes wait for the account that made them, in the phone's SQLite database,
+  and go out in order when the signal returns.
 - Do NOT add the `READ_SMS` permission for code autofill; Google Play rejects it.
 
 ## Later (optional)

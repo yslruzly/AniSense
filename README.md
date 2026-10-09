@@ -28,7 +28,7 @@ Farmers often sell without knowing the market price, and buyers rarely reach far
 - **Farmers** see the latest prices for their crops, post harvests for sale, record expenses and sales, and check the weather before fieldwork.
 - **Buyers** browse fresh harvests, compare them against market prices, and order directly from the farmer who grew them.
 
-The app is designed for users aged 50 to 70 on budget Android phones: text is 16px or larger, every control is at least 52px tall, the interface is available in English and Tagalog, and the core screens keep working without a signal.
+The app is designed for users aged 50 to 70 on budget Android phones: text is 16px or larger, every control is at least 52px tall, the interface is available in English and Tagalog, and the app opens and keeps working without a signal, from its own SQLite database on the phone.
 
 The study behind the app focuses on four crops: rice, onion, garlic and calamansi. These are the crops with real price records and forecasts.
 
@@ -40,7 +40,7 @@ The study behind the app focuses on four crops: rice, onion, garlic and calamans
 |---|---|
 | Prices | Monthly retail prices with the change from the month before. The study's five varieties (Special Rice, Well Milled Rice, Red Onion, Native Garlic, Calamansi) come from real records, 2021 to 2026, and are pinned at the top of the list as "AniSense focus crops". Each opens a chart of the current year from January, followed by a 3-month forecast. |
 | Marketplace | Post a harvest with a photo, price and quantity; edit or remove it. |
-| Order alerts | A buyer's order appears under the bell with the buyer's name and phone number, a Call button and a Confirm button. See [Project status](#project-status). |
+| Order alerts | A buyer's order appears under the bell with the buyer's name and phone number, a Call button and a Confirm button. Confirm asks what it sold for, and that amount counts in the farmer's earnings; it can be changed afterwards. |
 | Expenses and profit | Record costs by category and crop, record sales, and see estimated and final profit. |
 | Crop tracker | Log plantings and count down to harvest. |
 | Price alerts | Set a target price for a crop and get notified in the app when it is reached. |
@@ -52,11 +52,13 @@ The study behind the app focuses on four crops: rice, onion, garlic and calamans
 
 | Feature | Description |
 |---|---|
-| Home | Fresh listings, the cheapest crops today, featured farmers, and past purchases. |
-| Marketplace | Filter by crop, variety or family; search by crop, farmer or town; sort by price or date. |
+| Home | Two AniSense posters taking turns under the search bar (tap one to see it whole, with zoom), fresh listings, the cheapest crops today, the price moves, and Your purchases, shown from the first day with "No purchases yet" until there are some. |
+| Featured farmers | The AniSense Farmer of the Week (chosen weekly from the four best-rated) and four more, the buyer's neighbours first. On Home, big profile cards; in the Market, a row of small ones. Both rows slide slowly on their own, stop for a finger, and rest when out of sight. The Farmer of the Week leads, with a moving gold ring, and on Home and on their profile a gold badge. |
+| Marketplace | Filter by crop, variety or family; search by crop, farmer or town; sort by price or date. Call Now opens the farmer's number in the dialer. The kilos can be stepped with − and + or typed. A back-to-top button appears once the list is a screen down. |
 | Checkout | Add to cart and place an order. Stock is checked and reduced atomically on the server. |
 | Receipt | A shareable order receipt. |
-| Farmer profiles | Rating, years of experience, location and what each farmer grows. |
+| Orders | Each line says whether the farmer has confirmed it after the call. Record payment writes down what was actually paid; once a line is settled on both sides, five stars ask how the farmer was. |
+| Farmer profiles | Rating (the average of buyers' stars, "New" until someone rates), years of experience, location and what each farmer grows. |
 
 ### Shared
 
@@ -66,6 +68,9 @@ The study behind the app focuses on four crops: rice, onion, garlic and calamans
 - A member ID card, numbered by the database in the order people join (`2026-00001`).
 - English and Tagalog throughout. The privacy policy and the terms of service are the exception: they are English only.
 - Creating an account starts with first and last name and agreeing to the Terms of Service and Privacy Policy; the next page asks for a CP number or a Gmail address.
+- Where you are is picked, not typed: Luzon, Visayas or Mindanao, then the province, the city or town, and the barangay. A farmer's form starts on Nueva Ecija, where most AniSense farmers are; farmers elsewhere pick their own province, and their listings are placed in its towns.
+- Works without a signal. Every list the app fetches is saved on the phone; with no signal the app opens on the account saved there, shows the saved lists at once, and queues a farmer's expenses and records until the signal returns. See [Offline design](docs/architecture.md#6-offline-design).
+- Each tab keeps its place: its scroll and the page open in it. Back returns to where you were.
 - Profile has a Manage account section with the privacy policy, the terms of service and account deletion.
 
 ## Project status
@@ -79,7 +84,9 @@ The app is feature-complete on the client. Some data sources are still sample da
 | Crop prices | **Real monthly retail prices** for the study's five varieties (`data/historical-prices.csv`, January 2021 to September 2026), bundled in the app and loaded into the database by the seed file. The other 18 varieties still show **sample values**. |
 | Price forecasts (ARIMA, LSTM) | Trained on the price records by `ml/train_forecasts.py` (statsmodels and PyTorch, run locally, free). Three months ahead for the five varieties. Tested on the last 12 months: rice is 3 to 9% off on average; onion and calamansi are 28 to 52% off. Results are in `ml/REPORT.md`, known limits in `ml/README.md`. The phone runs no model: it reads the finished forecasts. |
 | Weather | **Sample values.** No forecast service is connected yet. |
-| Order alerts for farmers | **Sample data.** Two invented orders, shown to the demo farmer only. Not yet connected to checkout or the database, and there are no push notifications. |
+| Order alerts for farmers | Live on Supabase: a buyer's order reaches the farmer's bell, and confirming it records what it sold for. Two invented orders stand in for the demo farmer. There are no push notifications yet. |
+| Orders, payments and ratings | Live on Supabase: the farmer confirms a line with what it sold for, the buyer records what they paid, and the buyer rates the farmer once both are done. |
+| Offline storage | SQLite on the phone (`@capacitor-community/sqlite`): saved lists, the queue of changes made offline, and small records. The app opens on the saved sign-in with no signal. Placing an order and posting a listing still need a connection. In a browser (development) the same data is kept in Preferences. |
 | Privacy policy | A draft, English only, in the app (Welcome screen, Create account and Profile → Manage account) and at `site/privacy-policy.html`. Not yet reviewed by a lawyer. |
 | Terms of service | A draft, English only (`src/data/termsOfService.ts`), agreed to at Create account and readable under Profile → Manage account. In the app only, not yet on the web. Not yet reviewed by a lawyer. |
 | Account deletion | In the app (Profile → Manage account) and on a web page (`site/delete-account.html`), as Google Play requires. |
@@ -94,13 +101,14 @@ The app is feature-complete on the client. Some data sources are still sample da
 | UI | React 18, TypeScript 5 |
 | Build | Vite 5 |
 | Native shell | Capacitor 8 (Android) |
-| Backend | Supabase: PostgreSQL, Auth, Storage, Row Level Security, PL/pgSQL functions |
+| Backend | Supabase: PostgreSQL, Auth, Storage, Row Level Security, PL/pgSQL functions, an Edge Function for verification codes |
+| On-device database | SQLite, through `@capacitor-community/sqlite` 8 (Android) |
 | Icons | lucide-react |
 | Styling | CSS-in-TypeScript stylesheets with shared design tokens |
 | Image tooling | sharp (development only) |
 | Forecast models | Python with statsmodels (ARIMA) and PyTorch (LSTM), run on a development computer. Not part of the app. |
 
-Capacitor plugins in use: App, Filesystem, Haptics, Keyboard, Preferences, Share, Splash Screen, Status Bar.
+Capacitor plugins in use: App, Filesystem, Haptics, Keyboard, Preferences, Share, Splash Screen, Status Bar, and the community SQLite plugin.
 
 ## Architecture
 
@@ -112,6 +120,7 @@ flowchart LR
     Services["Services<br/>src/services/*"]
     Cache["On-device cache<br/>src/lib/cache.ts"]
     Outbox["Outbox for offline writes<br/>src/lib/outbox.ts"]
+    LocalDB[("SQLite on the phone<br/>src/lib/localdb.ts<br/>cache · outbox · kv")]
   end
 
   subgraph Supabase
@@ -124,6 +133,8 @@ flowchart LR
   UI --> Store --> Services
   Services <--> Cache
   Services --> Outbox
+  Cache <--> LocalDB
+  Outbox <--> LocalDB
   Services <--> Auth
   Services <--> DB
   Services --> RPC
@@ -135,7 +146,7 @@ Key design decisions:
 
 - **One data layer.** Screens read and write through the market store (`src/store/market.tsx`). It serves live data when Supabase is configured and sample data otherwise, so screens never branch on the mode.
 - **The database enforces the rules.** Row Level Security is enabled on every table. Checkout runs in a single server function (`place_order`) that takes the price from the listing and refuses to oversell.
-- **Offline first for a farmer's own records.** Reads are cached per account; writes made offline wait in an outbox and sync when the connection returns.
+- **Works without a signal.** Every read is saved per account in a SQLite database on the phone; with no signal the app opens on the saved sign-in and serves those copies at once. A farmer's expenses and records made offline wait in an outbox table and sync, in order, when the connection returns.
 - **No client-side secrets.** The app ships only the publishable key.
 
 ## Getting started
@@ -196,7 +207,7 @@ AniSense/
 │   │   ├── demo/        Sample data for demo mode
 │   │   └── generated/   Written by scripts; never edited by hand
 │   ├── hooks/           React hooks
-│   ├── lib/             Supabase client, offline cache and outbox, platform helpers, domain helpers
+│   ├── lib/             Supabase client, the phone's SQLite database, offline cache and outbox, platform helpers, domain helpers
 │   ├── screens/         One file per screen; auth/ holds sign-up and sign-in
 │   ├── services/        The only code that calls Supabase
 │   ├── store/           App state: the market store and the viewer context
@@ -216,7 +227,7 @@ AniSense/
 
 | Document | What it covers |
 |---|---|
-| [docs/architecture.md](docs/architecture.md) | How the app is built and why. |
+| [docs/architecture.md](docs/architecture.md) | How the app is built and why, including how it works offline (section 6). |
 | [docs/database-setup.md](docs/database-setup.md) | Connecting a Supabase project, step by step. |
 | [supabase/README.md](supabase/README.md) | The database tables, functions and everyday admin. |
 | [ml/README.md](ml/README.md) | The forecast models: setup, retraining, testing and limits. |

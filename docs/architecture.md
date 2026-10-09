@@ -28,17 +28,20 @@ flowchart TB
 
   subgraph Device["Android phone"]
     App["AniSense app<br/>React + TypeScript in a Capacitor WebView"]
-    Local["On-device storage<br/>cache, outbox, session, settings"]
-    Codes["Verification codes<br/>mockup, made on the phone"]
+    SQLite[("SQLite database 'anisense'<br/>saved lists, offline changes, small records")]
+    Prefs["Preferences<br/>sign-in session"]
   end
 
   subgraph Supabase["Supabase (managed)"]
     Auth["Auth"]
     DB["PostgreSQL<br/>tables, RLS, functions"]
     Storage["Storage<br/>listing photos"]
+    Fn["Edge Function verify-code<br/>makes, sends and checks codes"]
   end
 
-  Web["Static web pages (site/)<br/>privacy policy, account deletion"]
+  Brevo["Brevo<br/>codes by email (Gmail)"]
+  Sema["Semaphore<br/>codes by text (CP numbers)"]
+  Web["Static web pages (site/)<br/>home, privacy policy, account deletion"]
 
   subgraph Build["Development computer"]
     Csv["Price records<br/>data/historical-prices.csv"]
@@ -46,33 +49,34 @@ flowchart TB
   end
 
   subgraph Planned["Planned, not built yet"]
-    SMS["SMS provider (Semaphore)<br/>codes for CP-number accounts"]
-    Mail["Email sender<br/>codes for Gmail accounts"]
     Prices["Price ingestion<br/>government sources"]
     Wx["Weather service"]
   end
 
   Farmer --> App
   Buyer --> App
-  App <--> Local
-  App <--> Codes
+  App <--> SQLite
+  App <--> Prefs
   App <-->|HTTPS| Auth
   App <-->|HTTPS| DB
   App -->|HTTPS| Storage
+  App <-->|HTTPS| Fn
+  Fn --> Brevo
+  Fn --> Sema
   Web -->|HTTPS| Auth
   Web -->|HTTPS| DB
   Csv --> Train
   Train -->|bundled in the APK| App
   Train -.->|seed.sql| DB
-  Codes -.->|replaced by| SMS
-  Codes -.->|replaced by| Mail
   Prices -.-> DB
   Wx -.-> App
 ```
 
 There is no custom application server. The app talks to Supabase directly, and every rule that matters (who can read what, how an order is priced, how stock is reduced) is enforced inside the database.
 
-The verification codes used when creating an account and when resetting a password are a stand-in for now: the app makes them itself and shows them on screen (see [3.9](#39-verification-codes)). Once an SMS provider and an email sender are connected, a server function sends and checks them instead.
+On the phone, the app keeps its own SQLite database: the last copy of every list it fetched, the changes made without signal, and small records. With no signal it opens on the sign-in saved on the phone and works from that database (see [6](#6-offline-design)).
+
+The verification codes used when creating an account and when resetting a password come from the `verify-code` Edge Function, which emails them through Brevo or texts them through Semaphore and checks them on the server (see [3.9](#39-verification-codes)). In a build without a database, the app makes them itself and shows them on screen as a demo.
 
 The forecast models are not part of the running system. They are trained on a development computer from the price records, and only their results travel: inside the APK, and into the database through the seed file.
 
@@ -81,7 +85,8 @@ The forecast models are not part of the running system. They are trained on a de
 | Constraint | Consequence |
 |---|---|
 | Users are 50 to 70 years old, on budget Android phones | One codebase tuned for one platform; large type and targets; no gestures required; English and Tagalog. |
-| Signal in the fields is unreliable | A farmer's own records work offline and sync later; prices, their history and the forecasts ship inside the app. |
+| Signal in the fields is unreliable | The app keeps a SQLite database on the phone: it opens with no signal, shows the lists it saved, and queues a farmer's records to sync later. Prices, their history and the forecasts ship inside the app. |
+| The study is in Nueva Ecija, but farmers elsewhere may join | Sign-up covers the whole country (island group, province, town, barangay); a farmer's form starts on Nueva Ecija. |
 | The price records are monthly | Every price move is worded "from the month before", never "today"; forecasts look three months ahead. |
 | Forecasts can be badly wrong for volatile crops | Each forecast carries its tested error, and above a set error the app gives no sell-or-wait advice. |
 | A small team and no operations budget | A managed backend with no server to run; business rules in SQL, next to the data. |
@@ -99,7 +104,7 @@ flowchart TB
   Components["Components<br/>src/components"]
   Store["Market store<br/>src/store/market.tsx"]
   Services["Services<br/>src/services"]
-  Lib["Infrastructure<br/>src/lib: cache, outbox, supabase, platform"]
+  Lib["Infrastructure<br/>src/lib: localdb (SQLite), cache, outbox, supabase, platform"]
   Data["Static data<br/>src/data"]
 
   Hooks["Hooks<br/>src/hooks"]
@@ -114,13 +119,13 @@ flowchart TB
 
 | Layer | Location | Responsibility |
 |---|---|---|
-| App shell | `src/App.tsx` | Authentication state, which screen is showing, session restore, the walkthrough and achievement overlays. Injects the stylesheets. |
+| App shell | `src/App.tsx` | Authentication state, which screen is showing and where each tab was left, session restore (offline included), the walkthrough and achievement overlays. Injects the stylesheets. |
 | Screens | `src/screens/` | One file per screen. Compose components and read from the store. |
 | Components | `src/components/` | Reusable UI, grouped by feature (`home`, `analytics`, `expenses`, `marketplace`, `prices`, `legal`, `profile`, `tour`), plus shared building blocks (`ui`, `layout`, `icons`, `brand`, `states`, `charts`). `legal` shows the privacy policy and the terms of service, as a page or in a sheet. |
 | Store | `src/store/` | `market.tsx`, the single data layer, and `viewer.ts`, the context that says who is looking. The market store holds listings, sellers, purchases, expenses, farm records, a farmer's incoming orders, prices and badges, and exposes actions to change them. |
 | Services | `src/services/` | One file per domain (`auth`, `listings`, `transactions`, `expenses`, `farmRecords`, `catalog`, `prices`, `sync`, `verification`). The only code that calls Supabase, and the one place the verification codes are made and checked. |
-| Hooks | `src/hooks/` | Small React hooks: Android's Back button, offline state, the outbox count, when to show skeleton loaders, presence, night mode, and loading a resource. |
-| Infrastructure and helpers | `src/lib/` | Supabase client, cache, outbox, platform wrappers (haptics, status bar, keyboard), and small domain helpers (alerts, achievements, plantings, sales). |
+| Hooks | `src/hooks/` | Small React hooks: Android's Back button, offline state, the outbox count, when to show skeleton loaders, presence, night mode, loading a resource, and rows that slide on their own (`useAutoScroll`, the featured farmers). |
+| Infrastructure and helpers | `src/lib/` | The phone's SQLite database (`localdb.ts`, `localdbSql.ts`), Supabase client, cache, outbox, platform wrappers (haptics, status bar, keyboard), and small domain helpers (alerts, achievements, plantings, sales, ratings, purchases, featured farmers). |
 | Static data | `src/data/` | The crop catalog, Philippine locations, the privacy policy and terms of service, and the readers for the price records and forecasts. Two subfolders: `generated/`, written by scripts and never edited by hand, and `demo/`, the sample data for demo mode. |
 
 **Dependency rule:** screens and components never import the Supabase client. They read and write through the store, which decides whether to call a service or use sample data. This keeps the live and demo modes from leaking into the UI.
@@ -157,7 +162,6 @@ stateDiagram-v2
   Language --> Role
   Role --> SignUp
   SignUp --> SignUp: one question per page
-  SignUp --> SignIn: Already have an account?
   SignIn --> Language: Create an account
   SignIn --> Forgot: Forgot your password?
   Forgot --> NewPassword: the code matches
@@ -182,6 +186,7 @@ stateDiagram-v2
 - Before sign-in, an `authScreen` value steps through welcome, language, role and the account form when creating an account. "I already have an account" goes straight from welcome to the Sign in form: a real account brings its own role, and the role of the last account used on the phone (`anisense-last-role`, farmer if none) only picks who greets them and, in the demo, which sample account opens. "Create an account" on that Sign in goes back through language and role, which were skipped.
 - Inside the account form (`src/screens/auth/AuthFormScreen.tsx`) a `page` value selects the page: Sign in, the sign-up questions, and the two Forgot password pages (`forgot`, `newpass`).
 - After sign-in, an `active` value selects the screen. The five tab screens switch in place; the others are pushed and return on Back.
+- Each tab keeps its place. Leaving a tab remembers its scroll and the page open in it (`lastIn`, `scrollAt` in `App.tsx`); tapping that tab again goes back there. Tapping the tab already showing scrolls it to the top, and tapping it from a page opened inside it returns to the tab itself. Back from a pushed page returns to the tab it was opened from, at the same spot.
 - Android's hardware Back is handled by a small stack (`useHardwareBack`): the topmost open sheet closes first; inside the account form it steps back one page (a sign-up question, or a Forgot password page); then pushed screens; then the app.
 
 ### 3.5 Styling
@@ -242,7 +247,7 @@ Supabase provides four things:
 |---|---|
 | Auth | Accounts and sessions. A mobile-number account is stored as an email alias until SMS verification is added. |
 | PostgreSQL | 16 tables in five sections (catalog, accounts, market, farm records, rewards), plus `verification_codes`, which only the verify-code function can read. |
-| Edge Functions | `verify-code`: makes, emails (through Brevo), and checks the 6-digit codes, and sets a new password after a reset. Runs on the server with the service key, which never reaches the app. |
+| Edge Functions | `verify-code`: makes the 6-digit codes, emails them (through Brevo) or texts them (through Semaphore), checks them, and sets a new password after a reset. Runs on the server with the service key, which never reaches the app. |
 | Functions (PL/pgSQL) | Operations that must be atomic or must not trust the client. |
 | Storage | One public bucket for listing photos, written only by the owner. |
 
@@ -271,18 +276,19 @@ Sign-up collects answers across several pages but creates the account once, at t
 sequenceDiagram
   actor U as User
   participant A as App
-  participant V as Verification codes
+  participant V as verify-code function
   participant Auth as Supabase Auth
   participant DB as PostgreSQL
 
   U->>A: First and last name, ticks the agreement
   U->>A: CP number or Gmail, taps Send code
   A->>V: sendCode("signup")
-  V-->>A: code (mockup: shown on screen)
+  V-->>U: code by email (Brevo) or text (Semaphore)
+  Note over A,V: In a build without a database the code is made on the phone and shown as a demo
   U->>A: Types the 6 digits
   A->>V: checkCode
   V-->>A: ok, so Continue turns green
-  U->>A: Answers the rest (password, farm or location, crops)
+  U->>A: Answers the rest (password, years farming, where: island group, province, town, barangay, crops)
   Note over A: Answers held in memory only
   U->>A: Create Account
   A->>Auth: signUp(email or alias, password, details)
@@ -340,50 +346,82 @@ The client sends only listing ids and quantities. Price and seller are read on t
 
 ### 5.4 Reading data
 
-Every read goes through `cachedFetch`: a successful response is saved on the phone, and a failed one falls back to the saved copy.
+Every read goes through `cachedFetch` (`src/lib/cache.ts`): a successful response is saved in the phone's SQLite database, a failed one falls back to the saved copy, and with no signal at all the saved copy is served at once, without trying the network.
 
 ```mermaid
 sequenceDiagram
   participant S as Store
   participant Sv as Service
-  participant C as Cache
+  participant C as Cache (SQLite)
   participant DB as Supabase
 
   S->>Sv: fetch
-  Sv->>DB: query
-  alt online
-    DB-->>Sv: rows
-    Sv->>C: save
-    Sv-->>S: data (fresh)
-  else offline
+  alt no signal (navigator.onLine is false)
     Sv->>C: read
     C-->>Sv: saved copy
-    Sv-->>S: data (from cache, with its date)
+    Sv-->>S: data (from the phone, at once)
+  else signal
+    Sv->>DB: query
+    alt it answers
+      DB-->>Sv: rows
+      Sv->>C: save, with the time
+      Sv-->>S: data (fresh)
+    else it fails (weak signal)
+      Sv->>C: read
+      C-->>Sv: saved copy
+      Sv-->>S: data (from the phone, with its date)
+    end
   end
 ```
 
 ### 5.5 Writing while offline
 
+Expenses (add, edit, delete) and a farmer's records (sales, plantings, price alerts, harvest plans) can be changed with no signal.
+
 ```mermaid
 sequenceDiagram
   actor F as Farmer
   participant S as Store
-  participant O as Outbox
+  participant C as Cache (SQLite)
+  participant O as Outbox (SQLite)
   participant DB as Supabase
 
   F->>S: Add expense (no signal)
-  S->>O: enqueue
+  S->>C: put it in the saved list, with a temporary id
+  S->>O: enqueue, under this account
   S-->>F: Shown at once
-  Note over O: Waits on the phone
+  Note over O: Waits on the phone, oldest first
   Note over S: Connection returns, or the account opens
   S->>O: syncNow()
   O->>DB: replay in order
   DB-->>O: real ids
   O->>O: map temporary ids to real ones
+  O->>C: swap in the real id
   S->>DB: fetch the fresh list
 ```
 
-### 5.6 Deleting an account
+With no signal the change goes to the outbox at once (`throwIfOffline`), rather than after the sign-in library has spent up to half a minute trying to renew an expired session. If sending stops at a failure, that change and everything after it stay queued, in order, with the ids already mapped swapped in.
+
+### 5.6 Opening without signal
+
+A sign-in session lasts an hour; after that the sign-in library renews it over the network. With no signal it cannot, and `getSession()` answers "no session" after up to half a minute of retries, although the session is still saved on the phone. `restoreSession()` (`src/services/auth.ts`) opens on that saved session instead.
+
+```mermaid
+flowchart TB
+  Start["App starts"] --> Net{"Phone has a network?"}
+  Net -->|no| Saved["Read the session saved in Preferences<br/>(sb-&lt;project&gt;-auth-token)"]
+  Net -->|yes| Lib["supabase.auth.getSession()"]
+  Lib -->|session| Home["Home, signed in"]
+  Lib -->|renewal could not get through| Saved
+  Lib -->|no session| Welcome["Welcome screen"]
+  Saved -->|found| Home
+  Saved -->|none| Welcome
+  Home -.->|signal returns| Renew["The library renews the session by itself;<br/>if the server ended it, it signs out"]
+```
+
+Opened this way, the app works from the SQLite database (5.4, 5.5) and the market store reloads everything when the connection returns.
+
+### 5.7 Deleting an account
 
 ```mermaid
 sequenceDiagram
@@ -398,13 +436,13 @@ sequenceDiagram
   DB->>DB: delete auth.users row
   DB->>DB: cascade: profile, listings, records, badges
   DB->>DB: orders kept, name fields set to null
-  A->>A: clear this account's cache and outbox
+  A->>A: clear this account's rows in the phone's SQLite (cache, kv, outbox)
   A-->>U: Welcome screen
 ```
 
 The same function is called by the web page in `site/`, for someone who no longer has the app.
 
-### 5.7 A new month of prices
+### 5.8 A new month of prices
 
 1. A row is added to `data/historical-prices.csv` (or a newer PDF is imported with `ml/import_pdf.py`).
 2. `npm run prices` rebuilds the bundled history.
@@ -416,19 +454,46 @@ There is no upload inside the app. The steps are in [ml/README.md](../ml/README.
 
 ## 6. Offline design
 
+The app keeps its own SQLite database on the phone, so it opens and works with no signal. Supabase stays the shared source of truth; the phone's database is each phone's own copy.
+
 | Mechanism | File | Role |
 |---|---|---|
-| Cache | `src/lib/cache.ts` | Saves each successful read; serves it when the network fails. |
-| Outbox | `src/lib/outbox.ts` | Queues writes made offline, in order. |
+| The phone's database | `src/lib/localdb.ts` | Opens the SQLite database `anisense` through `@capacitor-community/sqlite`, runs its upgrades, moves in what older versions kept in Preferences, and hands the store to the rest of the app. In a browser (development, tests), and if SQLite ever fails to open, the same calls use Preferences. |
+| Its SQL | `src/lib/localdbSql.ts` | The tables, the numbered upgrades, the one-time move, and every statement, written against a small driver interface so it can be tested on any SQLite engine. |
+| Cache | `src/lib/cache.ts` | `cachedFetch`: saves each successful read; serves the saved copy when the network fails, and at once when there is no signal at all. |
+| Outbox | `src/lib/outbox.ts` | Queues writes made offline, in order, per account. |
 | Sync | `src/services/sync.ts` | Replays the outbox when an account opens or the connection returns. |
+| Offline start | `src/services/auth.ts` (`restoreSession`) | Opens on the session saved on the phone when there is no signal (5.6). |
 
-Design points:
+### 6.1 The tables
 
+| Table | Holds | Columns |
+|---|---|---|
+| `cache` | The last copy of each list fetched, per account (key `<account id>_<list>`), as JSON with the time it was fetched | `key`, `data`, `updated_at` |
+| `outbox` | Changes waiting to be sent, oldest first (`seq`), with the account they belong to | `seq`, `id`, `owner`, `type`, `payload`, `queued_at`; index on (`owner`, `seq`) |
+| `kv` | Small records of this phone: the demo's sales, plantings, price alerts and harvest plans, which tours and badges were seen, the last member number shown | `key`, `value` |
+| `meta` | The database's own bookkeeping: `schema_version`, and when the old Preferences data was moved in | `key`, `value` |
+
+The lists saved in `cache`: for everyone `market`, `market_prices`, `prices_latest`, `price_history`, `price_forecasts`; for a buyer `purchases`; for a farmer `expenses`, `farm_records`, `sales_market`, `orders_in`, `awards`. Each is kept whole and replaced whole by the next successful fetch, which keeps every service unchanged and fits lists that are always shown whole. A list that must one day be searched offline row by row can get its own table through a new upgrade.
+
+The outbox's operation types: `add_expense`, `update_expense`, `delete_expense`, `replace_sales`, `replace_plantings`, `replace_alerts`, `replace_plans`.
+
+### 6.2 Design points
+
+- **Why SQLite.** Preferences (Android's SharedPreferences) keeps each value as one block of text, rewrites it whole on every save, and cannot save several things as one step. SQLite gives tables, an ordered queue, and transactions: the one-time move and every rewrite of the queue are all or nothing. WebView storage (IndexedDB, `localStorage`) was ruled out because Android may clear it when the phone runs low on space.
+- **The session stays in Preferences.** The sign-in library keeps it there itself, under `sb-<project>-auth-token` (`SESSION_KEY` in `src/lib/supabase.ts`); `restoreSession` reads it from there.
+- **Upgrades.** The schema version is kept in `meta`. Each upgrade in `MIGRATIONS` has a number, runs once, in one transaction; a shipped upgrade is never edited, a new one is added at the end.
+- **Moving in.** On the first start with SQLite, everything older versions kept in Preferences (except the session) is copied in one transaction: `cache_*` keys into `cache`, `outbox_ops` into `outbox` in the same order, the rest into `kv`. The move is marked done in `meta` before the old copies are removed, so it never runs twice.
+- **No waiting on a network that isn't there.** With no signal, reads come from the phone at once and writes are queued at once; nothing waits on the sign-in library's retries.
 - **Bundled data.** The price records and the forecasts are part of the APK, so prices, their charts and the forecasts show on a phone that has never been online.
-- **Storage.** Both use Capacitor Preferences, which is native storage on Android. WebView `localStorage` can be cleared by the system under storage pressure.
-- **Scoped per account.** Every cache key and queued operation carries the account id, so two accounts on one phone never see or send each other's data.
+- **Scoped per account.** Every cache key and queued operation carries the account id, so two accounts on one phone never see or send each other's data. Deleting an account removes its rows.
 - **Idempotent sync.** Farm-record lists are saved by replacing the whole list on the server, so replaying an operation twice is harmless.
 - **Deliberately online-only.** Posting a listing and checkout need the server because they involve other people's stock. The app says so plainly instead of queuing them.
+- **Not encrypted.** The database uses the plugin's no-encryption mode; it lives in the app's private storage and holds no passwords. The plugin supports SQLCipher if encryption is needed later.
+
+### 6.3 Testing it
+
+The SQL in `localdbSql.ts` runs against any SQLite engine through its driver, so it can be tested off the phone (with sql.js). In a browser the app uses the Preferences store, so the app-level tests exercise everything around SQLite; the SQLite plugin itself runs only on a phone. To check on a phone: sign in with signal and open Home and the Market; turn on airplane mode, close the app and open it again. It should open on Home with the saved data, and an expense added then should reach Supabase once the signal is back.
 
 ## 7. Security
 
@@ -438,7 +503,8 @@ Design points:
 - **Server-side operations.** Orders can be created only through `place_order`.
 - **No secrets in the client.** The app and the web pages use the publishable key only. `npm run check:db` refuses to run if it finds a secret key in `.env`.
 - **Passwords** are handled by Supabase Auth and stored hashed.
-- **Verification codes** are random, last 10 minutes, allow 5 wrong tries, work once, and are kept apart by purpose. In the mockup they live on the phone; the real version keeps them only on the server, so the phone never knows a code before the user types it.
+- **Verification codes** are random, last 10 minutes, allow 5 wrong tries, work once, and are kept apart by purpose. With a database they are made and checked by the `verify-code` function, which keeps only their hash, so the phone never knows a code before the user types it. Only the demo build makes them on the phone.
+- **Data on the phone** is in the app's private storage: a SQLite database (not encrypted; no passwords in it) and the session in Preferences. Every saved list and queued change is filed under its account.
 - **Transport** is HTTPS throughout.
 
 ## 8. Build and delivery
@@ -446,7 +512,7 @@ Design points:
 ```mermaid
 flowchart LR
   Src["src/"] -->|tsc + vite build| Dist["dist/"]
-  Dist -->|cap sync| AndroidProj["android/"]
+  Dist -->|cap sync: web files and native plugins, SQLite included| AndroidProj["android/"]
   AndroidProj -->|gradle assemble| APK["APK"]
   Env[".env"] -.->|baked in at build| Dist
   Policy["src/data/privacyPolicy.ts"] -->|build-privacy.mjs| SitePage["site/privacy-policy.html"]
@@ -489,6 +555,11 @@ flowchart LR
 | Train the models on a computer and ship the forecasts as data | Run the model on the phone (TensorFlow.js); train in the cloud | The forecast is the same for every user, so it is worked out once. The app stays small, needs no machine-learning library, and works offline. Training takes about a minute on a laptop. |
 | Show each model's tested error, and give no advice above 20% | Show every forecast the same way | Onion and calamansi forecasts were 28 to 52% off in testing; a farmer should not hold a harvest on them. |
 | Word prices by the month | Keep "today" and "yesterday" | The records are monthly; daily wording would be false. |
+| SQLite on the phone for offline storage | Keep Preferences; WebView storage (IndexedDB, `localStorage`) | Tables, an ordered queue and all-or-nothing saves, room to grow, and a file Android does not clear under storage pressure. Preferences stays for the session and as the browser fallback. |
+| Keep each saved list whole, as JSON in one row | A table per kind of record | Every service stays as it was, and the lists are always shown whole. A list that needs offline searching can get its own table by an upgrade. |
+| Open on the saved session when there is no signal | Wait for the sign-in library to renew it | With no signal the library cannot renew it and answers "no session" after up to half a minute, which put people on the welcome screen. The library still renews it, or signs out, once the signal returns. |
+| With no signal, read from the phone and queue writes at once | Try the network first, fall back on failure | A request with no signal only fails, and only after the sign-in library's retries; the saved copy is right there. |
+| Sign-up covers the whole country, starting farmers on Nueva Ecija | Nueva Ecija only | Farmers outside the study area can join; most farmers still only pick their town and barangay. |
 
 ## 10. Known limitations and planned work
 
@@ -500,6 +571,7 @@ flowchart LR
 | Weather | Sample values in `src/data/demo/weather.ts` | Connect a forecast service. PAGASA's TenDay API needs a token that PAGASA approves on request, and it gives daily forecasts, not current conditions. |
 | Phone and Gmail verification | Real once set up: Gmail through Brevo, CP numbers through Semaphore (both in `verify-code`). Sign-up is gated by the form, not by the server: a modified app could still create an account without a code. | Have account creation itself require a passed code (sign-up through the function), and a domain of our own in Brevo so codes don't land in Spam. |
 | Password reset | Real once set up, for Gmail and (with Semaphore) CP-number accounts. | — |
-| Automated tests | None in the repository | Add unit tests for the services and the store, and database tests for the SQL functions. |
+| Offline | The app opens, reads and queues a farmer's records with no signal (section 6). Listing photos never opened with signal and the web fonts are not saved on the phone; placing an order and posting a listing need a connection; the phone's database is not encrypted. | Save listing photos with the market list; bundle the fonts in the APK; consider SQLCipher if records grow more sensitive. |
+| Automated tests | None in the repository | Add unit tests for the services and the store (including the phone database's SQL, which runs on sql.js), and database tests for the SQL functions. |
 | Continuous integration | Type-check and build on every push (`.github/workflows/ci.yml`) | Run the automated tests there once they exist. |
 | iOS | Not targeted | Capacitor supports it if needed later. |
