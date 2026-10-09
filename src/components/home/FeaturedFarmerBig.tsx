@@ -11,8 +11,9 @@ import leafMask from "../../assets/anisense-leaf-mask.png";
 // something that already looks familiar: the AniSense green ground and its
 // faint leaf, the ringed avatar, the name and town in white, and the three
 // numbers (rating, years, sales) on a card riding over the photo's edge. The
-// Farmer of the Week wears the gold plate on the photo (`week`); the others
-// are the same card without it, and say "Near you" there when they are.
+// Farmer of the Week wears the gold plate on the photo, and the Market's
+// moving gold ring and glow round the card (`week`); the others are the
+// same card without them, and say "Near you" on the photo when they are.
 //
 // The card holds the profile's own pieces, which a button can't contain, so
 // one button is laid over the whole of it. Pressed, the card dims a shade and

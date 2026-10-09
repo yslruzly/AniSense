@@ -2305,8 +2305,9 @@ export const appCss = `
        - lips: a bright line on the top edge, a shaded one on the bottom
        - the words stamped in: dark brown with a pale line under each letter
      The award sits in a green enamel coin with a gold rim, like a medal's
-     inlay, in AniSense's own green. Nothing moves: Home is opened often, and
-     a shine that keeps sweeping would pull the eye from the farmer. */
+     inlay, in AniSense's own green. The plate itself stays still: on Home
+     the ring round the card carries the motion, and a second shine sweeping
+     across the words would pull the eye from the farmer. */
   .ff-badge {
     position: absolute; z-index: 2; left: 12px; top: 12px; display: inline-flex; align-items: center; gap: 7px;
     padding: 4px 13px 4px 4px; border-radius: 99px; border: 1.5px solid transparent;
@@ -2411,21 +2412,22 @@ export const appCss = `
   }
   .ffc-stat-v small { font-size: 12px; font-weight: 700; color: var(--text-muted); }
   .ffc-stat-l { font-size: 12px; font-weight: 600; line-height: 1.25; text-align: center; color: var(--text-faint); }
-  /* The Farmer of the Week in the Market's row: a palay-gold ring laid over
-     the whole card (over the photo too, which a plain border would sit
-     under), and a soft gold glow round it. The row gives it room above and
-     below, so the glow isn't cut where the row scrolls. */
+  /* The Farmer of the Week, in both rows of Featured farmers (the Market's
+     small card, Home's big one): a palay-gold ring laid over the whole card
+     (over the photo too, which a plain border would sit under), and a soft
+     gold glow round it. Each row gives it room above and below, so the glow
+     isn't cut where the row scrolls. */
   /* Alive, slowly. A band of pale light runs round the ring, one lap in
      4.5s at an even pace (constant motion, so linear), like light moving on
      polished gold. The glow outside breathes: a little stronger and wider,
      then back, 3.2s each way, eased in and out. The glow is its own layer
      behind the card and moves only by opacity and scale; the ring's light
      is a gradient angle, repainted on one thin ring. Slow and on one card,
-     so it catches the eye when the Market opens without tugging at it
+     so it catches the eye when the screen opens without tugging at it
      while the buyer reads. With reduced motion, it holds still. */
   @property --ffc-a { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
-  .ffc.is-week { isolation: isolate; }
-  .ffc.is-week::before {
+  .ffc.is-week, .ffb.is-week { isolation: isolate; }
+  .ffc.is-week::before, .ffb.is-week::before {
     content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none;
     box-shadow: 0 0 16px 1px rgba(242,179,44,.62);
     animation: ffc-breathe 3.2s ease-in-out infinite alternate;
@@ -2434,7 +2436,7 @@ export const appCss = `
     from { opacity: .5; transform: scale(.99); }
     to   { opacity: 1;  transform: scale(1.02); }
   }
-  .ffc.is-week::after {
+  .ffc.is-week::after, .ffb.is-week::after {
     content: ""; position: absolute; inset: 0; z-index: 3; border-radius: inherit; pointer-events: none;
     padding: 2px;
     background: conic-gradient(from var(--ffc-a), #F2B32C 0deg, #F2B32C 210deg, #FFDF8A 255deg, #FFF9E6 285deg, #FFDF8A 315deg, #F2B32C 360deg);
@@ -2449,28 +2451,33 @@ export const appCss = `
      tug against the steady glide; a swipe still moves it freely. */
   .ffc-row.is-auto { scroll-snap-type: none; }
   /* Out of sight, the ring and glow rest too (useAutoScroll marks the row). */
-  .ffc-row[data-asleep] .ffc.is-week::before, .ffc-row[data-asleep] .ffc.is-week::after { animation-play-state: paused; }
+  .ffc-row[data-asleep] .ffc.is-week::before, .ffc-row[data-asleep] .ffc.is-week::after,
+  .ffb-row[data-asleep] .ffb.is-week::before, .ffb-row[data-asleep] .ffb.is-week::after { animation-play-state: paused; }
   /* ── Home's Featured farmers: big profile cards in a row that slides ──
      Each card the farmer's profile, small enough that the next one shows
      past the edge (the whole row runs to the screen's edges): the green
      ground and leaf, the ringed avatar, the name on one line, the town, an
      arrow on the photo, and the three numbers on a card over its edge. The
-     Farmer of the Week's wears the gold plate (.ff-badge). One button lies
-     over each card; pressed, the card dims a shade and the arrow steps
-     forward. The row slides on its own (useAutoScroll), so it doesn't snap,
-     which would tug against the steady glide; a swipe still moves it. */
+     Farmer of the Week's wears the gold plate (.ff-badge), and the Market's
+     moving gold ring and glow (above). One button lies over each card;
+     pressed, the card dims a shade and the arrow steps forward. The row
+     slides on its own (useAutoScroll), so it doesn't snap, which would tug
+     against the steady glide; a swipe still moves it. Room above and below
+     for the glow at its widest. */
   .ffb-row {
-    display: flex; gap: 12px; margin: 14px -16px 0; padding: 4px 16px 18px;
+    display: flex; gap: 12px; margin: 0 -16px; padding: 20px 16px 24px;
     overflow-x: auto; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch;
   }
   .ffb-row::-webkit-scrollbar { height: 0; }
   .ffb {
     position: relative; flex: 0 0 min(340px, calc(100% - 40px)); min-width: 0;
-    display: flex; flex-direction: column; overflow: hidden;
+    display: flex; flex-direction: column;
     border-radius: var(--radius); background: var(--card);
     box-shadow: inset 0 0 0 1px var(--line), 0 14px 30px -20px rgba(22,33,27,.4);
   }
-  .ffb .ffb-hero { border-radius: 0; height: 236px; }
+  /* The card doesn't clip (the glow lies outside it), so the photo keeps
+     the card's top corners itself, and the press shade its corners. */
+  .ffb .ffb-hero { border-radius: var(--radius) var(--radius) 0 0; height: 236px; }
   /* The name keeps to one line and clear of the arrow, so a long one can't
      climb into the gold plate above it. */
   .ffb .spf-id { right: 72px; }
@@ -2478,7 +2485,7 @@ export const appCss = `
   .ffb .spf-loc { max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ffb .spf-stats { margin: -30px 14px 14px; }
   .ffb-hit {
-    position: absolute; inset: 0; z-index: 3; width: 100%; padding: 0; border: none; background: transparent;
+    position: absolute; inset: 0; z-index: 3; width: 100%; padding: 0; border: none; border-radius: var(--radius); background: transparent;
     cursor: pointer; transition: background-color 160ms ease;
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
@@ -2497,8 +2504,8 @@ export const appCss = `
   }
   @media (prefers-reduced-motion: reduce) { .ffb:has(> .ffb-hit:active) .ffb-go { transform: none; } }
   @media (prefers-reduced-motion: reduce) {
-    .ffc.is-week::before, .ffc.is-week::after { animation: none; }
-    .ffc.is-week::before { opacity: 1; transform: none; }
+    .ffc.is-week::before, .ffc.is-week::after, .ffb.is-week::before, .ffb.is-week::after { animation: none; }
+    .ffc.is-week::before, .ffb.is-week::before { opacity: 1; transform: none; }
   }
   @media (prefers-reduced-motion: reduce) { .ffc:active, .ffc:active .ffc-go { transform: none; } }
 
