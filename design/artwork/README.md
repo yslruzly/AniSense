@@ -11,6 +11,7 @@ a second of loading for a picture that renders 380 pixels wide.
 | `AnisensePosterLS.png` | `src/assets/anisense-poster.webp` | Buyer Home, between the price chart and Featured farmers |
 | `AnisensePosterMarket.png` | *(unused — identical to `AnisensePosterLS.png`)* | — |
 | `FarmerMarketPoster.png` | `src/assets/farmer-market-poster.webp` | Marketplace poster, farmer accounts (16:9, the same frame as the buyers' poster) |
+| `MarketplaceBuyerPoster.png` | `src/assets/anisense-poster-market.webp` (1200 wide: the poster carries a lot of text) | Marketplace poster, buyer accounts: "Fresh from the Farm. Connect directly with local farmers" |
 | `SellYourAniNow.png` | *(replaced by `FarmerMarketPoster.png`; its `sell-your-ani.webp` was removed)* | — |
 | `FarmerMarketSell.png` | `src/assets/farmer-sell.webp` *(not used by any screen)* | — |
 | `Peeking.png` | `src/assets/juan-peek.webp`, split into `juan-peek-body.webp` + `juan-peek-hand.webp` (+ `juan-peek-mouth-half.webp`, `juan-peek-mouth-shut.webp`: drawn half-open mouth and closed smile) | Signup screens (language, role); the hand layer waves from the wrist, and the mouth layers switch in turn so he says each line, then stops |
@@ -18,9 +19,6 @@ a second of loading for a picture that renders 380 pixels wide.
 | `buyersmascot.png` | `src/assets/buyer-mascot.webp` (+ `buyer-mascot-eyes.webp`, `buyer-mascot-mouth.webp`: drawn closed lids and closed smile) | "Fresh from local farms" card, buyer Home; on the role screen he blinks and talks |
 | `mascothi.png` → `mascothi-clean.png` (extra hat lobe removed) | `src/assets/mascot-wave-body.webp` + `-hand` + `-eyes` + `-mouth` | Opening card of the walkthrough: the hand rotates from the wrist; `-eyes` (closed lids) and `-mouth` (closed smile) are drawn overlays that switch on to blink and talk |
 | `mascotthumbsup.png` → `mascotthumbsup-cut.png` (white background removed) | `src/assets/mascot-thumbs.webp` + `mascot-thumbs-eyes.webp` | Last card of the walkthrough; `-eyes` (closed lids) switches on to blink |
-
-The marketplace poster that is actually on screen came from a file that is no
-longer on disk; `src/assets/anisense-poster-market.webp` is the only copy of it.
 
 ## Adding or replacing one
 
