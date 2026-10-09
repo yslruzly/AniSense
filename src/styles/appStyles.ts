@@ -1328,57 +1328,77 @@ export const appCss = `
   .pr-all { display: flex; flex-direction: column; gap: 12px; }
   .pr-all .pr-sec { margin-bottom: 0; }
 
-  /* 1 · Today's market: the page's answer in one line, then the proof in a bar. */
+  /* 1 · The month's market. One AniSense green, deep and quiet, lit warm
+     from behind the farmer, with a hairline of light along its top edge.
+     Above: the label, then the answer (the count big, in the "up" green, and
+     the sentence under it) beside the farmer. Below: a darker counter,
+     opaque, that he stands behind, cut off at the apron, holding the proof:
+     the bar, the three counts in a row of columns with hairlines between,
+     and, under a hairline, how fresh the prices are. No pills, no glow
+     blobs: type, spacing and two tones of green do the work. */
   .pr-pulse {
-    position: relative; overflow: hidden; isolation: isolate;
-    padding: 18px 18px 16px; border-radius: var(--radius-lg); color: #fff;
+    --pb-w: clamp(118px, 34vw, 140px);
+    position: relative; overflow: hidden; isolation: isolate; border-radius: var(--radius-lg); color: #fff;
     background:
-      radial-gradient(120% 100% at 100% 0%, rgba(126,196,120,.25), transparent 58%),
-      linear-gradient(150deg, #1D2E25 0%, var(--ink) 60%, #0D1511 100%);
-    box-shadow: 0 16px 30px -20px rgba(22,33,27,.7);
+      radial-gradient(70% 85% at 94% 100%, rgba(242,179,44,.2), transparent 62%),
+      linear-gradient(160deg, #145E3F 0%, #0E4630 50%, #0A3525 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.1), inset 0 0 0 1px rgba(255,255,255,.05), 0 20px 36px -24px rgba(8,42,29,.75);
   }
-  .pr-pulse-lbl { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.66); }
-  .pr-pulse-head {
-    margin-top: 6px; font-family: var(--font-display); font-size: 23px; font-weight: 700; line-height: 1.2;
-    letter-spacing: -.015em; text-wrap: balance;
+  .pr-pulse-top { padding: 18px 18px 0; }
+  .pr-pulse-lbl { font-size: 13.5px; font-weight: 600; line-height: 1.35; color: rgba(255,255,255,.72); text-wrap: balance; }
+  /* The answer, centred in the height the farmer stands in. */
+  .pr-pulse-body {
+    position: relative; display: flex; flex-direction: column; justify-content: center;
+    padding: 8px 0 20px;
   }
-  .pr-pulse-head.muted { color: rgba(255,255,255,.7); font-size: 18px; }
-  .pr-breadth { display: flex; gap: 3px; height: 10px; margin-top: 14px; }
+  .pr-pulse.has-mascot .pr-pulse-body { min-height: calc(var(--pb-w) * 1.13 - 6px); padding-right: calc(var(--pb-w) - 4px); }
+  .pr-pulse-head { position: relative; z-index: 1; display: flex; flex-direction: column; margin: 0; }
+  .pr-pulse-big {
+    font-family: var(--font-display); font-size: 56px; font-weight: 800; line-height: .95; letter-spacing: -.04em;
+    color: #A3E09E; font-variant-numeric: tabular-nums;
+  }
+  .pr-pulse-sub { margin-top: 8px; font-size: 16px; font-weight: 500; line-height: 1.35; color: rgba(255,255,255,.88); text-wrap: pretty; }
+  .pr-pulse-head.muted { font-size: 17px; color: rgba(255,255,255,.72); }
+
+  /* The counter. Opaque, so the farmer is behind it, not seen through it. */
+  .pr-pulse-tray {
+    position: relative; z-index: 2; padding: 16px 18px 14px;
+    background: linear-gradient(180deg, #0B3526 0%, #092B1F 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.09);
+  }
+  .pr-breadth { display: flex; gap: 3px; height: 8px; }
   .pr-breadth .seg {
     flex-basis: 0; border-radius: 99px; transform-origin: left center;
     animation: bar-grow 600ms var(--ease-out) both;
   }
-  .pr-breadth .seg.up { background: #7EC478; }
-  .pr-breadth .seg.flat { background: rgba(255,255,255,.35); animation-delay: 60ms; }
-  .pr-breadth .seg.down { background: #F08A7E; animation-delay: 120ms; }
-  .pr-breadth-key { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 8px; font-size: 14px; color: rgba(255,255,255,.85); font-variant-numeric: tabular-nums; }
-  .pr-breadth-key span { display: inline-flex; align-items: center; gap: 6px; }
-  .pr-breadth-key i { width: 9px; height: 9px; border-radius: 3px; display: inline-block; }
-  .pr-breadth-key i.up { background: #7EC478; } .pr-breadth-key i.flat { background: rgba(255,255,255,.35); } .pr-breadth-key i.down { background: #F08A7E; }
-  .pr-fresh {
-    display: inline-flex; align-items: center; gap: 8px; margin-top: 14px; padding: 5px 10px 5px 8px;
-    border-radius: 99px; background: rgba(255,255,255,.1); font-size: 13px; color: rgba(255,255,255,.85);
+  .pr-breadth .seg.up { background: #8ED68E; }
+  .pr-breadth .seg.flat { background: rgba(255,255,255,.3); animation-delay: 60ms; }
+  .pr-breadth .seg.down { background: #F29A8C; animation-delay: 120ms; }
+  /* Three columns, the same width, hairlines between: a count with its
+     arrow, the word under it. */
+  .pr-stats { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); margin-top: 14px; }
+  .pr-stat { display: flex; flex-direction: column; gap: 3px; min-width: 0; padding: 0 12px; }
+  .pr-stat:first-child { padding-left: 0; }
+  .pr-stat + .pr-stat { box-shadow: inset 1px 0 0 rgba(255,255,255,.1); }
+  .pr-stat-v {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: var(--font-display); font-size: 21px; font-weight: 800; line-height: 1.1; letter-spacing: -.01em;
+    color: #fff; font-variant-numeric: tabular-nums;
   }
-  .pr-fresh-dot { width: 8px; height: 8px; border-radius: 50%; background: #7EC478; box-shadow: 0 0 0 3px rgba(126,196,120,.25); }
-  .pr-fresh.off .pr-fresh-dot { background: #F08A7E; box-shadow: 0 0 0 3px rgba(240,138,126,.25); animation: pulse 1.6s ease-in-out infinite; }
-  .pr-num { color: #9BD796; font-variant-numeric: tabular-nums; }
+  .pr-stat.up svg { color: #8ED68E; } .pr-stat.flat svg { color: rgba(255,255,255,.55); } .pr-stat.down svg { color: #F29A8C; }
+  .pr-stat-l { display: block; font-size: 13px; font-weight: 500; line-height: 1.25; color: rgba(255,255,255,.66); }
+  .pr-stat-l::first-letter { text-transform: uppercase; }
+  .pr-fresh {
+    display: flex; align-items: center; gap: 9px; margin-top: 14px; padding-top: 12px;
+    border-top: 1px solid rgba(255,255,255,.08); font-size: 13px; line-height: 1.3; color: rgba(255,255,255,.72);
+  }
+  .pr-pulse-tray > .pr-fresh:first-child { margin-top: 0; padding-top: 0; border-top: none; }
+  .pr-fresh-dot { flex-shrink: 0; width: 7px; height: 7px; border-radius: 50%; background: #8ED68E; box-shadow: 0 0 0 3px rgba(142,214,142,.18); }
+  .pr-fresh.off .pr-fresh-dot { background: #F29A8C; box-shadow: 0 0 0 3px rgba(242,154,140,.2); animation: pulse 1.6s ease-in-out infinite; }
 
-  /* The farmer stands in the lower right, cut off at the apron by the
-     card's own bottom edge, so he reads as standing behind it with his
-     basket held up over it. The numbers keep a column clear of him and sit
-     above him in the stack. */
-  .pr-pulse.has-mascot { min-height: 196px; }
-  .pr-pulse.has-mascot > :not(.pr-mascot) { position: relative; z-index: 1; }
-  .pr-pulse.has-mascot .pr-pulse-head,
-  .pr-pulse.has-mascot .pr-breadth,
-  .pr-pulse.has-mascot .pr-breadth-key { margin-right: 112px; }
-  /* The freshness pill keeps out of his way too: in Filipino on a narrow
-     phone it is long enough to reach him, so it may wrap to two lines, and
-     a squarer corner keeps a two-line pill from looking like a lozenge. */
-  .pr-pulse.has-mascot .pr-fresh { max-width: calc(100% - 112px); border-radius: 12px; line-height: 1.3; }
-  .pr-pulse.has-mascot .pr-fresh-dot { flex-shrink: 0; }
+  /* The farmer, at the right of the answer, his feet behind the counter. */
   .pr-mascot {
-    position: absolute; right: -16px; bottom: -10px; z-index: 0; width: 146px;
+    position: absolute; right: -8px; bottom: -14px; z-index: 0; width: var(--pb-w);
     aspect-ratio: 420 / 474; pointer-events: none;
   }
   .pb-fig {
@@ -2009,6 +2029,7 @@ export const appCss = `
   .mp-qty { display: flex; align-items: center; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
   .mp-qty-lbl { flex-basis: 100%; font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--text); }
   .mp-qty-total { margin-left: auto; font-family: var(--font-display); font-size: 20px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
+  .mp-qty-note { flex-basis: 100%; margin-top: -2px; font-size: 13px; color: var(--text-faint); line-height: 1.3; }
   .mp-actions { margin-top: 16px; }
   .mp-danger { color: var(--error); box-shadow: inset 0 0 0 1.5px var(--error-line); }
   .mp-danger:active { background: var(--error-sk); }
@@ -3359,6 +3380,20 @@ export const appCss = `
     color: var(--text); font-variant-numeric: tabular-nums;
   }
   .qty-step-val small { font-size: 13px; font-weight: 600; color: var(--text-faint); margin-left: 3px; }
+  /* The kilos can be typed (QtyField): the number sits in a small white
+     well with a ring, between the two round buttons, so it reads as a field
+     to tap; typing in it, the ring turns green, as the peso fields do.
+     Tapping "kg" opens it too. */
+  .qty-field {
+    display: inline-flex; align-items: center; justify-content: center; height: 40px; margin: 0 6px; padding: 0 10px;
+    border-radius: 12px; background: var(--card); box-shadow: inset 0 0 0 1.5px var(--line-strong); cursor: text;
+    transition: box-shadow 160ms ease; -webkit-tap-highlight-color: transparent;
+  }
+  .qty-field:focus-within { box-shadow: inset 0 0 0 2px var(--tanim), 0 0 0 4px rgba(11,107,65,.14); }
+  .qty-field-inp {
+    min-width: 0; margin: 0; padding: 0; border: none; outline: none; background: transparent;
+    font: inherit; color: inherit; text-align: center; font-variant-numeric: tabular-nums;
+  }
   .cart-step-note { font-size: 13px; color: var(--text-faint); line-height: 1.3; }
 
   /* The undo strip: sits exactly where the line was, quiet (dashed, no fill)

@@ -188,6 +188,8 @@ export const translations: Dict = {
   mkt_pulse_label: { en: "{month} retail prices", tl: "Presyong tingi ng {month}" },
   mkt_pulse_latest: { en: "Latest retail prices", tl: "Pinakabagong presyong tingi" },
   mkt_pulse_head: { en: "{up} of {n} prices went up from the month before", tl: "{up} sa {n} na presyo ang tumaas mula sa nakaraang buwan" },
+  // Prices' card: the same sentence, under the count set large.
+  mkt_pulse_sub: { en: "of {n} prices went up from the month before", tl: "sa {n} na presyo ang tumaas mula sa nakaraang buwan" },
   mkt_up: { en: "up", tl: "tumaas" },
   mkt_down: { en: "down", tl: "bumaba" },
   mkt_same: { en: "no change", tl: "walang galaw" },

@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { EmptyState, ErrorState, SkeletonList } from "../components/states";
 import { useResource } from "../hooks/useResource";
 import { fetchPrices, PriceItem } from "../services/prices";
-import { Search, ChevronRight, X, Star } from "lucide-react";
+import { Search, ChevronRight, X, Star, ArrowUp, ArrowDown, Minus } from "lucide-react";
 import { haptic } from "../lib/platform";
 import { useLang } from "../i18n";
 import { UserRole } from "../types";
@@ -128,62 +128,89 @@ export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userIn
   // prices are a good time to sell, falling ones a good time to buy. How the
   // farmer arrives says which, so the same numbers read right for both.
   const goodDay = userRole === "buyer" ? down > up : up > down;
-  const [headA, headB = ""] = t("mkt_pulse_head").split("{up}");
+  const ready = prices.status === "ready";
 
   return (
     <div className="screen">
       <Hdr title={t("market_title")} onBack={onBack} />
       <div className="scroll screen-enter">
 
-        {/* 1 ── The market, and the month its prices are for ── */}
-        <section className={`pr-pulse ${prices.status === "ready" ? "has-mascot" : ""}`} aria-label={pulseLabel}>
-          <div className="pr-pulse-lbl">{pulseLabel} · Nueva Ecija</div>
-          {prices.status === "ready" ? (
-            <>
-              {/* The count that answers the question, in the colour of its
-                  bar below, so the headline and the proof read as one. */}
-              <div className="pr-pulse-head">
-                {headA}<span className="pr-num">{up}</span>{headB.replace("{n}", String(ALL_ITEMS.length))}
-              </div>
-              {/* Breadth bar: the share that rose, held, and fell. Colour plus
-                  a counted legend underneath, never colour alone. */}
-              <div className="pr-breadth" aria-hidden="true">
-                {up > 0 && <span className="seg up" style={{ flexGrow: up }} />}
-                {flat > 0 && <span className="seg flat" style={{ flexGrow: flat }} />}
-                {down > 0 && <span className="seg down" style={{ flexGrow: down }} />}
-              </div>
-              <div className="pr-breadth-key">
-                <span><i className="up" /> {up} {t("mkt_up")}</span>
-                {flat > 0 && <span><i className="flat" /> {flat} {t("mkt_same")}</span>}
-                <span><i className="down" /> {down} {t("mkt_down")}</span>
-              </div>
-            </>
-          ) : (
-            <div className="pr-pulse-head muted">{t("state_loading_prices")}</div>
-          )}
-          {/* Freshness belongs with the numbers it's about, not at the foot
-              of a long list where nobody scrolls to it. */}
-          <div className={`pr-fresh ${isOffline ? "off" : ""}`}>
-            <span className="pr-fresh-dot" />
-            {isOffline ? t("market_offline_cached") : `${t("market_up_to_date")} · ${lastUpdated}`}
-          </div>
-          {/* A farmer with the day's basket, standing behind the card's
-              bottom edge. A good day for you: he lifts it up with a little
-              bounce. Otherwise he simply rises into view. Then he blinks and
-              chats, on a loop: the lids and two mouth shapes are layers
-              drawn on the same canvas as the picture, shown in turn.
-              Decoration with a meaning, so hidden from screen readers: the
-              headline says it. */}
-          {prices.status === "ready" && (
-            <div className={`pr-mascot basket ${goodDay ? "good" : ""}`} aria-hidden="true">
-              <div className="pb-fig">
-                <img src={mascotBasket} alt="" width={420} height={474} decoding="async" />
-                <img className="pb-blink" src={basketBlink} alt="" width={420} height={474} decoding="async" />
-                <img className="pb-mouth half" src={basketMouthHalf} alt="" width={420} height={474} decoding="async" />
-                <img className="pb-mouth shut" src={basketMouthShut} alt="" width={420} height={474} decoding="async" />
-              </div>
+        {/* 1 ── The market, and the month its prices are for ──
+            Two parts, like a market stall. Above, the answer: how many
+            prices rose, as one big number with the sentence that explains
+            it, and the farmer beside it. Below, on a darker counter that he
+            stands behind, the proof: one bar of the share that rose, held
+            and fell, the three counts under it, and how fresh it all is. */}
+        <section className={`pr-pulse ${ready ? "has-mascot" : ""}`} aria-label={pulseLabel}>
+          <div className="pr-pulse-top">
+            <div className="pr-pulse-lbl">{pulseLabel} · Nueva Ecija</div>
+            <div className="pr-pulse-body">
+              {ready ? (
+                // The count that answers the question, in the colour of the
+                // bar's "up" below, so the answer and the proof read as one.
+                <p className="pr-pulse-head">
+                  <span className="pr-pulse-big">{up}</span>
+                  <span className="pr-pulse-sub">{t("mkt_pulse_sub").replace("{n}", String(ALL_ITEMS.length))}</span>
+                </p>
+              ) : (
+                <p className="pr-pulse-head muted">{t("state_loading_prices")}</p>
+              )}
+              {/* A farmer with the day's basket, standing behind the counter.
+                  A good day for you: he lifts it up with a little bounce.
+                  Otherwise he simply rises into view. Then he blinks and
+                  chats, on a loop: the lids and two mouth shapes are layers
+                  drawn on the same canvas as the picture, shown in turn.
+                  Decoration with a meaning, so hidden from screen readers:
+                  the number says it. */}
+              {ready && (
+                <div className={`pr-mascot basket ${goodDay ? "good" : ""}`} aria-hidden="true">
+                  <div className="pb-fig">
+                    <img src={mascotBasket} alt="" width={420} height={474} decoding="async" />
+                    <img className="pb-blink" src={basketBlink} alt="" width={420} height={474} decoding="async" />
+                    <img className="pb-mouth half" src={basketMouthHalf} alt="" width={420} height={474} decoding="async" />
+                    <img className="pb-mouth shut" src={basketMouthShut} alt="" width={420} height={474} decoding="async" />
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+          </div>
+
+          <div className="pr-pulse-tray">
+            {ready && (
+              <>
+                {/* The share that rose, held and fell. Colour, and under
+                    it the counts with an arrow and a word each, so it never
+                    rests on colour alone. */}
+                <div className="pr-breadth" aria-hidden="true">
+                  {up > 0 && <span className="seg up" style={{ flexGrow: up }} />}
+                  {flat > 0 && <span className="seg flat" style={{ flexGrow: flat }} />}
+                  {down > 0 && <span className="seg down" style={{ flexGrow: down }} />}
+                </div>
+                <div className="pr-stats">
+                  <div className="pr-stat up">
+                    <span className="pr-stat-v"><ArrowUp size={16} strokeWidth={3} aria-hidden="true" />{up}</span>
+                    <span className="pr-stat-l">{t("mkt_up")}</span>
+                  </div>
+                  {flat > 0 && (
+                    <div className="pr-stat flat">
+                      <span className="pr-stat-v"><Minus size={16} strokeWidth={3} aria-hidden="true" />{flat}</span>
+                      <span className="pr-stat-l">{t("mkt_same")}</span>
+                    </div>
+                  )}
+                  <div className="pr-stat down">
+                    <span className="pr-stat-v"><ArrowDown size={16} strokeWidth={3} aria-hidden="true" />{down}</span>
+                    <span className="pr-stat-l">{t("mkt_down")}</span>
+                  </div>
+                </div>
+              </>
+            )}
+            {/* Freshness belongs with the numbers it's about, not at the foot
+                of a long list where nobody scrolls to it. */}
+            <div className={`pr-fresh ${isOffline ? "off" : ""}`}>
+              <span className="pr-fresh-dot" />
+              {isOffline ? t("market_offline_cached") : `${t("market_up_to_date")} · ${lastUpdated}`}
+            </div>
+          </div>
         </section>
 
         {/* 2 ── Biggest moves ── */}

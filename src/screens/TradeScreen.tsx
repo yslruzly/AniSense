@@ -22,6 +22,7 @@ import leafMask from "../assets/anisense-leaf-mask.png";
 import { AniSenseLogo } from "../components/brand/AniSenseLogo";
 import { PickerField } from "../components/ui/PickerField";
 import { townsOf } from "../data/locations";
+import { QtyField } from "../components/ui/QtyField";
 import { useViewer } from "../store/viewer";
 import { useMarket, sellerKeyOfDetail } from "../store/market";
 import { FeaturedFarmersRow } from "../components/marketplace/FeaturedFarmersRow";
@@ -684,19 +685,21 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                 ) : userRole === "buyer" ? (
                   <>
                     {/* How much, and what it comes to, before the buttons that
-                        commit to it. Same stepper as the cart. */}
+                        commit to it. Same stepper as the cart: − and +, and
+                        the kilos between them can be typed. */}
                     <div className="mp-qty">
                       <span className="mp-qty-lbl">{t("mp_how_many")}</span>
                       <div className="qty-step">
                         <button onClick={() => setQty(l.id, qty - 1, l.kg)} disabled={qty <= 1} aria-label={t("cart_less")}>
                           <Minus size={18} strokeWidth={2.6} />
                         </button>
-                        <span className="qty-step-val">{qty}<small>kg</small></span>
+                        <QtyField value={qty} max={l.kg} onChange={n => setQty(l.id, n, l.kg)} label={t("mp_how_many")} />
                         <button onClick={() => setQty(l.id, qty + 1, l.kg)} disabled={qty >= l.kg} aria-label={t("cart_more")}>
                           <Plus size={18} strokeWidth={2.6} />
                         </button>
                       </div>
                       <span className="mp-qty-total">{peso(qty * l.pricePerKg)}</span>
+                      {qty >= l.kg && <span className="mp-qty-note">{t("cart_all_avail")}</span>}
                     </div>
                     {/* Add to Cart, and beside it Call Now: the farmer's
                         number in the phone's dialer, to ask before ordering,
@@ -1040,7 +1043,8 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                                     {last ? <Trash2 size={17} strokeWidth={2.2} /> : <Minus size={18} strokeWidth={2.6} />}
                                   </span>
                                 </button>
-                                <span className="qty-step-val">{item.qty}<small>kg</small></span>
+                                <QtyField value={item.qty} max={item.maxKg} onChange={n => updateCartQty(item.listingId, n)}
+                                  label={`${item.crop}: ${t("mp_how_many")}`} />
                                 <button aria-label={t("cart_more")} disabled={atMax} onClick={() => updateCartQty(item.listingId, item.qty + 1)}>
                                   <Plus size={18} strokeWidth={2.6} />
                                 </button>
