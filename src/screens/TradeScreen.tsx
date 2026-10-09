@@ -21,7 +21,7 @@ import { avatarTone as avaTone } from "../lib/avatar";
 import leafMask from "../assets/anisense-leaf-mask.png";
 import { AniSenseLogo } from "../components/brand/AniSenseLogo";
 import { PickerField } from "../components/ui/PickerField";
-import { MUNICIPALITIES } from "../data/locations";
+import { townsOf } from "../data/locations";
 import { useViewer } from "../store/viewer";
 import { useMarket, sellerKeyOfDetail } from "../store/market";
 import { FeaturedFarmersRow } from "../components/marketplace/FeaturedFarmersRow";
@@ -100,10 +100,11 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
   const [orderError, setOrderError] = useState("");
   // What was ordered, kept after the cart empties, so the receipt can show it.
   const [order, setOrder] = useState<ReceiptOrder | null>(null);
-  // The farmer's own town, read from their profile ("San Ricardo, Talavera,
-  // Nueva Ecija" → "Talavera"), so a new listing starts already placed.
+  // The farmer's own province and town, read from their profile ("San
+  // Ricardo, Talavera, Nueva Ecija"): a listing is placed in one of that
+  // province's towns, and starts in theirs ("Talavera").
   const { location: profileLocation } = useViewer();
-  const homeTown = MUNICIPALITIES.find(m => (profileLocation ?? "").includes(m)) ?? "";
+  const { towns: homeTowns, town: homeTown } = townsOf(profileLocation ?? "");
   // Removing is forgiving, and it happens in place. The line turns into a
   // slim "Removed · Undo" strip in the same slot for a few seconds; Undo grows
   // the card back right there, and otherwise the strip folds shut. Nothing
@@ -944,7 +945,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                     title={t("farm_municipality_lbl")}
                     placeholder={t("farm_pick_municipality")}
                     value={form.location}
-                    options={MUNICIPALITIES}
+                    options={homeTowns}
                     onChange={v => { setForm(d => ({ ...d, location: v })); setFormError(""); }}
                   />
                 </div>

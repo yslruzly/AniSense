@@ -794,14 +794,6 @@ export const authCss = `
     background-color: rgba(118,118,128,.08); background-image: none;
     box-shadow: 0 0 0 1px rgba(22,33,27,.06), 0 0 0 0 transparent, 0 0 0 0 transparent;
   }
-  /* Province is fixed, so it is shown rather than asked: a quiet grey row, the
-     way iOS shows a setting that can't be changed here. */
-  .a-locked {
-    display: flex; align-items: center; gap: 12px;
-    min-height: 60px; padding: 0 18px; border-radius: 16px;
-    background: rgba(118,118,128,.1); font-size: var(--fs-lead); color: var(--ink);
-  }
-  .a-locked-note { margin-left: auto; font-size: var(--fs-label); color: var(--text-faint); }
   /* +63 and the number are one field, as in the iOS phone field: the prefix
      sits inside it behind a short divider, and the ring goes round both. */
   .a-prefix-row { display: flex; align-items: stretch; }
@@ -884,7 +876,7 @@ export const authCss = `
      line of small print still breathes: 56px fields with 17px type (the
      app's 52px and 16px floors stay well clear), 16px labels sitting close
      over their field, and the two buttons at the foot at 56px. */
-  .a-askscreen .a-inp, .a-askscreen .pick-field, .a-askscreen .a-locked { min-height: 56px; font-size: var(--fs-body); }
+  .a-askscreen .a-inp, .a-askscreen .pick-field { min-height: 56px; font-size: var(--fs-body); }
   .a-askscreen .a-inp-lg { min-height: 56px; font-size: var(--fs-lead); }
   .a-askscreen .a-prefix, .a-askscreen .a-suffix { font-size: var(--fs-body); }
   .a-askscreen .a-reveal { height: 44px; min-width: 80px; }
@@ -921,7 +913,6 @@ export const authCss = `
   .a-askscreen .a-unit-row .a-inp, .a-askscreen .a-unit-row .a-inp:focus, .a-askscreen .a-unit-row .a-inp.bad { border-radius: 999px 0 0 999px; padding-left: 22px; }
   .a-askscreen .a-prefix { padding-left: 22px; }
   .a-askscreen .a-suffix { padding: 0 22px 0 14px; }
-  .a-askscreen .a-locked { border-radius: 999px; padding: 0 22px; background: var(--fill-soft); }
   .a-askscreen .a-seg { border-radius: 999px; }
   .a-askscreen .a-seg-thumb { border-radius: 999px; }
   .a-askscreen .a-iconbtn.on-paper { background: var(--fill-soft); box-shadow: none; }

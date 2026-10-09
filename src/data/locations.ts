@@ -1,8 +1,11 @@
 // ─── Philippine locations (Nueva Ecija) ───────────────────────────────────────
 // Source: PSGC (Philippine Standard Geographic Code), psgc.gitlab.io.
-// Scoped to Nueva Ecija because that is the province the app serves; the
-// province is therefore fixed rather than a one-option dropdown.
+// Nueva Ecija, where most AniSense farmers are: a farmer's sign-up starts
+// here, and has its barangays at once, without loading the whole country's
+// (data/generated/phBarangays.json). The names match data/generated/phPlaces.ts.
 // 32 municipalities and cities, 849 barangays.
+
+import { PH_PROVINCES } from "./generated/phPlaces";
 
 export const FARM_PROVINCE = "Nueva Ecija";
 
@@ -43,9 +46,13 @@ export const BARANGAYS_BY_MUNICIPALITY: Record<string, string[]> = {
 
 export const MUNICIPALITIES = Object.keys(BARANGAYS_BY_MUNICIPALITY);
 
-/** The stored form: "Barangay, Municipality, Province". */
-export function formatFarmLocation(barangay: string, municipality: string): string {
-  if (!municipality) return "";
-  if (!barangay) return municipality + ", " + FARM_PROVINCE;
-  return barangay + ", " + municipality + ", " + FARM_PROVINCE;
+/** From a stored place ("San Ricardo, Talavera, Nueva Ecija"): the towns of
+ *  its province, and its own town among them ("Talavera"). A place whose
+ *  province isn't known keeps Nueva Ecija's towns. */
+export function townsOf(place: string): { towns: string[]; town: string } {
+  const parts = place.split(",").map(x => x.trim()).filter(Boolean);
+  const towns = PH_PROVINCES.find(p => p.name === parts[parts.length - 1])?.places ?? MUNICIPALITIES;
+  const town = towns.find(m => m === parts[parts.length - 2]) ?? towns.find(m => parts.includes(m)) ?? "";
+  return { towns, town };
 }
+
