@@ -159,7 +159,7 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
         {isBuyer && (
           <PosterCarousel posters={[
             { src: homePoster, alt: t("home_poster_alt"), width: 1000, height: 500 },
-            { src: anisensePoster, alt: t("poster_alt"), width: 1000, height: 562, position: "50% 35%" },
+            { src: anisensePoster, alt: t("poster_alt"), width: 1200, height: 675, position: "50% 35%" },
           ]} />
         )}
 
@@ -307,7 +307,7 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
             poster's shape before the image loads, so nothing below jumps. */}
         {!isBuyer && (
           <figure className="hm-poster">
-            <img src={anisensePoster} alt={t("poster_alt")} width={1000} height={562} loading="lazy" decoding="async" />
+            <img src={anisensePoster} alt={t("poster_alt")} width={1200} height={675} loading="lazy" decoding="async" />
           </figure>
         )}
 

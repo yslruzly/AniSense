@@ -8,21 +8,26 @@ a second of loading for a picture that renders 380 pixels wide.
 | Source here | Used by the app as | Where it appears |
 |---|---|---|
 | `AniSenseWallpaper.png` | `src/assets/anisense-wallpaper.webp` | Welcome screen, full-bleed behind the two sign-up buttons |
-| `AnisensePosterLS.png` | `src/assets/anisense-poster.webp` | Buyer Home, between the price chart and Featured farmers |
-| `AnisensePosterMarket.png` | *(unused — identical to `AnisensePosterLS.png`)* | — |
-| `FarmerMarketPoster.png` | `src/assets/farmer-market-poster.webp` | Marketplace poster, farmer accounts (16:9, the same frame as the buyers' poster) |
+| `AnisensePosterLS.png` | `src/assets/anisense-poster.webp` (1200 wide) | Buyer Home, the second poster in the banner under the search bar; farmer Home, partway down |
+| `FarmerMarketPoster.png` | `src/assets/farmer-market-poster.webp` (1200 wide) | Marketplace poster, farmer accounts (16:9, the same frame as the buyers' poster) |
 | `MarketplaceBuyerPoster.png` | `src/assets/anisense-poster-market.webp` (1200 wide: the poster carries a lot of text) | Marketplace poster, buyer accounts: "Fresh from the Farm. Connect directly with local farmers" |
-| `SellYourAniNow.png` | *(replaced by `FarmerMarketPoster.png`; its `sell-your-ani.webp` was removed)* | — |
 | `FarmerMarketSell.png` | `src/assets/farmer-sell.webp` *(not used by any screen)* | — |
 | `Peeking.png` | `src/assets/juan-peek.webp`, split into `juan-peek-body.webp` + `juan-peek-hand.webp` (+ `juan-peek-mouth-half.webp`, `juan-peek-mouth-shut.webp`: drawn half-open mouth and closed smile) | Signup screens (language, role); the hand layer waves from the wrist, and the mouth layers switch in turn so he says each line, then stops |
 | `CarryingBasket.png` (its "transparent" checkerboard was painted in; cut out) | `src/assets/mascot-basket.webp` (+ `-blink`, `-mouth-half`, `-mouth-shut`: drawn closed lids, half-open mouth, closed smile) | Today's market card on Prices; blinks and talks on a loop |
-| `buyersmascot.png` | `src/assets/buyer-mascot.webp` (+ `buyer-mascot-eyes.webp`, `buyer-mascot-mouth.webp`: drawn closed lids and closed smile) | "Fresh from local farms" card, buyer Home; on the role screen he blinks and talks |
-| `mascothi.png` → `mascothi-clean.png` (extra hat lobe removed) | `src/assets/mascot-wave-body.webp` + `-hand` + `-eyes` + `-mouth` | Opening card of the walkthrough: the hand rotates from the wrist; `-eyes` (closed lids) and `-mouth` (closed smile) are drawn overlays that switch on to blink and talk |
-| `mascotthumbsup.png` → `mascotthumbsup-cut.png` (white background removed) | `src/assets/mascot-thumbs.webp` + `mascot-thumbs-eyes.webp` | Last card of the walkthrough; `-eyes` (closed lids) switches on to blink |
+| `buyersmascot.png` | `src/assets/buyer-mascot.webp` (+ `buyer-mascot-eyes.webp`, `buyer-mascot-mouth.webp`: drawn closed lids and closed smile) | The role screen when creating an account: he blinks and talks |
+| `mascothi-clean.png` (extra hat lobe removed; the uncleaned original is no longer kept) | `src/assets/mascot-wave-body.webp` + `-hand` + `-eyes` + `-mouth` | Opening card of the walkthrough: the hand rotates from the wrist; `-eyes` (closed lids) and `-mouth` (closed smile) are drawn overlays that switch on to blink and talk |
+| `mascotthumbsup-cut.png` (white background removed; the original is no longer kept) | `src/assets/mascot-thumbs.webp` + `mascot-thumbs-eyes.webp` | Last card of the walkthrough; `-eyes` (closed lids) switches on to blink |
 
 ## Adding or replacing one
 
-Drop the full-size file here, then convert it into `src/assets/` before using it:
+**Replacing a PNG here changes nothing in the app by itself.** The app shows the
+`.webp` in `src/assets/`, so after dropping in the new full-size file:
+
+1. convert it over that `.webp` (below), then
+2. build a new APK (`npm run build`, `npx cap sync android`,
+   `.\android\gradlew.bat -p android assembleDebug`) and install it.
+
+To convert:
 
 ```bash
 python -c "from PIL import Image; im=Image.open('design/artwork/NEW.png').convert('RGB'); w=1000; im.resize((w, round(im.height*w/im.width)), Image.LANCZOS).save('src/assets/new.webp','WEBP',quality=84,method=6)"

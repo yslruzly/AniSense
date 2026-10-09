@@ -322,8 +322,8 @@ export const translations: Dict = {
   home_poster_view: { en: "Tap to see the whole poster.", tl: "Pindutin para makita ang buong poster." },
   pv_hint: { en: "Tap twice or pinch to zoom in", tl: "Pindutin nang dalawang beses o i-pinch para lumaki" },
   poster_alt: {
-    en: "AniSense: fresh produce, better prices, stronger communities. Browse the marketplace.",
-    tl: "AniSense: sariwang ani, mas magandang presyo, mas matibay na komunidad. Buksan ang bentahan.",
+    en: "AniSense: fresh produce, better prices, stronger communities. Browse fresh produce, get the best market prices, and buy directly from local farmers. A smiling farmer holds up a phone.",
+    tl: "AniSense: sariwang ani, mas magandang presyo, mas matibay na komunidad. Tumingin ng sariwang ani, kunin ang pinakamagandang presyo, at bumili nang direkta sa lokal na magsasaka. Isang nakangiting magsasaka na may hawak na telepono.",
   },
   home_search_ph: { en: "Search rice, onions, or a farmer", tl: "Maghanap ng bigas, sibuyas, o magsasaka" },
   home_shop_by_crop: { en: "Browse marketplace", tl: "Tumingin sa merkado" },

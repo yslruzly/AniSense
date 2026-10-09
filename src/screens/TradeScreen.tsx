@@ -438,7 +438,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
         <figure className="mp-poster">
           {userRole === "buyer"
             ? <img src={marketPoster} alt={t("mp_poster_alt")} width={1200} height={675} decoding="async" />
-            : <img src={sellPoster} alt={t("mp_poster_sell_alt")} width={1000} height={562} decoding="async" />}
+            : <img src={sellPoster} alt={t("mp_poster_sell_alt")} width={1200} height={675} decoding="async" />}
         </figure>
 
         {userRole !== "buyer" && (
