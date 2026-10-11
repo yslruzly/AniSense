@@ -12,6 +12,9 @@ import { useViewer } from "../store/viewer";
 import mascotBody from "../assets/mascot-wave-body.webp";
 import mascotHand from "../assets/mascot-wave-hand.webp";
 import mascotEyes from "../assets/mascot-wave-eyes.webp";
+import buyerBody from "../assets/buyer-wave-body.webp";
+import buyerHand from "../assets/buyer-wave-hand.webp";
+import buyerEyes from "../assets/buyer-wave-eyes.webp";
 
 // ─── How to use AniSense ──────────────────────────────────────────────────────
 // The walkthrough runs once; this is where it lives afterwards. Eight jobs
@@ -73,13 +76,14 @@ export function GuideScreen({ onBack, onReplay }: { onBack: () => void; onReplay
             <h2 className="gd-intro-t">{t("gd_replay_t")}</h2>
             <p className="gd-intro-s">{t("gd_replay_s")}</p>
           </div>
-          {/* The one who gives the tour, offering to give it again. He waves
-              once as the page opens and blinks after; his waist is tucked
-              behind the button, the way he leans over the tour's cards. */}
-          <div className="gd-mascot" aria-hidden="true">
-            <img className="tm-body" src={mascotBody} alt="" width={420} height={435} decoding="async" />
-            <img className="tm-eyes" src={mascotEyes} alt="" width={420} height={435} decoding="async" />
-            <img className="tm-hand" src={mascotHand} alt="" width={420} height={435} decoding="async" />
+          {/* The one who gives the tour, offering to give it again: the
+              farmer for a farmer, the buyer for a buyer, as on the tour's
+              first card. A wave as the page opens, a blink after; the waist
+              is tucked behind the button, the way they lean over the tour's cards. */}
+          <div className={`gd-mascot${buyer ? " buyer" : ""}`} aria-hidden="true">
+            <img className="tm-body" src={buyer ? buyerBody : mascotBody} alt="" width={420} height={435} decoding="async" />
+            <img className="tm-eyes" src={buyer ? buyerEyes : mascotEyes} alt="" width={420} height={435} decoding="async" />
+            <img className="tm-hand" src={buyer ? buyerHand : mascotHand} alt="" width={420} height={435} decoding="async" />
           </div>
           <button className="gd-replay" onClick={() => { haptic.select(); onReplay(); }}>
             <PlayCircle size={21} strokeWidth={2.4} aria-hidden="true" /> {t("gd_replay_btn")}

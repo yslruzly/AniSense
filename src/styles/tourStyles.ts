@@ -102,8 +102,9 @@ export const tourCss = `
   }
   /* The pivot is the wrist crease, measured on the drawing. */
   .tm-hand { transform-origin: 14.47% 61.55%; }
-  /* The buyer's hello: her wrist crease, measured on her drawing. */
-  .tour-mascot.buyer .tm-hand { transform-origin: 14.37% 55.91%; }
+  /* The buyer's hello (the tour's first card, and the Guide): her wrist
+     crease, measured on her drawing. */
+  .tour-mascot.buyer .tm-hand, .gd-mascot.buyer .tm-hand { transform-origin: 14.37% 55.91%; }
   .tour[data-open] .tm-hand { animation: tm-wave 1.7s var(--ease-io) 560ms both; }
   @keyframes tm-wave {
     0%   { transform: rotate(0deg); }
