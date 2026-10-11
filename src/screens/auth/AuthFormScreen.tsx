@@ -639,15 +639,11 @@ export function AuthFormScreen({
     </button>
   ) : (
     <div className="a-codebox">
-      {/* Where the code went, as one card: the way it was sent, the line,
-          the number or address in bold on a line of its own (a long Gmail
-          wraps there, not mid-sentence), and for Gmail the Spam tip, since
-          a real email from a new sender can land there. Read out as one
-          status as it arrives. */}
+      {/* Where the code went, as one plain card: the line, the number or
+          address on a line of its own (a long Gmail wraps there, not
+          mid-sentence), and for Gmail the Spam tip, since a real email from a
+          new sender can land there. Read out as one status as it arrives. */}
       <div className="a-sent" role="status">
-        <span className="a-sent-ico" aria-hidden="true">
-          {mode === "gmail" ? <Mail size={20} strokeWidth={2.2} /> : <Smartphone size={20} strokeWidth={2.2} />}
-        </span>
         <span className="a-sent-txt">
           <span className="a-sent-k">{t("auth_code_sent_to")}</span>
           <span className="a-sent-to">{who}</span>

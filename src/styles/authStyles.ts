@@ -929,26 +929,19 @@ export const authCss = `
   /* Grey like a disabled button (buttonStyles.ts), but still tappable. */
   .a-btn.a-btn-wait:active { transform: none; }
   .a-codebox { margin-top: 16px; animation: a-err-in 220ms var(--ease-out); }
-  /* Where the code went: one card instead of loose lines. White, with a
-     hairline and a soft shadow, so it can't be taken for one of the grey
-     pill fields; the way it went (envelope or phone) in a green disc; the
-     line in grey and the number or address under it in bold, the one thing
-     to check; the Spam tip last, under a hairline, in the faintest grey.
-     Everything starts on one edge, so the eye reads straight down. */
+  /* Where the code went: one plain card instead of loose lines. White, with
+     a hairline and a soft shadow, so it can't be taken for one of the grey
+     pill fields; the line in grey and the number or address under it in the
+     ordinary text colour; the Spam tip last, under a hairline, in the
+     faintest grey. Everything starts on one edge, so the eye reads straight down. */
   .a-sent {
-    display: flex; align-items: flex-start; gap: 12px;
     padding: 14px 16px; border-radius: 20px; background: var(--card);
     box-shadow: 0 0 0 1px rgba(22,33,27,.1), 0 6px 16px -10px rgba(22,33,27,.22);
   }
-  .a-sent-ico {
-    flex: 0 0 40px; width: 40px; height: 40px; margin-top: 3px; border-radius: 50%;
-    display: inline-flex; align-items: center; justify-content: center;
-    background: var(--tanim-sk); color: var(--tanim);
-  }
-  .a-sent-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .a-sent-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
   .a-sent-k { font-size: var(--fs-label); line-height: 1.35; color: var(--text-muted); }
   .a-sent-to {
-    font-family: var(--font-display); font-weight: 600; font-size: var(--fs-body); line-height: 1.3;
+    font-size: var(--fs-body); line-height: 1.35; font-weight: 400;
     color: var(--text); overflow-wrap: anywhere; font-variant-numeric: tabular-nums;
   }
   .a-sent-tip {
