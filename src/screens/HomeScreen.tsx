@@ -136,20 +136,20 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
       <Hdr icon={<AniSenseLogo size={isBuyer ? 36 : 28} />} title="AniSense" center={isBuyer} />
       <div className="scroll screen-enter">
 
-        {/* Buyers: search sits at the very top, under the brand and above
-            the banner — the first thing on the page, because it is the one
-            control that serves any errand. It opens the marketplace with
-            the keyboard up rather than pretending to be a field itself. */}
-        {isBuyer && (
-          <button className="hm-search" data-tour="b-search" onClick={() => shop({ focusSearch: true })}>
-            <Search size={21} strokeWidth={2.4} aria-hidden="true" />
-            <span>{t("home_search_ph")}</span>
-            {/* The green key at the end: the shape people press to search. */}
-            <span className="hm-search-go" aria-hidden="true">
-              <Search size={20} strokeWidth={2.8} />
-            </span>
-          </button>
-        )}
+        {/* Search sits at the very top, under the brand and above the
+            banner — the first thing on the page, because it is the one
+            control that serves any errand: a buyer's shopping, a farmer
+            seeing who else sells their crop and at what price. It opens the
+            marketplace with the keyboard up rather than pretending to be a
+            field itself. The same bar for both. */}
+        <button className="hm-search" data-tour={isBuyer ? "b-search" : undefined} onClick={() => shop({ focusSearch: true })}>
+          <Search size={21} strokeWidth={2.4} aria-hidden="true" />
+          <span>{t("home_search_ph")}</span>
+          {/* The green key at the end: the shape people press to search. */}
+          <span className="hm-search-go" aria-hidden="true">
+            <Search size={20} strokeWidth={2.8} />
+          </span>
+        </button>
 
         {/* Buyers: the brand banner follows it, two posters taking turns:
             "Fresh local produce" first, then "Fresh produce, better prices,
