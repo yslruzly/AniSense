@@ -222,30 +222,6 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
         {/* Settings */}
         {!editing && (
           <>
-            {/* Manage account: the two things about the account itself, in
-                one place above the app's switches. What is kept about you
-                (the privacy policy), and the way to take it all back
-                (deleting the account), which is the last row and only opens
-                a sheet that asks again. */}
-            {group("manage", "tint-slate", <UserCog {...C} />, t("prof_manage"), <>
-              {/* A real button: it opens the Privacy screen. The policy's
-                  name is in English in both languages, like the policy. */}
-              <button className="setting-row as-btn" onClick={() => onNavigate("privacy")}>
-                {ico(<ShieldCheck {...I} />)}
-                <span className="setting-lbl" lang="en">{PRIVACY.title}</span>
-                {chev}
-              </button>
-              {/* The terms agreed to at sign-up, readable again any time.
-                  A sheet over Profile, like the delete step below. */}
-              <button className="setting-row as-btn" onClick={() => setShowTerms(true)}>
-                {ico(<FileText {...I} />)}
-                <span className="setting-lbl" lang="en">{TERMS.title}</span>
-                {chev}
-              </button>
-              {onDeleteAccount && <DeleteAccount role={userRole} onDelete={onDeleteAccount} />}
-            </>, { card: "manage", list: true })}
-            <LegalSheet doc={showTerms ? TERMS : null} onClose={() => setShowTerms(false)} />
-
             {group("prefs", "tint-slate", <SlidersHorizontal {...C} />, t("prof_preferences"), <>
               <div className="setting-row">
                 {ico(<Bell {...I} />)}
@@ -274,6 +250,30 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
                 ? <button key={r.label} className="setting-row as-btn" onClick={r.go}>{body}</button>
                 : <div key={r.label} className="setting-row">{body}</div>;
             }), { list: true })}
+
+            {/* Manage account: the things about the account itself, last,
+                right above Sign out, where people look for the account's own
+                business. What is kept about you (the privacy policy), the
+                terms, and the way to take it all back (deleting the account),
+                which is the last row and only opens a sheet that asks again. */}
+            {group("manage", "tint-slate", <UserCog {...C} />, t("prof_manage"), <>
+              {/* A real button: it opens the Privacy screen. The policy's
+                  name is in English in both languages, like the policy. */}
+              <button className="setting-row as-btn" onClick={() => onNavigate("privacy")}>
+                {ico(<ShieldCheck {...I} />)}
+                <span className="setting-lbl" lang="en">{PRIVACY.title}</span>
+                {chev}
+              </button>
+              {/* The terms agreed to at sign-up, readable again any time.
+                  A sheet over Profile, like the delete step below. */}
+              <button className="setting-row as-btn" onClick={() => setShowTerms(true)}>
+                {ico(<FileText {...I} />)}
+                <span className="setting-lbl" lang="en">{TERMS.title}</span>
+                {chev}
+              </button>
+              {onDeleteAccount && <DeleteAccount role={userRole} onDelete={onDeleteAccount} />}
+            </>, { card: "manage", list: true })}
+            <LegalSheet doc={showTerms ? TERMS : null} onClose={() => setShowTerms(false)} />
 
             <button className="signout-btn" onClick={onSignOut} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
               <LogOut size={18} strokeWidth={2.4} aria-hidden="true" /> {t("prof_sign_out")}
