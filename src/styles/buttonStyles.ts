@@ -231,7 +231,7 @@ export const buttonCss = `
      Chosen: the fill turns green, the ring thickens into part of the card,
      the whole thing lifts 1px and casts a soft green shadow. Nothing is
      drawn over it; the object itself has changed state. */
-  .crop-pick, .crop-toggle {
+  .crop-toggle {
     background-image: linear-gradient(180deg, #FFFFFF 0%, #F7F9F7 100%);
     box-shadow:
       inset 0 1px 0 #FFFFFF,
@@ -244,14 +244,14 @@ export const buttonCss = `
       background-image 180ms ease;
   }
   /* The press is the same everywhere: in fast, out slow. */
-  .crop-pick:active, .crop-toggle:active {
+  .crop-toggle:active {
     transform: scale(.985);
     box-shadow:
       inset 0 1px 2px rgba(22,33,27,.1),
       inset 0 0 0 1.5px rgba(22,33,27,.16);
     transition-duration: 90ms;
   }
-  .crop-pick.on, .crop-toggle.on {
+  .crop-toggle.on {
     background-image: linear-gradient(180deg, #E4F1E9 0%, #D2E7DA 100%);
     box-shadow:
       inset 0 1px 0 rgba(255,255,255,.85),
@@ -260,7 +260,7 @@ export const buttonCss = `
       0 10px 20px -14px rgba(11,107,65,.8);
     transform: translateY(-1px);
   }
-  .crop-pick.on:active, .crop-toggle.on:active {
+  .crop-toggle.on:active {
     transform: translateY(-1px) scale(.985);
     box-shadow: inset 0 1px 2px rgba(11,107,65,.2), inset 0 0 0 2px var(--tanim);
   }
@@ -272,7 +272,7 @@ export const buttonCss = `
     .cart-checkout-btn:active, .mp-sell-btn:active, .add-btn:active, .post-btn:active,
     .calc-use:active, .wid-btn:active, .prof-id-btn:active, .signout-btn:active,
     .pick-field:active { transform: none; }
-    .crop-pick.on, .crop-toggle.on { transform: none; }
-    .crop-pick:active, .crop-toggle:active { transform: none; }
+    .crop-toggle.on { transform: none; }
+    .crop-toggle:active { transform: none; }
   }
 `;

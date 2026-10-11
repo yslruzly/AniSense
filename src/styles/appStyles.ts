@@ -4013,7 +4013,188 @@ export const appCss = `
   .confirm-sheet.sm { border-radius: 16px 16px 0 0; padding: 24px 24px calc(24px + var(--safe-bottom)); }
   .post-sheet {
     width: 100%; max-height: 93%; background: var(--paper);
-    border-radius: 24px 24px 0 0; padding-bottom: calc(24px + var(--safe-bottom));
+    border-radius: 24px 24px 0 0;
+  }
+
+  /* ── Post your crops ──────────────────────────────────────────────────────
+     The header on the AniSense green, as Your harvest and Biggest moves
+     are, held at the top while the form scrolls, so the way out is always
+     there. Under it, four white cards on the sheet's grey, each a numbered
+     question; at the foot, held too, what the listing comes to and Post. */
+  .pl-head {
+    position: sticky; top: 0; z-index: 3; overflow: hidden; isolation: isolate;
+    display: flex; align-items: center; gap: 12px; padding: 18px 14px 16px 20px;
+    border-radius: 24px 24px 0 0; color: #fff;
+    background:
+      radial-gradient(90% 120% at 100% 0%, rgba(242,179,44,.16), transparent 60%),
+      linear-gradient(160deg, #145E3F 0%, #0E4630 60%, #0A3525 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 10px 20px -16px rgba(8,42,29,.8);
+  }
+  .pl-mark {
+    position: absolute; right: 34px; top: -40px; z-index: -1; width: 130px; height: auto;
+    opacity: .1; transform: rotate(-14deg); pointer-events: none; user-select: none;
+  }
+  .pl-head-txt { flex: 1; min-width: 0; }
+  .pl-title { margin: 0; font-family: var(--font-display); font-size: 20px; font-weight: 700; line-height: 1.2; letter-spacing: -.015em; color: #fff; }
+  .pl-sub { margin: 3px 0 0; font-size: 14.5px; line-height: 1.35; color: rgba(255,255,255,.76); }
+  .pl-x {
+    width: 44px; height: 44px; flex-shrink: 0; border: none; border-radius: 50%; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,.12); color: #fff; box-shadow: inset 0 0 0 1px rgba(255,255,255,.16);
+    transition: transform 160ms var(--ease-out), background-color 140ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .pl-x:active { transform: scale(.92); background: rgba(255,255,255,.22); transition-duration: 90ms; }
+  .pl-x:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+
+  .pl-body { padding: 16px 16px 0; display: flex; flex-direction: column; gap: 12px; }
+  .pl-sec {
+    padding: 18px 16px; border-radius: 20px; background: var(--card);
+    box-shadow: 0 0 0 1px rgba(22,33,27,.07), 0 1px 2px rgba(22,33,27,.06), 0 10px 22px -16px rgba(22,33,27,.32);
+  }
+  .pl-sec-t {
+    display: flex; align-items: center; gap: 10px; margin: 0 0 16px;
+    font-family: var(--font-display); font-size: 18px; font-weight: 700; line-height: 1.25; letter-spacing: -.01em; color: var(--text);
+  }
+  .pl-n {
+    width: 28px; height: 28px; flex: 0 0 28px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--tanim-sk); color: var(--tanim-deep); font-size: 14px; font-weight: 800; letter-spacing: 0;
+  }
+  .pl-opt {
+    margin-left: auto; flex-shrink: 0; padding: 4px 10px; border-radius: 99px; background: var(--paper-alt);
+    font-family: var(--font-body); font-size: 13px; font-weight: 700; letter-spacing: 0; color: var(--text-muted); white-space: nowrap;
+  }
+
+  /* 1. The crop: its drawing on a white tile, as on the sign-up question.
+     Picked, a green ring closes round it, its corner fills with a tick, and
+     the drawing lifts a little: all transitions, so a change of mind turns
+     back from wherever it is. */
+  .pl-fam + .pl-fam { margin-top: 16px; }
+  .pl-fam-t {
+    margin: 0 2px 8px; font-size: 13px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--text-faint);
+  }
+  .pl-crops { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .pl-crop {
+    position: relative; min-width: 0; padding: 10px 2px 11px; border: none; border-radius: 16px; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    background: var(--card); color: var(--text-soft);
+    box-shadow: 0 0 0 1px rgba(22,33,27,.09), 0 1px 2px rgba(22,33,27,.06), 0 8px 16px -14px rgba(22,33,27,.35);
+    transition: transform 180ms var(--ease-out), box-shadow 200ms var(--ease-out), background-color 200ms ease, color 200ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .pl-crop:active { transform: scale(.97); transition-duration: 90ms; }
+  .pl-crop.on {
+    background: #F3FAF6; color: var(--tanim-deep);
+    box-shadow: 0 0 0 2px var(--tanim), 0 1px 2px rgba(11,107,65,.12), 0 10px 20px -14px rgba(11,107,65,.5);
+  }
+  .pl-crop:focus-visible { outline: 3px solid var(--tanim); outline-offset: 2px; }
+  .pl-crop-pic { width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; transition: transform 220ms var(--ease-out); }
+  .pl-crop-pic img { width: 100%; height: 100%; object-fit: contain; display: block; filter: drop-shadow(0 4px 4px rgba(22,33,27,.16)); pointer-events: none; }
+  .pl-crop.on .pl-crop-pic { transform: translateY(-2px) scale(1.06); }
+  /* No breaking inside a word: "Watermelon" holds one line in a third of
+     the card at 360px. */
+  .pl-crop-n { max-width: 100%; font-family: var(--font-display); font-size: 14.5px; font-weight: 700; line-height: 1.2; letter-spacing: -.01em; text-align: center; word-break: keep-all; }
+  .pl-tick {
+    position: absolute; top: 7px; right: 7px; width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; background: var(--tanim); color: #fff;
+    box-shadow: 0 2px 6px -1px rgba(11,107,65,.45);
+    opacity: 0; transform: scale(.6); transition: opacity 120ms ease, transform 160ms var(--ease-out);
+  }
+  .pl-crop.on .pl-tick { opacity: 1; transform: none; transition: opacity 140ms var(--ease-out), transform 200ms var(--ease-out); }
+
+  /* Its varieties, under a rule: pills, the chosen one filled, with a tick
+     so it's never told by colour alone. */
+  .pl-varieties { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); animation: pl-in 220ms var(--ease-out); }
+  .pl-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pl-chip {
+    min-height: 48px; padding: 0 18px; border: none; border-radius: 99px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--card); color: var(--text);
+    box-shadow: 0 0 0 1px rgba(22,33,27,.13), 0 1px 2px rgba(22,33,27,.06);
+    font-family: var(--font-display); font-size: 15px; font-weight: 600;
+    transition: transform 160ms var(--ease-out), background-color 180ms ease, color 180ms ease, box-shadow 200ms var(--ease-out);
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .pl-chip:active { transform: scale(.96); transition-duration: 90ms; }
+  .pl-chip.on { background: var(--tanim); color: #fff; box-shadow: 0 6px 14px -8px rgba(11,107,65,.7); }
+  .pl-chip:focus-visible { outline: 3px solid var(--tanim); outline-offset: 2px; }
+
+  /* 2-4. Labelled fields. The numbers big, in the display face, with the
+     peso sign and the unit inside the field; a ring that turns green while
+     typing, and the error colour, with its words underneath, when a field
+     needs an answer. */
+  .pl-group + .pl-group { margin-top: 20px; }
+  .pl-lbl { display: block; margin: 0 2px 8px; font-family: var(--font-display); font-size: 16px; font-weight: 700; line-height: 1.3; color: var(--text); }
+  .pl-hint { margin: -4px 2px 10px; font-size: 14px; line-height: 1.45; color: var(--text-muted); }
+  .pl-field {
+    display: flex; align-items: center; gap: 8px; min-height: 62px; padding: 0 18px; border-radius: var(--radius); cursor: text;
+    background: var(--card); box-shadow: inset 0 0 0 2px var(--line);
+    transition: box-shadow 140ms ease, background-color 140ms ease;
+  }
+  .pl-field:focus-within { box-shadow: inset 0 0 0 2px var(--tanim), 0 0 0 4px rgba(11,107,65,.12); }
+  .pl-field input {
+    flex: 1; min-width: 0; height: 58px; padding: 0; border: none; outline: none; background: transparent;
+    font-family: var(--font-display); font-size: 24px; font-weight: 700; letter-spacing: -.01em; color: var(--ink);
+    font-variant-numeric: tabular-nums; caret-color: var(--tanim);
+  }
+  .pl-field input::placeholder { color: #A3A9A2; font-weight: 600; }
+  .pl-pre { font-family: var(--font-display); font-size: 22px; font-weight: 800; color: var(--tanim); }
+  .pl-suf { flex-shrink: 0; font-size: 16px; font-weight: 700; color: var(--text-muted); }
+  .pl-area {
+    display: block; width: 100%; min-height: 108px; padding: 14px 18px; border: none; border-radius: var(--radius); resize: none; outline: none;
+    background: var(--card); box-shadow: inset 0 0 0 2px var(--line);
+    font-family: var(--font-body); font-size: var(--fs-body); line-height: 1.55; color: var(--ink); caret-color: var(--tanim);
+    transition: box-shadow 140ms ease, background-color 140ms ease;
+  }
+  .pl-area::placeholder { color: #8F958E; }
+  .pl-area:focus { box-shadow: inset 0 0 0 2px var(--tanim), 0 0 0 4px rgba(11,107,65,.12); }
+  .pl-field.bad, .pl-area.bad, .pl-pick.bad .pick-field { background: #FFF9F8; box-shadow: inset 0 0 0 2px var(--error); }
+  .pl-field.bad:focus-within, .pl-area.bad:focus { box-shadow: inset 0 0 0 2px var(--error), 0 0 0 4px rgba(165,35,27,.12); }
+
+  /* Today's market price under the price, and one tap to use it. */
+  .pl-market {
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px 12px;
+    margin: 10px 2px 0; font-size: 14.5px; line-height: 1.35; color: var(--text-muted);
+  }
+  .pl-market b { color: var(--text); font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .pl-use {
+    min-height: 44px; padding: 0 16px; border: none; border-radius: 99px; cursor: pointer; white-space: nowrap;
+    background: var(--tanim-sk); color: var(--tanim-deep); font-family: var(--font-display); font-size: 15px; font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    transition: transform 160ms var(--ease-out), background-color 140ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .pl-use:active { transform: scale(.96); background: #C6E0CF; transition-duration: 90ms; }
+  .pl-use:focus-visible { outline: 3px solid var(--tanim); outline-offset: 2px; }
+
+  .pl-err {
+    display: flex; align-items: flex-start; gap: 6px; margin: 8px 2px 0;
+    font-size: 14.5px; font-weight: 600; line-height: 1.4; color: var(--error); animation: pl-in 180ms var(--ease-out);
+  }
+  .pl-err svg { flex-shrink: 0; margin-top: 2px; }
+  .pl-err-save { margin: 0 0 10px; padding: 12px 14px; border-radius: 12px; background: var(--error-sk); }
+  @keyframes pl-in { from { opacity: 0; transform: translateY(-3px); } }
+
+  /* The foot, held at the bottom of the sheet: what the listing comes to,
+     as the sum it is, then Post. */
+  .pl-foot {
+    position: sticky; bottom: 0; z-index: 3; margin-top: 12px;
+    padding: 12px 16px calc(14px + var(--safe-bottom));
+    background: var(--paper);
+    box-shadow: 0 -1px 0 var(--line), 0 -14px 24px -20px rgba(22,33,27,.35);
+  }
+  .pl-sum { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 2px 10px; animation: pl-in 180ms var(--ease-out); }
+  .pl-sum-what { min-width: 0; font-size: 14.5px; line-height: 1.35; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+  .pl-sum-total {
+    flex-shrink: 0; font-family: var(--font-display); font-size: 22px; font-weight: 800; letter-spacing: -.02em;
+    color: var(--tanim-deep); font-variant-numeric: tabular-nums;
+  }
+  .pl-post { width: 100%; min-height: 58px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pl-crop:active, .pl-crop.on .pl-crop-pic, .pl-chip:active, .pl-x:active, .pl-use:active { transform: none; }
+    .pl-varieties, .pl-err, .pl-sum { animation: none; }
   }
   .exp-sheet {
     width: 100%; max-height: 93%; background: var(--card);
@@ -4368,48 +4549,6 @@ export const appCss = `
   .modal-sheet { overflow-y: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
   .modal-sheet::-webkit-scrollbar { display: none; }
 
-  /* The crop picker in the post-a-listing sheet. minmax(0, 1fr) is the whole
-     fix for the overflow: a plain 1fr will not shrink below its content, so
-     "Kalamansi" pushed the tracks wider than the sheet and produced the
-     horizontal scrollbar and the clipped last column. */
-  .crop-pick-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; }
-  .crop-pick {
-    min-width: 0; border-radius: 12px; padding: 12px 6px; cursor: pointer;
-    display: flex; flex-direction: column; align-items: center; gap: 5px;
-    background: var(--paper); border: 2px solid var(--line);
-    transition: background-color 160ms ease, border-color 160ms ease;
-  }
-  .crop-pick.on { background: var(--tanim-sk); border-color: var(--tanim); }
-  .crop-pick-emoji { font-size: var(--fs-title); line-height: 1; }
-  /* Post a harvest, step 1: the crop as a picture, the way buyers will see
-     it, grouped under the same three families the marketplace filters by. */
-  .crop-pick-fam + .crop-pick-fam { margin-top: 14px; }
-  .crop-pick-fam-t {
-    margin: 0 2px 8px; font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
-    color: var(--text-faint);
-  }
-  .crop-pick { padding: 10px 6px 11px; gap: 7px; }
-  .crop-pick:active { transform: scale(.96); transition-duration: var(--dur-press); }
-  .crop-pick-photo {
-    position: relative; width: 56px; height: 56px; border-radius: 14px; overflow: visible;
-    display: inline-flex; align-items: center; justify-content: center; background: var(--tanim-sk);
-  }
-  .crop-pick-photo img { width: 100%; height: 100%; object-fit: cover; border-radius: 14px; display: block; }
-  /* The chosen one carries a tick, so it is never told by colour alone. */
-  .crop-pick-tick {
-    position: absolute; right: -6px; top: -6px; width: 22px; height: 22px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    background: var(--tanim); color: #fff; box-shadow: 0 0 0 2.5px var(--tanim-sk);
-  }
-  /* The app's type, a size that holds "Watermelon" on one line in a third
-     of the sheet, and no breaking inside a word. */
-  .crop-pick-lbl { font-family: var(--font-display); font-size: 14.5px; overflow-wrap: normal; word-break: keep-all; }
-  @media (prefers-reduced-motion: reduce) { .crop-pick:active { transform: none; } }
-  .crop-pick-lbl {
-    font-size: var(--fs-label); font-weight: 700; color: var(--text-soft);
-    text-align: center; line-height: 1.2; overflow-wrap: anywhere;
-  }
-  .crop-pick.on .crop-pick-lbl { color: var(--tanim); }
 
   /* Heading card for the AI block. A green plate so the two model cards under
      it read as one section rather than two cards that happen to be adjacent.
@@ -4788,7 +4927,7 @@ export const appCss = `
   .pcard, .module-btn,
   .add-btn, .post-btn,
   .ntab, .signout-btn,
-  .cat-tab, .var-tab, .crop-pick,
+  .cat-tab, .var-tab,
   .hdr-back, .alerts-close, .prof-edit-btn,
   .qty-pick-btn,
   .btn-call, .btn-details, .add-cart-btn, .call-now-btn, .cart-checkout-btn, .call-seller-btn {
@@ -4799,7 +4938,7 @@ export const appCss = `
   .pcard:active, .module-btn:active,
   .add-btn:active, .post-btn:active,
   .ntab:active, .signout-btn:active,
-  .cat-tab:active, .var-tab:active, .crop-pick:active,
+  .cat-tab:active, .var-tab:active,
   .hdr-back:active, .alerts-close:active,
   .prof-edit-btn:active, .qty-pick-btn:active,
   .btn-call:active, .btn-details:active,
@@ -4809,7 +4948,7 @@ export const appCss = `
   /* Scale is proportional, so the same ratio reads as more movement the wider
      the element gets. Big surfaces take less; a 40px disc takes the most. */
   .pcard:active, .module-btn:active,
-  .cat-tab:active, .crop-pick:active { transform: scale(0.975); }
+  .cat-tab:active { transform: scale(0.975); }
   .var-tab:active,
   .add-btn:active, .post-btn:active, .signout-btn:active,
   .btn-call:active, .btn-details:active, .add-cart-btn:active, .call-now-btn:not(:disabled):active,

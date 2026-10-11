@@ -3,10 +3,11 @@ import { ShoppingCart, Plus, Minus, X, Check, Search, Pencil, Trash2, ChevronRig
 import { haptic } from "../lib/platform";
 import { useLang, translations } from "../i18n";
 import { UserRole, CartItem, SellerDetail, TradeIntent, Listing } from "../types";
-import { CROP_FILTER_MAP, CROP_FAMILIES, ALL_RICE_NAMES, RICE_VARIETY_LIST, familyCropNames, FAMILY_GROUPS, CROP_GROUPS, RICE_VARIETIES } from "../data/crops";
+import { CROP_FILTER_MAP, CROP_FAMILIES, ALL_RICE_NAMES, RICE_VARIETY_LIST, familyCropNames, FAMILY_GROUPS, CROP_GROUPS, RICE_VARIETIES, CROPS, CROP_GROUP_BY_ID } from "../data/crops";
 import { Hdr } from "../components/layout/Hdr";
 import { CropIcon } from "../components/icons";
 import { cropPhotoFor, cropGroupPhoto } from "../data/cropPhotos";
+import { GROW_ART } from "../data/growArt";
 import marketPoster from "../assets/anisense-poster-market.webp";
 import sellPoster from "../assets/farmer-market-poster.webp";
 import { CropEmoji } from "../components/icons/CropEmoji";
@@ -70,6 +71,14 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
   const [editId, setEditId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [formError, setFormError] = useState("");
+  // The post form's field that needs an answer: its message sits under it,
+  // and the form scrolls to it. (formError is for the server's answer, said
+  // over the Post button where the farmer is looking.)
+  const [bad, setBad] = useState<null | "price" | "kg" | "desc" | "loc">(null);
+  const priceRef = useRef<HTMLInputElement>(null);
+  const kgRef = useRef<HTMLInputElement>(null);
+  const descRef = useRef<HTMLTextAreaElement>(null);
+  const locRef = useRef<HTMLDivElement>(null);
   // A post or an edit on its way to the server: the button says so and
   // can't be pressed twice.
   const [saving, setSaving] = useState(false);
@@ -292,6 +301,7 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
     setForm({ crop: "Special Rice", variety: "", desc: "", pricePerKg: "", kg: "", location: homeTown, photo: null });
     setPhotoState("idle");
     setFormError("");
+    setBad(null);
     setShowModal(true);
   };
 
@@ -318,18 +328,32 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
     setForm({ crop: l.crop, variety: l.variety, desc: l.desc, pricePerKg: String(l.pricePerKg), kg: String(l.kg), location: l.location, photo: l.photo ?? null });
     setPhotoState("idle");
     setFormError("");
+    setBad(null);
     setShowModal(true);
+  };
+
+  // A field that needs an answer: say so under it, bring it into view and
+  // put the cursor in it (the keyboard comes up for a number or the words).
+  const askFor = (field: "price" | "kg" | "desc" | "loc") => {
+    setBad(field);
+    haptic.warn();
+    const el = { price: priceRef, kg: kgRef, desc: descRef, loc: locRef }[field].current;
+    const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el?.scrollIntoView({ block: "center", behavior: still ? "auto" : "smooth" });
+    (field === "loc" ? el?.querySelector("button") : el)?.focus({ preventScroll: true });
   };
 
   const saveForm = async () => {
     if (saving) return;
-    if (!form.desc.trim()) { setFormError(t("err_desc_required")); return; }
-    if (!form.pricePerKg || isNaN(Number(form.pricePerKg)) || Number(form.pricePerKg) <= 0) { setFormError(t("err_valid_price")); return; }
-    if (!form.kg || isNaN(Number(form.kg)) || Number(form.kg) <= 0) { setFormError(t("err_valid_qty")); return; }
-    if (!form.location.trim()) { setFormError(t("err_loc_required")); return; }
+    setFormError("");
+    const positive = (v: string) => !!v && !isNaN(Number(v)) && Number(v) > 0;
+    if (!positive(form.pricePerKg)) return askFor("price");
+    if (!positive(form.kg)) return askFor("kg");
+    if (!form.desc.trim()) return askFor("desc");
+    if (!form.location.trim()) return askFor("loc");
 
     setSaving(true);
-    setFormError("");
+    setBad(null);
     try {
       await market.saveListing(editId, {
         crop: form.crop, variety: form.variety, desc: form.desc,
@@ -754,7 +778,12 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
         </div>
       </Sheet>
 
-      {/* Post / Edit listing modal, senior-friendly */}
+      {/* Post / Edit listing. Four short sections, each a card: what it is,
+          its price and amount, a photo, and the words and the town. The
+          header and the Post button stay put while the form scrolls between
+          them, so closing and posting are always one tap away, and the
+          button carries what the listing comes to. A missing answer is said
+          under its own field, which the form scrolls to. */}
       {(() => {
         // Crop types and their varieties, straight from the price list. The
         // form kept its own copy, which never learnt about ampalaya or
@@ -772,9 +801,16 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
         // An existing listing may name its type ("Onions") rather than a
         // variety, so match either before falling back to the first.
         const selectedGroup = CROP_GROUPS_PICKER.find(g => g.varieties.includes(form.crop) || g.label === form.crop) || CROP_GROUPS_PICKER[0];
-        const fieldStyle: React.CSSProperties = { width: "100%", border: "2px solid var(--line-strong)", borderRadius: 12, padding: "16px 14px", fontFamily: "inherit", fontSize: "var(--fs-body)", outline: "none", background: "#fff", color: "var(--text)", boxSizing: "border-box" };
-        const labelStyle: React.CSSProperties = { fontSize: "var(--fs-body)", fontWeight: 800, color: "var(--text-soft)", marginBottom: 8, display: "block" };
-        const hintStyle: React.CSSProperties = { fontSize: "var(--fs-label)", color: "var(--text-muted)", marginBottom: 10, fontWeight: 500 };
+        // Today's price for this variety, from the same list as Prices: a
+        // place to start from, one tap to use.
+        const marketKg = (CROPS.find(c => c.name === form.crop) ?? CROPS.find(c => CROP_GROUP_BY_ID[c.id] === form.crop))?.pricePerKg;
+        const priceN = Number(form.pricePerKg), kgN = Number(form.kg);
+        const total = priceN > 0 && kgN > 0 ? priceN * kgN : 0;
+        // Numbers only, one decimal point, centavos at most.
+        const decimal = (v: string) => v.replace(/[^\d.]/g, "").replace(/(\..*)\./g, "$1").replace(/^(\d*\.\d{0,2}).*$/, "$1");
+        const errLine = (field: NonNullable<typeof bad>, key: Parameters<typeof t>[0]) => bad === field && (
+          <p className="pl-err" id={`pl-${field}-err`} role="alert"><AlertTriangle size={16} strokeWidth={2.4} aria-hidden="true" /> {t(key)}</p>
+        );
 
         return (
           <Sheet
@@ -783,187 +819,180 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
             className="post-sheet modal-sheet"
             label={editId ? t("trade_edit_listing") : t("trade_post_title")}
           >
-            <>
-              {/* Header */}
-              <div style={{ background: "var(--tanim)", borderRadius: "24px 24px 0 0", padding: "20px 20px 18px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div>
-                  <div style={{ fontSize: "var(--fs-lead)", fontWeight: 900, color: "#fff" }}>{editId ? `✏️ ${t("trade_edit_listing")}` : t("trade_post_title")}</div>
-                  <div style={{ fontSize: "var(--fs-label)", color: "rgba(255,255,255,0.8)", marginTop: 3 }}>{editId ? t("trade_edit_listing_sub") : t("trade_post_sub")}</div>
-                </div>
-                <button className="sheet-x" onClick={() => setShowModal(false)} aria-label={t("close")}>✕</button>
+            <header className="pl-head">
+              <img className="pl-mark" src={leafMask} alt="" aria-hidden="true" />
+              <div className="pl-head-txt">
+                <h2 className="pl-title">{editId ? t("trade_edit_listing") : t("trade_post_title")}</h2>
+                <p className="pl-sub">{editId ? t("trade_edit_listing_sub") : t("trade_post_sub")}</p>
               </div>
+              <button type="button" className="pl-x" onClick={() => setShowModal(false)} aria-label={t("close")}>
+                <X size={22} strokeWidth={2.4} />
+              </button>
+            </header>
 
-              <div style={{ padding: "20px 20px 0" }}>
-
-                {formError && (
-                  <div style={{ background: "var(--error-sk)", color: "var(--error)", fontSize: "var(--fs-body)", fontWeight: 700, padding: "14px 16px", borderRadius: 12, marginBottom: 18, display: "flex", alignItems: "center", gap: 8 }}>
-                    <AlertTriangle size={18} color="var(--error)" /> {formError}
+            <div className="pl-body">
+              {/* 1 ── What: the crop as its drawing, then its variety. */}
+              <section className="pl-sec" aria-labelledby="pl-what">
+                <h3 className="pl-sec-t" id="pl-what"><span className="pl-n" aria-hidden="true">1</span>{t("pl_sec_what")}</h3>
+                {POST_FAMILIES.map(f => (
+                  <div className="pl-fam" key={f.family}>
+                    <div className="pl-fam-t">{t(`fam_${f.family.toLowerCase()}` as "fam_crops")}</div>
+                    <div className="pl-crops">
+                      {f.groups.map(g => {
+                        const on = selectedGroup.label === g.label;
+                        const pic = GROW_ART[g.label] ?? cropGroupPhoto(g.label);
+                        return (
+                          <button key={g.label} type="button" className={`pl-crop${on ? " on" : ""}`} aria-pressed={on}
+                            onClick={() => { haptic.select(); if (!on) setForm(d => ({ ...d, crop: g.varieties[0] })); }}>
+                            <span className="pl-crop-pic">
+                              {pic ? <img src={pic} alt="" decoding="async" draggable={false} /> : <CropIcon crop={g.label} size={26} />}
+                            </span>
+                            <span className="pl-crop-n">{tn(g.label)}</span>
+                            <span className="pl-tick" aria-hidden="true"><Check size={12} strokeWidth={3.6} /></span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+                {/* A crop sold in one variety isn't asked about. */}
+                {selectedGroup.varieties.length > 1 && (
+                  <div className="pl-varieties" key={selectedGroup.label}>
+                    <div className="pl-lbl" id="pl-variety">{t("trade_step_variety")}</div>
+                    <div className="pl-chips" role="group" aria-labelledby="pl-variety">
+                      {selectedGroup.varieties.map(v => {
+                        const on = form.crop === v;
+                        return (
+                          <button key={v} type="button" className={`pl-chip${on ? " on" : ""}`} aria-pressed={on}
+                            onClick={() => { haptic.select(); setForm(d => ({ ...d, crop: v })); }}>
+                            {on && <Check size={16} strokeWidth={3} aria-hidden="true" />}{tn(v)}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
+              </section>
 
-                {/* ── Step 1: Crop Group ── */}
-                <div style={{ background: "#fff", borderRadius: 16, padding: 18, marginBottom: 14, border: "1px solid var(--line)" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                    <div style={{ background: "var(--tanim)", color: "#fff", borderRadius: 99, width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--fs-label)" }}>1</div>
-                    <span style={{ fontSize: "var(--fs-body)", fontWeight: 800, color: "var(--text)" }}>{t("trade_step_type")}</span>
+              {/* 2 ── Price and amount: big numbers, the units in the field. */}
+              <section className="pl-sec" aria-labelledby="pl-money">
+                <h3 className="pl-sec-t" id="pl-money"><span className="pl-n" aria-hidden="true">2</span>{t("pl_sec_price")}</h3>
+                <div className="pl-group">
+                  <label className="pl-lbl" htmlFor="pl-price">{t("trade_step_price")}</label>
+                  <div className={`pl-field${bad === "price" ? " bad" : ""}`} onClick={() => priceRef.current?.focus()}>
+                    <span className="pl-pre" aria-hidden="true">₱</span>
+                    <input id="pl-price" ref={priceRef} type="text" inputMode="decimal" autoComplete="off" maxLength={9}
+                      placeholder="48"
+                      value={form.pricePerKg} aria-invalid={bad === "price" || undefined}
+                      aria-describedby={[marketKg ? "pl-market" : "", bad === "price" ? "pl-price-err" : ""].filter(Boolean).join(" ") || undefined}
+                      onChange={e => { setForm(d => ({ ...d, pricePerKg: decimal(e.target.value) })); if (bad === "price") setBad(null); }} />
+                    <span className="pl-suf" aria-hidden="true">/kg</span>
                   </div>
-                  <div style={{ fontSize: "var(--fs-label)", color: "var(--text-muted)", marginBottom: 14 }}>{t("trade_step_type_sub")}</div>
-                  {POST_FAMILIES.map(f => (
-                    <div className="crop-pick-fam" key={f.family}>
-                      <div className="crop-pick-fam-t">{t(`fam_${f.family.toLowerCase()}`)}</div>
-                      <div className="crop-pick-grid">
-                        {f.groups.map(g => {
-                          const on = selectedGroup.label === g.label;
-                          const photo = cropGroupPhoto(g.label);
-                          return (
-                            <button key={g.label} type="button" className={`crop-pick ${on ? "on" : ""}`} aria-pressed={on}
-                              onClick={() => { haptic.select(); setForm(d => ({ ...d, crop: g.varieties[0] })); }}>
-                              <span className="crop-pick-photo">
-                                {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropEmoji crop={g.label} size={26} />}
-                                {on && <span className="crop-pick-tick" aria-hidden="true"><Check size={13} strokeWidth={3.4} /></span>}
-                              </span>
-                              <span className="crop-pick-lbl">{tn(g.label)}</span>
-                            </button>
-                          );
-                        })}
-                      </div>
+                  {errLine("price", "err_valid_price")}
+                  {marketKg ? (
+                    <div className="pl-market" id="pl-market">
+                      <span>{t("pl_market_today")} <b>{peso(marketKg)}/kg</b></span>
+                      {priceN !== marketKg && (
+                        <button type="button" className="pl-use" onClick={() => { haptic.select(); setForm(d => ({ ...d, pricePerKg: String(marketKg) })); if (bad === "price") setBad(null); }}>
+                          {t("pl_use")} {peso(marketKg)}
+                        </button>
+                      )}
                     </div>
-                  ))}
+                  ) : null}
                 </div>
-
-                {/* ── Step 2: Variety ── */}
-                <div style={{ background: "#fff", borderRadius: 16, padding: 18, marginBottom: 14, border: "1px solid var(--line)" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                    <div style={{ background: "var(--tanim)", color: "#fff", borderRadius: 99, width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--fs-label)" }}>2</div>
-                    <span style={{ fontSize: "var(--fs-body)", fontWeight: 800, color: "var(--text)" }}>{t("trade_step_variety")}</span>
+                <div className="pl-group">
+                  <label className="pl-lbl" htmlFor="pl-kg">{t("trade_step_qty")}</label>
+                  <div className={`pl-field${bad === "kg" ? " bad" : ""}`} onClick={() => kgRef.current?.focus()}>
+                    <input id="pl-kg" ref={kgRef} type="text" inputMode="decimal" autoComplete="off" maxLength={9}
+                      placeholder="500"
+                      value={form.kg} aria-invalid={bad === "kg" || undefined} aria-describedby={bad === "kg" ? "pl-kg-err" : undefined}
+                      onChange={e => { setForm(d => ({ ...d, kg: decimal(e.target.value) })); if (bad === "kg") setBad(null); }} />
+                    <span className="pl-suf" aria-hidden="true">kg</span>
                   </div>
-                  <div style={{ fontSize: "var(--fs-label)", color: "var(--text-muted)", marginBottom: 14 }}>{t("trade_step_variety_sub")}</div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                    {selectedGroup.varieties.map(v => {
-                      const isActive = form.crop === v;
-                      return (
-                        <button key={v} onClick={() => setForm(d => ({ ...d, crop: v }))}
-                          style={{ background: isActive ? "var(--tanim)" : "var(--paper-alt)", color: isActive ? "#fff" : "var(--text-soft)", border: "none", borderRadius: 99, padding: "10px 16px", fontFamily: "inherit", fontSize: "var(--fs-label)", fontWeight: 700, cursor: "pointer" }}>
-                          {v}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  {errLine("kg", "err_valid_qty")}
                 </div>
+              </section>
 
-                {/* ── Step 3: Photo ──
-                    Optional, and placed early: it's what buyers look at first.
-                    One big target to add; once there, a preview with Change
-                    and Remove underneath. */}
-                <div style={{ background: "#fff", borderRadius: 16, padding: 18, marginBottom: 14, border: "1px solid var(--line)" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                    <div style={{ background: "var(--tanim)", color: "#fff", borderRadius: 99, width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--fs-label)" }}>3</div>
-                    <span style={{ fontSize: "var(--fs-body)", fontWeight: 800, color: "var(--text)" }}>{t("mp_step_photo")}</span>
-                  </div>
-                  <div style={hintStyle}>{t("mp_step_photo_sub")}</div>
-                  <input ref={photoInput} type="file" accept="image/*" hidden
-                    onChange={e => { pickListingPhoto(e.target.files?.[0]); e.target.value = ""; }} />
-                  {form.photo ? (
-                    <div className="mp-photo-pick has">
-                      <img src={form.photo} alt="" className="mp-photo-preview" key={form.photo} />
-                      <div className="mp-photo-row">
-                        <button type="button" className="btn-details" onClick={() => photoInput.current?.click()}>
-                          <Camera size={17} strokeWidth={2.2} /> {t("mp_change_photo")}
-                        </button>
-                        <button type="button" className="btn-details mp-danger" onClick={() => setForm(d => ({ ...d, photo: null }))}>
-                          <ImageOff size={17} strokeWidth={2.2} /> {t("mp_remove_photo")}
-                        </button>
-                      </div>
+              {/* 3 ── Photo: optional, and what buyers look at first. One
+                  big target to add; once there, a preview with Change and
+                  Remove underneath. */}
+              <section className="pl-sec" aria-labelledby="pl-photo">
+                <h3 className="pl-sec-t" id="pl-photo"><span className="pl-n" aria-hidden="true">3</span>{t("mp_step_photo")}<span className="pl-opt">{t("pl_optional")}</span></h3>
+                <p className="pl-hint">{t("mp_step_photo_sub")}</p>
+                <input ref={photoInput} type="file" accept="image/*" hidden
+                  onChange={e => { pickListingPhoto(e.target.files?.[0]); e.target.value = ""; }} />
+                {form.photo ? (
+                  <div className="mp-photo-pick has">
+                    <img src={form.photo} alt="" className="mp-photo-preview" key={form.photo} />
+                    <div className="mp-photo-row">
+                      <button type="button" className="btn-details" onClick={() => photoInput.current?.click()}>
+                        <Camera size={17} strokeWidth={2.2} /> {t("mp_change_photo")}
+                      </button>
+                      <button type="button" className="btn-details mp-danger" onClick={() => setForm(d => ({ ...d, photo: null }))}>
+                        <ImageOff size={17} strokeWidth={2.2} /> {t("mp_remove_photo")}
+                      </button>
                     </div>
-                  ) : (
-                    <button type="button" className="mp-photo-drop" onClick={() => photoInput.current?.click()} disabled={photoState === "working"}>
-                      {photoState === "working"
-                        ? <><span className="wid-spin mp-spin" aria-hidden="true" /> {t("mp_photo_working")}</>
-                        : <><span className="mp-photo-ico"><Camera size={26} strokeWidth={2} /></span>{t("mp_add_photo")}</>}
-                    </button>
-                  )}
-                  {photoState === "failed" && (
-                    <p className="mp-photo-err" role="alert"><AlertTriangle size={16} /> {t("mp_photo_failed")}</p>
-                  )}
-                </div>
+                  </div>
+                ) : (
+                  <button type="button" className="mp-photo-drop" onClick={() => photoInput.current?.click()} disabled={photoState === "working"}>
+                    {photoState === "working"
+                      ? <><span className="wid-spin mp-spin" aria-hidden="true" /> {t("mp_photo_working")}</>
+                      : <><span className="mp-photo-ico"><Camera size={26} strokeWidth={2} /></span>{t("mp_add_photo")}</>}
+                  </button>
+                )}
+                {photoState === "failed" && (
+                  <p className="mp-photo-err" role="alert"><AlertTriangle size={16} /> {t("mp_photo_failed")}</p>
+                )}
+              </section>
 
-                {/* ── Step 4: Price ── */}
-                <div style={{ background: "#fff", borderRadius: 16, padding: 18, marginBottom: 14, border: "1px solid var(--line)" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                    <div style={{ background: "var(--tanim)", color: "#fff", borderRadius: 99, width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--fs-label)" }}>4</div>
-                    <span style={{ fontSize: "var(--fs-body)", fontWeight: 800, color: "var(--text)" }}>{t("trade_step_price")}</span>
-                  </div>
-                  <div style={hintStyle}>{t("trade_step_price_sub")}</div>
-                  <div style={{ position: "relative" }}>
-                    <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", fontSize: "var(--fs-lead)", fontWeight: 900, color: "var(--tanim)" }}>₱</span>
-                    <input type="number" inputMode="numeric" placeholder={t("trade_ph_price")}
-                      value={form.pricePerKg}
-                      onChange={e => setForm(d => ({ ...d, pricePerKg: e.target.value }))}
-                      style={{ ...fieldStyle, paddingLeft: 36 }} />
-                  </div>
+              {/* 4 ── The words and the town. */}
+              <section className="pl-sec" aria-labelledby="pl-about">
+                <h3 className="pl-sec-t" id="pl-about"><span className="pl-n" aria-hidden="true">4</span>{t("pl_sec_about")}</h3>
+                <div className="pl-group">
+                  <label className="pl-lbl" htmlFor="pl-desc">{t("trade_step_desc")}</label>
+                  <p className="pl-hint" id="pl-desc-hint">{t("trade_step_desc_sub")}</p>
+                  <textarea id="pl-desc" ref={descRef} className={`pl-area${bad === "desc" ? " bad" : ""}`} rows={3}
+                    placeholder={t("trade_ph_desc")} value={form.desc} aria-invalid={bad === "desc" || undefined}
+                    aria-describedby={bad === "desc" ? "pl-desc-hint pl-desc-err" : "pl-desc-hint"}
+                    onChange={e => { setForm(d => ({ ...d, desc: e.target.value })); if (bad === "desc") setBad(null); }} />
+                  {errLine("desc", "err_desc_required")}
                 </div>
-
-                {/* ── Step 5: Quantity ── */}
-                <div style={{ background: "#fff", borderRadius: 16, padding: 18, marginBottom: 14, border: "1px solid var(--line)" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                    <div style={{ background: "var(--tanim)", color: "#fff", borderRadius: 99, width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--fs-label)" }}>5</div>
-                    <span style={{ fontSize: "var(--fs-body)", fontWeight: 800, color: "var(--text)" }}>{t("trade_step_qty")}</span>
-                  </div>
-                  <div style={hintStyle}>{t("trade_step_qty_sub")}</div>
-                  <div style={{ position: "relative" }}>
-                    <input type="number" inputMode="numeric" placeholder={t("trade_ph_qty")}
-                      value={form.kg}
-                      onChange={e => setForm(d => ({ ...d, kg: e.target.value }))}
-                      style={fieldStyle} />
-                    <span style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", fontSize: "var(--fs-body)", fontWeight: 700, color: "var(--text-muted)" }}>kg</span>
-                  </div>
-                </div>
-
-                {/* ── Step 6: Description ── */}
-                <div style={{ background: "#fff", borderRadius: 16, padding: 18, marginBottom: 14, border: "1px solid var(--line)" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                    <div style={{ background: "var(--tanim)", color: "#fff", borderRadius: 99, width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--fs-label)" }}>6</div>
-                    <span style={{ fontSize: "var(--fs-body)", fontWeight: 800, color: "var(--text)" }}>{t("trade_step_desc")}</span>
-                  </div>
-                  <div style={hintStyle}>{t("trade_step_desc_sub")}</div>
-                  <textarea placeholder={t("trade_ph_desc")}
-                    value={form.desc}
-                    onChange={e => setForm(d => ({ ...d, desc: e.target.value }))}
-                    rows={3}
-                    style={{ ...fieldStyle, resize: "none", lineHeight: 1.6 }} />
-                </div>
-
-                {/* ── Step 7: Location ── */}
-                <div style={{ background: "#fff", borderRadius: 16, padding: 18, marginBottom: 22, border: "1px solid var(--line)" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                    <div style={{ background: "var(--tanim)", color: "#fff", borderRadius: 99, width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--fs-label)" }}>7</div>
-                    <span style={{ fontSize: "var(--fs-body)", fontWeight: 800, color: "var(--text)" }}>{t("trade_step_loc")}</span>
-                  </div>
-                  <div style={hintStyle}>{t("trade_step_loc_sub")}</div>
+                <div className="pl-group">
+                  <div className="pl-lbl">{t("trade_step_loc")}</div>
+                  <p className="pl-hint">{t("trade_step_loc_sub")}</p>
                   {/* Picked, not typed: free text gave "Talavera", "talavera
                       n.e." and "Brgy. San Ricardo" for one place, and buyers'
                       "Near you" and new-harvest alerts match on the town's
                       exact name. The same searchable list as sign-up. */}
-                  <PickerField
-                    title={t("farm_municipality_lbl")}
-                    placeholder={t("farm_pick_municipality")}
-                    value={form.location}
-                    options={homeTowns}
-                    onChange={v => { setForm(d => ({ ...d, location: v })); setFormError(""); }}
-                  />
+                  <div ref={locRef} className={`pl-pick${bad === "loc" ? " bad" : ""}`}>
+                    <PickerField
+                      title={t("farm_municipality_lbl")}
+                      placeholder={t("farm_pick_municipality")}
+                      value={form.location}
+                      options={homeTowns}
+                      onChange={v => { setForm(d => ({ ...d, location: v })); setFormError(""); if (bad === "loc") setBad(null); }}
+                    />
+                  </div>
+                  {errLine("loc", "err_loc_required")}
                 </div>
+              </section>
+            </div>
 
-                {/* ── Action Buttons ── */}
-                <div style={{ display: "flex", gap: 12 }}>
-                  <button className="btn-secondary" onClick={() => setShowModal(false)} style={{ flex: 1 }}>
-                    ← {t("back")}
-                  </button>
-                  <button className="btn-primary" onClick={saveForm} disabled={saving} aria-busy={saving} style={{ flex: 2 }}>
-                    {saving ? t("trade_posting") : editId ? t("save_changes") : t("trade_post_now")}
-                  </button>
+            {/* What it comes to, then Post: held at the foot of the sheet. */}
+            <footer className="pl-foot">
+              {total > 0 && (
+                <div className="pl-sum">
+                  <span className="pl-sum-what">{tn(form.crop)}, {kgN.toLocaleString()} kg × {peso(priceN)}</span>
+                  <span className="pl-sum-total">{peso(total)}</span>
                 </div>
-              </div>
-            </>
+              )}
+              {formError && (
+                <p className="pl-err pl-err-save" role="alert"><AlertTriangle size={17} strokeWidth={2.4} aria-hidden="true" /> {formError}</p>
+              )}
+              <button type="button" className="btn-primary pl-post" onClick={saveForm} disabled={saving} aria-busy={saving}>
+                {saving ? t("trade_posting") : editId ? t("save_changes") : t("trade_post_now")}
+              </button>
+            </footer>
           </Sheet>
         );
       })()}
