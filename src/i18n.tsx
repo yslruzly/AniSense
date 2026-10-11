@@ -294,7 +294,8 @@ export const translations: Dict = {
 
   // Farmer Home: their own listings.
   fh_title: { en: "Your harvest", tl: "Ang ani mo" },
-  fh_summary: { en: "listed across {n} · {kg} kg on sale", tl: "nakalista sa {n} · {kg} kilo ang benta" },
+  fh_worth: { en: "If it all sells at your prices", tl: "Kung mabenta lahat sa presyo mo" },
+  fh_summary: { en: "{n} · {kg} kg on sale", tl: "{n} · {kg} kilo ang benta" },
   fh_listing_one: { en: "1 listing", tl: "1 listing" },
   fh_listings_n: { en: "{n} listings", tl: "{n} listing" },
   fh_left: { en: "kg left", tl: "kilo ang natitira" },

@@ -2855,70 +2855,127 @@ export const appCss = `
     .pa-x:active, .pa-add:active, .pa-step button:active { transform: none; }
   }
 
-  /* Your harvest: the farmer's listings on Home. Green, because on this
-     page green is what grows; the money figure here is the harvest's worth,
-     not a cost. */
+  /* Your harvest: the farmer's listings on Home, and the one block on the
+     page about their business. On the AniSense green, as Biggest moves and
+     the Prices card are: deep and quiet, lit warm from one corner, a
+     hairline of light along the top, the leaf faint off the corner. The
+     figure is the headline, said in words above it (what it all comes to if
+     it sells at their prices), with the peso sign in palay, the money
+     accent on dark. Their listings sit on a white panel inside, where the
+     market comparison's green and amber were chosen to be read. */
   .fh {
-    margin-top: 14px; padding: 18px 16px 16px; border-radius: var(--radius);
-    background-image: linear-gradient(180deg, #E8F3EC 0%, #FFFFFF 46%);
-    box-shadow: inset 0 0 0 1px rgba(11,107,65,.16), 0 14px 30px -22px rgba(22,33,27,.35);
+    position: relative; overflow: hidden; isolation: isolate;
+    padding: 18px 16px 16px; border-radius: var(--radius-lg); color: #fff;
+    background:
+      radial-gradient(90% 70% at 100% 0%, rgba(242,179,44,.18), transparent 60%),
+      linear-gradient(160deg, #145E3F 0%, #0E4630 55%, #0A3525 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.1), inset 0 0 0 1px rgba(255,255,255,.05), 0 20px 36px -24px rgba(8,42,29,.75);
   }
-  .fh-total {
-    font-family: var(--font-display); font-size: 34px; font-weight: 800; line-height: 1.05;
-    letter-spacing: -.025em; color: var(--text);
+  .fh-mark {
+    position: absolute; right: -34px; top: -30px; z-index: -1; width: 170px; height: auto;
+    opacity: .1; transform: rotate(-14deg); pointer-events: none; user-select: none;
   }
-  .fh-summary { margin: 5px 0 0; font-size: 15px; color: var(--text-muted); }
+  .fh-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 36px; padding: 0 2px; }
+  .fh-title { margin: 0; font-family: var(--font-display); font-size: 18px; font-weight: 700; letter-spacing: -.01em; color: #fff; }
+  /* "Marketplace": a pill of light on the green, as on Biggest moves. */
+  .fh .hm-link { background: rgba(255,255,255,.12); color: #fff; box-shadow: inset 0 0 0 1px rgba(255,255,255,.16); }
+  .fh .hm-link:active { background: rgba(255,255,255,.22); }
 
-  .fh-list { list-style: none; margin: 14px 0 0; padding: 0; }
-  .fh-list > li + li { border-top: 1px solid var(--line); }
+  .fh-figure { margin-top: 14px; padding: 0 2px; }
+  .fh-label { display: block; font-size: 14px; font-weight: 600; line-height: 1.3; color: rgba(255,255,255,.74); }
+  /* Proportional figures at this size (tabular digits look loose), tight
+     tracking as the type grows; the peso sign smaller, raised to the cap
+     line, in palay. */
+  .fh-total {
+    margin-top: 4px; font-family: var(--font-display); font-size: 40px; font-weight: 800; line-height: 1.05;
+    letter-spacing: -.03em; color: #fff;
+  }
+  .fh-cur { font-size: .62em; font-weight: 700; letter-spacing: 0; color: var(--palay); vertical-align: .42em; margin-right: 3px; }
+  .fh-summary { margin: 6px 0 0; font-size: 14.5px; line-height: 1.35; color: rgba(255,255,255,.76); font-variant-numeric: tabular-nums; }
+
+  /* The white panel: the card's own corners, one size in. */
+  .fh-panel {
+    margin: 16px 0 0; padding: 4px 12px; border-radius: 18px; background: var(--card); color: var(--text);
+    box-shadow: 0 1px 0 rgba(255,255,255,.08), 0 10px 22px -16px rgba(0,0,0,.6);
+  }
+  .fh-list { list-style: none; }
+  /* Rules between rows start where the words do, not under the pictures. */
+  .fh-list > li { position: relative; }
+  .fh-list > li + li::before { content: ""; position: absolute; top: 0; left: 64px; right: 0; height: 1px; background: var(--line); }
   /* Each listing is a door to itself in the marketplace (Edit, Remove): the
      whole row is the target, the chevron says so, and the press tint runs a
-     little past the photo and the chevron so it reads as the row lighting up. */
+     little past the picture and the chevron so it reads as the row lighting up. */
+  /* On a grid: the picture and the chevron down the sides; the name and
+     the price on the first line; the kilos, then the price against the
+     market, under them across both columns, where a long Filipino line
+     wraps instead of squeezing the name. */
   .fh-row {
-    width: calc(100% + 16px); margin: 0 -8px; padding: 10px 8px;
-    display: flex; align-items: center; gap: 12px;
+    width: calc(100% + 16px); margin: 0 -8px; padding: 12px 8px;
+    display: grid; grid-template-columns: 52px minmax(0, 1fr) auto auto; column-gap: 12px; row-gap: 3px; align-items: center;
     border: none; border-radius: 12px; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer;
     transition: background-color 160ms ease;
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
   .fh-row:active { background: rgba(11,107,65,.07); transition-duration: var(--dur-press); }
   .fh-row:focus-visible { outline: 3px solid var(--tanim); outline-offset: -3px; }
-  .fh-chev { color: var(--line-strong); flex-shrink: 0; margin-left: -4px; }
+  /* The farmer's own photo fills the tile; without one, the crop's drawing
+     sits on a pale green ground, as on the sign-up tiles. */
   .fh-photo {
-    width: 46px; height: 46px; flex: 0 0 46px; border-radius: 13px; overflow: hidden;
-    display: flex; align-items: center; justify-content: center; background: var(--tanim-sk); color: var(--tanim);
+    grid-column: 1; grid-row: 1 / span 3;
+    width: 52px; height: 52px; border-radius: 14px; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    background: #EDF5EF; color: var(--tanim); box-shadow: inset 0 0 0 1px rgba(11,107,65,.08);
   }
   .fh-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .fh-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-  .fh-name { font-family: var(--font-display); font-size: 15.5px; font-weight: 700; line-height: 1.25; color: var(--text); }
-  .fh-meta { font-size: 14px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
-  .fh-end { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex-shrink: 0; }
-  .fh-price { font-family: var(--font-display); font-size: 16.5px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
+  .fh-photo.is-art img { object-fit: contain; padding: 5px; filter: drop-shadow(0 2px 2px rgba(22,33,27,.16)); }
+  .fh-name { grid-column: 2; grid-row: 1; font-family: var(--font-display); font-size: 16px; font-weight: 700; line-height: 1.25; letter-spacing: -.01em; color: var(--text); }
+  .fh-price {
+    grid-column: 3; grid-row: 1; justify-self: end; white-space: nowrap;
+    font-family: var(--font-display); font-size: 17px; font-weight: 800; line-height: 1.25; color: var(--text); font-variant-numeric: tabular-nums;
+  }
   .fh-price small { font-size: 13px; font-weight: 600; color: var(--text-muted); }
-  /* Above the market price means more per kilo for the one selling, so the
-     green sits on that side here — the mirror of the buyer's chart. */
+  .fh-chev { grid-column: 4; grid-row: 1 / span 3; color: var(--line-strong); margin-left: -4px; }
+  .fh-meta { grid-column: 2 / 4; grid-row: 2; font-size: 14px; line-height: 1.35; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+  /* The price against the market, in words with an arrow, coloured. Above
+     the market means more per kilo for the one selling, so the green sits
+     on that side here — the mirror of the buyer's chart. */
   .fh-vs {
-    display: inline-flex; align-items: center; gap: 3px; padding: 3px 9px; border-radius: 99px;
-    font-size: 13px; font-weight: 700; white-space: nowrap;
+    grid-column: 2 / 4; grid-row: 3; display: flex; align-items: flex-start; gap: 4px;
+    font-size: 13.5px; font-weight: 700; line-height: 1.35;
   }
-  .fh-vs.up { background: var(--tanim-sk); color: var(--tanim-deep); }
-  .fh-vs.down { background: #FBEBD0; color: #8A5A0B; }
-  .fh-vs.same { background: var(--paper-alt); color: var(--text-muted); }
+  .fh-vs svg { flex-shrink: 0; margin-top: 2px; }
+  .fh-vs.up { color: var(--tanim); }
+  .fh-vs.down { color: #8A5A0B; }
+  .fh-vs.same { color: var(--text-muted); }
 
-  .fh-empty { display: flex; align-items: flex-start; gap: 12px; padding-bottom: 4px; }
+  /* Nothing listed: said plainly, on the green, over the one action that
+     fixes it. */
+  .fh-empty { display: flex; align-items: flex-start; gap: 14px; margin-top: 16px; padding: 0 2px; }
   .fh-empty-ico {
-    width: 52px; height: 52px; flex: 0 0 52px; border-radius: 16px; background: #fff; color: var(--tanim);
-    display: inline-flex; align-items: center; justify-content: center; box-shadow: inset 0 0 0 1px var(--line);
+    width: 52px; height: 52px; flex: 0 0 52px; border-radius: 16px; color: var(--palay);
+    display: inline-flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,.1); box-shadow: inset 0 0 0 1px rgba(255,255,255,.14);
   }
-  .fh-empty-t { font-family: var(--font-display); font-size: 17px; font-weight: 700; color: var(--text); }
-  .fh-empty-s { margin: 3px 0 0; font-size: 14.5px; line-height: 1.45; color: var(--text-muted); }
+  .fh-empty-t { font-family: var(--font-display); font-size: 18px; font-weight: 700; line-height: 1.25; color: #fff; }
+  .fh-empty-s { margin: 4px 0 0; font-size: 14.5px; line-height: 1.45; color: rgba(255,255,255,.76); }
+  .fh-skel-panel { padding: 2px 12px; }
 
-  /* The one action on the whole page. It wears .mp-sell-btn, the app's
-     sell button, so the gradient, the lit top edge, the contact shadow and
-     the 90ms press all come from the button system; only its place on the
-     card is set here. */
-  .fh-post { margin-top: 16px; }
-  @media (prefers-reduced-motion: reduce) { .mp-sell-btn:active { transform: none; } }
+  /* The one action on the whole page, in palay: on the green, the app's
+     accent on dark, where its own green would disappear. Ink on palay is
+     8.9:1. Lit along the top like the app's other buttons; 54px, the
+     senior tap floor and the height of Sell in the marketplace. */
+  .fh-post {
+    width: 100%; min-height: 54px; margin-top: 16px; border: none; border-radius: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: linear-gradient(180deg, #F7C553 0%, var(--palay) 55%, #E3A21C 100%); color: var(--ink);
+    font-family: var(--font-display); font-size: 16px; font-weight: 700;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.4), inset 0 -1px 0 rgba(0,0,0,.08), 0 10px 20px -12px rgba(0,0,0,.6);
+    transition: transform 180ms var(--ease-out);
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .fh-post:active { transform: scale(.97); transition-duration: 90ms; }
+  .fh-post:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { .mp-sell-btn:active, .fh-post:active { transform: none; } }
 
   /* Your purchases: gold, because on this page gold means money. */
   .hm-sec-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
