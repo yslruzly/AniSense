@@ -163,28 +163,40 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
           ]} />
         )}
 
-        {/* 1 ── Greeting, farmer only. A buyer opens on the search bar and
-            the banner; the weather they need is a tool, not a headline, so
-            it lives in More tools below. */}
+        {/* 1 ── Farmers: their good morning, the date and the weather, as
+            the first of three in a banner that turns, then the same two
+            AniSense posters a buyer sees. The weather button works as usual
+            while the card is showing; a tap on a poster shows it whole. A
+            buyer opens on the search bar and the posters; the weather they
+            need is a tool, not a headline, so it lives in More tools below.
+            In this taller frame the posters sit on their left edge, where
+            their words are, so any cropping comes off the picture side. */}
         {!isBuyer && (
-          <section className="home-header" data-time={isNight ? "night" : "day"}>
-            <div className="home-greeting">{greeting}, {firstName}! 👋</div>
-            <div className="home-date">{dateStr}</div>
-            <div className="hm-hero-foot">
-              {/* Weather for both: a buyer drives out to collect what they
-                  buy, so rain is their business too. The advisory below is
-                  still farmer-only — that one is about planting. */}
-              <button className="hm-wx" onClick={() => onNavigate("weather")}>
-                {isNight ? <CloudMoon size={22} strokeWidth={2} /> : <CloudSun size={22} strokeWidth={2} />}
-                <span className="hm-wx-temp">{WEATHER_NOW.temp}°</span>
-                <span className="hm-wx-cond">{t(isNight && WEATHER_NOW.icon === "Sunny" ? "wx_cond_clear_night" : `wx_cond_${WEATHER_NOW.icon}`)}</span>
-                <ChevronRight size={18} strokeWidth={2.4} aria-hidden="true" />
-              </button>
-              {isOffline && (
-                <span className="hm-offline"><span className="hm-offline-dot" /> {t("home_offline_cached")}</span>
-              )}
-            </div>
-          </section>
+          <PosterCarousel
+            lead={{
+              label: `${greeting}, ${firstName}`,
+              node: (
+                <div className="home-header" data-time={isNight ? "night" : "day"}>
+                  <div className="home-greeting">{greeting}, {firstName}! 👋</div>
+                  <div className="home-date">{dateStr}</div>
+                  <div className="hm-hero-foot">
+                    <button className="hm-wx" onClick={() => onNavigate("weather")}>
+                      {isNight ? <CloudMoon size={22} strokeWidth={2} /> : <CloudSun size={22} strokeWidth={2} />}
+                      <span className="hm-wx-temp">{WEATHER_NOW.temp}°</span>
+                      <span className="hm-wx-cond">{t(isNight && WEATHER_NOW.icon === "Sunny" ? "wx_cond_clear_night" : `wx_cond_${WEATHER_NOW.icon}`)}</span>
+                      <ChevronRight size={18} strokeWidth={2.4} aria-hidden="true" />
+                    </button>
+                    {isOffline && (
+                      <span className="hm-offline"><span className="hm-offline-dot" /> {t("home_offline_cached")}</span>
+                    )}
+                  </div>
+                </div>
+              ),
+            }}
+            posters={[
+              { src: homePoster, alt: t("home_poster_alt"), width: 1000, height: 500, position: "0% 50%" },
+              { src: anisensePoster, alt: t("poster_alt"), width: 1200, height: 675, position: "0% 35%" },
+            ]} />
         )}
 
         {/* Farmers: their own half of the marketplace. Everything else on
@@ -299,17 +311,6 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
         {/* Farmers see the marketplace's best harvests too: what is selling,
             from whom and for how much, right under their own prices. */}
         {!isBuyer && <FeaturedProducts onShop={shop} />}
-
-        {/* The brand poster, as a mid-page break for a farmer, after the
-            marketplace's best. (A buyer sees it at the top, in the banner.)
-            A picture, not a button: the marketplace is one tab away and
-            already has its own doors on this page. The frame holds the
-            poster's shape before the image loads, so nothing below jumps. */}
-        {!isBuyer && (
-          <figure className="hm-poster">
-            <img src={anisensePoster} alt={t("poster_alt")} width={1200} height={675} loading="lazy" decoding="async" />
-          </figure>
-        )}
 
         {/* Who grows it: the trust half of a marketplace. */}
         {isBuyer && <FeaturedFarmers onShop={shop} buyerLocation={buyerLocation} />}

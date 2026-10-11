@@ -2561,10 +2561,21 @@ export const appCss = `
     opacity: 0; transition: opacity 600ms ease; pointer-events: none;
   }
   .hm-banner-slide.on { opacity: 1; }
+  /* The farmer's banner opens on their good morning (the lead card): a
+     little taller than 2:1, so a greeting on two lines, the date and the
+     weather all fit, with the dots under the weather; the card fills the
+     frame and turns with the posters, by the same cross-fade. */
+  .hm-banner.has-lead { min-height: 204px; border-radius: var(--radius-lg); box-shadow: 0 16px 34px -16px rgba(22,33,27,.45); }
+  .hm-banner-lead {
+    position: absolute; inset: 0; z-index: 1; opacity: 0; pointer-events: none;
+    transition: opacity 600ms ease;
+  }
+  .hm-banner-lead.on { opacity: 1; pointer-events: auto; }
+  .hm-banner-lead .home-header { position: absolute; inset: 0; min-height: 0; border-radius: 0; box-shadow: none; padding: 18px 20px 36px; }
   /* Where it is in the turn: a dot per poster on a small dark pill, the one
      showing drawn long and white. Each dot is a 24px target. */
   .hm-banner-dots {
-    position: absolute; z-index: 1; left: 50%; bottom: 8px; transform: translateX(-50%);
+    position: absolute; z-index: 2; left: 50%; bottom: 8px; transform: translateX(-50%);
     display: flex; padding: 0 5px; border-radius: 99px;
     background: rgba(12,22,16,.34); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
   }
@@ -2614,19 +2625,9 @@ export const appCss = `
   @media (prefers-reduced-motion: reduce) {
     .pv-img { transition: none !important; }
     .hm-banner:has(> .hm-banner-hit:active) { transform: none; }
-    .hm-banner-slide { transition-duration: 200ms; }
+    .hm-banner-slide, .hm-banner-lead { transition-duration: 200ms; }
     .hm-banner-dot::before { transition: none; }
   }
-
-  /* The brand poster. aspect-ratio reserves its exact shape up front, so
-     the page does not jump when the image arrives. */
-  /* A picture: no pointer, no press, nothing that promises a tap. */
-  .hm-poster {
-    display: block; width: 100%; margin: 0; aspect-ratio: 1000 / 562; overflow: hidden;
-    border-radius: var(--radius); background: #EAF3E6;
-    box-shadow: 0 14px 30px -20px rgba(22,33,27,.4);
-  }
-  .hm-poster img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
   /* ── Profit snapshot ────────────────────────────────────────────────────
      Two tiles and a net. Money in is green, money out is gold — the same
