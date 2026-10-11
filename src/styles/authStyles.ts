@@ -439,19 +439,28 @@ export const authCss = `
   }
   /* A soft pool of light behind the figure grounds him on the ink, so he reads
      as placed rather than pasted. */
-  /* Centred on the figure's chest (he stands flush right, about 160px wide),
+  /* Centred on the figure's chest (he stands flush right, about 190px wide),
      so the light sits behind him like a spotlight on a stage rather than
      off to one side of him. */
   .a-rolestage::before {
-    content: ""; position: absolute; right: -112px; bottom: -80px; width: 340px; height: 340px;
+    content: ""; position: absolute; right: -78px; bottom: -80px; width: 340px; height: 340px;
     border-radius: 50%;
     background: radial-gradient(closest-side, rgba(140,208,132,.3), rgba(140,208,132,.1) 55%, rgba(140,208,132,0));
   }
   /* The cast hugs the figure: it's as wide as whichever figure is on stage,
      and flush to the screen's right edge. The bubble is placed against the
      cast, so it always lands right beside his head. */
-  .a-cast { position: absolute; right: -22px; bottom: 0; height: min(100%, 250px); }
+  /* Both figures are drawn wide (Juan waving out to his side, the buyer with
+     her bag), and each is sized to the same width, about 190px, so the bubble
+     beside them has the same room on any phone. */
+  .a-cast { position: absolute; right: -22px; bottom: 0; height: min(100%, 206px); }
   .a-cast[data-fig="buyer"] { height: min(100%, 216px); }
+  /* On the narrowest phones a little shorter, so a Filipino line (the
+     longest) still fits in the bubble beside them. */
+  @media (max-width: 370px) {
+    .a-cast { height: min(100%, 180px); }
+    .a-cast[data-fig="buyer"] { height: min(100%, 190px); }
+  }
   .a-fig {
     display: block; height: 100%; width: auto;
     pointer-events: none; user-select: none;
@@ -465,12 +474,12 @@ export const authCss = `
   /* Juan in two layers, so his hand can wave. The wrapper is sized like the
      single image it replaces (the drawing's own proportions), and the two
      layers fill it exactly, one over the other. */
-  .a-fig-layers { position: relative; aspect-ratio: 400 / 633; }
+  .a-fig-layers { position: relative; aspect-ratio: 480 / 520; }
   .a-fig-layers > img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
   /* The pivot is his wrist crease, measured on the drawing. Each swing eases
      in and out like a pendulum: it is movement back and forth, not an
      entrance. Only while he is the one on stage. */
-  .a-fig-hand { transform-origin: 30.5% 74.41%; }
+  .a-fig-hand { transform-origin: 20.63% 65.92%; }
   .a-fig.on .a-fig-hand { animation: a-wave 1.6s var(--ease-io) 140ms both; }
   /* The first wave waits for the stage to rise into place. */
   .a-fig.on .a-fig-hand.is-first { animation-delay: 680ms; }
@@ -545,16 +554,13 @@ export const authCss = `
   /* Top-aligned with the figure's head and hung just off his left side, so it
      grows downward toward his face rather than up into the title. */
   .a-say {
-    position: absolute; right: calc(100% + 12px); top: 10px; z-index: 1;
-    width: max-content; max-width: 196px;
+    position: absolute; right: calc(100% + 6px); top: 10px; z-index: 1;
+    width: max-content; max-width: 176px;
     display: flex; flex-direction: column; gap: 4px;
     background: #fff; color: var(--ink); border-radius: 20px; padding: 14px 16px 15px;
     box-shadow: 0 10px 24px -10px rgba(0,0,0,.55), 0 1px 0 rgba(255,255,255,.9) inset;
     transform-origin: 100% 80%; animation: a-bubble-in 240ms var(--ease-out) both;
   }
-  /* The buyer is wider, so his bubble keeps a smaller gap and a narrower
-     measure, but never overlaps him. */
-  .a-cast[data-fig="buyer"] .a-say { right: calc(100% + 6px); max-width: 176px; }
   /* The tail points down-right, at his face. */
   .a-say::after {
     content: ""; position: absolute; right: -6px; bottom: 18px; width: 14px; height: 14px;
@@ -1112,7 +1118,7 @@ export const authCss = `
      the status and navigation bars are taken off. Never shorter than the
      bubble. */
   .a-askscene {
-    --fig-h: clamp(160px, 100dvh - 540px, 237px);
+    --fig-h: clamp(133px, 100dvh - 565px, 186px);
     flex: 0 1 var(--fig-h); min-height: min-content; margin-top: 18px;
     display: flex; align-items: flex-end; gap: 12px;
   }
@@ -1122,7 +1128,7 @@ export const authCss = `
      point lands right beside him; flush with the screen's right edge as on
      the role step. */
   .a-askfig {
-    position: relative; flex: 0 0 calc(var(--fig-h) * 400 / 633); align-self: stretch; margin-right: -22px;
+    position: relative; flex: 0 0 calc(var(--fig-h) * 480 / 520); align-self: stretch; margin-right: -22px;
     animation: a-stage-in 520ms var(--ease-out) 140ms both;
   }
   .a-askfig[data-fig="buyer"] { flex-basis: calc(var(--fig-h) * 456 / 520); }
