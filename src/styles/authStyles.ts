@@ -1046,8 +1046,18 @@ export const authCss = `
       0 1px 2px rgba(11,107,65,.12),
       0 12px 24px -14px rgba(11,107,65,.45);
   }
-  /* Emoji are artwork, not text, and deliberately off the type ramp. */
-  .a-crop-emoji { font-size: 34px; line-height: 1; display: block; }
+  /* The crop's picture: big enough to know at a glance, set on a soft shadow
+     of its own so it sits on the tile rather than floating. Picked, it lifts
+     a little with the ring and the tick: a transition, so tapping a tile on
+     and off again turns it back from wherever it is. Its edge is pulled in
+     by the drawing's own clear margin, to line up with the name below. */
+  .a-crop-pic {
+    width: 64px; height: 64px; display: block; margin: -4px 0 0 -4px; object-fit: contain;
+    filter: drop-shadow(0 5px 5px rgba(22,33,27,.16));
+    transition: transform 220ms var(--ease-out);
+    -webkit-user-drag: none; user-select: none; pointer-events: none;
+  }
+  .a-crop.on .a-crop-pic { transform: translateY(-2px) scale(1.06); }
   .a-crop-n { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-lead); line-height: 1.1; display: block; }
   .a-crop-e { font-size: var(--fs-label); color: var(--text-faint); margin-top: 3px; display: block; }
   .a-crop-tick {
@@ -1068,7 +1078,7 @@ export const authCss = `
     .a-step[data-anim] { animation: a-step-fade 200ms ease both; }
     @keyframes a-step-fade { from { opacity: 0; } to { opacity: 1; } }
     .a-hint.ok .a-hint-ico, .a-crop.on .a-crop-tick { animation: none; }
-    .a-crop-tick svg, .a-crop.on .a-crop-tick svg { transform: none; }
+    .a-crop-tick svg, .a-crop.on .a-crop-tick svg, .a-crop.on .a-crop-pic { transform: none; }
     .a-setup .pick-field:active { transform: none; }
     .a-seg:has(button.on:active) { --seg-s: 1; }
   }

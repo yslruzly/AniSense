@@ -6,7 +6,7 @@ import { UserRole, FarmDetails } from "../../types";
 import { MAIN_CROPS, familyOf } from "../../data/crops";
 import { FARM_PROVINCE, BARANGAYS_BY_MUNICIPALITY } from "../../data/locations";
 import { ISLAND_GROUPS, IslandGroup, PH_PROVINCES } from "../../data/generated/phPlaces";
-import { CropEmoji } from "../../components/icons/CropEmoji";
+import { GROW_ART } from "../../data/growArt";
 import { PickerField } from "../../components/ui/PickerField";
 import juanPeekBody from "../../assets/juan-peek-body.webp";
 import juanPeekHand from "../../assets/juan-peek-hand.webp";
@@ -1163,7 +1163,7 @@ export function AuthFormScreen({
               aria-pressed={on}
               onClick={() => { haptic.select(); toggleCrop(crop); setError(""); }}
             >
-              <CropEmoji crop={crop} size={34} />
+              <img className="a-crop-pic" src={GROW_ART[crop]} alt="" width={64} height={64} decoding="async" draggable={false} />
               <span>
                 <span className="a-crop-n">{tn(crop)}</span>
                 {/* What kind of crop it is, so the line adds something
