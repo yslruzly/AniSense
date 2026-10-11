@@ -2870,8 +2870,20 @@ export const appCss = `
   .fh-summary { margin: 5px 0 0; font-size: 15px; color: var(--text-muted); }
 
   .fh-list { list-style: none; margin: 14px 0 0; padding: 0; }
-  .fh-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; }
-  .fh-row + .fh-row { border-top: 1px solid var(--line); }
+  .fh-list > li + li { border-top: 1px solid var(--line); }
+  /* Each listing is a door to itself in the marketplace (Edit, Remove): the
+     whole row is the target, the chevron says so, and the press tint runs a
+     little past the photo and the chevron so it reads as the row lighting up. */
+  .fh-row {
+    width: calc(100% + 16px); margin: 0 -8px; padding: 10px 8px;
+    display: flex; align-items: center; gap: 12px;
+    border: none; border-radius: 12px; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer;
+    transition: background-color 160ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .fh-row:active { background: rgba(11,107,65,.07); transition-duration: var(--dur-press); }
+  .fh-row:focus-visible { outline: 3px solid var(--tanim); outline-offset: -3px; }
+  .fh-chev { color: var(--line-strong); flex-shrink: 0; margin-left: -4px; }
   .fh-photo {
     width: 46px; height: 46px; flex: 0 0 46px; border-radius: 13px; overflow: hidden;
     display: flex; align-items: center; justify-content: center; background: var(--tanim-sk); color: var(--tanim);

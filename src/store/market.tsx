@@ -311,6 +311,8 @@ export function useMarketStore({ accountId, role, name, initials }: {
   const deleteListing = async (id: string) => {
     if (live) await removeListing(id);
     setListings(ls => ls.filter(l => l.id !== id));
+    // The copy kept for offline use, without it too.
+    if (live) void refresh();
   };
 
   const placeOrder = async (lines: CartItem[]) => {

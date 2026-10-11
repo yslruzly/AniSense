@@ -195,6 +195,11 @@ export async function updateListing(id: string, form: ListingInput): Promise<voi
 /** Soft-delete, so past orders keep a valid reference. Online-only. */
 export async function removeListing(id: string): Promise<void> {
   requireOnline("Removing a listing");
-  const { error } = await supabase.from("listings").update({ status: "removed" }).eq("id", id);
+  // The row is asked back, to know it changed. The database refuses an
+  // update quietly (no error, no row) when the listing isn't this account's;
+  // without the check the listing would leave the screen, the app would say
+  // nothing, and it would be back on the next load.
+  const { data, error } = await supabase.from("listings").update({ status: "removed" }).eq("id", id).select("id");
   if (error) throw error;
+  if (!data?.length) throw new Error("The listing was not removed");
 }

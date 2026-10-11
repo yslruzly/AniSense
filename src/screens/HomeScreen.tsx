@@ -206,6 +206,7 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
           <YourHarvest
             onPost={() => shop({ post: true })}
             onOpenMarket={() => shop({})}
+            onOpen={id => shop({ listing: id })}
           />
         )}
 

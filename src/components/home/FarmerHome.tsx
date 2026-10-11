@@ -11,7 +11,8 @@ import { peso, toCents } from "../../lib/money";
 // The farmer's own half of the marketplace, on Home. Everything else on this
 // page is reading: prices, forecasts, advice. This is the one block about
 // their business — what they have on sale, what it is worth, and the button
-// to put up more.
+// to put up more. A listing here opens in the marketplace, where it can be
+// changed or removed: the farmer's own list is where they look for it.
 
 /** Today's price for the crop a listing names, so a price can be compared. */
 function marketPrice(crop: string, variety: string) {
@@ -20,9 +21,11 @@ function marketPrice(crop: string, variety: string) {
   return CROPS.find(c => CROP_GROUP_BY_ID[c.id] === crop)?.pricePerKg ?? null;
 }
 
-export function YourHarvest({ onPost, onOpenMarket }: {
+export function YourHarvest({ onPost, onOpenMarket, onOpen }: {
   onPost: () => void;
   onOpenMarket: () => void;
+  /** One of their listings, opened in the marketplace (Edit, Remove). */
+  onOpen: (id: string) => void;
 }) {
   const { t, tn } = useLang();
   const { listings, isMine, loadPhase } = useMarket();
@@ -85,24 +88,27 @@ export function YourHarvest({ onPost, onOpenMarket }: {
                 // green sits on the other side here.
                 const dir = diff > 0 ? "up" : diff < 0 ? "down" : "same";
                 return (
-                  <li key={l.id} className="fh-row">
-                    <span className="fh-photo">
-                      {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropIcon crop={l.crop} size={20} />}
-                    </span>
-                    <span className="fh-body">
-                      <span className="fh-name">{l.variety && l.variety !== l.crop ? l.variety : tn(l.crop)}</span>
-                      <span className="fh-meta">{l.kg.toLocaleString()} {t("fh_left")}</span>
-                    </span>
-                    <span className="fh-end">
-                      <span className="fh-price">{peso(l.pricePerKg)}<small>{t("per_kg_short")}</small></span>
-                      <span className={`fh-vs ${dir}`}>
-                        {dir === "up" && <ArrowUp size={13} strokeWidth={3} />}
-                        {dir === "down" && <ArrowDown size={13} strokeWidth={3} />}
-                        {dir === "same"
-                          ? t("fh_at")
-                          : `${peso(Math.abs(diff))} ${dir === "up" ? t("fh_above") : t("fh_below")}`}
+                  <li key={l.id}>
+                    <button type="button" className="fh-row" onClick={() => onOpen(l.id)}>
+                      <span className="fh-photo">
+                        {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropIcon crop={l.crop} size={20} />}
                       </span>
-                    </span>
+                      <span className="fh-body">
+                        <span className="fh-name">{l.variety && l.variety !== l.crop ? l.variety : tn(l.crop)}</span>
+                        <span className="fh-meta">{l.kg.toLocaleString()} {t("fh_left")}</span>
+                      </span>
+                      <span className="fh-end">
+                        <span className="fh-price">{peso(l.pricePerKg)}<small>{t("per_kg_short")}</small></span>
+                        <span className={`fh-vs ${dir}`}>
+                          {dir === "up" && <ArrowUp size={13} strokeWidth={3} />}
+                          {dir === "down" && <ArrowDown size={13} strokeWidth={3} />}
+                          {dir === "same"
+                            ? t("fh_at")
+                            : `${peso(Math.abs(diff))} ${dir === "up" ? t("fh_above") : t("fh_below")}`}
+                        </span>
+                      </span>
+                      <ChevronRight size={18} strokeWidth={2.4} className="fh-chev" aria-hidden="true" />
+                    </button>
                   </li>
                 );
               })}
