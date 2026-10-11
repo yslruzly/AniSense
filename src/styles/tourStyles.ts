@@ -101,7 +101,7 @@ export const tourCss = `
     100% { opacity: 0; }
   }
   /* The pivot is the wrist crease, measured on the drawing. */
-  .tm-hand { transform-origin: 21.13% 53.48%; }
+  .tm-hand { transform-origin: 14.47% 61.55%; }
   .tour[data-open] .tm-hand { animation: tm-wave 1.7s var(--ease-io) 560ms both; }
   @keyframes tm-wave {
     0%   { transform: rotate(0deg); }
