@@ -5,6 +5,10 @@ import mascotBody from "../../assets/mascot-wave-body.webp";
 import mascotHand from "../../assets/mascot-wave-hand.webp";
 import mascotEyes from "../../assets/mascot-wave-eyes.webp";
 import mascotMouth from "../../assets/mascot-wave-mouth.webp";
+import buyerBody from "../../assets/buyer-wave-body.webp";
+import buyerHand from "../../assets/buyer-wave-hand.webp";
+import buyerEyes from "../../assets/buyer-wave-eyes.webp";
+import buyerMouth from "../../assets/buyer-wave-mouth.webp";
 import mascotThumbs from "../../assets/mascot-thumbs.webp";
 import mascotThumbsEyes from "../../assets/mascot-thumbs-eyes.webp";
 import { useLang } from "../../i18n";
@@ -297,19 +301,24 @@ export function Tour({ open, onFinish, script }: { open: boolean; onFinish: () =
       {/* Two elements, two jobs: the outer one carries the step's position,
           the inner one its entrance. Neither has to undo the other. */}
       <div className="tour-pos" style={{ transform: `translateY(${cardTop}px)` }}>
-      {/* The first thing a new farmer or buyer sees: someone saying hello.
-          Layers of one drawing: the body holds still, closed eyelids and a
-          closed smile blink on over the face, and the hand rotates from the
-          wrist. Only here, once: a greeting that repeats on every card stops
-          being one. A tap waves (and says hi) again, for whoever tries. */}
-      {opening && (
-        <div className="tour-mascot" aria-hidden="true" onClick={() => setWaves(w => w + 1)}>
-          <img className="tm-body" src={mascotBody} alt="" width={420} height={435} decoding="async" />
-          <img className="tm-eyes" src={mascotEyes} alt="" width={420} height={435} decoding="async" />
-          <img key={`m${waves}`} className="tm-mouth" src={mascotMouth} alt="" width={420} height={435} decoding="async" />
-          <img key={`h${waves}`} className="tm-hand" src={mascotHand} alt="" width={420} height={435} decoding="async" />
-        </div>
-      )}
+      {/* The first thing a new farmer or buyer sees: someone saying hello,
+          the farmer to a farmer, the buyer to a buyer. Layers of one drawing:
+          the body holds still, closed eyelids blink on over the face, the
+          mouth changes as they say hi (the farmer's smile closes; the buyer,
+          drawn with a closed smile, opens hers), and the hand rotates from
+          the wrist. Only here, once: a greeting that repeats on every card
+          stops being one. A tap waves (and says hi) again, for whoever tries. */}
+      {opening && (() => {
+        const buyer = script === "buyer";
+        return (
+          <div className={`tour-mascot${buyer ? " buyer" : ""}`} aria-hidden="true" onClick={() => setWaves(w => w + 1)}>
+            <img className="tm-body" src={buyer ? buyerBody : mascotBody} alt="" width={420} height={435} decoding="async" />
+            <img className="tm-eyes" src={buyer ? buyerEyes : mascotEyes} alt="" width={420} height={435} decoding="async" />
+            <img key={`m${waves}`} className="tm-mouth" src={buyer ? buyerMouth : mascotMouth} alt="" width={420} height={435} decoding="async" />
+            <img key={`h${waves}`} className="tm-hand" src={buyer ? buyerHand : mascotHand} alt="" width={420} height={435} decoding="async" />
+          </div>
+        );
+      })()}
       {/* The last card: done, and well done. Still blinking, so he is the
           same someone who said hello, not a sticker. */}
       {last && (
