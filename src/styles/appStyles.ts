@@ -2999,34 +2999,52 @@ export const appCss = `
   }
 
   /* ── Buyer price moves ─────────────────────────────────────────────────
-     A light card and one chart. The ink board it replaces sat under another
-     dark card and repeated the crop-photo grid above it; this is calm to
-     look at and different in kind from everything around it.
-     Colours: a validated diverging pair, green #1F7A55 for cheaper and amber
-     #DC8F14 for pricier, around a neutral grey centre line. Numbers stay in
-     ink; only the bars and swatches carry colour. */
+     The AniSense green, as on the Prices card: deep and quiet, lit warm from
+     one corner, a hairline of light along the top, the leaf faint in the
+     corner. On it, in white, the title and the answer in words. The chart
+     sits on a white panel inside, because its colours (a validated diverging
+     pair, green #1F7A55 for cheaper and amber #DC8F14 for pricier, round a
+     grey centre line) were chosen for a white ground and would be lost on
+     green. Numbers stay in ink; only the bars and swatches carry colour. */
   .mv {
-    padding: 16px 16px 10px; border-radius: var(--radius); background: var(--card);
-    box-shadow: inset 0 0 0 1px var(--line), 0 14px 30px -22px rgba(22,33,27,.35);
+    position: relative; overflow: hidden; isolation: isolate;
+    padding: 18px 14px 14px; border-radius: var(--radius-lg); color: #fff;
+    background:
+      radial-gradient(80% 70% at 100% 0%, rgba(242,179,44,.16), transparent 60%),
+      linear-gradient(160deg, #145E3F 0%, #0E4630 55%, #0A3525 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.1), inset 0 0 0 1px rgba(255,255,255,.05), 0 20px 36px -24px rgba(8,42,29,.75);
   }
-  .mv-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-  .mv-title { margin: 0; font-family: var(--font-display); font-size: 18px; font-weight: 700; letter-spacing: -.01em; color: var(--text); }
+  .mv-mark {
+    position: absolute; right: -34px; top: -30px; z-index: -1; width: 170px; height: auto;
+    opacity: .1; transform: rotate(-14deg); pointer-events: none; user-select: none;
+  }
+  .mv-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 2px; }
+  .mv-title { margin: 0; font-family: var(--font-display); font-size: 18px; font-weight: 700; letter-spacing: -.01em; color: #fff; }
+  /* "All prices": a pill of light on the green rather than the grey one. */
+  .mv .hm-link { background: rgba(255,255,255,.12); color: #fff; box-shadow: inset 0 0 0 1px rgba(255,255,255,.16); }
+  .mv .hm-link:active { background: rgba(255,255,255,.22); }
   /* The headline in words: what a buyer would say about today. */
   .mv-verdict {
-    display: flex; align-items: center; gap: 9px; margin: 12px 0 0;
-    font-family: var(--font-display); font-size: 18px; font-weight: 700; line-height: 1.3; letter-spacing: -.01em; color: var(--text);
+    display: flex; align-items: center; gap: 10px; margin: 14px 0 0; padding: 0 2px;
+    font-family: var(--font-display); font-size: 20px; font-weight: 700; line-height: 1.25; letter-spacing: -.015em; color: #fff;
   }
   .mv-verdict-ico {
-    width: 30px; height: 30px; flex: 0 0 30px; border-radius: 50%;
+    width: 32px; height: 32px; flex: 0 0 32px; border-radius: 50%;
     display: inline-flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,.12); box-shadow: inset 0 0 0 1px rgba(255,255,255,.14);
   }
-  .mv-verdict.up .mv-verdict-ico { background: #FBEBD0; color: #9A5B0B; }
-  .mv-verdict.down .mv-verdict-ico { background: #DDEFE4; color: #1F7A55; }
-  .mv-verdict.mixed .mv-verdict-ico { background: var(--paper); color: var(--text-muted); }
-  .mv-count { margin: 3px 0 0 39px; font-size: 14px; color: var(--text-faint); }
+  .mv-verdict.up .mv-verdict-ico { color: #F6B44C; }
+  .mv-verdict.down .mv-verdict-ico { color: #8ED68E; }
+  .mv-verdict.mixed .mv-verdict-ico { color: rgba(255,255,255,.8); }
+  .mv-count { margin: 4px 0 0 44px; font-size: 14px; line-height: 1.35; color: rgba(255,255,255,.72); }
 
+  /* The chart's white panel: the card's own corners, one size in. */
+  .mv-panel {
+    margin-top: 16px; padding: 12px 10px 6px; border-radius: 18px; background: var(--card);
+    box-shadow: 0 1px 0 rgba(255,255,255,.08), 0 10px 22px -16px rgba(0,0,0,.6);
+  }
   .mv-axis {
-    display: flex; justify-content: space-between; margin-top: 16px; padding-bottom: 8px;
+    display: flex; justify-content: space-between; padding: 0 4px 8px;
     font-size: 13.5px; font-weight: 700; color: var(--text-muted);
   }
   .mv-axis span { display: inline-flex; align-items: center; gap: 5px; }

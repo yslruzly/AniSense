@@ -16,6 +16,7 @@ import { Listing, TradeIntent } from "../../types";
 import { peso } from "../../lib/money";
 import { costOf, totalSpent } from "../../lib/purchases";
 import { rankOf } from "../../lib/rating";
+import leafMask from "../../assets/anisense-leaf-mask.png";
 
 // ─── Buyer Home sections ──────────────────────────────────────────────────────
 // The pieces of the buyer's Home that the farmer never sees. Each one opens
@@ -98,6 +99,8 @@ export function PriceMoves({ onOpen }: { onOpen: () => void }) {
 
   return (
     <section className="mv" aria-labelledby="mv-t" data-tour="b-moves">
+      {/* The AniSense leaf, large and faint, off the card's top corner. */}
+      <img className="mv-mark" src={leafMask} alt="" aria-hidden="true" />
       <div className="mv-head">
         <h2 className="mv-title" id="mv-t">{t("mkt_movers")}</h2>
         <button className="hm-link" onClick={onOpen}>
@@ -112,7 +115,9 @@ export function PriceMoves({ onOpen }: { onOpen: () => void }) {
         {t("mv_count").replace("{up}", String(upN)).replace("{down}", String(downN))}
       </p>
 
-      {/* The legend is the chart's two directions, each at its own edge. */}
+      {/* The chart on its own white panel: its colours were chosen for a
+          white ground. The legend is its two directions, each at its own edge. */}
+      <div className="mv-panel">
       <div className="mv-axis" aria-hidden="true">
         <span><ArrowLeft size={14} strokeWidth={2.8} /><i className="down" />{t("mv_axis_cheaper")}</span>
         <span>{t("mv_axis_pricier")}<i className="up" /><ArrowRight size={14} strokeWidth={2.8} /></span>
@@ -154,6 +159,7 @@ export function PriceMoves({ onOpen }: { onOpen: () => void }) {
             </button>
           );
         })}
+      </div>
       </div>
     </section>
   );
