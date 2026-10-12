@@ -257,9 +257,9 @@ export function FeaturedProducts({ onShop }: { onShop: Shop }) {
 // ── Cheapest today ───────────────────────────────────────────────────────────
 // The cheapest kilo of three different crops, cheapest first, as price tags:
 // the paper kind a stall hangs on its sacks, a pointed end with a hole
-// punched through it, all in AniSense gold, the cheapest a size up. The
-// title sits on the page, as over the featured harvests, with the tags under
-// it.
+// punched through it, all in AniSense gold and all one size: the order says
+// which is cheapest. The title sits on the page, as over the featured
+// harvests, with the tags under it.
 //
 // On a tag the price comes first and largest, since the price is why it is
 // here; then what it is, and from where and whom. The photo sits on the
@@ -330,13 +330,13 @@ export function CheapestToday() {
         <p className="hm-empty">{t("home_no_deals")}</p>
       ) : (
         <ol className="ptag-list stagger-list">
-          {deals.map(({ l, save }, i) => {
+          {deals.map(({ l, save }) => {
             const price = peso(l.pricePerKg);
             const src = l.photo || cropPhotoFor(l.crop, l.variety);
             return (
               // The shadow is on the item, the tag's shape on the one inside:
               // a shadow drawn on the clipped tag itself would be clipped away.
-              <li key={l.id} className={`ptag${i === 0 ? " is-first" : ""}`} data-lit={lit === l.id || undefined}
+              <li key={l.id} className="ptag" data-lit={lit === l.id || undefined}
                 onPointerDown={press(l.id)} onPointerUp={release(180)} onPointerCancel={release(0)}
                 onPointerLeave={e => { if (e.buttons) release(0)(); }}>
                 <div className="ptag-in">
@@ -359,7 +359,7 @@ export function CheapestToday() {
                     )}
                   </span>
                   <span className="ptag-ph">
-                    {src ? <img src={src} alt="" loading="lazy" decoding="async" /> : <CropEmoji crop={l.crop} size={i === 0 ? 34 : 26} />}
+                    {src ? <img src={src} alt="" loading="lazy" decoding="async" /> : <CropEmoji crop={l.crop} size={26} />}
                   </span>
                 </div>
               </li>

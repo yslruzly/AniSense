@@ -3014,7 +3014,7 @@ export const appCss = `
      drop that follow the cut, which a border or box-shadow on the clipped
      tag could not. The hole is the page's own colour, pressed in. Everything
      on the gold is ink: at 80% on the gold's darkest corner it is still over
-     4.5:1. The cheapest is a size up. */
+     4.5:1. All three one size: the order says which is cheapest. */
   .ptag-list { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
   .ptag {
     filter: drop-shadow(0 0 .75px rgba(138,93,12,.6)) drop-shadow(0 8px 12px rgba(138,93,12,.26));
@@ -3071,12 +3071,6 @@ export const appCss = `
     box-shadow: 0 0 0 3px rgba(255,255,255,.85), 0 4px 10px rgba(110,70,0,.3);
   }
   .ptag-ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  /* The cheapest: a size up. */
-  .ptag.is-first .ptag-in { min-height: 112px; padding-top: 16px; padding-bottom: 16px; }
-  .ptag.is-first .ptag-price { font-size: 34px; }
-  .ptag.is-first .ptag-price small { font-size: 15px; }
-  .ptag.is-first .ptag-name { font-size: 17.5px; }
-  .ptag.is-first .ptag-ph { width: 72px; height: 72px; }
 
   /* Your purchases: a receipt. White, with a warm gold wash under the title
      and the total; the peso sign in the readable gold. Its parts are torn
