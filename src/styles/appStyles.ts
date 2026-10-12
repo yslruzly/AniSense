@@ -3015,7 +3015,7 @@ export const appCss = `
      tag could not. The hole is the page's own colour, pressed in. Everything
      on the gold is ink: at 80% on the gold's darkest corner it is still over
      4.5:1. All three one size: the order says which is cheapest. */
-  .ptag-list { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+  .ptag-list { list-style: none; margin: 12px 0 0; padding: 0 0 0 12px; display: flex; flex-direction: column; gap: 12px; }
   .ptag {
     position: relative;
     filter: drop-shadow(0 0 .75px rgba(138,93,12,.6)) drop-shadow(0 8px 12px rgba(138,93,12,.26));
@@ -3036,25 +3036,37 @@ export const appCss = `
   .ptag-in::after {
     content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0;
     background:
-      radial-gradient(circle at var(--gx, 50%) var(--gy, 50%), rgba(255,255,255,.75) 0%, rgba(255,255,255,0) 62%),
-      rgba(255,248,225,.28);
+      radial-gradient(circle at var(--gx, 50%) var(--gy, 50%), rgba(255,255,255,.42) 0%, rgba(255,255,255,0) 60%),
+      rgba(255,248,225,.1);
     transition: opacity 420ms var(--ease-out);
   }
-  .ptag[data-lit] { filter: drop-shadow(0 0 .75px rgba(138,93,12,.6)) drop-shadow(0 0 16px rgba(247,190,52,.9)); transition-duration: 90ms; }
+  .ptag[data-lit] { filter: drop-shadow(0 0 .75px rgba(138,93,12,.6)) drop-shadow(0 3px 10px rgba(242,179,44,.5)); transition-duration: 90ms; }
   .ptag[data-lit] .ptag-in::after { opacity: 1; transition-duration: 90ms; }
-  /* The string: twine through the hole, out over the point to a knot, two
-     ends hanging in the margin left of the tag (the page's 16px gutter; they
-     reach 11px into it). Its frame puts the hole's centre on the hole's.
-     It takes the tag's shadow and glow with it, being inside the item. */
+  /* The string: jute rope through the hole, out over the point to a knot,
+     two frayed ends hanging in the margin left of the tag (the page's 16px
+     gutter and the list's 12px; they reach 19px into it). Its frame puts the
+     hole's centre on the hole's. It takes the tag's shadow and glow with it,
+     being inside the item.
+     The rope is built up like the real thing: a dark edge, the twine, the
+     plies as short round beads with darker gaps between them, which is what
+     reads as a twist, and a broken glint of light along the top. */
   .ptag-string {
-    position: absolute; left: -14px; top: calc(50% - 20px); width: 34px; height: 60px;
+    position: absolute; left: -26px; top: calc(50% - 24px); width: 44px; height: 80px;
     overflow: visible; pointer-events: none;
   }
-  .ptag-cord { fill: none; stroke: #A57C41; stroke-width: 2.4; stroke-linecap: round; }
-  .ptag-twist { fill: none; stroke: #E4C892; stroke-width: 1; stroke-linecap: round; stroke-dasharray: 1.4 2.4; }
-  .ptag-knot { fill: #8C6532; }
+  .ptag-string path, .ptag-string ellipse { stroke-linecap: round; }
+  .ptag-rope-shade { fill: none; stroke: rgba(92,58,8,.28); stroke-width: 4; }
+  .ptag-rope-edge { fill: none; stroke: #5E4120; stroke-width: 4.6; }
+  .ptag-rope-body { fill: none; stroke: #B4844A; stroke-width: 3.2; }
+  .ptag-rope-ply { fill: none; stroke: #DDB97E; stroke-width: 2; stroke-dasharray: .6 2.6; }
+  .ptag-rope-hi { fill: none; stroke: rgba(255,244,220,.7); stroke-width: .8; stroke-dasharray: .4 3.2; stroke-dashoffset: -1.2; transform: translate(-.4px, -.6px); }
+  .ptag-fray { fill: none; stroke: #8E6634; stroke-width: .9; }
+  .ptag-knot-edge { fill: #5E4120; }
+  .ptag-knot-body { fill: #B4844A; }
+  .ptag-knot-wrap { fill: none; stroke: #5E4120; stroke-width: .9; }
+  .ptag-knot-hi { fill: rgba(255,244,220,.75); }
   /* A tap swings the ends once from the knot, and they settle. */
-  .ptag-ends { transform-origin: 6.6px 20.2px; }
+  .ptag-ends { transform-origin: 18px 25px; }
   .ptag[data-swing] .ptag-ends { animation: ptag-swing 760ms var(--ease-out); }
   @keyframes ptag-swing {
     0% { transform: rotate(0); }
@@ -3067,8 +3079,8 @@ export const appCss = `
     .ptag[data-swing] .ptag-ends { animation: none; }
   }
   .ptag-hole {
-    position: absolute; left: 8px; top: 50%; z-index: 1; width: 11px; height: 11px; margin-top: -5.5px; border-radius: 50%; background: var(--bg);
-    box-shadow: inset 0 1px 2px rgba(22,33,27,.38), 0 0 0 2px rgba(255,255,255,.5);
+    position: absolute; left: 7px; top: 50%; z-index: 1; width: 13px; height: 13px; margin-top: -6.5px; border-radius: 50%; background: var(--bg);
+    box-shadow: inset 0 1px 2.5px rgba(22,33,27,.42), 0 0 0 2px rgba(255,255,255,.5);
   }
   .ptag-txt { position: relative; z-index: 1; flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; }
   /* The price first and largest: proportional digits and tight tracking at

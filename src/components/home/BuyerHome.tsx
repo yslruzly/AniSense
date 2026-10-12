@@ -283,21 +283,38 @@ const marketPrice = (crop: string, variety: string) => {
   return inGroup?.pricePerKg ?? null;
 };
 
-// A tag's string, in the tag's own frame: the hole's centre is at (27.5, 20).
-// Up through the hole, over the point, knotted just past the tip, two ends
-// hanging into the page margin. Each strand is drawn twice, twine and then a
-// broken lighter line along it, so it reads as twisted cord, not a wire.
-const CORD = "M27.5 20C21 19 14 18.6 7.5 19.6";
-const ENDS = ["M6 21.5C4 28.5 3 36 4.5 46", "M7.5 21.5C9 29 9.8 37 9 45"];
-const strand = (d: string) => [
-  <path key={d} className="ptag-cord" d={d} />,
-  <path key={d + "t"} className="ptag-twist" d={d} />,
-];
+// A tag's string, in the tag's own frame: the hole's centre is at (39.5, 24),
+// the tag's tip at x 26. Up through the hole, over the point (casting a
+// little shadow on the gold), a knot just past the tip, and two ends hanging
+// into the margin, frayed where they were cut.
+const CORD = "M39.5 24C33 23.2 26 23 19.5 24";
+const ENDS = ["M16 28C12 38 9 49 10 62", "M19.5 28.5C21 39 21.5 50 18.5 61"];
+const FRAYS = "M10 62l-1.5 4.8M10 62l.3 5.2M10 62l2 4.4M18.5 61l-1.8 4.6M18.5 61l.3 5.1M18.5 61l2.2 4.3";
+// A strand of rope in four passes: its dark edge, the twine, the plies as a
+// run of short round beads along it (the twist), and a glint of light.
+const rope = (d: string) => (
+  <g key={d}>
+    <path className="ptag-rope-edge" d={d} />
+    <path className="ptag-rope-body" d={d} />
+    <path className="ptag-rope-ply" d={d} />
+    <path className="ptag-rope-hi" d={d} />
+  </g>
+);
 const TagString = () => (
-  <svg className="ptag-string" viewBox="0 0 34 60" aria-hidden="true">
-    {strand(CORD)}
-    <g className="ptag-ends">{ENDS.flatMap(strand)}</g>
-    <circle className="ptag-knot" cx="6.6" cy="20.2" r="3" />
+  <svg className="ptag-string" viewBox="0 0 44 80" aria-hidden="true">
+    <path className="ptag-rope-shade" d={CORD} transform="translate(.8 1.8)" />
+    <g className="ptag-ends">
+      {ENDS.map(rope)}
+      <path className="ptag-fray" d={FRAYS} />
+    </g>
+    <g className="ptag-cord">{rope(CORD)}</g>
+    {/* The knot: an edge, the twine, the turn of rope around it, a glint. */}
+    <g className="ptag-knot">
+      <ellipse className="ptag-knot-edge" cx="18" cy="25" rx="4.8" ry="4.2" />
+      <ellipse className="ptag-knot-body" cx="18" cy="25" rx="3.8" ry="3.2" />
+      <path className="ptag-knot-wrap" d="M14.6 23.6C16.5 26.8 19.8 27.2 21.6 24.6" />
+      <ellipse className="ptag-knot-hi" cx="16.6" cy="23.4" rx="1.3" ry=".9" />
+    </g>
   </svg>
 );
 
