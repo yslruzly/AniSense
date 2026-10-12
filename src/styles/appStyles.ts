@@ -643,8 +643,6 @@ export const appCss = `
   .exp-row:last-child { border-bottom:none; }
   .exp-ico { width:40px; height:40px; border-radius:12px; background:var(--green-bg); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
   /* ── Purchase history ──────────────────────────────────────────────────── */
-  .ph-card { padding-bottom: 6px; }
-  .ph-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 4px; }
   .ph-count { font-size: 14px; color: var(--text-faint); font-variant-numeric: tabular-nums; }
   /* Month labels: small caps-ish, tracked out, so they read as signposts and
      never compete with the rows. */
@@ -669,37 +667,13 @@ export const appCss = `
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
   }
   .ph-sub { margin-top: 3px; font-size: 14px; line-height: 1.35; color: var(--text-muted); font-variant-numeric: tabular-nums; }
-  /* One line, always: a long name or town is cut with an ellipsis rather
-     than breaking the row into a ragged third and fourth line. */
-  .ph-seller {
-    display: flex; align-items: center; gap: 6px; margin-top: 4px;
-    font-size: 14px; line-height: 1.35; color: var(--text-faint); min-width: 0;
-  }
-  .ph-seller svg { flex-shrink: 0; }
-  .ph-seller span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ph-end { text-align: right; padding-top: 1px; }
   .ph-amt {
     font-family: var(--font-display); font-size: 16px; font-weight: 800; color: var(--text);
     font-variant-numeric: tabular-nums; white-space: nowrap; line-height: 1.25;
   }
   .ph-date { margin-top: 3px; font-size: 13.5px; color: var(--text-faint); white-space: nowrap; }
-  /* The order's price, under what it actually cost, when the two differ. */
-  .ph-was { margin-top: 2px; font-size: 13.5px; color: var(--text-faint); white-space: nowrap; font-variant-numeric: tabular-nums; }
-  .ph-note { margin: 2px 0 4px; font-size: var(--fs-label); line-height: 1.45; color: var(--text-muted); }
-  /* Under a purchase, across the text and the amount: where it stands with
-     the farmer on the left, the way to write down what was paid on the
-     right. Gold while it waits for the call, green once confirmed. */
-  .ph-foot {
-    grid-column: 2 / -1; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
-    gap: 8px; margin-top: 10px;
-  }
-  .ph-status {
-    display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 99px;
-    font-size: 13.5px; font-weight: 700; line-height: 1.2;
-  }
-  .ph-status.is-wait { background: var(--gold-sk); color: var(--gold-text); }
-  .ph-status.is-ok { background: var(--tanim-sk); color: var(--tanim-deep); }
-  .ph-status.is-off { background: var(--paper-alt); color: var(--text-muted); }
+  /* Write down what was paid: the one action on an order, in its card's foot. */
   .ph-pay {
     display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 16px; margin-left: auto;
     border: none; border-radius: 99px; cursor: pointer; background: var(--card); color: var(--tanim);
@@ -712,6 +686,56 @@ export const appCss = `
   /* Once written down, it steps back: grey, a change rather than a task. */
   .ph-pay.is-done { color: var(--text-soft); box-shadow: inset 0 0 0 1.5px var(--line-strong); }
   @media (prefers-reduced-motion: reduce) { .ph-pay:active { transform: none; } }
+
+  /* ── Purchase history, a buyer's Orders: one card per order ─────────────
+     On the page itself, not a list inside another card, grouped under the
+     month. In each card: the photo, what was bought, kilos × price and who
+     from; the cost and the day on the right; then a footer under a hairline
+     with where the order stands, as coloured words with an icon (the only
+     pill left is the button), and the one thing to do. Cards apart, so
+     where one order ends and the next begins is never a question. */
+  .oc-sec { display: flex; flex-direction: column; }
+  .oc-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 6px 2px 0; }
+  .oc-title { margin: 0; font-family: var(--font-display); font-size: 20px; font-weight: 700; letter-spacing: -.015em; line-height: 1.2; color: var(--text); }
+  .oc-count { flex-shrink: 0; font-size: 14px; color: var(--text-faint); font-variant-numeric: tabular-nums; }
+  .oc-note { margin: 6px 2px 0; font-size: 14.5px; line-height: 1.45; color: var(--text-muted); }
+  .oc-sec .ph-sample-note { margin: 12px 0 0; }
+  .oc-sec .ph-month, .oc-sec .oc-month:first-child .ph-month { margin: 20px 4px 8px; }
+  .oc-list { display: flex; flex-direction: column; gap: 10px; }
+  .oc {
+    padding: 14px; border-radius: 18px; background: var(--card);
+    box-shadow: 0 0 0 1px rgba(22,33,27,.06), 0 1px 2px rgba(22,33,27,.05), 0 10px 22px -18px rgba(22,33,27,.35);
+  }
+  .oc-skel, .oc-empty { margin-top: 14px; }
+  .oc-main { display: grid; grid-template-columns: 54px minmax(0, 1fr) auto; column-gap: 12px; align-items: start; }
+  .oc-body { min-width: 0; }
+  .oc-name {
+    margin: 0; font-family: var(--font-display); font-size: 16.5px; font-weight: 700; line-height: 1.25;
+    letter-spacing: -.01em; color: var(--text);
+  }
+  .oc-line { margin: 3px 0 0; font-size: 14px; line-height: 1.35; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+  /* One line, always: a long name or town ends in an ellipsis. */
+  .oc-seller { display: flex; align-items: center; gap: 6px; min-width: 0; color: var(--text-faint); }
+  .oc-seller svg { flex-shrink: 0; }
+  .oc-seller span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .oc-end { text-align: right; }
+  .oc-amt {
+    font-family: var(--font-display); font-size: 17px; font-weight: 800; line-height: 1.25; color: var(--text);
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .oc-was { margin-top: 2px; font-size: 13px; color: var(--text-faint); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .oc-date { margin-top: 3px; font-size: 13.5px; color: var(--text-faint); white-space: nowrap; }
+  .oc-foot {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px;
+    margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line);
+  }
+  .oc-status { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-size: 14.5px; font-weight: 700; line-height: 1.3; }
+  .oc-status svg { flex-shrink: 0; }
+  .oc-status.is-wait { color: var(--gold-text); }
+  .oc-status.is-ok { color: var(--tanim-deep); }
+  .oc-status.is-off { color: var(--text-muted); }
+  .oc-hint { flex-basis: 100%; margin: -2px 0 0; font-size: 13.5px; line-height: 1.4; color: var(--text-faint); }
+  .oc-rate { margin-top: 12px; }
 
   /* ── Rating a farmer (StarRating) ────────────────────────────────────────
      Five 44px targets, each round a 30px star. Empty: a grey outline dark
@@ -763,7 +787,6 @@ export const appCss = `
     margin: 0 0 4px; font-size: var(--fs-label); line-height: 1.4; font-weight: 600; color: var(--tanim-deep);
     animation: ph-rate-in 240ms var(--ease-out) both;
   }
-  .ph-rate-hint { grid-column: 2 / -1; margin: 8px 0 0; font-size: 14.5px; line-height: 1.4; color: var(--text-muted); }
   @keyframes ph-rate-in { from { opacity: 0; transform: translateY(6px) scale(.98); } to { opacity: 1; transform: none; } }
   @media (prefers-reduced-motion: reduce) {
     .star-ico.pop, .ph-rate.is-new, .ph-rate-thanks { animation: none; }

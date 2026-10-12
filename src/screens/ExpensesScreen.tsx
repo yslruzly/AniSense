@@ -286,38 +286,39 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
                 </>
               )}
             </div>
-            {/* Purchase history. One idea per line, read left to right:
-                what you bought, how much of it, who from; the price and the
-                day sit together on the right where a receipt puts them.
-                Grouped by month, so the date is said once per group instead
-                of being repeated on every row. Under each, where it stands
-                with the farmer and the way to write down what was paid: the
-                amount on the right is what it cost (lib/purchases.ts), with
-                the order's price under it when the two differ. */}
-            <div className="card ph-card">
-              <div className="ph-head">
-                <div className="card-title" style={{ margin: 0 }}>{t("exp_purchase_history")}</div>
+            {/* Purchase history: one card per order, on the page itself (not
+                a list inside another card), grouped by month. Each card reads
+                top to bottom: what was bought, how much and from whom, with
+                what it cost and the day on the right where a receipt puts
+                them; then, under a hairline, where the order stands with the
+                farmer and the one thing to do about it (write down what was
+                paid), and once paid, the stars. The amount is what it cost
+                (lib/purchases.ts), with the order's price under it when the
+                two differ. */}
+            <section className="oc-sec" aria-labelledby="oc-t">
+              <div className="oc-head">
+                <h2 className="oc-title" id="oc-t">{t("exp_purchase_history")}</h2>
                 {!busy && (
-                  <span className="ph-count">
+                  <span className="oc-count">
                     {buyerTransactions.length} {buyerTransactions.length !== 1 ? t("exp_purchases_n") : t("exp_purchase_one")}
                   </span>
                 )}
               </div>
               {/* Sample orders, while the buyer has none: said once, over
-                  the list; each row carries the tag, and nothing can be done
-                  to one. */}
+                  the list; each card carries the tag, and nothing can be
+                  done to one. */}
               {!busy && samples && (
                 <p className="mp-sample-note ph-sample-note" role="note"><ShoppingCart size={18} strokeWidth={2.4} aria-hidden="true" /> {t("ph_samples_note")}</p>
               )}
-              {!busy && buyerTransactions.length > 0 && !samples && <p className="ph-note">{t("ph_note")}</p>}
+              {!busy && buyerTransactions.length > 0 && !samples && <p className="oc-note">{t("ph_note")}</p>}
               {busy
-                ? (showSkeleton ? <SkeletonMediaRows rows={4} tile={46} label={t("state_loading_records")} /> : null)
+                ? (showSkeleton ? <div className="oc oc-skel"><SkeletonMediaRows rows={3} tile={54} label={t("state_loading_records")} /></div> : null)
                 : buyerTransactions.length === 0
-                ? <EmptyState
+                ? <div className="oc oc-empty"><EmptyState
                     icon={<ShoppingCart size={26} aria-hidden="true" />}
                     title={t("state_no_purchases_title")}
                     body={t("state_no_purchases_body")}
-                  />
+                  /></div>
                 : (() => {
                   const locale = lang === "tl" ? "fil-PH" : "en-PH";
                   const sorted = [...buyerTransactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -330,85 +331,93 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
                   return (
                     <div className="stagger-list">
                       {groups.map(g => (
-                        <section key={g.label} className="ph-group">
+                        <section key={g.label} className="oc-month" aria-label={g.label}>
                           <h3 className="ph-month">{g.label}</h3>
-                          {g.items.map(tx => {
-                            const photo = cropPhotoFor(tx.crop, tx.variety);
-                            // The variety is the name people use ("Special
-                            // Rice"); the crop only adds something when the
-                            // variety doesn't already say it ("Well Milled").
-                            const title = tx.variety || tn(tx.crop);
-                            const saysCrop = tx.variety.toLowerCase().includes(tx.crop.toLowerCase().replace(/(es|s)$/, ""));
-                            return (
-                              <div className="ph-row" key={tx.id}>
-                                <div className="ptx-thumb">
-                                  {photo
-                                    ? <img src={photo} alt="" loading="lazy" decoding="async" />
-                                    : <CropIcon crop={tx.crop} size={22} />}
-                                </div>
-                                <div className="ph-body">
-                                  <div className="ph-title">{title}{tx.sample && <span className="ph-sample">{t("mp_sample")}</span>}</div>
-                                  <div className="ph-sub">
-                                    {!saysCrop && <>{tn(tx.crop)} · </>}{tx.kg} kg · ₱{Math.round(tx.amount / tx.kg)}{t("per_kg_short")}
+                          <div className="oc-list">
+                            {g.items.map(tx => {
+                              const photo = cropPhotoFor(tx.crop, tx.variety);
+                              // The variety is the name people use ("Special
+                              // Rice"); the crop only adds something when the
+                              // variety doesn't already say it ("Well Milled").
+                              const title = tx.variety || tn(tx.crop);
+                              const saysCrop = tx.variety.toLowerCase().includes(tx.crop.toLowerCase().replace(/(es|s)$/, ""));
+                              const confirmed = tx.status === "confirmed" || tx.status === "completed";
+                              return (
+                                <article className="oc" key={tx.id} aria-labelledby={`oc-${tx.id}`}>
+                                  <div className="oc-main">
+                                    <div className="ptx-thumb">
+                                      {photo
+                                        ? <img src={photo} alt="" loading="lazy" decoding="async" />
+                                        : <CropIcon crop={tx.crop} size={22} />}
+                                    </div>
+                                    <div className="oc-body">
+                                      <h4 className="oc-name" id={`oc-${tx.id}`}>{title}{tx.sample && <span className="ph-sample">{t("mp_sample")}</span>}</h4>
+                                      <p className="oc-line">{!saysCrop && <>{tn(tx.crop)} · </>}{tx.kg} kg × ₱{Math.round(tx.amount / tx.kg)}</p>
+                                      <p className="oc-line oc-seller">
+                                        <Store size={14} strokeWidth={2.2} aria-hidden="true" />
+                                        <span>{tx.seller} · {tx.location}</span>
+                                      </p>
+                                    </div>
+                                    <div className="oc-end">
+                                      <div className="oc-amt">{peso(costOf(tx))}</div>
+                                      {costOf(tx) !== tx.amount && tx.status !== "cancelled" && (
+                                        <div className="oc-was">{t("ph_order_was").replace("{amount}", peso(tx.amount))}</div>
+                                      )}
+                                      <div className="oc-date">
+                                        {new Date(tx.date).toLocaleDateString(locale, { month: "short", day: "numeric" })}
+                                      </div>
+                                    </div>
                                   </div>
-                                  <div className="ph-seller">
-                                    <Store size={14} strokeWidth={2.2} aria-hidden="true" />
-                                    <span>{tx.seller} · {tx.location}</span>
-                                  </div>
-                                </div>
-                                <div className="ph-end">
-                                  <div className="ph-amt">{peso(costOf(tx))}</div>
-                                  {costOf(tx) !== tx.amount && tx.status !== "cancelled" && (
-                                    <div className="ph-was">{t("ph_order_was").replace("{amount}", peso(tx.amount))}</div>
+                                  {/* Where it stands, in words with an icon in its
+                                      colour (not another pill); the one thing to do
+                                      on the right. */}
+                                  {(tx.status || tx.paid !== undefined) && (
+                                    <div className="oc-foot">
+                                      {tx.status === "placed"
+                                        ? <span className="oc-status is-wait"><Clock size={16} strokeWidth={2.6} aria-hidden="true" /> {t("ph_st_placed")}</span>
+                                        : tx.status === "cancelled"
+                                          ? <span className="oc-status is-off"><X size={16} strokeWidth={2.6} aria-hidden="true" /> {t("ph_st_cancelled")}</span>
+                                          : tx.status
+                                            ? <span className="oc-status is-ok"><Check size={16} strokeWidth={2.8} aria-hidden="true" /> {t("ph_st_confirmed")}</span>
+                                            : null}
+                                      {tx.status !== "cancelled" && !tx.sample && (
+                                        <button type="button" className={`ph-pay${tx.paid !== undefined ? " is-done" : ""}`} onClick={() => { setFreshRate(null); setPayingId(tx.id); }}
+                                          aria-label={`${tx.paid !== undefined ? t("ph_pay_change") : t("ph_pay_record")}: ${title}, ${tx.seller}`}>
+                                          {tx.paid !== undefined
+                                            ? <><Pencil size={15} strokeWidth={2.4} aria-hidden="true" /> {t("ph_pay_change")}</>
+                                            : <><HandCoins size={16} strokeWidth={2.4} aria-hidden="true" /> {t("ph_pay_record")}</>}
+                                        </button>
+                                      )}
+                                      {/* Confirmed, not yet paid: why the payment
+                                          comes first. */}
+                                      {!tx.sample && confirmed && tx.paid === undefined && (
+                                        <p className="oc-hint">{t("rate_after_pay").replace("{name}", firstName(tx.seller))}</p>
+                                      )}
+                                    </div>
                                   )}
-                                  <div className="ph-date">
-                                    {new Date(tx.date).toLocaleDateString(locale, { month: "short", day: "numeric" })}
-                                  </div>
-                                </div>
-                                {(tx.status || tx.paid !== undefined) && (
-                                  <div className="ph-foot">
-                                    {tx.status === "placed"
-                                      ? <span className="ph-status is-wait"><Clock size={15} strokeWidth={2.6} aria-hidden="true" /> {t("ph_st_placed")}</span>
-                                      : tx.status === "cancelled"
-                                        ? <span className="ph-status is-off"><X size={15} strokeWidth={2.6} aria-hidden="true" /> {t("ph_st_cancelled")}</span>
-                                        : tx.status
-                                          ? <span className="ph-status is-ok"><Check size={15} strokeWidth={2.8} aria-hidden="true" /> {t("ph_st_confirmed")}</span>
-                                          : null}
-                                    {tx.status !== "cancelled" && !tx.sample && (
-                                      <button type="button" className={`ph-pay${tx.paid !== undefined ? " is-done" : ""}`} onClick={() => { setFreshRate(null); setPayingId(tx.id); }}
-                                        aria-label={`${tx.paid !== undefined ? t("ph_pay_change") : t("ph_pay_record")}: ${title}, ${tx.seller}`}>
-                                        {tx.paid !== undefined
-                                          ? <><Pencil size={15} strokeWidth={2.4} aria-hidden="true" /> {t("ph_pay_change")}</>
-                                          : <><HandCoins size={16} strokeWidth={2.4} aria-hidden="true" /> {t("ph_pay_record")}</>}
-                                      </button>
-                                    )}
-                                  </div>
-                                )}
-                                {/* Settled on both sides: how was the farmer? Five
-                                    stars to tap. Confirmed but not yet paid: a line
-                                    saying what comes first. */}
-                                {tx.sample ? null : settled(tx) ? (
-                                  <div className={`ph-rate${freshRate === tx.id ? " is-new" : ""}${tx.rating ? " is-rated" : ""}`}>
-                                    <span className="ph-rate-q" id={`rq-${tx.id}`}>
-                                      {t(tx.rating ? "rate_done" : "rate_q").replace("{name}", firstName(tx.seller))}
-                                    </span>
-                                    <StarRating value={tx.rating ?? 0} labelledBy={`rq-${tx.id}`} onRate={n => rate(tx, n)} />
-                                    {thanked === tx.id && <p className="ph-rate-thanks" role="status">{t("rate_thanks")}</p>}
-                                    {rateError?.id === tx.id && <p className="ord-err" role="alert">{rateError.msg}</p>}
-                                  </div>
-                                ) : (tx.status === "confirmed" || tx.status === "completed") && (
-                                  <p className="ph-rate-hint">{t("rate_after_pay").replace("{name}", firstName(tx.seller))}</p>
-                                )}
-                              </div>
-                            );
-                          })}
+                                  {/* Settled on both sides: how was the farmer?
+                                      Five stars to tap, inside the card. */}
+                                  {!tx.sample && settled(tx) && (
+                                    <div className={`ph-rate oc-rate${freshRate === tx.id ? " is-new" : ""}${tx.rating ? " is-rated" : ""}`}>
+                                      <span className="ph-rate-q" id={`rq-${tx.id}`}>
+                                        {t(tx.rating ? "rate_done" : "rate_q").replace("{name}", firstName(tx.seller))}
+                                      </span>
+                                      <StarRating value={tx.rating ?? 0} labelledBy={`rq-${tx.id}`} onRate={n => rate(tx, n)} />
+                                      {thanked === tx.id && <p className="ph-rate-thanks" role="status">{t("rate_thanks")}</p>}
+                                      {rateError?.id === tx.id && <p className="ord-err" role="alert">{rateError.msg}</p>}
+                                    </div>
+                                  )}
+                                </article>
+                              );
+                            })}
+                          </div>
                         </section>
                       ))}
                     </div>
                   );
                 })()
               }
-            </div>
+            </section>
           </>
         )}
 
