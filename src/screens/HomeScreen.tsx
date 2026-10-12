@@ -1,4 +1,4 @@
-import { CloudSun, CloudMoon, BarChart2, BookOpen, PlayCircle, CheckCircle, AlertTriangle, Bot, ChevronRight, Wallet, Megaphone, Store, Search } from "lucide-react";
+import { CloudSun, CloudMoon, BarChart2, BookOpen, PlayCircle, CheckCircle, AlertTriangle, ChevronRight, Wallet, Megaphone, Store, Search } from "lucide-react";
 import { useState } from "react";
 import { useLang } from "../i18n";
 import { haptic } from "../lib/platform";
@@ -18,8 +18,7 @@ import { nextWetDay, whenSaid } from "../services/weather";
 import { useMarket } from "../store/market";
 import { PriceSheet } from "../components/prices/PriceSheet";
 import { PriceItem } from "../services/prices";
-import { AIAdvisorCard } from "../components/analytics/AIAdvisorCard";
-import { PredictedPriceCard } from "../components/analytics/PredictedPriceCard";
+import { SellOrWait } from "../components/home/SellOrWait";
 import { Hdr } from "../components/layout/Hdr";
 import { AniSenseLogo } from "../components/brand/AniSenseLogo";
 import { useIsNight } from "../hooks/useIsNight";
@@ -226,20 +225,9 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
         {/* Buy again and the running total, as one card about "my buying". */}
         {isBuyer && <YourPurchases onShop={shop} onHistory={() => onNavigate("expenses")} />}
 
-        {/* Heading for the two model cards. Farmer-only like the cards it
-            introduces, or a buyer would get a heading over nothing. */}
-        {userRole !== "buyer" && (
-          <div className="ai-reco-head" data-tour="forecast">
-            <Bot size={22} color="#fff" strokeWidth={2.2} />
-            <span>{t("home_ai_recos")}</span>
-          </div>
-        )}
-
-        {/* ARIMA + AI Buy/Sell/Hold, farmer only */}
-        {userRole !== "buyer" && <AIAdvisorCard farmerCrops={farmerCrops} />}
-
-        {/* Predicted Price, farmer only */}
-        {userRole !== "buyer" && <PredictedPriceCard farmerCrops={farmerCrops} />}
+        {/* The AI's advice and the forecast behind it, one card per crop,
+            farmer only. */}
+        {userRole !== "buyer" && <SellOrWait farmerCrops={farmerCrops} />}
 
         {/* What is in the ground, and how far along. The one thing on this
             page that changes overnight without the market doing anything. */}

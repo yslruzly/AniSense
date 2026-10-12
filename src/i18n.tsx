@@ -617,11 +617,6 @@ export const translations: Dict = {
     en: "Predictions are not guaranteed. Always verify with local market conditions.",
     tl: "Hindi garantisado ang mga taya. Laging suriin ang aktwal na presyo sa merkado.",
   },
-  ana_predicted: { en: "Prices in the next 3 months", tl: "Presyo sa susunod na 3 buwan" },
-  ana_based_on: {
-    en: "How the price of each crop you grow is expected to move.",
-    tl: "Kung paano inaasahang gagalaw ang presyo ng bawat tanim mo.",
-  },
   ana_current: { en: "Current", tl: "Kasalukuyan" },
   ana_sell: { en: "SELL", tl: "IBENTA" },
   ana_buy: { en: "BUY", tl: "BUMILI" },
@@ -1124,6 +1119,21 @@ export const translations: Dict = {
     en: "No clear direction yet. Check again next month.",
     tl: "Wala pang malinaw na direksyon. Tingnan ulit sa susunod na buwan.",
   },
+  sw_sell_line: {
+    en: "Expected {price} in {month}, {diff} less than now. Selling soon avoids the lower price.",
+    tl: "Inaasahang {price} pagdating ng {month}, {diff} na mas mababa kaysa ngayon. Mas mabuting magbenta na agad.",
+  },
+  sw_hold_line: {
+    en: "Expected to reach {price} in {month}, {diff} more than now. If your harvest keeps, waiting may earn you more.",
+    tl: "Inaasahang aabot sa {price} pagdating ng {month}, {diff} na mas mataas kaysa ngayon. Kung hindi masisira ang ani mo, baka mas kumita ka kung maghihintay.",
+  },
+  sw_flat_line: {
+    en: "Expected to stay near {price} through {month}. No clear direction yet: check again next month.",
+    tl: "Inaasahang mananatili sa mga {price} hanggang {month}. Wala pang malinaw na direksyon: tingnan ulit sa susunod na buwan.",
+  },
+  sw_range: { en: "{month}: likely between {low} and {high}", tl: "{month}: malamang nasa pagitan ng {low} at {high}" },
+  sw_now: { en: "Now", tl: "Ngayon" },
+  sw_best: { en: "the best time to sell", tl: "pinakamagandang oras para magbenta" },
   ana_unsure_reason: {
     en: "This crop's price swings too much to forecast well. Check your local market before you decide.",
     tl: "Masyadong malaki ang galaw ng presyo nito para matantiya nang maayos. Tingnan muna ang lokal na merkado bago magpasya.",

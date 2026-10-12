@@ -1151,38 +1151,6 @@ export const appCss = `
     .shell:not([data-revisit]) .mc-bar { animation: none; }
   }
 
-  /* ── Prices in the next 3 days ───────────────────────────────────────────── */
-  .pp-row { padding: 14px 0 10px; }
-  .pp-row + .pp-row { border-top: 1px solid var(--line); }
-  .pp-top { display: flex; align-items: center; gap: 12px; }
-  .pp-id { flex: 1; min-width: 0; }
-  .pp-now { margin-top: 2px; font-size: 14px; color: var(--text-faint); font-variant-numeric: tabular-nums; }
-  .pp-end { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
-  /* The day-3 price is the headline; ink, not coloured, so it reads as a
-     number first. The chip under it carries the direction. */
-  .pp-target {
-    font-family: var(--font-display); font-size: 19px; font-weight: 800; color: var(--text);
-    font-variant-numeric: tabular-nums; line-height: 1.1;
-  }
-  .pp-end .adv-delta { display: inline-flex; align-items: center; gap: 3px; margin: 0; white-space: nowrap; }
-  .pp-chart { margin: 10px 0 0 56px; }
-  .pp-svg { display: block; width: 100%; height: auto; overflow: visible; }
-  .pp-base { stroke: var(--line-strong); stroke-width: 1.5; stroke-dasharray: 4 5; }
-  .pp-line { fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
-  .pp-area { stroke: none; opacity: .12; }
-  .pp-dot { stroke: var(--card); stroke-width: 2; }
-  .pp-svg.up   .pp-line { stroke: var(--tanim); }   .pp-svg.up   .pp-area, .pp-svg.up   .pp-dot { fill: var(--tanim); }
-  .pp-svg.down .pp-line { stroke: var(--error); }   .pp-svg.down .pp-area, .pp-svg.down .pp-dot { fill: var(--error); }
-  .pp-svg.flat .pp-line { stroke: var(--text-faint); } .pp-svg.flat .pp-area, .pp-svg.flat .pp-dot { fill: var(--text-faint); }
-  /* Labels sit under their points: edges pinned, the middle two centred on
-     the 1/3 and 2/3 marks (the chart pads 10 of 300 units each side). */
-  .pp-days { position: relative; height: 18px; margin-top: 2px; font-size: 12.5px; color: var(--text-faint); text-transform: capitalize; }
-  .pp-days span { position: absolute; top: 0; white-space: nowrap; }
-  .pp-days span:nth-child(1) { left: 0; }
-  .pp-days span:nth-child(2) { left: 34.4%; transform: translateX(-50%); }
-  .pp-days span:nth-child(3) { left: 65.6%; transform: translateX(-50%); }
-  .pp-days span:nth-child(4) { right: 0; font-weight: 700; color: var(--text-muted); }
-
   /* ── Welcome ID ────────────────────────────────────────────────────────────
      A portrait member card, like a real ID on a lanyard: issuer band on top
      with the punch slot, photo in the middle, name at the foot, ID number
@@ -2984,6 +2952,75 @@ export const appCss = `
 
   .hm-sec-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .hm-sec-row .hm-sec-title { margin-top: 8px; }
+
+  /* Sell now or wait?: one card per crop. Each card wears its verdict's
+     colour (--tone): gold for Sell now, green for Hold, blue for Watch, as a
+     wash down from the top, the verdict's disc and word, and the month to
+     sell in. Gold and blue are their readable shades: white on them, and
+     they on white, are over 4.5:1. */
+  /* "AI Recommendations" on ink, the robot in a palay disc at its start. */
+  .sw-eyebrow {
+    align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; margin: 8px 2px 0; padding: 4px 13px 4px 4px;
+    border-radius: 99px; background: var(--ink); color: #fff;
+    font-family: var(--font-display); font-size: 13.5px; font-weight: 700; letter-spacing: .01em;
+  }
+  .sw-bot {
+    width: 28px; height: 28px; flex: 0 0 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    background: var(--palay); color: var(--ink); box-shadow: inset 0 1px 0 rgba(255,255,255,.35);
+  }
+  .sw .hm-sec-title { margin-top: 8px; }
+  .sw-list { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
+  .sw-card {
+    --tone: var(--tanim); --tone-wash: #E8F3EC; --tone-sk: var(--tanim-sk);
+    position: relative; isolation: isolate; padding: 16px 16px 14px; border-radius: 22px; background: var(--card);
+    box-shadow: 0 0 0 1px rgba(22,33,27,.07), 0 1px 2px rgba(22,33,27,.05), 0 16px 32px -24px rgba(22,33,27,.4);
+  }
+  .sw-card[data-act="sell"] { --tone: #8A5D0C; --tone-wash: #FCF3DF; --tone-sk: #FBEBC4; }
+  .sw-card[data-act="watch"] { --tone: #2F6FA8; --tone-wash: #E9F1FA; --tone-sk: #DCEAF8; }
+  .sw-card::before {
+    content: ""; position: absolute; z-index: -1; inset: 0 0 auto 0; height: 160px; border-radius: 22px 22px 0 0; pointer-events: none;
+    background: linear-gradient(180deg, var(--tone-wash) 0%, rgba(255,255,255,0) 100%);
+  }
+  .sw-id { display: flex; align-items: center; gap: 12px; }
+  .sw-art {
+    width: 48px; height: 48px; flex: 0 0 48px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(circle at 50% 30%, #fff 0%, var(--tone-sk) 100%);
+    box-shadow: 0 0 0 1px rgba(22,33,27,.06);
+  }
+  .sw-art img { width: 84%; height: 84%; object-fit: contain; display: block; filter: drop-shadow(0 3px 4px rgba(22,33,27,.18)); }
+  .sw-crop { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .sw-name { font-family: var(--font-display); font-size: 17px; font-weight: 700; line-height: 1.25; color: var(--text); }
+  .sw-var { font-size: 13.5px; line-height: 1.35; color: var(--text-faint); }
+  /* The answer: the largest words on the card. */
+  .sw-verdict { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+  .sw-v-ico {
+    width: 38px; height: 38px; flex: 0 0 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    background: var(--tone); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.25), 0 6px 12px -6px var(--tone);
+  }
+  .sw-v-txt { font-family: var(--font-display); font-size: 24px; font-weight: 800; line-height: 1.15; letter-spacing: -.02em; color: var(--tone); }
+  .sw-line { margin: 8px 0 0; font-size: 15.5px; line-height: 1.5; color: var(--text-soft); }
+  /* The four months: one strip, four cells, the hairlines between them. */
+  .sw-months {
+    list-style: none; margin: 14px 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+    border-radius: 16px; background: var(--card); box-shadow: inset 0 0 0 1px var(--line); overflow: hidden;
+  }
+  .sw-months li { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; padding: 10px 2px 9px; text-align: center; }
+  .sw-months li + li { box-shadow: inset 1px 0 0 var(--line); }
+  .sw-m { display: inline-flex; align-items: center; gap: 3px; font-size: 12.5px; font-weight: 700; letter-spacing: .02em; color: var(--text-faint); text-transform: capitalize; }
+  .sw-p { font-family: var(--font-display); font-size: 15px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .sw-d { font-size: 12.5px; font-weight: 600; color: var(--text-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  /* The month to sell in, filled and starred. */
+  .sw-months li.is-best, .sw-months li.is-best + li { box-shadow: none; }
+  .sw-months li.is-best { background: var(--tone); }
+  .sw-months li.is-best .sw-m, .sw-months li.is-best .sw-p, .sw-months li.is-best .sw-d { color: #fff; }
+  /* A forecast that tested badly: the months ahead hatched, as unsurveyed ground. */
+  .sw-months.unsure li:not(:first-child) {
+    background-image: repeating-linear-gradient(135deg, rgba(47,111,168,.09) 0 5px, transparent 5px 11px);
+  }
+  .sw-range { display: flex; align-items: flex-start; gap: 6px; margin: 10px 2px 0; font-size: 13.5px; line-height: 1.4; color: var(--text-muted); }
+  .sw-range svg { flex-shrink: 0; margin-top: 1px; color: var(--tone); }
+  .sw-foot { margin: 12px 2px 0; font-size: 13px; line-height: 1.45; color: var(--text-faint); }
 
   /* Your crops' prices: one crop at a time. Chips to choose it (they wrap;
      the chosen one solid green), and under them its panel: the crop's
@@ -4789,16 +4826,6 @@ export const appCss = `
   .modal-sheet::-webkit-scrollbar { display: none; }
 
 
-  /* Heading card for the AI block. A green plate so the two model cards under
-     it read as one section rather than two cards that happen to be adjacent.
-     Sits below the gap the scroll already provides, so it needs no margin. */
-  .ai-reco-head {
-    display: flex; align-items: center; gap: 11px;
-    background: var(--tanim); color: #fff;
-    border-radius: var(--radius); padding: 15px 18px;
-    font-family: var(--font-display); font-weight: 700; font-size: var(--fs-lead);
-    letter-spacing: -.01em;
-  }
 
   /* ── Model badge ─────────────────────────────────────────────────────────
      The same pill on both forecast cards, so the two read as one family. It
