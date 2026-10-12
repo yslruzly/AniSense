@@ -2409,9 +2409,15 @@ export const appCss = `
     font-size: 13.5px; color: rgba(255,255,255,.88); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .ffc-loc svg { flex-shrink: 0; }
+  /* "Near you" in the photo's top right corner: the avatar starts in the
+     top left of this short photo, so a tag there sat on the face. Across
+     from it the corner is clear, over the faint leaf, and diagonal to the
+     arrow in the bottom right; the town line has no room for it beside a
+     long town name. */
   .ffc-near {
-    position: absolute; z-index: 2; left: 12px; top: 12px; padding: 3px 9px; border-radius: 99px;
-    background: #DCEAF8; color: #2F6FA8; font-size: 12.5px; font-weight: 800;
+    position: absolute; z-index: 2; right: 12px; top: 12px; padding: 3px 9px; border-radius: 99px;
+    background: #DCEAF8; color: #2F6FA8; font-size: 12.5px; font-weight: 800; white-space: nowrap;
+    box-shadow: 0 4px 10px -6px rgba(0,0,0,.45);
   }
   .ffc-go {
     position: absolute; z-index: 2; right: 12px; bottom: 32px; width: 34px; height: 34px; border-radius: 50%;
