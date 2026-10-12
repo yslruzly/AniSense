@@ -2985,54 +2985,78 @@ export const appCss = `
   .hm-sec-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .hm-sec-row .hm-sec-title { margin-top: 8px; }
 
-  /* Your crops' prices: a tile per crop, two to a row, like a stocks
-     widget. The price large, its sign smaller and raised in the readable
-     gold (gold for money, as on the receipt); the month's change as the
-     usual chip; the past twelve months as a line over a fading wash, green
-     when the price rose, red when it fell. A tile is pressed like a card:
-     it gives a little under the finger. */
-  .cp-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
-  /* An odd one out takes the whole row rather than leaving a hole. */
-  .cp-grid > .cp-tile:last-child:nth-child(odd) { grid-column: 1 / -1; }
-  .cp-tile {
-    position: relative; display: flex; flex-direction: column; align-items: flex-start; min-width: 0;
-    padding: 14px 14px 12px; border: none; border-radius: 20px; background: var(--card);
-    font: inherit; color: inherit; text-align: left; cursor: pointer;
-    box-shadow: 0 0 0 1px rgba(22,33,27,.07), 0 1px 2px rgba(22,33,27,.05), 0 12px 24px -18px rgba(22,33,27,.35);
-    transition: transform 160ms var(--ease-out);
+  /* Your crops' prices: one crop at a time. Chips to choose it (they wrap;
+     the chosen one solid green), and under them its panel: the crop's
+     drawing on a pale disc, the price in big figures with the sign raised in
+     the readable gold (gold for money, as on the receipt), the month's
+     change, then the year's highest and lowest month side by side, and the
+     way into its price sheet across the foot. */
+  .cs-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .cs-chip {
+    display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px 0 6px; border: none; border-radius: 99px;
+    background: var(--card); color: var(--text); font-family: var(--font-display); font-size: 15px; font-weight: 700; cursor: pointer;
+    box-shadow: inset 0 0 0 1px var(--line);
+    transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease, transform 160ms var(--ease-out);
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
-  .cp-tile:active { transform: scale(.97); transition-duration: var(--dur-press); }
-  .cp-tile:focus-visible { outline: 3px solid var(--tanim); outline-offset: 2px; }
-  .cp-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; }
-  .cp-ph {
-    width: 42px; height: 42px; flex: 0 0 42px; border-radius: 50%; overflow: hidden;
-    display: flex; align-items: center; justify-content: center; background: var(--tanim-sk); color: var(--tanim);
-    box-shadow: 0 0 0 2px #fff, 0 0 0 3px rgba(22,33,27,.08);
+  .cs-chip:active { transform: scale(.96); transition-duration: var(--dur-press); }
+  .cs-chip:focus-visible { outline: 3px solid var(--tanim); outline-offset: 2px; }
+  .cs-chip[aria-pressed="true"] { background: var(--tanim); color: #fff; box-shadow: 0 6px 14px -8px rgba(11,107,65,.7); }
+  .cs-chip-art {
+    width: 32px; height: 32px; flex: 0 0 32px; border-radius: 50%; overflow: hidden;
+    display: flex; align-items: center; justify-content: center; background: var(--tanim-sk);
   }
-  .cp-ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .cp-name { max-width: 100%; margin-top: 12px; font-family: var(--font-display); font-size: 16.5px; font-weight: 700; line-height: 1.25; color: var(--text); overflow-wrap: break-word; }
-  .cp-var { max-width: 100%; font-size: 13.5px; line-height: 1.35; color: var(--text-faint); overflow-wrap: break-word; }
-  .cp-price {
-    margin-top: 8px; font-family: var(--font-display); font-size: 26px; font-weight: 800; line-height: 1.1;
-    letter-spacing: -.02em; color: var(--text); white-space: nowrap;
+  .cs-chip[aria-pressed="true"] .cs-chip-art { background: #fff; }
+  .cs-chip-art img { width: 86%; height: 86%; object-fit: contain; display: block; }
+
+  .cs-panel {
+    margin-top: 12px; padding: 18px 16px 8px; border-radius: 22px; background: var(--card);
+    box-shadow: 0 0 0 1px rgba(11,107,65,.12), 0 1px 2px rgba(22,33,27,.05), 0 16px 32px -24px rgba(22,33,27,.4);
+    animation: cs-in 240ms var(--ease-out);
   }
-  .cp-cur { font-size: .62em; font-weight: 700; letter-spacing: 0; color: var(--gold-text); vertical-align: .42em; margin-right: 2px; }
-  .cp-price small { margin-left: 2px; font-size: 13px; font-weight: 600; letter-spacing: 0; color: var(--text-faint); }
-  .cp-cap { margin-top: 10px; font-size: 12.5px; font-weight: 600; line-height: 1.3; color: var(--text-faint); }
-  .cp-chart { position: relative; display: block; width: 100%; height: 44px; margin-top: 4px; }
-  .cp-chart svg { display: block; width: 100%; height: 100%; overflow: visible; }
-  .cp-chart.up { color: var(--tanim); }
-  .cp-chart.down { color: var(--error); }
-  .cp-chart.flat { color: var(--text-faint); }
-  .cp-dot {
-    position: absolute; right: 0; width: 9px; height: 9px; margin: -4.5px -4.5px 0 0; border-radius: 50%;
-    background: currentColor; box-shadow: 0 0 0 2.5px #fff;
+  @keyframes cs-in { from { opacity: 0; transform: translateY(6px); } }
+  .cs-main { display: flex; align-items: center; gap: 16px; }
+  /* The drawing on a pale disc, lit from the top. */
+  .cs-art {
+    width: 104px; height: 104px; flex: 0 0 104px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(circle at 50% 30%, #F4FAF6 0%, #DCEEE3 100%);
+    box-shadow: inset 0 0 0 1px rgba(11,107,65,.1);
   }
-  /* No records: said in the line's place, so the row's tiles stay level. */
-  .cp-none {
-    display: flex; align-items: center; width: 100%; flex: 1; min-height: 58px; margin-top: 10px; padding: 8px 10px; border-radius: 12px;
-    background: var(--paper); font-size: 13px; line-height: 1.4; color: var(--text-muted);
+  .cs-art img { width: 82%; height: 82%; object-fit: contain; display: block; filter: drop-shadow(0 6px 8px rgba(22,33,27,.18)); }
+  .cs-what { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; }
+  .cs-name { margin: 0; font-family: var(--font-display); font-size: 19px; font-weight: 700; line-height: 1.2; letter-spacing: -.01em; color: var(--text); overflow-wrap: break-word; max-width: 100%; }
+  .cs-var { font-size: 14px; line-height: 1.35; color: var(--text-faint); }
+  .cs-price {
+    margin-top: 6px; font-family: var(--font-display); font-size: 34px; font-weight: 800; line-height: 1.05;
+    letter-spacing: -.025em; color: var(--text); white-space: nowrap;
+  }
+  .cs-cur { font-size: .58em; font-weight: 700; letter-spacing: 0; color: var(--gold-text); vertical-align: .5em; margin-right: 2px; }
+  .cs-price small { margin-left: 3px; font-size: 15px; font-weight: 600; letter-spacing: 0; color: var(--text-faint); }
+  .cs-move { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin-top: 8px; }
+  .cs-from { font-size: 14px; line-height: 1.3; color: var(--text-muted); }
+  /* The year's two ends, in words: label small and quiet, the price bold,
+     the month after it. */
+  .cs-facts { display: grid; grid-template-columns: 1fr 1fr; margin: 16px 0 0; border-top: 1px solid var(--line); }
+  .cs-fact { padding: 12px 0 12px; min-width: 0; }
+  .cs-fact + .cs-fact { padding-left: 14px; border-left: 1px solid var(--line); }
+  .cs-fact dt { font-size: 13px; font-weight: 600; line-height: 1.3; color: var(--text-faint); }
+  .cs-fact dd { margin: 4px 0 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 6px; }
+  .cs-fact b { font-family: var(--font-display); font-size: 18px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .cs-fact span { font-size: 13.5px; color: var(--text-muted); white-space: nowrap; }
+  .cs-open {
+    width: calc(100% + 16px); margin: 0 -8px; min-height: 48px; padding: 0 8px; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    border: none; border-top: 1px solid var(--line); border-radius: 0 0 14px 14px; background: none; cursor: pointer; text-align: left;
+    font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--tanim);
+    transition: background-color 160ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .cs-open:active { background: var(--tanim-sk); transition-duration: var(--dur-press); }
+  .cs-open:focus-visible { outline: 3px solid var(--tanim); outline-offset: -3px; }
+  .cs-none { margin: 16px 0 10px; padding: 12px 14px; border-radius: 14px; background: var(--paper); font-size: 14px; line-height: 1.45; color: var(--text-muted); }
+  @media (prefers-reduced-motion: reduce) {
+    .cs-panel { animation: none; }
+    .cs-chip:active { transform: none; }
   }
 
   /* Cheapest today: price tags, all in AniSense gold. Each is a paper tag

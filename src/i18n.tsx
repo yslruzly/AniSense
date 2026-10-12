@@ -155,6 +155,11 @@ export const translations: Dict = {
   /** Heading for the two model cards (ARIMA + AI, ARIMA forecast). */
   home_ai_recos: { en: "AI Recommendations", tl: "Mga rekomendasyon ng AI" },
   home_your_crops: { en: "Your crops' prices", tl: "Presyo ng iyong mga pananim" },
+  cs_choose: { en: "Your crops", tl: "Ang mga pananim mo" },
+  cs_from: { en: "from {month}", tl: "mula {month}" },
+  cs_high: { en: "Highest in {n} months", tl: "Pinakamataas sa {n} buwan" },
+  cs_low: { en: "Lowest in {n} months", tl: "Pinakamababa sa {n} buwan" },
+  cs_see: { en: "See this year's prices and the forecast", tl: "Tingnan ang presyo ngayong taon at ang taya" },
   home_spent_month: { en: "Spent this month", tl: "Nagastos ngayong buwan" },
   home_vs_last: { en: "vs last month", tl: "kumpara noong nakaraang buwan" },
   home_spent_none: { en: "Nothing recorded yet this month", tl: "Wala pang naitala ngayong buwan" },

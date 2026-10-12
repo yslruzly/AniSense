@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { useState } from "react";
 import { ChevronRight, Plus, ArrowUp, ArrowDown, Package, ArrowUpRight, ArrowDownRight, ArrowRight } from "lucide-react";
 import { useLang } from "../../i18n";
 import { CROPS, CROP_GROUP_BY_ID, hasPrice } from "../../data/crops";
@@ -8,8 +8,7 @@ import { useMarket } from "../../store/market";
 import { Skeleton, SkeletonMediaRows } from "../states";
 import { peso, toCents } from "../../lib/money";
 import { SAMPLE_HARVEST } from "../../data/demo/marketplace";
-import { cropPhoto } from "../../data/cropPhotos";
-import { historyOf } from "../../data/priceRecords";
+import { historyOf, latestOf, monthLabel, MonthPrice } from "../../data/priceRecords";
 import { CropPrice } from "../../types";
 import leafMask from "../../assets/anisense-leaf-mask.png";
 
@@ -176,46 +175,20 @@ export function YourHarvest({ onPost, onOpenMarket, onOpen }: {
 }
 
 // ─── Your crops' prices ───────────────────────────────────────────────────────
-// The crops the farmer grows, as price tiles side by side, the way a phone's
-// stocks widget shows a few at once: the crop, its price large, how it moved
-// from the month before, and under it the past twelve months as a line, so
-// "is this a good price?" has its answer on the same tile. Two to a row; an
-// odd one out takes the whole row. Tapping a tile opens its price sheet (this
-// year's prices and the forecast), the same one the Prices page opens.
+// One crop at a time, in a spotlight. The farmer's crops are chips across the
+// top (they wrap, never a row to swipe); the chosen one fills the panel under
+// them: its drawing large, its price in big figures, how it moved from the
+// month before, and the year's highest and lowest month in words, so "is
+// this a good price?" is answered without reading a chart. The button at the
+// foot opens its price sheet (this year's prices and the forecast), the same
+// one the Prices page opens.
 //
-// A crop with no price records shows ₱0 and says it has no history yet, in
-// the space its line would take, so the tiles in a row stay one height.
+// The drawings are the sign-up's (What do you grow): one style for every
+// crop, and sharp at this size, where the photographs are not.
+//
+// A crop with no price records shows ₱0 and says it has no history yet.
 
 const dirOf = (n: number) => (n > 0 ? "up" : n < 0 ? "down" : "flat");
-
-/** The past months as a line over a fading wash, in the tile's direction
- *  colour, with a dot on the newest month: the price the tile shows. */
-function Trend({ values, dir }: { values: number[]; dir: string }) {
-  const id = "cp-g" + useId().replace(/:/g, "");
-  const max = Math.max(...values), min = Math.min(...values), span = max - min || 1;
-  // Drawn in a 100 × 40 box stretched to the tile's width; the line keeps
-  // its thickness however it is stretched (non-scaling stroke).
-  const x = (i: number) => (i / (values.length - 1)) * 100;
-  const y = (v: number) => 34 - ((v - min) / span) * 28;
-  const line = values.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(2)} ${y(v).toFixed(2)}`).join(" ");
-  const last = values[values.length - 1];
-  return (
-    <span className={`cp-chart ${dir}`} aria-hidden="true">
-      <svg viewBox="0 0 100 40" preserveAspectRatio="none">
-        <defs>
-          <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="currentColor" stopOpacity=".22" />
-            <stop offset="1" stopColor="currentColor" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        <path d={`${line} L100 40 L0 40 Z`} fill={`url(#${id})`} />
-        <path d={line} fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
-      </svg>
-      {/* The dot is HTML, not SVG: in a stretched drawing a circle would be an oval. */}
-      <span className="cp-dot" style={{ top: `${(y(last) / 40) * 100}%` }} />
-    </span>
-  );
-}
 
 export function YourCropPrices({ crops, onOpen, onAll }: {
   /** Each crop the farmer grows, by its lead variety. */
@@ -224,56 +197,92 @@ export function YourCropPrices({ crops, onOpen, onAll }: {
   /** The Prices page. */
   onAll: () => void;
 }) {
-  const { t, tn } = useLang();
+  const { t, tn, lang } = useLang();
   const priced = CROPS.filter(hasPrice);
   const up = priced.filter(c => c.change > 0).length;
+  // Opens on the first crop that has a price, so the first look says
+  // something; any chip changes it.
+  const [pick, setPick] = useState<string | null>(null);
+  const c = crops.find(x => x.id === pick) ?? crops.find(hasPrice) ?? crops[0];
+  if (!c) return null;
+
+  const group = CROP_GROUP_BY_ID[c.id] || c.name;
+  const art = growArtFor(group);
+  const price = peso(c.pricePerKg);
+  const dir = dirOf(c.change);
+  const Arrow = dir === "up" ? ArrowUpRight : dir === "down" ? ArrowDownRight : ArrowRight;
+  const months = historyOf(c.id).slice(-12);
+  const high = months.reduce<MonthPrice | null>((m, p) => (!m || p.price > m.price ? p : m), null);
+  const low = months.reduce<MonthPrice | null>((m, p) => (!m || p.price < m.price ? p : m), null);
+  const before = latestOf(c.id)?.previous;
+  const known = hasPrice(c) && months.length >= 2 && high && low;
+
   return (
-    <section className="hm-sec cp" aria-labelledby="cp-t" data-tour="prices">
+    <section className="hm-sec cs" aria-labelledby="cs-t" data-tour="prices">
       <div className="hm-sec-row">
-        <h2 className="hm-sec-title" id="cp-t">{t("home_your_crops")}</h2>
+        <h2 className="hm-sec-title" id="cs-t">{t("home_your_crops")}</h2>
         <button className="hm-link" onClick={onAll}>
           {t("mkt_all")} <ChevronRight size={16} strokeWidth={2.6} />
         </button>
       </div>
       <p className="hm-sec-sub">{t("mkt_pulse_head").replace("{up}", String(up)).replace("{n}", String(priced.length))}</p>
-      <div className="cp-grid stagger-list">
-        {crops.map(c => {
-          const group = CROP_GROUP_BY_ID[c.id] || "";
-          const photo = cropPhoto(c.id);
-          const price = peso(c.pricePerKg);
-          const months = historyOf(c.id).slice(-12).map(p => p.price);
-          const dir = dirOf(c.change);
-          const Arrow = dir === "up" ? ArrowUpRight : dir === "down" ? ArrowDownRight : ArrowRight;
-          return (
-            <button key={c.id} type="button" className="cp-tile" onClick={() => onOpen(c)}>
-              <span className="cp-top">
-                <span className="cp-ph">
-                  {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropIcon crop={group || c.name} size={20} />}
+
+      {/* One crop needs no choosing. */}
+      {crops.length > 1 && (
+        <div className="cs-chips" role="group" aria-label={t("cs_choose")}>
+          {crops.map(x => {
+            const g = CROP_GROUP_BY_ID[x.id] || x.name;
+            const pic = growArtFor(g);
+            return (
+              <button key={x.id} type="button" className="cs-chip" aria-pressed={x.id === c.id} onClick={() => setPick(x.id)}>
+                <span className="cs-chip-art">{pic ? <img src={pic} alt="" decoding="async" draggable={false} /> : <CropIcon crop={g} size={16} />}</span>
+                {tn(g)}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Keyed on the crop: a new one settles in rather than the numbers
+          changing under the eye. */}
+      <div className="cs-panel" key={c.id}>
+        <div className="cs-main">
+          <span className="cs-art">{art ? <img src={art} alt="" decoding="async" draggable={false} /> : <CropIcon crop={group} size={40} />}</span>
+          <div className="cs-what">
+            <h3 className="cs-name">{tn(group)}</h3>
+            <span className="cs-var">{c.name}</span>
+            <span className="cs-price"><span className="cs-cur">{price.slice(0, 1)}</span>{price.slice(1)}<small>{t("per_kg_short")}</small></span>
+            {/* Arrow, sign and colour: the direction never rests on colour alone. */}
+            {hasPrice(c) && (
+              <span className="cs-move">
+                <span className={`pr-chg ${dir}`}>
+                  <Arrow size={14} strokeWidth={2.6} aria-hidden="true" />
+                  {c.change > 0 ? "+" : c.change < 0 ? "−" : ""}{Math.abs(c.change)}%
                 </span>
-                {/* Arrow, sign and colour: the direction never rests on colour alone. */}
-                {hasPrice(c) && (
-                  <span className={`pr-chg ${dir}`}>
-                    <Arrow size={14} strokeWidth={2.6} aria-hidden="true" />
-                    {c.change > 0 ? "+" : c.change < 0 ? "−" : ""}{Math.abs(c.change)}%
-                  </span>
-                )}
+                {before && <span className="cs-from">{t("cs_from").replace("{month}", monthLabel(before.month, lang, "long"))}</span>}
               </span>
-              <span className="cp-name">{tn(group || c.name)}</span>
-              <span className="cp-var">{c.name}</span>
-              <span className="cp-price">
-                <span className="cp-cur">{price.slice(0, 1)}</span>{price.slice(1)}<small>{t("per_kg_short")}</small>
-              </span>
-              {hasPrice(c) && months.length >= 2 ? (
-                <>
-                  <span className="cp-cap">{t("mkt_history_only").replace("{n}", String(months.length))}</span>
-                  <Trend values={months} dir={dir} />
-                </>
-              ) : (
-                <span className="cp-none">{t("mkt_no_history")}</span>
-              )}
+            )}
+          </div>
+        </div>
+        {known ? (
+          <>
+            <dl className="cs-facts">
+              <div className="cs-fact">
+                <dt>{t("cs_high").replace("{n}", String(months.length))}</dt>
+                <dd><b>{peso(high.price)}</b><span>{monthLabel(high.month, lang, "short", true)}</span></dd>
+              </div>
+              <div className="cs-fact">
+                <dt>{t("cs_low").replace("{n}", String(months.length))}</dt>
+                <dd><b>{peso(low.price)}</b><span>{monthLabel(low.month, lang, "short", true)}</span></dd>
+              </div>
+            </dl>
+            <button type="button" className="cs-open" onClick={() => onOpen(c)}>
+              {t("cs_see")} <ChevronRight size={18} strokeWidth={2.6} aria-hidden="true" />
             </button>
-          );
-        })}
+          </>
+        ) : (
+          <p className="cs-none">{t("mkt_no_history")}</p>
+        )}
       </div>
     </section>
   );
