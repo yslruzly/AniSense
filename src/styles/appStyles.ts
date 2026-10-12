@@ -1938,6 +1938,15 @@ export const appCss = `
     background: #FDF6E3; color: #6B4A08; font-size: 15px; line-height: 1.45; box-shadow: inset 0 0 0 1px rgba(242,179,44,.45);
   }
   .mp-sample-note svg { flex-shrink: 0; margin-top: 1px; color: #B87A0B; }
+  /* The same tag on a sample order, after its name (Orders, Home's "What
+     you bought"), and on the dark total of the Orders page. Palay, as on the
+     Market's sample harvests. */
+  .ph-sample {
+    display: inline-flex; align-items: center; margin-left: 8px; padding: 2px 8px; border-radius: 99px; vertical-align: 2px;
+    background: #F2B32C; color: var(--ink); font-family: var(--font-body); font-size: 12px; font-weight: 800; letter-spacing: 0; line-height: 1.4;
+  }
+  .ph-sample.on-ink { margin: 8px 0 0; vertical-align: baseline; }
+  .ph-sample-note { margin: 0 0 12px; }
   .mp-card-body { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px 12px; min-width: 0; }
   .mp-card-name {
     font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--text); line-height: 1.2;

@@ -29,3 +29,10 @@ export const MONTHLY_TRENDS = [
   { month: "Sep", amount: 29500 },
   { month: "Oct", amount: 31000 },
 ];
+
+// ─── In a real account, while the buyer has no orders yet ─────────────────────
+// The same five purchases, each marked as a sample, so the Orders page and
+// Home's "What you bought" show what they will look like. The buyer's first
+// real order replaces them all. Nothing can be done to a sample: no payment
+// to record, no farmer to rate.
+export const SAMPLE_PURCHASES: BuyerTransaction[] = BUYER_TRANSACTIONS.map(t => ({ ...t, sample: true }));

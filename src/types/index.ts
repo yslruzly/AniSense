@@ -32,6 +32,8 @@ export interface BuyerTransaction {
   paid?: number;
   /** The stars the buyer gave the farmer for it, 1 to 5, once they have. */
   rating?: number;
+  /** A sample order, shown to a real buyer who has none yet (SAMPLE_PURCHASES). */
+  sample?: boolean;
 }
 export interface Listing {
   id: string; crop: string; variety: string; desc: string;

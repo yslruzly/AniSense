@@ -471,6 +471,10 @@ export const translations: Dict = {
     tl: "Hindi puwedeng i-order ang sample na ani. Alisin ang mga ito sa cart: lalabas sa Merkado ang totoong ani kapag nag-post na ang mga magsasaka.",
   },
   mp_sample: { en: "Sample", tl: "Sample" },
+  ph_samples_note: {
+    en: "These are sample orders, to show how your orders will look. Yours replace them as soon as you buy.",
+    tl: "Mga sample na order ito, para makita kung paano lalabas ang mga order mo. Papalitan sila ng sarili mong order kapag bumili ka na.",
+  },
   mp_samples_note: {
     en: "These are sample harvests, to show how the Market works. Real ones replace them as soon as farmers post.",
     tl: "Mga sample na ani ito, para makita kung paano gumagana ang Merkado. Papalitan sila ng totoong ani kapag nag-post na ang mga magsasaka.",

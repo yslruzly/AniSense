@@ -38,6 +38,8 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
   const busy = market.loadPhase !== "ready";
   const showSkeleton = market.loadPhase === "skeleton";
   const buyerTransactions = market.purchases;
+  // A buyer with no orders yet sees the sample ones (store/market).
+  const samples = buyerTransactions.some(tx => tx.sample);
   // The order line whose payment is being written down, by id, so the sheet
   // follows the row if the history is fetched again while it is open.
   const [payingId, setPayingId] = useState<string | null>(null);
@@ -279,6 +281,7 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
               ) : (
                 <>
                   <div className="exp-total">{peso(totalSpent(buyerTransactions))}</div>
+                  {samples && <span className="ph-sample on-ink">{t("mp_sample")}</span>}
                   <div style={{ fontSize: "var(--fs-label)", opacity: .7, marginTop: 4 }}>{buyerTransactions.length} {buyerTransactions.length !== 1 ? t("exp_past_txn") : t("exp_past_txn_one")}</div>
                 </>
               )}
@@ -300,7 +303,13 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
                   </span>
                 )}
               </div>
-              {!busy && buyerTransactions.length > 0 && <p className="ph-note">{t("ph_note")}</p>}
+              {/* Sample orders, while the buyer has none: said once, over
+                  the list; each row carries the tag, and nothing can be done
+                  to one. */}
+              {!busy && samples && (
+                <p className="mp-sample-note ph-sample-note" role="note"><ShoppingCart size={18} strokeWidth={2.4} aria-hidden="true" /> {t("ph_samples_note")}</p>
+              )}
+              {!busy && buyerTransactions.length > 0 && !samples && <p className="ph-note">{t("ph_note")}</p>}
               {busy
                 ? (showSkeleton ? <SkeletonMediaRows rows={4} tile={46} label={t("state_loading_records")} /> : null)
                 : buyerTransactions.length === 0
@@ -338,7 +347,7 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
                                     : <CropIcon crop={tx.crop} size={22} />}
                                 </div>
                                 <div className="ph-body">
-                                  <div className="ph-title">{title}</div>
+                                  <div className="ph-title">{title}{tx.sample && <span className="ph-sample">{t("mp_sample")}</span>}</div>
                                   <div className="ph-sub">
                                     {!saysCrop && <>{tn(tx.crop)} · </>}{tx.kg} kg · ₱{Math.round(tx.amount / tx.kg)}{t("per_kg_short")}
                                   </div>
@@ -365,7 +374,7 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
                                         : tx.status
                                           ? <span className="ph-status is-ok"><Check size={15} strokeWidth={2.8} aria-hidden="true" /> {t("ph_st_confirmed")}</span>
                                           : null}
-                                    {tx.status !== "cancelled" && (
+                                    {tx.status !== "cancelled" && !tx.sample && (
                                       <button type="button" className={`ph-pay${tx.paid !== undefined ? " is-done" : ""}`} onClick={() => { setFreshRate(null); setPayingId(tx.id); }}
                                         aria-label={`${tx.paid !== undefined ? t("ph_pay_change") : t("ph_pay_record")}: ${title}, ${tx.seller}`}>
                                         {tx.paid !== undefined
@@ -378,7 +387,7 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
                                 {/* Settled on both sides: how was the farmer? Five
                                     stars to tap. Confirmed but not yet paid: a line
                                     saying what comes first. */}
-                                {settled(tx) ? (
+                                {tx.sample ? null : settled(tx) ? (
                                   <div className={`ph-rate${freshRate === tx.id ? " is-new" : ""}${tx.rating ? " is-rated" : ""}`}>
                                     <span className="ph-rate-q" id={`rq-${tx.id}`}>
                                       {t(tx.rating ? "rate_done" : "rate_q").replace("{name}", firstName(tx.seller))}

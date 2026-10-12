@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { BuyerTransaction, CartItem, Expense, IncomingOrder, Listing, SellerDetail, UserRole } from "../types";
 import { LISTINGS, SELLER_DETAILS, SAMPLE_MARKET } from "../data/demo/marketplace";
-import { EXPENSES, BUYER_TRANSACTIONS } from "../data/demo/expenses";
+import { EXPENSES, BUYER_TRANSACTIONS, SAMPLE_PURCHASES } from "../data/demo/expenses";
 import { sampleIncomingOrders } from "../data/demo/orders";
 import { CROPS, CROP_GROUP_BY_ID, applyPrices } from "../data/crops";
 import { isSupabaseConfigured } from "../lib/supabase";
@@ -176,7 +176,10 @@ export function useMarketStore({ accountId, role, name, initials }: {
       return r.fromCache;
     }));
     if (role === "buyer") {
-      jobs.push(fetchMyPurchases().then(r => { if (g === gen.current) setPurchases(r.data); return r.fromCache; }));
+      // No orders yet: the sample orders stand in, marked as samples, until
+      // the first real one. Only when the server says there are none: not
+      // when it couldn't be asked, which leaves the list as it was.
+      jobs.push(fetchMyPurchases().then(r => { if (g === gen.current) setPurchases(r.data.length ? r.data : SAMPLE_PURCHASES); return r.fromCache; }));
     } else {
       // Send anything recorded offline first, once, so both fresh lists
       // include it (a second sync started alongside would return at once).
@@ -328,7 +331,7 @@ export function useMarketStore({ accountId, role, name, initials }: {
       // The order is in. Catching up the stock and the history is a courtesy
       // that may fail offline without taking the order with it.
       void refresh();
-      void fetchMyPurchases().then(r => setPurchases(r.data)).catch(() => {});
+      void fetchMyPurchases().then(r => setPurchases(r.data.length ? r.data : SAMPLE_PURCHASES)).catch(() => {});
       return;
     }
     // Demo: the same effects, in memory, so the sample market behaves.

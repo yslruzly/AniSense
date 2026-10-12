@@ -373,7 +373,11 @@ export function YourPurchases({ onShop, onHistory }: { onShop: Shop; onHistory: 
   return (
     <section className="hm-sec" aria-labelledby="yp-t" data-tour="b-purchases">
       <div className="hm-sec-row">
-        <h2 className="hm-sec-title" id="yp-t">{t("yp_title")}</h2>
+        <h2 className="hm-sec-title" id="yp-t">
+          {t("yp_title")}
+          {/* No orders yet: these are the sample ones, and say so. */}
+          {purchases.some(tx => tx.sample) && <span className="ph-sample">{t("mp_sample")}</span>}
+        </h2>
         <button className="hm-link" onClick={onHistory}>
           {t("yp_history")} <ChevronRight size={16} strokeWidth={2.6} />
         </button>
