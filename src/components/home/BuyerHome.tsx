@@ -271,7 +271,8 @@ export function FeaturedProducts({ onShop }: { onShop: Shop }) {
 //
 // A list to read: the tags go nowhere (the featured harvests just above are
 // the ones that open). A finger on one still gets an answer: the tag lights
-// up from the spot it touched and glows, and lets go a moment after.
+// up from the spot it touched and glows, its string's ends swing once, and it
+// lets go a moment after.
 
 // What a crop goes for today, so a listing can be called cheap or not. 0 for
 // a crop with no price yet (data/crops.ts), which is no price at all.
@@ -281,6 +282,24 @@ const marketPrice = (crop: string, variety: string) => {
   const inGroup = CROPS.find(c => CROP_GROUP_BY_ID[c.id] === crop);
   return inGroup?.pricePerKg ?? null;
 };
+
+// A tag's string, in the tag's own frame: the hole's centre is at (27.5, 20).
+// Up through the hole, over the point, knotted just past the tip, two ends
+// hanging into the page margin. Each strand is drawn twice, twine and then a
+// broken lighter line along it, so it reads as twisted cord, not a wire.
+const CORD = "M27.5 20C21 19 14 18.6 7.5 19.6";
+const ENDS = ["M6 21.5C4 28.5 3 36 4.5 46", "M7.5 21.5C9 29 9.8 37 9 45"];
+const strand = (d: string) => [
+  <path key={d} className="ptag-cord" d={d} />,
+  <path key={d + "t"} className="ptag-twist" d={d} />,
+];
+const TagString = () => (
+  <svg className="ptag-string" viewBox="0 0 34 60" aria-hidden="true">
+    {strand(CORD)}
+    <g className="ptag-ends">{ENDS.flatMap(strand)}</g>
+    <circle className="ptag-knot" cx="6.6" cy="20.2" r="3" />
+  </svg>
+);
 
 export function CheapestToday() {
   const { t, tn } = useLang();
@@ -309,6 +328,13 @@ export function CheapestToday() {
     e.currentTarget.style.setProperty("--gy", `${e.clientY - r.top}px`);
     window.clearTimeout(letGo.current);
     setLit(id);
+    // The swing runs its whole course even when the light has gone: it is
+    // started here, by its own mark, and the mark is taken off when it ends.
+    // Pressed again mid-swing, it starts over from the knot.
+    const li = e.currentTarget;
+    li.removeAttribute("data-swing");
+    void li.offsetWidth;
+    li.setAttribute("data-swing", "");
   };
   const release = (after: number) => () => {
     window.clearTimeout(letGo.current);
@@ -338,7 +364,8 @@ export function CheapestToday() {
               // a shadow drawn on the clipped tag itself would be clipped away.
               <li key={l.id} className="ptag" data-lit={lit === l.id || undefined}
                 onPointerDown={press(l.id)} onPointerUp={release(180)} onPointerCancel={release(0)}
-                onPointerLeave={e => { if (e.buttons) release(0)(); }}>
+                onPointerLeave={e => { if (e.buttons) release(0)(); }}
+                onAnimationEnd={e => { if (e.animationName === "ptag-swing") e.currentTarget.removeAttribute("data-swing"); }}>
                 <div className="ptag-in">
                   <span className="ptag-hole" aria-hidden="true" />
                   <span className="ptag-txt">
@@ -362,6 +389,8 @@ export function CheapestToday() {
                     {src ? <img src={src} alt="" loading="lazy" decoding="async" /> : <CropEmoji crop={l.crop} size={26} />}
                   </span>
                 </div>
+                {/* Outside the tag, so its cut does not cut the string. */}
+                <TagString />
               </li>
             );
           })}
