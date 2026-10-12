@@ -2728,49 +2728,83 @@ export const appCss = `
   .shell[data-revisit] .scroll .ct-fill { animation: none; }
 
   /* ── Price alerts ───────────────────────────────────────────────────────
-     A short list of targets and one button. A reached target turns the row
-     green and swaps the waiting line for the price it hit, so the state is
-     readable without opening anything. */
-  .pa {
-    margin-top: 12px; padding: 6px 14px 14px; border-radius: var(--radius); background: var(--card);
-    box-shadow: inset 0 0 0 1px var(--line), 0 14px 30px -22px rgba(22,33,27,.35);
+     A card per alert: the crop's drawing inside a ring that fills as the
+     price travels from where it was when the alert was set to the target.
+     Green (--tone) for a price waited on to rise, blue for one waited on to
+     fall; a reached one is a full green ring with a check, on a green-washed
+     card. The ring fills once, the first time Home is seen. */
+  .pa-list { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .pa-card {
+    --tone: var(--tanim); --tone-sk: var(--tanim-sk);
+    display: flex; align-items: center; gap: 14px; padding: 14px 6px 14px 14px; border-radius: 20px; background: var(--card);
+    box-shadow: 0 0 0 1px rgba(22,33,27,.07), 0 1px 2px rgba(22,33,27,.05), 0 12px 24px -18px rgba(22,33,27,.35);
   }
-  .pa-empty { margin: 12px 2px; font-size: 14.5px; color: var(--text-muted); }
-  .pa-list { list-style: none; margin: 0; padding: 0; }
-  .pa-row { display: flex; align-items: center; gap: 11px; padding: 10px 0; }
-  .pa-row + .pa-row { border-top: 1px solid var(--line); }
-  .pa-photo {
-    width: 42px; height: 42px; flex: 0 0 42px; border-radius: 12px; overflow: hidden;
-    display: flex; align-items: center; justify-content: center; background: var(--tanim-sk); color: var(--tanim);
+  .pa-card.down { --tone: #2F6FA8; --tone-sk: #DCEAF8; }
+  .pa-card.hit {
+    --tone: var(--tanim); --tone-sk: var(--tanim-sk);
+    background: linear-gradient(120deg, #E6F3EA 0%, #FFFFFF 75%);
+    box-shadow: 0 0 0 1.5px rgba(11,107,65,.32), 0 1px 2px rgba(22,33,27,.05), 0 14px 26px -18px rgba(11,107,65,.5);
   }
-  .pa-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .pa-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-  .pa-name { font-family: var(--font-display); font-size: 15.5px; font-weight: 700; color: var(--text); }
-  .pa-meta { font-size: 14px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
-  .pa-row.hit .pa-meta { color: var(--tanim-deep); font-weight: 600; }
-  .pa-now { flex-shrink: 0; font-family: var(--font-display); font-size: 15.5px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
-  .pa-now small { font-size: 12.5px; font-weight: 600; color: var(--text-muted); }
-  .pa-hit {
-    flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px; padding: 5px 10px; border-radius: 99px;
-    background: var(--tanim-sk); color: var(--tanim-deep);
-    font-family: var(--font-display); font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums;
+  .pa-dial { position: relative; width: 64px; height: 64px; flex: 0 0 64px; }
+  .pa-ring { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .pa-ring-track { fill: none; stroke: var(--paper-alt); stroke-width: 5; }
+  .pa-ring-fill { fill: none; stroke: var(--tone); stroke-width: 5; stroke-linecap: round; animation: pa-ring-in 900ms var(--ease-out) 150ms both; }
+  /* From empty to where it stands (its own inline offset). */
+  @keyframes pa-ring-in { from { stroke-dashoffset: 175.93; } }
+  .pa-art {
+    position: absolute; inset: 9px; border-radius: 50%; overflow: hidden;
+    display: flex; align-items: center; justify-content: center; color: var(--tone);
+    background: radial-gradient(circle at 50% 30%, #fff 0%, var(--tone-sk) 100%);
   }
+  .pa-art img { width: 82%; height: 82%; object-fit: contain; display: block; }
+  .pa-check {
+    position: absolute; right: -1px; bottom: -1px; width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; background: var(--tanim); color: #fff;
+    box-shadow: 0 0 0 2.5px #fff;
+  }
+  .pa-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+  .pa-name { font-family: var(--font-display); font-size: 16.5px; font-weight: 700; line-height: 1.25; color: var(--text); }
+  .pa-target {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-family: var(--font-display); font-size: 15px; font-weight: 700; line-height: 1.3; color: var(--tone); font-variant-numeric: tabular-nums;
+  }
+  .pa-target svg { flex-shrink: 0; }
+  .pa-now { font-size: 14px; line-height: 1.35; color: var(--text-muted); font-variant-numeric: tabular-nums; }
   .pa-x {
-    flex-shrink: 0; width: 38px; height: 38px; border: none; border-radius: 50%; background: none; cursor: pointer;
+    flex-shrink: 0; align-self: flex-start; width: 44px; height: 44px; margin: -6px 0 0; border: none; border-radius: 50%; background: none; cursor: pointer;
     display: inline-flex; align-items: center; justify-content: center; color: var(--text-faint);
     transition: transform 190ms var(--ease-out), background-color 160ms ease;
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
   .pa-x:active { transform: scale(.9); background: var(--paper); transition-duration: var(--dur-press); }
+  /* None yet: a bell on a soft gold disc, and an example in their crop. */
+  .pa-empty {
+    display: flex; align-items: center; gap: 14px; margin-top: 12px; padding: 16px; border-radius: 20px; background: var(--card);
+    box-shadow: 0 0 0 1px rgba(22,33,27,.07), 0 12px 24px -18px rgba(22,33,27,.35);
+  }
+  .pa-empty-ico {
+    width: 56px; height: 56px; flex: 0 0 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(circle at 50% 30%, #FFF8E6 0%, #FBE3A8 100%); color: var(--gold-text);
+    box-shadow: inset 0 0 0 1px rgba(138,93,12,.12);
+  }
+  .pa-empty-t { font-family: var(--font-display); font-size: 16.5px; font-weight: 700; line-height: 1.25; color: var(--text); }
+  .pa-empty-s { margin: 3px 0 0; font-size: 14px; line-height: 1.45; color: var(--text-muted); }
+  /* Add another: a dashed tile, the plus in its own green disc. */
   .pa-add {
-    width: 100%; margin-top: 12px; min-height: 48px; display: flex; align-items: center; justify-content: center; gap: 8px;
-    border: none; border-radius: 14px; cursor: pointer;
-    background: var(--tanim-sk); color: var(--tanim-deep);
+    width: 100%; margin-top: 10px; min-height: 56px; display: flex; align-items: center; justify-content: center; gap: 10px;
+    border: 1.5px dashed rgba(11,107,65,.45); border-radius: 18px; cursor: pointer;
+    background: rgba(215,234,221,.35); color: var(--tanim-deep);
     font-family: var(--font-display); font-size: 15.5px; font-weight: 700;
     transition: transform 190ms var(--ease-out), background-color 160ms ease;
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
-  .pa-add:active { transform: scale(.97); background: #CFE6D8; transition-duration: var(--dur-press); }
+  .pa-add:active { transform: scale(.98); background: var(--tanim-sk); transition-duration: var(--dur-press); }
+  .pa-add:focus-visible { outline: 3px solid var(--tanim); outline-offset: 2px; }
+  .pa-add-ico {
+    width: 30px; height: 30px; flex: 0 0 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    background: var(--tanim); color: #fff; box-shadow: 0 4px 10px -4px rgba(11,107,65,.7);
+  }
+  .shell[data-revisit] .scroll .pa-ring-fill { animation: none; }
 
   /* The sheet: one crop, one number, one sentence saying what happens. */
   .pa-sheet {
@@ -2821,6 +2855,7 @@ export const appCss = `
 
   @media (prefers-reduced-motion: reduce) {
     .pa-x:active, .pa-add:active, .pa-step button:active { transform: none; }
+    .pa-ring-fill { animation: none; }
   }
 
   /* Your harvest: the farmer's listings on Home, and the one block on the
