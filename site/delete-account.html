@@ -84,7 +84,7 @@
     <form id="signin" novalidate>
       <div class="seg" role="group" style="margin-top:16px">
         <button type="button" data-mode="phone" aria-pressed="true" data-t="cp"></button>
-        <button type="button" data-mode="gmail" aria-pressed="false">Gmail</button>
+        <button type="button" data-mode="gmail" aria-pressed="false">Email</button>
       </div>
       <label for="contact" id="contactLbl"></label>
       <input id="contact" type="tel" inputmode="numeric" autocomplete="username" placeholder="09XX XXX XXXX">
@@ -140,7 +140,7 @@
       inApp3: "Tick the box to confirm, then tap “Delete account”.",
       webTitle: "On this page",
       webLead: "No longer have the app? Sign in here with the same details and delete the account.",
-      cp: "CP Number", cpLbl: "CP number", gmailLbl: "Gmail address",
+      cp: "CP Number", cpLbl: "CP number", gmailLbl: "Email address",
       password: "Password", signIn: "Sign in",
       who: "Signed in as {name}.",
       gone1: "Your profile and member ID",
@@ -157,7 +157,7 @@
       what2: "Kept without your name: orders you placed or received, because they are also the other person's record of the sale.",
       what3: "Copies in routine backups are removed within 30 days.",
       support: "Can't sign in, or have a question about your data? Write to {email}.",
-      errNeed: "Enter your CP number or Gmail, and your password.",
+      errNeed: "Enter your CP number or email, and your password.",
       errWrong: "That number or password isn't right.",
       errNet: "No internet. Connect and try again.",
       errFail: "We couldn't delete the account. Please try again.",
@@ -172,7 +172,7 @@
       inApp3: "Lagyan ng tsek ang kahon, tapos pindutin ang “Burahin”.",
       webTitle: "Sa pahinang ito",
       webLead: "Wala na sa iyo ang app? Mag-sign in dito gamit ang parehong detalye at burahin ang account.",
-      cp: "CP Number", cpLbl: "CP number", gmailLbl: "Gmail address",
+      cp: "CP Number", cpLbl: "CP number", gmailLbl: "Email address",
       password: "Password", signIn: "Mag-sign in",
       who: "Naka-sign in bilang {name}.",
       gone1: "Ang profile at member ID mo",
@@ -189,7 +189,7 @@
       what2: "Natitira nang wala ang pangalan mo: ang mga order mo, dahil tala rin ito ng benta ng kabilang panig.",
       what3: "Ang mga kopya sa regular na backup ay nabubura sa loob ng 30 araw.",
       support: "Hindi makapag-sign in, o may tanong tungkol sa datos mo? Sumulat sa {email}.",
-      errNeed: "Ilagay ang CP number o Gmail mo, at ang password.",
+      errNeed: "Ilagay ang CP number o email mo, at ang password.",
       errWrong: "Mali ang number o password.",
       errNet: "Walang internet. Kumonekta at subukan ulit.",
       errFail: "Hindi nabura ang account. Pakisubukan ulit.",
@@ -212,7 +212,7 @@
     const c = $("contact");
     c.type = mode === "phone" ? "tel" : "email";
     c.inputMode = mode === "phone" ? "numeric" : "email";
-    c.placeholder = mode === "phone" ? "09XX XXX XXXX" : "juan@gmail.com";
+    c.placeholder = mode === "phone" ? "09XX XXX XXXX" : "juan@email.com";
     if (who) $("who").textContent = t("who").replace("{name}", who);
     if (lastErr) $("err").textContent = t(lastErr);
     if (cfg.supportEmail) {
