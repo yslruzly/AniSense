@@ -1,5 +1,5 @@
 import { CropPrice, CropGroup } from "../types";
-import { latestOf } from "./priceRecords";
+import { latestOf, hasRecords } from "./priceRecords";
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 // The catalog: every crop and variety, with its retail price per kilo and how
@@ -183,11 +183,13 @@ export function cropIdOf(name: string): string | undefined {
 /** Writes the database's newest prices into the catalog every screen reads,
  *  so Home, Prices, Analytics and the forecasts all show the same numbers.
  *  `change_pct` is against the record before: the month before, for the
- *  study's varieties. */
+ *  study's varieties. Only for a variety with price records: a sample price
+ *  the database may still hold (until seed.sql is run again), or a phone's
+ *  saved copy of one, never puts a price back on a ₱0 crop. */
 export function applyPrices(rows: { crop_id: string; price_per_kg: number | string; change_pct: number | string }[]) {
   for (const r of rows) {
     const c = CROPS.find(x => x.id === r.crop_id);
-    if (!c) continue;
+    if (!c || !hasRecords(c.id)) continue;
     c.pricePerKg = Number(r.price_per_kg);
     c.change = Number(r.change_pct);
   }
