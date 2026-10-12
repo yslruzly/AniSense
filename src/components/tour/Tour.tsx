@@ -11,6 +11,8 @@ import buyerEyes from "../../assets/buyer-wave-eyes.webp";
 import buyerMouth from "../../assets/buyer-wave-mouth.webp";
 import mascotThumbs from "../../assets/mascot-thumbs.webp";
 import mascotThumbsEyes from "../../assets/mascot-thumbs-eyes.webp";
+import buyerThumbs from "../../assets/buyer-thumbs.webp";
+import buyerThumbsEyes from "../../assets/buyer-thumbs-eyes.webp";
 import { useLang } from "../../i18n";
 import { haptic } from "../../lib/platform";
 import { useHardwareBack } from "../../hooks/useHardwareBack";
@@ -319,14 +321,18 @@ export function Tour({ open, onFinish, script }: { open: boolean; onFinish: () =
           </div>
         );
       })()}
-      {/* The last card: done, and well done. Still blinking, so he is the
-          same someone who said hello, not a sticker. */}
-      {last && (
-        <div className="tour-mascot thumbs" aria-hidden="true">
-          <img className="tm-body" src={mascotThumbs} alt="" width={420} height={443} decoding="async" />
-          <img className="tm-eyes" src={mascotThumbsEyes} alt="" width={420} height={443} decoding="async" />
-        </div>
-      )}
+      {/* The last card: done, and well done, both thumbs up: the farmer to a
+          farmer, the buyer to a buyer, as on the first card. Still blinking,
+          so it is the same someone who said hello, not a sticker. */}
+      {last && (() => {
+        const buyer = script === "buyer";
+        return (
+          <div className={`tour-mascot thumbs${buyer ? " buyer" : ""}`} aria-hidden="true">
+            <img className="tm-body" src={buyer ? buyerThumbs : mascotThumbs} alt="" width={420} height={443} decoding="async" />
+            <img className="tm-eyes" src={buyer ? buyerThumbsEyes : mascotThumbsEyes} alt="" width={420} height={443} decoding="async" />
+          </div>
+        );
+      })()}
       <div className="tour-card" ref={card}>
         {/* The brand on the opening and closing cards, the two that speak for
             the app itself. Hidden from screen readers: the title under it
