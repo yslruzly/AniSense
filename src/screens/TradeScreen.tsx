@@ -32,7 +32,7 @@ import { rankOf, ratingText, unrated } from "../lib/rating";
 import { FarmerOfTheWeekBadge } from "../components/marketplace/FarmerOfTheWeekBadge";
 import { farmerOfTheWeek } from "../lib/featured";
 import { orderErrorOf } from "../services/transactions";
-import { peso } from "../lib/money";
+import { peso, decimalText } from "../lib/money";
 
 // A farmer's profile is always in English, whatever language the app is set
 // to: it is their public card, and it reads the same to every buyer.
@@ -806,10 +806,8 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
         const marketKg = (CROPS.find(c => c.name === form.crop) ?? CROPS.find(c => CROP_GROUP_BY_ID[c.id] === form.crop))?.pricePerKg;
         const priceN = Number(form.pricePerKg), kgN = Number(form.kg);
         const total = priceN > 0 && kgN > 0 ? priceN * kgN : 0;
-        // Numbers only, one decimal point, centavos at most.
-        const decimal = (v: string) => v.replace(/[^\d.]/g, "").replace(/(\..*)\./g, "$1").replace(/^(\d*\.\d{0,2}).*$/, "$1");
         const errLine = (field: NonNullable<typeof bad>, key: Parameters<typeof t>[0]) => bad === field && (
-          <p className="pl-err" id={`pl-${field}-err`} role="alert"><AlertTriangle size={16} strokeWidth={2.4} aria-hidden="true" /> {t(key)}</p>
+          <p className="sf-err" id={`sf-${field}-err`} role="alert"><AlertTriangle size={16} strokeWidth={2.4} aria-hidden="true" /> {t(key)}</p>
         );
 
         return (
@@ -819,36 +817,36 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
             className="post-sheet modal-sheet"
             label={editId ? t("trade_edit_listing") : t("trade_post_title")}
           >
-            <header className="pl-head">
-              <img className="pl-mark" src={leafMask} alt="" aria-hidden="true" />
-              <div className="pl-head-txt">
-                <h2 className="pl-title">{editId ? t("trade_edit_listing") : t("trade_post_title")}</h2>
-                <p className="pl-sub">{editId ? t("trade_edit_listing_sub") : t("trade_post_sub")}</p>
+            <header className="sf-head">
+              <img className="sf-mark" src={leafMask} alt="" aria-hidden="true" />
+              <div className="sf-head-txt">
+                <h2 className="sf-title">{editId ? t("trade_edit_listing") : t("trade_post_title")}</h2>
+                <p className="sf-sub">{editId ? t("trade_edit_listing_sub") : t("trade_post_sub")}</p>
               </div>
-              <button type="button" className="pl-x" onClick={() => setShowModal(false)} aria-label={t("close")}>
+              <button type="button" className="sf-x" onClick={() => setShowModal(false)} aria-label={t("close")}>
                 <X size={22} strokeWidth={2.4} />
               </button>
             </header>
 
-            <div className="pl-body">
+            <div className="sf-body">
               {/* 1 ── What: the crop as its drawing, then its variety. */}
-              <section className="pl-sec" aria-labelledby="pl-what">
-                <h3 className="pl-sec-t" id="pl-what"><span className="pl-n" aria-hidden="true">1</span>{t("pl_sec_what")}</h3>
+              <section className="sf-sec" aria-labelledby="sf-what">
+                <h3 className="sf-sec-t" id="sf-what"><span className="sf-n" aria-hidden="true">1</span>{t("pl_sec_what")}</h3>
                 {POST_FAMILIES.map(f => (
-                  <div className="pl-fam" key={f.family}>
-                    <div className="pl-fam-t">{t(`fam_${f.family.toLowerCase()}` as "fam_crops")}</div>
-                    <div className="pl-crops">
+                  <div className="sf-fam" key={f.family}>
+                    <div className="sf-fam-t">{t(`fam_${f.family.toLowerCase()}` as "fam_crops")}</div>
+                    <div className="sf-tiles">
                       {f.groups.map(g => {
                         const on = selectedGroup.label === g.label;
                         const pic = GROW_ART[g.label] ?? cropGroupPhoto(g.label);
                         return (
-                          <button key={g.label} type="button" className={`pl-crop${on ? " on" : ""}`} aria-pressed={on}
+                          <button key={g.label} type="button" className={`sf-tile${on ? " on" : ""}`} aria-pressed={on}
                             onClick={() => { haptic.select(); if (!on) setForm(d => ({ ...d, crop: g.varieties[0] })); }}>
-                            <span className="pl-crop-pic">
+                            <span className="sf-tile-pic">
                               {pic ? <img src={pic} alt="" decoding="async" draggable={false} /> : <CropIcon crop={g.label} size={26} />}
                             </span>
-                            <span className="pl-crop-n">{tn(g.label)}</span>
-                            <span className="pl-tick" aria-hidden="true"><Check size={12} strokeWidth={3.6} /></span>
+                            <span className="sf-tile-n">{tn(g.label)}</span>
+                            <span className="sf-tick" aria-hidden="true"><Check size={12} strokeWidth={3.6} /></span>
                           </button>
                         );
                       })}
@@ -857,13 +855,13 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
                 ))}
                 {/* A crop sold in one variety isn't asked about. */}
                 {selectedGroup.varieties.length > 1 && (
-                  <div className="pl-varieties" key={selectedGroup.label}>
-                    <div className="pl-lbl" id="pl-variety">{t("trade_step_variety")}</div>
-                    <div className="pl-chips" role="group" aria-labelledby="pl-variety">
+                  <div className="sf-varieties" key={selectedGroup.label}>
+                    <div className="sf-lbl" id="sf-variety">{t("trade_step_variety")}</div>
+                    <div className="sf-chips" role="group" aria-labelledby="sf-variety">
                       {selectedGroup.varieties.map(v => {
                         const on = form.crop === v;
                         return (
-                          <button key={v} type="button" className={`pl-chip${on ? " on" : ""}`} aria-pressed={on}
+                          <button key={v} type="button" className={`sf-chip${on ? " on" : ""}`} aria-pressed={on}
                             onClick={() => { haptic.select(); setForm(d => ({ ...d, crop: v })); }}>
                             {on && <Check size={16} strokeWidth={3} aria-hidden="true" />}{tn(v)}
                           </button>
@@ -875,39 +873,39 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
               </section>
 
               {/* 2 ── Price and amount: big numbers, the units in the field. */}
-              <section className="pl-sec" aria-labelledby="pl-money">
-                <h3 className="pl-sec-t" id="pl-money"><span className="pl-n" aria-hidden="true">2</span>{t("pl_sec_price")}</h3>
-                <div className="pl-group">
-                  <label className="pl-lbl" htmlFor="pl-price">{t("trade_step_price")}</label>
-                  <div className={`pl-field${bad === "price" ? " bad" : ""}`} onClick={() => priceRef.current?.focus()}>
-                    <span className="pl-pre" aria-hidden="true">₱</span>
-                    <input id="pl-price" ref={priceRef} type="text" inputMode="decimal" autoComplete="off" maxLength={9}
+              <section className="sf-sec" aria-labelledby="sf-money">
+                <h3 className="sf-sec-t" id="sf-money"><span className="sf-n" aria-hidden="true">2</span>{t("pl_sec_price")}</h3>
+                <div className="sf-group">
+                  <label className="sf-lbl" htmlFor="sf-price">{t("trade_step_price")}</label>
+                  <div className={`sf-field${bad === "price" ? " bad" : ""}`} onClick={() => priceRef.current?.focus()}>
+                    <span className="sf-pre" aria-hidden="true">₱</span>
+                    <input id="sf-price" ref={priceRef} type="text" inputMode="decimal" autoComplete="off" maxLength={9}
                       placeholder="48"
                       value={form.pricePerKg} aria-invalid={bad === "price" || undefined}
-                      aria-describedby={[marketKg ? "pl-market" : "", bad === "price" ? "pl-price-err" : ""].filter(Boolean).join(" ") || undefined}
-                      onChange={e => { setForm(d => ({ ...d, pricePerKg: decimal(e.target.value) })); if (bad === "price") setBad(null); }} />
-                    <span className="pl-suf" aria-hidden="true">/kg</span>
+                      aria-describedby={[marketKg ? "sf-market" : "", bad === "price" ? "sf-price-err" : ""].filter(Boolean).join(" ") || undefined}
+                      onChange={e => { setForm(d => ({ ...d, pricePerKg: decimalText(e.target.value) })); if (bad === "price") setBad(null); }} />
+                    <span className="sf-suf" aria-hidden="true">/kg</span>
                   </div>
                   {errLine("price", "err_valid_price")}
                   {marketKg ? (
-                    <div className="pl-market" id="pl-market">
+                    <div className="sf-market" id="sf-market">
                       <span>{t("pl_market_today")} <b>{peso(marketKg)}/kg</b></span>
                       {priceN !== marketKg && (
-                        <button type="button" className="pl-use" onClick={() => { haptic.select(); setForm(d => ({ ...d, pricePerKg: String(marketKg) })); if (bad === "price") setBad(null); }}>
+                        <button type="button" className="sf-use" onClick={() => { haptic.select(); setForm(d => ({ ...d, pricePerKg: String(marketKg) })); if (bad === "price") setBad(null); }}>
                           {t("pl_use")} {peso(marketKg)}
                         </button>
                       )}
                     </div>
                   ) : null}
                 </div>
-                <div className="pl-group">
-                  <label className="pl-lbl" htmlFor="pl-kg">{t("trade_step_qty")}</label>
-                  <div className={`pl-field${bad === "kg" ? " bad" : ""}`} onClick={() => kgRef.current?.focus()}>
-                    <input id="pl-kg" ref={kgRef} type="text" inputMode="decimal" autoComplete="off" maxLength={9}
+                <div className="sf-group">
+                  <label className="sf-lbl" htmlFor="sf-kg">{t("trade_step_qty")}</label>
+                  <div className={`sf-field${bad === "kg" ? " bad" : ""}`} onClick={() => kgRef.current?.focus()}>
+                    <input id="sf-kg" ref={kgRef} type="text" inputMode="decimal" autoComplete="off" maxLength={9}
                       placeholder="500"
-                      value={form.kg} aria-invalid={bad === "kg" || undefined} aria-describedby={bad === "kg" ? "pl-kg-err" : undefined}
-                      onChange={e => { setForm(d => ({ ...d, kg: decimal(e.target.value) })); if (bad === "kg") setBad(null); }} />
-                    <span className="pl-suf" aria-hidden="true">kg</span>
+                      value={form.kg} aria-invalid={bad === "kg" || undefined} aria-describedby={bad === "kg" ? "sf-kg-err" : undefined}
+                      onChange={e => { setForm(d => ({ ...d, kg: decimalText(e.target.value) })); if (bad === "kg") setBad(null); }} />
+                    <span className="sf-suf" aria-hidden="true">kg</span>
                   </div>
                   {errLine("kg", "err_valid_qty")}
                 </div>
@@ -916,9 +914,9 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
               {/* 3 ── Photo: optional, and what buyers look at first. One
                   big target to add; once there, a preview with Change and
                   Remove underneath. */}
-              <section className="pl-sec" aria-labelledby="pl-photo">
-                <h3 className="pl-sec-t" id="pl-photo"><span className="pl-n" aria-hidden="true">3</span>{t("mp_step_photo")}<span className="pl-opt">{t("pl_optional")}</span></h3>
-                <p className="pl-hint">{t("mp_step_photo_sub")}</p>
+              <section className="sf-sec" aria-labelledby="sf-photo">
+                <h3 className="sf-sec-t" id="sf-photo"><span className="sf-n" aria-hidden="true">3</span>{t("mp_step_photo")}<span className="sf-opt">{t("pl_optional")}</span></h3>
+                <p className="sf-hint">{t("mp_step_photo_sub")}</p>
                 <input ref={photoInput} type="file" accept="image/*" hidden
                   onChange={e => { pickListingPhoto(e.target.files?.[0]); e.target.value = ""; }} />
                 {form.photo ? (
@@ -946,25 +944,25 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
               </section>
 
               {/* 4 ── The words and the town. */}
-              <section className="pl-sec" aria-labelledby="pl-about">
-                <h3 className="pl-sec-t" id="pl-about"><span className="pl-n" aria-hidden="true">4</span>{t("pl_sec_about")}</h3>
-                <div className="pl-group">
-                  <label className="pl-lbl" htmlFor="pl-desc">{t("trade_step_desc")}</label>
-                  <p className="pl-hint" id="pl-desc-hint">{t("trade_step_desc_sub")}</p>
-                  <textarea id="pl-desc" ref={descRef} className={`pl-area${bad === "desc" ? " bad" : ""}`} rows={3}
+              <section className="sf-sec" aria-labelledby="sf-about">
+                <h3 className="sf-sec-t" id="sf-about"><span className="sf-n" aria-hidden="true">4</span>{t("pl_sec_about")}</h3>
+                <div className="sf-group">
+                  <label className="sf-lbl" htmlFor="sf-desc">{t("trade_step_desc")}</label>
+                  <p className="sf-hint" id="sf-desc-hint">{t("trade_step_desc_sub")}</p>
+                  <textarea id="sf-desc" ref={descRef} className={`sf-area${bad === "desc" ? " bad" : ""}`} rows={3}
                     placeholder={t("trade_ph_desc")} value={form.desc} aria-invalid={bad === "desc" || undefined}
-                    aria-describedby={bad === "desc" ? "pl-desc-hint pl-desc-err" : "pl-desc-hint"}
+                    aria-describedby={bad === "desc" ? "sf-desc-hint sf-desc-err" : "sf-desc-hint"}
                     onChange={e => { setForm(d => ({ ...d, desc: e.target.value })); if (bad === "desc") setBad(null); }} />
                   {errLine("desc", "err_desc_required")}
                 </div>
-                <div className="pl-group">
-                  <div className="pl-lbl">{t("trade_step_loc")}</div>
-                  <p className="pl-hint">{t("trade_step_loc_sub")}</p>
+                <div className="sf-group">
+                  <div className="sf-lbl">{t("trade_step_loc")}</div>
+                  <p className="sf-hint">{t("trade_step_loc_sub")}</p>
                   {/* Picked, not typed: free text gave "Talavera", "talavera
                       n.e." and "Brgy. San Ricardo" for one place, and buyers'
                       "Near you" and new-harvest alerts match on the town's
                       exact name. The same searchable list as sign-up. */}
-                  <div ref={locRef} className={`pl-pick${bad === "loc" ? " bad" : ""}`}>
+                  <div ref={locRef} className={`sf-pick${bad === "loc" ? " bad" : ""}`}>
                     <PickerField
                       title={t("farm_municipality_lbl")}
                       placeholder={t("farm_pick_municipality")}
@@ -979,17 +977,17 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
             </div>
 
             {/* What it comes to, then Post: held at the foot of the sheet. */}
-            <footer className="pl-foot">
+            <footer className="sf-foot">
               {total > 0 && (
-                <div className="pl-sum">
-                  <span className="pl-sum-what">{tn(form.crop)}, {kgN.toLocaleString()} kg × {peso(priceN)}</span>
-                  <span className="pl-sum-total">{peso(total)}</span>
+                <div className="sf-sum">
+                  <span className="sf-sum-what">{tn(form.crop)}, {kgN.toLocaleString()} kg × {peso(priceN)}</span>
+                  <span className="sf-sum-total">{peso(total)}</span>
                 </div>
               )}
               {formError && (
-                <p className="pl-err pl-err-save" role="alert"><AlertTriangle size={17} strokeWidth={2.4} aria-hidden="true" /> {formError}</p>
+                <p className="sf-err sf-err-save" role="alert"><AlertTriangle size={17} strokeWidth={2.4} aria-hidden="true" /> {formError}</p>
               )}
-              <button type="button" className="btn-primary pl-post" onClick={saveForm} disabled={saving} aria-busy={saving}>
+              <button type="button" className="btn-primary sf-post" onClick={saveForm} disabled={saving} aria-busy={saving}>
                 {saving ? t("trade_posting") : editId ? t("save_changes") : t("trade_post_now")}
               </button>
             </footer>

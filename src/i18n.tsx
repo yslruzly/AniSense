@@ -1027,9 +1027,10 @@ export const translations: Dict = {
   exp_edit_sub: { en: "Update the details below", tl: "I-update ang mga detalye" },
   exp_crop: { en: "Crop", tl: "Pananim" },
   exp_desc_lbl: { en: "Description", tl: "Paglalarawan" },
-  exp_amount: { en: "Amount (₱)", tl: "Halaga (₱)" },
+  ex_sec_amount: { en: "How much did you spend?", tl: "Magkano ang nagastos mo?" },
+  ex_sec_what: { en: "What was it for?", tl: "Para saan ito?" },
+  ex_sec_crop: { en: "For which crop, and when?", tl: "Para sa aling pananim, at kailan?" },
   exp_date: { en: "Date", tl: "Petsa" },
-  exp_category: { en: "Category", tl: "Kategorya" },
   exp_ph_desc: {
     en: "e.g. Hybrid Rice Seeds, Urea Fertilizer...",
     tl: "hal. Binhi ng Palay, Urea na Pataba...",

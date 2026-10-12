@@ -14,3 +14,9 @@ export function peso(n: number): string {
   const whole = Number.isInteger(v);
   return `₱${v.toLocaleString("en-PH", { minimumFractionDigits: whole ? 0 : 2, maximumFractionDigits: whole ? 0 : 2 })}`;
 }
+
+/** What a typed amount may hold: digits, one decimal point, centavos at
+ *  most ("4a8.5.57" → "48.55"). For the app's number fields, which are text
+ *  fields so the keyboard shows a point and nothing like "e" gets in. */
+export const decimalText = (v: string) =>
+  v.replace(/[^\d.]/g, "").replace(/(\..*)\./g, "$1").replace(/^(\d*\.\d{0,2}).*$/, "$1");

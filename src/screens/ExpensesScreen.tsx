@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { EmptyState, Skeleton, SkeletonMediaRows } from "../components/states";
-import { PhilippinePeso, PieChart as PieIcon, CalendarDays, MapPin, Pencil, Trash2, X, ChevronRight, Calendar, Calculator, Receipt, Plus, CheckCircle, AlertTriangle, Sprout, Tag, Wheat, FlaskConical, User, Tractor, Waves, Package, ShoppingCart, Filter, Store, Clock, Check, HandCoins } from "lucide-react";
+import { PhilippinePeso, PieChart as PieIcon, CalendarDays, MapPin, Pencil, Trash2, X, ChevronRight, Calendar, Calculator, Receipt, Plus, CheckCircle, AlertTriangle, Sprout, ShoppingCart, Filter, Store, Clock, Check, HandCoins } from "lucide-react";
 import { useLang } from "../i18n";
 import { Expense, BuyerTransaction } from "../types";
 import { useMarket } from "../store/market";
@@ -18,7 +18,10 @@ import { DateField, localISO } from "../components/ui/DateField";
 import { ProfitCard, estimateFor, spentOn } from "../components/expenses/ProfitCard";
 import { Sale } from "../lib/sales";
 import { costOf, totalSpent } from "../lib/purchases";
-import { peso } from "../lib/money";
+import { peso, decimalText } from "../lib/money";
+import { haptic } from "../lib/platform";
+import { GROW_ART } from "../data/growArt";
+import leafMask from "../assets/anisense-leaf-mask.png";
 import { PaymentSheet } from "../components/marketplace/PaymentSheet";
 import { StarRating } from "../components/ui/StarRating";
 import { isNetworkError } from "../lib/cache";
@@ -85,6 +88,11 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
   const pendingDelete = useRetained(confirmDelete);
   const [form, setForm] = useState(() => ({ description: "", category: "Seeds", amount: "", date: localISO(), crop: farmerCrops[0] || "Rice" }));
   const [formError, setFormError] = useState("");
+  // The field that needs an answer: its message sits under it and the form
+  // scrolls to it. (formError is the server's answer, said over the button.)
+  const [bad, setBad] = useState<null | "amount" | "desc">(null);
+  const amountRef = useRef<HTMLInputElement>(null);
+  const descRef = useRef<HTMLInputElement>(null);
   const [expandedMonth, setExpandedMonth] = useState<string | null>(null);
   // Its own state: expanding a crop used to set the Overview crop filter, so
   // Recent Transactions quietly showed one crop after a visit to this tab.
@@ -148,6 +156,7 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
     setEditId(null);
     setForm({ description: "", category: "Seeds", amount: String(calcResult), date: localISO(), crop: farmerCrops[0] || "Rice" });
     setFormError("");
+    setBad(null);
     setShowModal(true);
   };
 
@@ -205,6 +214,7 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
     setEditId(null);
     setForm({ description: "", category: "Seeds", amount: "", date: localISO(), crop: farmerCrops[0] || "Rice" });
     setFormError("");
+    setBad(null);
     setShowModal(true);
   };
 
@@ -212,16 +222,31 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
     setEditId(e.id);
     setForm({ description: e.description, category: e.category, amount: String(e.amount), date: e.date, crop: e.crop || farmerCrops[0] || "Rice" });
     setFormError("");
+    setBad(null);
     setShowModal(true);
   };
 
   // Saved even with no signal: offline, the entry waits on the phone and
   // goes up by itself when the connection returns. What can still fail is
   // the server turning it down, and then the form stays open and says so.
+  // A field that needs an answer: say so under it, bring it into view and
+  // put the cursor in it.
+  const askFor = (field: "amount" | "desc") => {
+    setBad(field);
+    haptic.warn();
+    const el = (field === "amount" ? amountRef : descRef).current;
+    const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el?.scrollIntoView({ block: "center", behavior: still ? "auto" : "smooth" });
+    el?.focus({ preventScroll: true });
+  };
+
   const saveForm = async () => {
     if (saving) return;
-    if (!form.description.trim()) { setFormError(t("err_desc_required")); return; }
-    if (!form.amount || isNaN(Number(form.amount)) || Number(form.amount) <= 0) { setFormError(t("err_amount")); return; }
+    setFormError("");
+    // In the order the form asks.
+    if (!form.amount || isNaN(Number(form.amount)) || Number(form.amount) <= 0) return askFor("amount");
+    if (!form.description.trim()) return askFor("desc");
+    setBad(null);
     setSaving(true);
     try {
       await market.saveExpense(editId, { description: form.description, category: form.category, amount: Number(form.amount), date: form.date, crop: form.crop });
@@ -792,160 +817,129 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
         </div>
       </Sheet>
 
-      {/* Add/Edit modal, farmer only */}
+      {/* Add / Edit expense, farmer only. The same sheet as Post your crops:
+          the green header held at the top with the way out, white cards
+          for the questions, and the button held at the foot with what the
+          cost does to the crop's profit. The amount comes first and largest:
+          it's the one thing every expense has, and what's looked for later. */}
       <Sheet
         open={!isBuyer && showModal}
         onClose={() => setShowModal(false)}
         className="exp-sheet modal-sheet"
         label={editId ? t("exp_edit_title") : t("exp_add_title")}
       >
-        <>
-            {/* Drag handle */}
-            <div style={{ display: "flex", justifyContent: "center", paddingTop: 12, marginBottom: 4 }}>
-              <div style={{ width: 40, height: 4, borderRadius: 99, background: "var(--line)" }} />
+        <header className="sf-head">
+          <img className="sf-mark" src={leafMask} alt="" aria-hidden="true" />
+          <div className="sf-head-txt">
+            <h2 className="sf-title">{editId ? t("exp_edit_title") : t("exp_add_title")}</h2>
+            <p className="sf-sub">{editId ? t("exp_edit_sub") : t("exp_add_sub")}</p>
+          </div>
+          <button type="button" className="sf-x" onClick={() => setShowModal(false)} aria-label={t("close")}>
+            <X size={22} strokeWidth={2.4} />
+          </button>
+        </header>
+
+        <div className="sf-body">
+          {/* 1 ── How much: big, the peso sign in the field. */}
+          <section className="sf-sec" aria-labelledby="ex-amount-t">
+            <h3 className="sf-sec-t" id="ex-amount-t"><span className="sf-n" aria-hidden="true">1</span>{t("ex_sec_amount")}</h3>
+            <div className={`sf-field${bad === "amount" ? " bad" : ""}`} onClick={() => amountRef.current?.focus()}>
+              <span className="sf-pre" aria-hidden="true">₱</span>
+              <input id="ex-amount" ref={amountRef} type="text" inputMode="decimal" autoComplete="off" maxLength={10} placeholder="0"
+                value={form.amount} aria-labelledby="ex-amount-t" aria-invalid={bad === "amount" || undefined}
+                aria-describedby={bad === "amount" ? "ex-amount-err" : undefined}
+                onChange={e => { setForm(d => ({ ...d, amount: decimalText(e.target.value) })); if (bad === "amount") setBad(null); }} />
             </div>
+            {bad === "amount" && <p className="sf-err" id="ex-amount-err" role="alert"><AlertTriangle size={16} strokeWidth={2.4} aria-hidden="true" /> {t("err_amount")}</p>}
+          </section>
 
-            {/* Header */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 22px 16px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <div style={{ width: 40, height: 40, borderRadius: 12, background: "var(--tanim-sk)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <Receipt size={20} color="var(--tanim)" />
-                </div>
-                <div>
-                  <div style={{ fontSize: "var(--fs-body)", fontWeight: 900, color: "var(--text)" }}>{editId ? t("exp_edit_title") : t("exp_add_title")}</div>
-                  <div style={{ fontSize: "var(--fs-label)", color: "var(--text-muted)", marginTop: 1 }}>{editId ? t("exp_edit_sub") : t("exp_add_sub")}</div>
-                </div>
-              </div>
-              <button onClick={() => setShowModal(false)} style={{ background: "var(--paper-alt)", border: "none", borderRadius: 12, width: 36, height: 36, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <X size={16} color="var(--text-soft)" />
-              </button>
-            </div>
-
-            <div style={{ padding: "0 22px", display: "flex", flexDirection: "column", gap: 20 }}>
-
-              {formError && (
-                <div style={{ background: "var(--error-sk)", color: "var(--error)", fontSize: "var(--fs-label)", fontWeight: 600, padding: "10px 14px", borderRadius: 10, display: "flex", alignItems: "center", gap: 8 }}>
-                  <AlertTriangle size={14} /> {formError}
-                </div>
-              )}
-
-              {/* Crop */}
-              <div>
-                <div style={{ fontSize: "var(--fs-label)", fontWeight: 700, color: "var(--text-soft)", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
-                  <Sprout size={14} color="var(--text-soft)" /> {t("exp_crop")}
-                </div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                  {farmerCrops.map(c => (
-                    <button key={c} onClick={() => setForm(d => ({ ...d, crop: c }))}
-                      style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 12, border: `2px solid ${form.crop === c ? "var(--tanim)" : "var(--line)"}`, background: form.crop === c ? "var(--tanim-sk)" : "var(--paper)", color: form.crop === c ? "var(--tanim)" : "var(--text-muted)", fontFamily: "inherit", fontSize: "var(--fs-label)", fontWeight: 700, cursor: "pointer" }}>
-                      <CropEmoji crop={c} size={16} /> {tn(c)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Description */}
-              <div>
-                <div style={{ fontSize: "var(--fs-label)", fontWeight: 700, color: "var(--text-soft)", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
-                  <Pencil size={14} color="var(--text-soft)" /> {t("exp_desc_lbl")}
-                </div>
-                <input
-                  type="text" placeholder={t("exp_ph_desc")}
-                  value={form.description}
-                  onChange={e => setForm(d => ({ ...d, description: e.target.value }))}
-                  style={{ width: "100%", border: "2px solid var(--line)", borderRadius: 12, padding: "13px 14px", fontFamily: "inherit", fontSize: "var(--fs-label)", outline: "none", background: "var(--paper)", boxSizing: "border-box" }}
-                  onFocus={e => e.target.style.borderColor = "var(--tanim)"}
-                  onBlur={e => e.target.style.borderColor = "var(--line)"}
-                />
-              </div>
-
-              {/* Amount */}
-              <div>
-                <div style={{ fontSize: "var(--fs-label)", fontWeight: 700, color: "var(--text-soft)", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
-                  <PhilippinePeso size={14} color="var(--text-soft)" /> {t("exp_amount")}
-                </div>
-                <input
-                  type="number" inputMode="decimal" placeholder="0.00"
-                  value={form.amount}
-                  onChange={e => setForm(d => ({ ...d, amount: e.target.value }))}
-                  style={{ width: "100%", border: "2px solid var(--line)", borderRadius: 12, padding: "13px 14px", fontFamily: "inherit", fontSize: "var(--fs-label)", fontWeight: 700, outline: "none", background: "var(--paper)", boxSizing: "border-box" }}
-                  onFocus={e => e.target.style.borderColor = "var(--tanim)"}
-                  onBlur={e => e.target.style.borderColor = "var(--line)"}
-                />
-              </div>
-
-              {/* What this expense does to the crop's estimated profit, worked
-                  out as it is typed, so the cost is seen against the harvest
-                  it is for - not only as money going out. */}
-              {(() => {
-                const amt = Number(form.amount) || 0;
-                const base = spentOn(transactions.filter(e => e.id !== editId), form.crop);
-                const est = estimateFor(form.crop, plans, base + amt);
+          {/* 2 ── What for: the kind, as six tiles, then the words. */}
+          <section className="sf-sec" aria-labelledby="ex-what-t">
+            <h3 className="sf-sec-t" id="ex-what-t"><span className="sf-n" aria-hidden="true">2</span>{t("ex_sec_what")}</h3>
+            <div className="sf-tiles" role="group" aria-labelledby="ex-what-t">
+              {["Seeds", "Fertilizer", "Labor", "Equipment", "Irrigation", "Other"].map(cat => {
+                const on = form.category === cat;
                 return (
-                  <p className={`pf-preview ${est === null ? "" : est < 0 ? "neg" : "pos"}`}>
-                    {est === null
-                      ? t("pf_set_hint").replace("{crop}", tn(form.crop))
-                      : t("pf_after").replace("{crop}", tn(form.crop)).replace("{amount}", `${est < 0 ? "−" : ""}₱${Math.abs(Math.round(est)).toLocaleString("en-PH")}`)}
-                  </p>
+                  <button key={cat} type="button" className={`sf-tile${on ? " on" : ""}`} aria-pressed={on}
+                    onClick={() => { haptic.select(); setForm(d => ({ ...d, category: cat })); }}>
+                    <span className="sf-tile-ico"><ExpenseIcon cat={cat} size={22} color="currentColor" /></span>
+                    <span className="sf-tile-n">{tn(cat)}</span>
+                    <span className="sf-tick" aria-hidden="true"><Check size={12} strokeWidth={3.6} /></span>
+                  </button>
                 );
-              })()}
-
-              {/* Date: its own full-width row now, since the quick picks and
-                  the calendar need the room a half-width column couldn't give. */}
-              <div>
-                <div style={{ fontSize: "var(--fs-label)", fontWeight: 700, color: "var(--text-soft)", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
-                  <Calendar size={14} color="var(--text-soft)" /> {t("exp_date")}
-                </div>
-                <DateField value={form.date} onChange={date => setForm(d => ({ ...d, date }))} />
-              </div>
-
-              {/* Category */}
-              <div>
-                <div style={{ fontSize: "var(--fs-label)", fontWeight: 700, color: "var(--text-soft)", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
-                  <Tag size={14} color="var(--text-soft)" /> {t("exp_category")}
-                </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
-                  {([
-                    { label: "Seeds", icon: <Wheat size={20} /> },
-                    { label: "Fertilizer", icon: <FlaskConical size={20} /> },
-                    { label: "Labor", icon: <User size={20} /> },
-                    { label: "Equipment", icon: <Tractor size={20} /> },
-                    { label: "Irrigation", icon: <Waves size={20} /> },
-                    { label: "Other", icon: <Package size={20} /> },
-                  ] as { label: string; icon: React.ReactNode }[]).map(({ label, icon }) => {
-                    const active = form.category === label;
-                    return (
-                      <button key={label} onClick={() => setForm(d => ({ ...d, category: label }))}
-                        style={{ padding: "10px 6px", borderRadius: 12, border: `2px solid ${active ? "var(--tanim)" : "var(--line)"}`, background: active ? "var(--tanim-sk)" : "var(--paper)", color: active ? "var(--tanim)" : "var(--text-muted)", fontFamily: "inherit", fontSize: "var(--fs-label)", fontWeight: 700, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
-                        <span style={{ color: active ? "var(--tanim)" : "var(--text-faint)" }}>{icon}</span>
-                        {tn(label)}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Action buttons */}
-              <div style={{ display: "flex", gap: 10, paddingBottom: 4 }}>
-                <button className="btn-secondary sm row-center" onClick={() => setShowModal(false)} style={{ flex: 1, border: "none" }}>
-                  <X size={15} color="var(--text-soft)" /> {t("cancel")}
-                </button>
-                <button className="btn-primary sm row-center" onClick={saveForm} disabled={saving} aria-busy={saving} style={{ flex: 2 }}>
-                  {saving ? t("save_saving") : editId ? <><CheckCircle size={16} /> {t("save_changes")}</> : <><Plus size={16} /> {t("exp_add_title")}</>}
-                </button>
-              </div>
-
-              {/* Delete lives here now, one step in from the list and set apart
-                  from Save, so it's findable but never the thing a thumb lands
-                  on by accident. It still asks before erasing anything. */}
-              {editId && (
-                <button className="exp-del-link" onClick={() => { const id = editId; setShowModal(false); setConfirmDelete(id); }}>
-                  <Trash2 size={17} strokeWidth={2.2} /> {t("exp_delete_this")}
-                </button>
-              )}
-
+              })}
             </div>
-        </>
+            <div className="sf-group">
+              <label className="sf-lbl" htmlFor="ex-desc">{t("exp_desc_lbl")}</label>
+              <div className={`sf-field is-text${bad === "desc" ? " bad" : ""}`} onClick={() => descRef.current?.focus()}>
+                <input id="ex-desc" ref={descRef} type="text" autoComplete="off" enterKeyHint="done" placeholder={t("exp_ph_desc")}
+                  value={form.description} aria-invalid={bad === "desc" || undefined} aria-describedby={bad === "desc" ? "ex-desc-err" : undefined}
+                  onChange={e => { setForm(d => ({ ...d, description: e.target.value })); if (bad === "desc") setBad(null); }} />
+              </div>
+              {bad === "desc" && <p className="sf-err" id="ex-desc-err" role="alert"><AlertTriangle size={16} strokeWidth={2.4} aria-hidden="true" /> {t("err_desc_required")}</p>}
+            </div>
+          </section>
+
+          {/* 3 ── Which crop, and when: the farmer's own crops, by their
+              drawings; then the day, today and yesterday one tap each. */}
+          <section className="sf-sec" aria-labelledby="ex-crop-t">
+            <h3 className="sf-sec-t" id="ex-crop-t"><span className="sf-n" aria-hidden="true">3</span>{t("ex_sec_crop")}</h3>
+            <div className="sf-group">
+              <div className="sf-lbl" id="ex-crop-l">{t("exp_crop")}</div>
+              <div className="sf-chips" role="group" aria-labelledby="ex-crop-l">
+                {farmerCrops.map(c => {
+                  const on = form.crop === c;
+                  const art = GROW_ART[c];
+                  return (
+                    <button key={c} type="button" className={`sf-chip has-pic${on ? " on" : ""}`} aria-pressed={on}
+                      onClick={() => { haptic.select(); setForm(d => ({ ...d, crop: c })); }}>
+                      <span className="sf-chip-pic" aria-hidden="true">{art ? <img src={art} alt="" draggable={false} /> : <CropIcon crop={c} size={18} />}</span>
+                      {tn(c)}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="sf-group">
+              <div className="sf-lbl">{t("exp_date")}</div>
+              <DateField value={form.date} onChange={date => setForm(d => ({ ...d, date }))} />
+            </div>
+          </section>
+
+          {/* Delete lives here, one step in from the list and well away from
+              Save, so it's findable but never the thing a thumb lands on by
+              accident. It still asks before erasing anything. */}
+          {editId && (
+            <button className="exp-del-link" onClick={() => { const id = editId; setShowModal(false); setConfirmDelete(id); }}>
+              <Trash2 size={17} strokeWidth={2.2} /> {t("exp_delete_this")}
+            </button>
+          )}
+        </div>
+
+        {/* The foot, held: once there's an amount, what it does to the
+            crop's estimated profit (worked out as it's typed, so the cost
+            is seen against the harvest it's for), then the button. */}
+        <footer className="sf-foot">
+          {(() => {
+            const amt = Number(form.amount) || 0;
+            if (amt <= 0) return null;
+            const base = spentOn(transactions.filter(e => e.id !== editId), form.crop);
+            const est = estimateFor(form.crop, plans, base + amt);
+            return (
+              <p className={`pf-preview sf-note ${est === null ? "" : est < 0 ? "neg" : "pos"}`}>
+                {est === null
+                  ? t("pf_set_hint").replace("{crop}", tn(form.crop))
+                  : t("pf_after").replace("{crop}", tn(form.crop)).replace("{amount}", `${est < 0 ? "−" : ""}₱${Math.abs(Math.round(est)).toLocaleString("en-PH")}`)}
+              </p>
+            );
+          })()}
+          {formError && (
+            <p className="sf-err sf-err-save" role="alert"><AlertTriangle size={17} strokeWidth={2.4} aria-hidden="true" /> {formError}</p>
+          )}
+          <button type="button" className="btn-primary sf-post row-center" onClick={saveForm} disabled={saving} aria-busy={saving}>
+            {saving ? t("save_saving") : editId ? <><CheckCircle size={18} /> {t("save_changes")}</> : <><Plus size={18} strokeWidth={2.6} /> {t("exp_add_title")}</>}
+          </button>
+        </footer>
       </Sheet>
     </div>
   );
