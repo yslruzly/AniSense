@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Bell, BellPlus, Check, Minus, Plus, X } from "lucide-react";
 import { useLang } from "../../i18n";
-import { CROPS, CROP_GROUP_BY_ID } from "../../data/crops";
+import { CROPS, CROP_GROUP_BY_ID, hasPrice } from "../../data/crops";
 import { cropPhoto } from "../../data/cropPhotos";
 import { CropIcon } from "../icons";
 import { Sheet } from "../ui/Sheet";
@@ -28,7 +28,7 @@ export function PriceAlerts({ alerts, onChange, farmerCrops }: {
   const { t, tn } = useLang();
   const [adding, setAdding] = useState(false);
   // The farmer's own crops first: the ones they are most likely to watch.
-  const ordered = [...CROPS].sort((a, b) => {
+  const ordered = CROPS.filter(hasPrice).sort((a, b) => {
     const am = farmerCrops.includes(CROP_GROUP_BY_ID[a.id] || "") ? 0 : 1;
     const bm = farmerCrops.includes(CROP_GROUP_BY_ID[b.id] || "") ? 0 : 1;
     return am - bm;

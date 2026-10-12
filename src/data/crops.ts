@@ -9,23 +9,27 @@ import { latestOf } from "./priceRecords";
 // Rice, Well Milled, Red Onion, Regular Calamansi, Native Garlic). Their
 // price and change below are replaced, as this file loads, by the newest
 // month in the records (priceRecords.ts), so the numbers written here for
-// them are only a fallback. Every other variety has no records yet: its
-// numbers are SAMPLE values, not market prices.
+// them are only a fallback. Every other variety has no records, and so no
+// price: it is ₱0, with no move, and the screens show ₱0 for it. A ₱0 crop
+// is left out of everything that compares or counts prices (`hasPrice`):
+// the up-and-down counts, Biggest moves, "below market", the profit
+// estimate and price alerts, so ₱0 is never read as a real price. Give a
+// variety records (data/historical-prices.csv) and it is priced again.
 
 // Rice varieties (Philippine)
 export const RICE_VARIETIES: CropPrice[] = [
   { id: "rice-special", name: "Special Rice", pricePerKg: 57.2, change: -3.2, volume: 14.2, color: "#2f9e63" },
   { id: "rice-well-milled", name: "Well Milled", pricePerKg: 47, change: -3.9, volume: 18.6, color: "#2f9e63" },
-  { id: "rice-regular-milled", name: "Regular Milled", pricePerKg: 42, change: 0.2, volume: 22.4, color: "#2f9e63" },
+  { id: "rice-regular-milled", name: "Regular Milled", pricePerKg: 0, change: 0, volume: 22.4, color: "#2f9e63" },
 ];
 export const CROP_GROUPS: CropGroup[] = [
   {
     group: "Onions",
     varieties: [
       { id: "onion-red", name: "Red Onion", pricePerKg: 92.5, change: 2.8, volume: 80, color: "#d4553f" },
-      { id: "onion-white", name: "Yellow/White Onion", pricePerKg: 38, change: 1.2, volume: 50, color: "#2f9e63" },
-      { id: "onion-yellow", name: "Shallots Onion", pricePerKg: 35, change: 0.5, volume: 28, color: "#2f9e63" },
-      { id: "onion-spring", name: "Spring Onion", pricePerKg: 20, change: -1.0, volume: 15, color: "#d4553f" },
+      { id: "onion-white", name: "Yellow/White Onion", pricePerKg: 0, change: 0, volume: 50, color: "#2f9e63" },
+      { id: "onion-yellow", name: "Shallots Onion", pricePerKg: 0, change: 0, volume: 28, color: "#2f9e63" },
+      { id: "onion-spring", name: "Spring Onion", pricePerKg: 0, change: 0, volume: 15, color: "#d4553f" },
     ],
   },
   {
@@ -37,8 +41,8 @@ export const CROP_GROUPS: CropGroup[] = [
   {
     group: "Mango",
     varieties: [
-      { id: "mango-carab", name: "Carabao Mango", pricePerKg: 80, change: 3.5, volume: 4.5, color: "#2f9e63" },
-      { id: "mango-indian", name: "Indian Mango", pricePerKg: 40, change: 1.0, volume: 3.0, color: "#2f9e63" },
+      { id: "mango-carab", name: "Carabao Mango", pricePerKg: 0, change: 0, volume: 4.5, color: "#2f9e63" },
+      { id: "mango-indian", name: "Indian Mango", pricePerKg: 0, change: 0, volume: 3.0, color: "#2f9e63" },
     ],
   },
   {
@@ -50,36 +54,36 @@ export const CROP_GROUPS: CropGroup[] = [
   {
     group: "Tomatoes",
     varieties: [
-      { id: "tom-cherry", name: "Diamante Max F1 Tomato", pricePerKg: 25, change: 3.2, volume: 0.8, color: "#2f9e63" },
-      { id: "tom-tagalog", name: "Kamatis Tagalog", pricePerKg: 60, change: 2.4, volume: 1.1, color: "#2f9e63" },
-      { id: "tom-baguio", name: "Kamatis Baguio", pricePerKg: 90, change: -1.2, volume: 0.9, color: "#d4553f" },],
+      { id: "tom-cherry", name: "Diamante Max F1 Tomato", pricePerKg: 0, change: 0, volume: 0.8, color: "#2f9e63" },
+      { id: "tom-tagalog", name: "Kamatis Tagalog", pricePerKg: 0, change: 0, volume: 1.1, color: "#2f9e63" },
+      { id: "tom-baguio", name: "Kamatis Baguio", pricePerKg: 0, change: 0, volume: 0.9, color: "#d4553f" },],
   },
   {
     group: "Corn",
     varieties: [
-      { id: "corn-yellow", name: "Yellow Corn", pricePerKg: 70, change: 1.5, volume: 5.0, color: "#d19b27" },
-      { id: "corn-white", name: "White Corn", pricePerKg: 65, change: 1.0, volume: 2.5, color: "#2f9e63" },
-      { id: "corn-sweet", name: "Sweet Corn", pricePerKg: 30, change: 2.5, volume: 1.5, color: "#2f9e63" },],
+      { id: "corn-yellow", name: "Yellow Corn", pricePerKg: 0, change: 0, volume: 5.0, color: "#d19b27" },
+      { id: "corn-white", name: "White Corn", pricePerKg: 0, change: 0, volume: 2.5, color: "#2f9e63" },
+      { id: "corn-sweet", name: "Sweet Corn", pricePerKg: 0, change: 0, volume: 1.5, color: "#2f9e63" },],
   },
   {
     group: "Ampalaya",
     varieties: [
-      { id: "ampalaya-native", name: "Native Ampalaya", pricePerKg: 60, change: 2.2, volume: 3.2, color: "#2f9e63" },
-      { id: "ampalaya-galaxy", name: "Galaxy Ampalaya", pricePerKg: 55, change: -0.8, volume: 2.1, color: "#d4553f" },
+      { id: "ampalaya-native", name: "Native Ampalaya", pricePerKg: 0, change: 0, volume: 3.2, color: "#2f9e63" },
+      { id: "ampalaya-galaxy", name: "Galaxy Ampalaya", pricePerKg: 0, change: 0, volume: 2.1, color: "#d4553f" },
     ],
   },
   {
     group: "Watermelon",
     varieties: [
-      { id: "melon-sweet", name: "Sweet Watermelon", pricePerKg: 28, change: 1.4, volume: 12.0, color: "#2f9e63" },
-      { id: "melon-seedless", name: "Seedless Watermelon", pricePerKg: 35, change: 0.6, volume: 6.5, color: "#2f9e63" },
-      { id: "melon-yellow", name: "Yellow Watermelon", pricePerKg: 45, change: 1.0, volume: 2.0, color: "#2f9e63" },
+      { id: "melon-sweet", name: "Sweet Watermelon", pricePerKg: 0, change: 0, volume: 12.0, color: "#2f9e63" },
+      { id: "melon-seedless", name: "Seedless Watermelon", pricePerKg: 0, change: 0, volume: 6.5, color: "#2f9e63" },
+      { id: "melon-yellow", name: "Yellow Watermelon", pricePerKg: 0, change: 0, volume: 2.0, color: "#2f9e63" },
     ],
   },
   {
     group: "Squash",
     varieties: [
-      { id: "squash-kalabasa", name: "Kalabasa", pricePerKg: 12, change: -1.3, volume: 180, color: "#d4553f" },
+      { id: "squash-kalabasa", name: "Kalabasa", pricePerKg: 0, change: 0, volume: 180, color: "#d4553f" },
     ],
   },
 ];
@@ -87,6 +91,10 @@ export const CROP_GROUPS: CropGroup[] = [
 // crop at once. Rice leads because it is the crop this app exists for; leaving
 // it out is what had Home counting 17 while Market counted 20.
 export const CROPS: CropPrice[] = [...RICE_VARIETIES, ...CROP_GROUPS.flatMap(g => g.varieties)];
+/** A variety with a market price: one with records. Every comparison and
+ *  count of prices goes through this, so a ₱0 crop is never one of them. */
+export const hasPrice = (c: { pricePerKg: number }) => c.pricePerKg > 0;
+
 // The study's varieties take their price from the records: the newest month,
 // and its move from the month before.
 for (const c of CROPS) {

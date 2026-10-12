@@ -206,7 +206,7 @@ Every interface string is an entry in `src/i18n.tsx` with English and Tagalog te
 | `src/data/generated/forecasts.json` | The finished forecasts and each model's tested error, written by `ml/train_forecasts.py`. Bundled. |
 | `src/data/forecast.ts` | Reads the forecasts. Hides a forecast month once a real record exists for it, and marks a forecast as unreliable when its tested error is above `RELIABLE_MAPE` (20%). |
 
-- The catalog in `src/data/crops.ts` takes the price of the study's five varieties from the records as it loads. The other 18 varieties have no records, and their prices are sample values.
+- The catalog in `src/data/crops.ts` takes the price of the study's five varieties from the records as it loads. The other 18 varieties have no records and no price: they are ₱0, shown as ₱0, and `hasPrice` keeps them out of everything that compares or counts prices (the up/down counts, Biggest moves, "below market", the profit estimate, price alerts). The database holds no price row for them.
 - The LSTM forecast drives the price charts; the ARIMA forecast drives the sell-or-wait advice and the Home card.
 - The phone runs no model and holds no machine-learning library.
 
@@ -565,7 +565,7 @@ flowchart LR
 
 | Area | Current state | Plan |
 |---|---|---|
-| Crop prices | Monthly records for five varieties, added to a CSV by hand; sample values for the other 18 | Records for the remaining varieties; ingestion from government sources on a schedule. |
+| Crop prices | Monthly records for five varieties, added to a CSV by hand; the other 18 have no price (₱0) | Records for the remaining varieties; ingestion from government sources on a schedule. |
 | Price forecasts | ARIMA and LSTM trained on the five varieties' records. The ARIMA search picks the differencing order by AIC, which is not the right tool for it; the LSTM's settings were not tuned; neither model can foresee a price shock. | Choose the differencing order with a stationarity test; tune the LSTM with a small grid scored inside the training months; test a seasonal ARIMA; consider extra inputs (weather, costs) as later work. |
 | Order alerts | Read from the database, confirmed with what it sold for; sample orders in demo mode | Send a push notification when an order arrives. |
 | Weather | Live from Open-Meteo (`src/services/weather.ts`, shared through `src/store/weather.ts`): the farmer's town is looked up by name once and kept on the phone; the forecast is cached like any list. Its free tier is for non-commercial use and asks for a credit, which the app does not show at present. | Show the Open-Meteo credit somewhere in the app (an About page), or move to a paid plan if the app becomes commercial. PAGASA's TenDay API remains an option for official forecasts, with a token PAGASA approves on request. |

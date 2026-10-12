@@ -1,6 +1,6 @@
 import { ChevronRight, Plus, ArrowUp, ArrowDown, Package } from "lucide-react";
 import { useLang } from "../../i18n";
-import { CROPS, CROP_GROUP_BY_ID } from "../../data/crops";
+import { CROPS, CROP_GROUP_BY_ID, hasPrice } from "../../data/crops";
 import { growArtFor } from "../../data/growArt";
 import { CropIcon } from "../icons";
 import { useMarket } from "../../store/market";
@@ -17,9 +17,10 @@ import leafMask from "../../assets/anisense-leaf-mask.png";
 
 /** Today's price for the crop a listing names, so a price can be compared. */
 function marketPrice(crop: string, variety: string) {
-  const named = CROPS.find(c => c.name.toLowerCase() === (variety || "").toLowerCase() || c.name.toLowerCase() === crop.toLowerCase());
-  if (named) return named.pricePerKg;
-  return CROPS.find(c => CROP_GROUP_BY_ID[c.id] === crop)?.pricePerKg ?? null;
+  const named = CROPS.find(c => c.name.toLowerCase() === (variety || "").toLowerCase() || c.name.toLowerCase() === crop.toLowerCase())
+    ?? CROPS.find(c => CROP_GROUP_BY_ID[c.id] === crop);
+  // A crop with no market price (₱0) has nothing to be above or below.
+  return named && hasPrice(named) ? named.pricePerKg : null;
 }
 
 export function YourHarvest({ onPost, onOpenMarket, onOpen }: {
@@ -115,15 +116,18 @@ export function YourHarvest({ onPost, onOpenMarket, onOpen }: {
                     <span className="fh-price">{peso(l.pricePerKg)}<small>{t("per_kg_short")}</small></span>
                     <ChevronRight size={18} strokeWidth={2.4} className="fh-chev" aria-hidden="true" />
                     <span className="fh-meta">{l.kg.toLocaleString()} {t("fh_left")}</span>
-                    <span className={`fh-vs ${dir}`}>
-                      {dir === "up" && <ArrowUp size={14} strokeWidth={3} aria-hidden="true" />}
-                      {dir === "down" && <ArrowDown size={14} strokeWidth={3} aria-hidden="true" />}
-                      <span>
-                        {dir === "same"
-                          ? t("fh_at")
-                          : `${peso(Math.abs(diff))} ${dir === "up" ? t("fh_above") : t("fh_below")}`}
+                    {/* Only against a market price: a crop at ₱0 has none. */}
+                    {market !== null && (
+                      <span className={`fh-vs ${dir}`}>
+                        {dir === "up" && <ArrowUp size={14} strokeWidth={3} aria-hidden="true" />}
+                        {dir === "down" && <ArrowDown size={14} strokeWidth={3} aria-hidden="true" />}
+                        <span>
+                          {dir === "same"
+                            ? t("fh_at")
+                            : `${peso(Math.abs(diff))} ${dir === "up" ? t("fh_above") : t("fh_below")}`}
+                        </span>
                       </span>
-                    </span>
+                    )}
                   </button>
                 </li>
               );

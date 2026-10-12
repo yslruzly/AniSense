@@ -15,7 +15,7 @@ import { Segmented } from "../components/ui/Segmented";
 import { Sheet } from "../components/ui/Sheet";
 import { useRetained } from "../hooks/usePresence";
 import { DateField, localISO } from "../components/ui/DateField";
-import { ProfitCard, estimateFor, spentOn } from "../components/expenses/ProfitCard";
+import { ProfitCard, estimateFor, spentOn, priceOfCrop } from "../components/expenses/ProfitCard";
 import { Sale } from "../lib/sales";
 import { costOf, totalSpent } from "../lib/purchases";
 import { peso, decimalText } from "../lib/money";
@@ -928,7 +928,7 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
             return (
               <p className={`pf-preview sf-note ${est === null ? "" : est < 0 ? "neg" : "pos"}`}>
                 {est === null
-                  ? t("pf_set_hint").replace("{crop}", tn(form.crop))
+                  ? t(priceOfCrop(form.crop) > 0 ? "pf_set_hint" : "pf_no_price_hint").replace("{crop}", tn(form.crop))
                   : t("pf_after").replace("{crop}", tn(form.crop)).replace("{amount}", `${est < 0 ? "−" : ""}₱${Math.abs(Math.round(est)).toLocaleString("en-PH")}`)}
               </p>
             );

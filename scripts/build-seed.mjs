@@ -7,8 +7,9 @@
 //   crops           every variety (RICE_VARIETIES + CROP_GROUPS)
 //   crop_prices     the price records: every month on record for the study's
 //                   varieties (src/data/generated/priceHistory.ts, built from
-//                   data/historical-prices.csv), and one sample price for
-//                   each variety that has no records yet
+//                   data/historical-prices.csv). A variety with no records has
+//                   no price row at all: the app shows it at ₱0 (crops.ts),
+//                   and the sample prices earlier seeds wrote are removed
 //   crop_forecasts  the next months, per variety and model
 //                   (src/data/generated/forecasts.json, from ml/train_forecasts.py)
 //   achievements    the badges
@@ -64,7 +65,8 @@ for (const [id, prices] of Object.entries(PRICE_SERIES)) {
     before = price;
   });
 }
-const sample = varieties.filter(v => !(v.id in PRICE_SERIES));
+// No records, no price: these show at ₱0 in the app.
+const unpriced = varieties.filter(v => !(v.id in PRICE_SERIES));
 
 // The forecasts: every month each model looked ahead to.
 const forecastRows = [];
@@ -95,7 +97,7 @@ const sql = `-- ═════════════════════�
 --  Safe to re-run: every row is added or brought up to date.
 --
 --  ${groups.length} crop groups · ${varieties.length} varieties · ${records.length} price records (${PRICE_MONTHS[0]} to ${PRICE_MONTHS[PRICE_MONTHS.length - 1]})
---  · ${sample.length} sample prices · ${forecastRows.length} forecasts · ${achievements.length} badges
+--  · ${unpriced.length} varieties with no price (₱0 in the app) · ${forecastRows.length} forecasts · ${achievements.length} badges
 -- ═══════════════════════════════════════════════════════════════════════════
 
 -- ─── Crop groups ─────────────────────────────────────────────────────────────
@@ -129,14 +131,12 @@ ${records.map(r => `  (${q(r.id)}, ${q(r.date)}, ${r.price}, ${r.change})`).join
 on conflict (crop_id, price_date) do update set
   price_per_kg = excluded.price_per_kg, change_pct = excluded.change_pct, is_sample = false;
 
--- ─── Sample prices ───────────────────────────────────────────────────────────
--- Varieties with no price records yet. These are SAMPLE numbers, not market
--- prices: replace them with real records before real farmers rely on them.
--- They are marked is_sample, so they are never drawn as price history.
-insert into public.crop_prices (crop_id, price_date, price_per_kg, change_pct, is_sample) values
-${sample.map(v => `  (${q(v.id)}, current_date, ${v.pricePerKg}, ${v.change}, true)`).join(",\n")}
-on conflict (crop_id, price_date) do update set
-  price_per_kg = excluded.price_per_kg, change_pct = excluded.change_pct, is_sample = true;
+-- ─── No sample prices ────────────────────────────────────────────────────────
+-- A variety with no price records has no price: the app shows it at ₱0 and
+-- leaves it out of every comparison. The made-up sample prices earlier seeds
+-- wrote for these varieties are removed, so none can show again:
+--   ${unpriced.map(v => v.name).join(", ")}
+delete from public.crop_prices where is_sample;
 
 -- ─── Forecasts ───────────────────────────────────────────────────────────────
 -- From ml/train_forecasts.py, trained on the records above on ${forecasts.generated}.
@@ -155,4 +155,4 @@ on conflict (id) do update set
   awarded_by = excluded.awarded_by, sort_order = excluded.sort_order;
 `;
 writeFileSync("supabase/seed.sql", sql);
-console.log(`supabase/seed.sql: ${groups.length} crop groups, ${varieties.length} varieties, ${records.length} price records, ${sample.length} sample prices, ${forecastRows.length} forecasts, ${achievements.length} badges`);
+console.log(`supabase/seed.sql: ${groups.length} crop groups, ${varieties.length} varieties, ${records.length} price records, ${unpriced.length} varieties with no price, ${forecastRows.length} forecasts, ${achievements.length} badges`);

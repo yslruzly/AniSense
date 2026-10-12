@@ -6,7 +6,7 @@ import { Search, ChevronRight, X, Star, ArrowUp, ArrowDown, Minus } from "lucide
 import { haptic } from "../lib/platform";
 import { useLang } from "../i18n";
 import { UserRole } from "../types";
-import { CROP_FAMILIES, FAMILY_GROUPS } from "../data/crops";
+import { CROP_FAMILIES, FAMILY_GROUPS, hasPrice } from "../data/crops";
 import { hasRecords, latestMonth, monthLabel } from "../data/priceRecords";
 import { Hdr } from "../components/layout/Hdr";
 import { CropIcon } from "../components/icons";
@@ -109,7 +109,7 @@ export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userIn
             <button className="pr-vrow" key={c.id} onClick={() => setOpen(c)}>
               <span className="pr-vrow-name">{c.name}</span>
               <span className="pr-vrow-price">{peso(c.pricePerKg)}<small>{t("per_kg_short")}</small></span>
-              <Change value={c.change} />
+              {hasPrice(c) && <Change value={c.change} />}
               <ChevronRight size={18} className="pr-row-chev" aria-hidden="true" />
             </button>
           ))}
@@ -118,10 +118,12 @@ export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userIn
     );
   };
 
-  const up = ALL_ITEMS.filter(c => c.change > 0).length;
-  const down = ALL_ITEMS.filter(c => c.change < 0).length;
-  const flat = ALL_ITEMS.length - up - down;
-  const movers = [...ALL_ITEMS].sort((a, b) => Math.abs(b.change) - Math.abs(a.change)).slice(0, 6);
+  // Counted over the crops with a price: a ₱0 crop has no move to count.
+  const priced = ALL_ITEMS.filter(hasPrice);
+  const up = priced.filter(c => c.change > 0).length;
+  const down = priced.filter(c => c.change < 0).length;
+  const flat = priced.length - up - down;
+  const movers = [...priced].sort((a, b) => Math.abs(b.change) - Math.abs(a.change)).slice(0, 6);
   // Whether the market is good news for the person reading it: rising
   // prices are a good time to sell, falling ones a good time to buy. How the
   // farmer arrives says which, so the same numbers read right for both.
@@ -148,7 +150,7 @@ export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userIn
                 // bar's "up" below, so the answer and the proof read as one.
                 <p className="pr-pulse-head">
                   <span className="pr-pulse-big">{up}</span>
-                  <span className="pr-pulse-sub">{t("mkt_pulse_sub").replace("{n}", String(ALL_ITEMS.length))}</span>
+                  <span className="pr-pulse-sub">{t("mkt_pulse_sub").replace("{n}", String(priced.length))}</span>
                 </p>
               ) : (
                 <p className="pr-pulse-head muted">{t("state_loading_prices")}</p>

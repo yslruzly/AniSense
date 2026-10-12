@@ -30,10 +30,12 @@ export const priceOfCrop = (crop: string) =>
 export const spentOn = (txns: Expense[], crop: string) =>
   txns.filter(e => e.crop === crop).reduce((s, e) => s + e.amount, 0);
 
-/** Estimated profit for one crop, or null when no expected harvest is set. */
+/** Estimated profit for one crop, or null when no expected harvest is set,
+ *  or the crop has no market price (₱0) to value it at. */
 export function estimateFor(crop: string, plans: HarvestPlans, spent: number): number | null {
   const kg = plans[crop];
-  return kg ? kg * priceOfCrop(crop) - spent : null;
+  const price = priceOfCrop(crop);
+  return kg && price > 0 ? kg * price - spent : null;
 }
 
 const peso = (n: number) => `${n < 0 ? "−" : ""}₱${Math.abs(Math.round(n)).toLocaleString("en-PH")}`;
@@ -62,7 +64,7 @@ export function ProfitCard({ transactions, sales, plans, onPlans, farmerCrops }:
 
   const totalSpent = transactions.reduce((s, e) => s + e.amount, 0);
   const totalSold = sales.reduce((s, x) => s + x.amount, 0);
-  const planned = rows.filter(r => r.kg > 0);
+  const planned = rows.filter(r => r.kg > 0 && r.price > 0);
   // Everything expected to come in, less everything spent: a crop without an
   // expected harvest still cost what it cost.
   const estTotal = planned.length ? planned.reduce((s, r) => s + r.kg * r.price, 0) - totalSpent : null;
@@ -125,7 +127,17 @@ export function ProfitCard({ transactions, sales, plans, onPlans, farmerCrops }:
               </div>
 
               <div className="pf-lines">
-                {/* Estimated */}
+                {/* Estimated. A crop with no market price can't be valued:
+                    it says so, and there is no harvest to set for it. */}
+                {r.price <= 0 ? (
+                  <div className="pf-line est">
+                    <span className="pf-line-l">
+                      {t("pf_est")}
+                      <small>{t("pf_no_price")}</small>
+                    </span>
+                    <span className="pf-line-v">—</span>
+                  </div>
+                ) : (
                 <button type="button" className={`pf-line est ${tone(r.est)}`} onClick={() => open(r.crop)}>
                   <span className="pf-line-l">
                     {t("pf_est")}
@@ -140,6 +152,7 @@ export function ProfitCard({ transactions, sales, plans, onPlans, farmerCrops }:
                     {r.est !== null && <Pencil size={13} strokeWidth={2.4} className="pf-edit" aria-hidden="true" />}
                   </span>
                 </button>
+                )}
                 {/* Final */}
                 <div className={`pf-line fin ${tone(r.final)}`}>
                   <span className="pf-line-l">

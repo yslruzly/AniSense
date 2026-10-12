@@ -1,5 +1,5 @@
 import { translations } from "../../i18n";
-import { CROP_GROUPS, RICE_VARIETIES } from "../../data/crops";
+import { CROP_GROUPS, RICE_VARIETIES, hasPrice } from "../../data/crops";
 
 // ─── Monthly price change ─────────────────────────────────────────────────────
 // Every crop's move from the month before, on one diverging scale: up to the right, down to the left, from a
@@ -21,10 +21,14 @@ export function MarketChange({ farmerCrops = [] }: { farmerCrops?: string[] }) {
   const groups = [{ group: "Rice", varieties: RICE_VARIETIES }, ...CROP_GROUPS];
   // A crop's move is the average of its varieties', so Rice is one row, not
   // three.
+  // Only the varieties with a price: a ₱0 one has no move, and a crop with
+  // none priced has no row.
   const rows = groups
+    .map(g => ({ name: g.group, priced: g.varieties.filter(hasPrice) }))
+    .filter(g => g.priced.length > 0)
     .map(g => ({
-      name: g.group,
-      change: Math.round((g.varieties.reduce((sum, v) => sum + v.change, 0) / g.varieties.length) * 10) / 10,
+      name: g.name,
+      change: Math.round((g.priced.reduce((sum, v) => sum + v.change, 0) / g.priced.length) * 10) / 10,
     }))
     .sort((a, b) => b.change - a.change);
   const max = Math.max(0.1, ...rows.map(r => Math.abs(r.change)));

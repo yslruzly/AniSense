@@ -3,6 +3,7 @@ import { useLang } from "../../i18n";
 import { PriceItem } from "../../services/prices";
 import { forecastOf } from "../../data/forecast";
 import { historyOf, monthLabel } from "../../data/priceRecords";
+import { hasPrice } from "../../data/crops";
 import { cropPhoto } from "../../data/cropPhotos";
 import { CropIcon } from "../icons";
 import { Sheet } from "../ui/Sheet";
@@ -170,7 +171,7 @@ export function PriceSheet({ item, onClose }: { item: PriceItem | null; onClose:
           <div className="pr-sheet-body">
             <div className="pr-sheet-price">
               <span className="pr-big">{peso(shown.pricePerKg)}<small>{t("per_kg_short")}</small></span>
-              <Change value={shown.change} big />
+              {hasPrice(shown) && <Change value={shown.change} big />}
             </div>
             <div className="pr-sheet-sub">{t("mkt_change_month")}</div>
             <PriceStory item={shown} />

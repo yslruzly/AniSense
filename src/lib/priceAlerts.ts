@@ -30,7 +30,8 @@ export const isRising = (a: PriceAlert) => a.target >= a.setAtPrice;
 
 /** Has today's price met the target? */
 export const alertHit = (a: PriceAlert, price: number) =>
-  isRising(a) ? price >= a.target : price <= a.target;
+  // No price (₱0) is not a drop below the target.
+  price > 0 && (isRising(a) ? price >= a.target : price <= a.target);
 
 export async function loadAlerts(): Promise<PriceAlert[]> {
   try {

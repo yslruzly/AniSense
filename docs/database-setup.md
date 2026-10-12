@@ -23,8 +23,9 @@ Without `.env` the app runs exactly as before on the built-in sample data, so
 an APK built without keys still works for demos.
 
 **Still kept on the phone only:** the ID photo, and which achievements have
-already been celebrated. **Still sample data:** the prices of the 18 varieties
-with no records. (The weather is live, from Open-Meteo, and needs no setup.)
+already been celebrated. **No price yet:** the 18 varieties with no records
+show ₱0 until they have them. (The weather is live, from Open-Meteo, and needs
+no setup.)
 
 **Offline needs nothing here.** The app keeps its own SQLite database on the
 phone (the lists it fetched, and the changes made without signal), and opens
@@ -60,8 +61,9 @@ Two files, in this order, each in its own query:
 2. **New query** again. Open `supabase/seed.sql`, copy all of it, paste,
    **Run**. This fills the catalog: 10 crop types, 23 varieties, 320 monthly
    price records for the study's five varieties (January 2021 to September
-   2026), one sample price for each of the other 18 varieties, 30 forecasts
-   and the 6 badges.
+   2026), 30 forecasts and the 6 badges. The other 18 varieties get no price
+   (the app shows them at ₱0); any sample prices an earlier seed wrote are
+   removed.
 
 Both are safe to run again. If anything went wrong, or a file changes later,
 just paste and run it again.

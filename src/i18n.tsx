@@ -1653,6 +1653,11 @@ export const translations: Dict = {
   pf_less: { en: "Less", tl: "Bawasan" },
   pf_more: { en: "More", tl: "Dagdagan" },
   pf_after: { en: "After this, {crop}'s estimated profit: {amount}", tl: "Pagkatapos nito, tantiyang kita sa {crop}: {amount}" },
+  pf_no_price: { en: "No market price yet", tl: "Wala pang presyo sa merkado" },
+  pf_no_price_hint: {
+    en: "{crop} has no market price yet, so this cost can't be weighed against its harvest.",
+    tl: "Wala pang presyo sa merkado ang {crop}, kaya hindi pa maikukumpara ang gastos na ito sa ani nito.",
+  },
   pf_set_hint: {
     en: "Set {crop}'s expected harvest in Your profit to see what this cost does to it.",
     tl: "Ilagay ang inaasahang ani ng {crop} sa Ang kita mo para makita ang epekto ng gastos na ito.",

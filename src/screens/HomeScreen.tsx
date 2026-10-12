@@ -12,7 +12,7 @@ import { Sale } from "../lib/sales";
 import { Planting } from "../lib/plantings";
 import { PriceAlert } from "../lib/priceAlerts";
 import { useViewer } from "../store/viewer";
-import { CROPS, CROP_GROUP_BY_ID } from "../data/crops";
+import { CROPS, CROP_GROUP_BY_ID, hasPrice } from "../data/crops";
 import { cropPhotoFor } from "../data/cropPhotos";
 import { useWeather } from "../store/weather";
 import { nextWetDay, whenSaid } from "../services/weather";
@@ -102,7 +102,7 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
   const myCrops = farmerCrops
     .map(g => CROPS.find(c => CROP_GROUP_BY_ID[c.id] === g))
     .filter((c): c is NonNullable<typeof c> => !!c);
-  const up = CROPS.filter(c => c.change > 0).length;
+  const up = CROPS.filter(c => hasPrice(c) && c.change > 0).length;
 
   // ── Buyer figures ──────────────────────────────────────────────────────
   // What a crop goes for today, so a listing can be called cheap or not.
@@ -291,7 +291,7 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
             <span className="hm-ico"><Sprout size={20} strokeWidth={2.2} /></span>
             <div>
               <h2 className="hm-title">{t("home_your_crops")}</h2>
-              <div className="hm-sub">{t("mkt_pulse_head").replace("{up}", String(up)).replace("{n}", String(CROPS.length))}</div>
+              <div className="hm-sub">{t("mkt_pulse_head").replace("{up}", String(up)).replace("{n}", String(CROPS.filter(hasPrice).length))}</div>
             </div>
             <button className="hm-link" onClick={() => onNavigate("market")}>
               {t("mkt_all")} <ChevronRight size={16} strokeWidth={2.6} />
@@ -313,7 +313,7 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
                   </span>
                   <span className="hm-crop-end">
                     <span className="hm-crop-price">{peso(c.pricePerKg)}<small>{t("per_kg_short")}</small></span>
-                    <Chg value={c.change} />
+                    {hasPrice(c) && <Chg value={c.change} />}
                   </span>
                 </button>
               );

@@ -7,7 +7,7 @@
 --  Safe to re-run: every row is added or brought up to date.
 --
 --  10 crop groups · 23 varieties · 320 price records (2021-01 to 2026-09)
---  · 18 sample prices · 30 forecasts · 6 badges
+--  · 18 varieties with no price (₱0 in the app) · 30 forecasts · 6 badges
 -- ═══════════════════════════════════════════════════════════════════════════
 
 -- ─── Crop groups ─────────────────────────────────────────────────────────────
@@ -391,31 +391,12 @@ insert into public.crop_prices (crop_id, price_date, price_per_kg, change_pct) v
 on conflict (crop_id, price_date) do update set
   price_per_kg = excluded.price_per_kg, change_pct = excluded.change_pct, is_sample = false;
 
--- ─── Sample prices ───────────────────────────────────────────────────────────
--- Varieties with no price records yet. These are SAMPLE numbers, not market
--- prices: replace them with real records before real farmers rely on them.
--- They are marked is_sample, so they are never drawn as price history.
-insert into public.crop_prices (crop_id, price_date, price_per_kg, change_pct, is_sample) values
-  ('rice-regular-milled', current_date, 42, 0.2, true),
-  ('onion-white', current_date, 38, 1.2, true),
-  ('onion-yellow', current_date, 35, 0.5, true),
-  ('onion-spring', current_date, 20, -1, true),
-  ('mango-carab', current_date, 80, 3.5, true),
-  ('mango-indian', current_date, 40, 1, true),
-  ('tom-cherry', current_date, 25, 3.2, true),
-  ('tom-tagalog', current_date, 60, 2.4, true),
-  ('tom-baguio', current_date, 90, -1.2, true),
-  ('corn-yellow', current_date, 70, 1.5, true),
-  ('corn-white', current_date, 65, 1, true),
-  ('corn-sweet', current_date, 30, 2.5, true),
-  ('ampalaya-native', current_date, 60, 2.2, true),
-  ('ampalaya-galaxy', current_date, 55, -0.8, true),
-  ('melon-sweet', current_date, 28, 1.4, true),
-  ('melon-seedless', current_date, 35, 0.6, true),
-  ('melon-yellow', current_date, 45, 1, true),
-  ('squash-kalabasa', current_date, 12, -1.3, true)
-on conflict (crop_id, price_date) do update set
-  price_per_kg = excluded.price_per_kg, change_pct = excluded.change_pct, is_sample = true;
+-- ─── No sample prices ────────────────────────────────────────────────────────
+-- A variety with no price records has no price: the app shows it at ₱0 and
+-- leaves it out of every comparison. The made-up sample prices earlier seeds
+-- wrote for these varieties are removed, so none can show again:
+--   Regular Milled, Yellow/White Onion, Shallots Onion, Spring Onion, Carabao Mango, Indian Mango, Diamante Max F1 Tomato, Kamatis Tagalog, Kamatis Baguio, Yellow Corn, White Corn, Sweet Corn, Native Ampalaya, Galaxy Ampalaya, Sweet Watermelon, Seedless Watermelon, Yellow Watermelon, Kalabasa
+delete from public.crop_prices where is_sample;
 
 -- ─── Forecasts ───────────────────────────────────────────────────────────────
 -- From ml/train_forecasts.py, trained on the records above on 2026-10-01.
