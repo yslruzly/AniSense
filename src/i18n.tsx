@@ -97,7 +97,8 @@ export const translations: Dict = {
   auth_last_name: { en: "Last name", tl: "Apelyido" },
   auth_first_name_ph: { en: "e.g. Juan", tl: "hal. Juan" },
   auth_last_name_ph: { en: "e.g. Dela Cruz", tl: "hal. Dela Cruz" },
-  auth_gmail_address: { en: "Gmail Address", tl: "Gmail Address" },
+  auth_gmail_address: { en: "Email Address", tl: "Email Address" },
+  auth_email: { en: "Email", tl: "Email" },
   auth_password: { en: "Password", tl: "Password" },
   auth_password_ph: { en: "Enter password", tl: "Ilagay ang password" },
   auth_confirm_password: { en: "Type it again", tl: "I-type muli" },
@@ -743,9 +744,9 @@ export const translations: Dict = {
   err_full_name: { en: "Full name is required.", tl: "Kailangan ang buong pangalan." },
   err_first_name: { en: "Enter your first name.", tl: "Ilagay ang pangalan mo." },
   err_last_name: { en: "Enter your last name.", tl: "Ilagay ang apelyido mo." },
-  err_gmail_required: { en: "Gmail address is required.", tl: "Kailangan ang Gmail address." },
+  err_gmail_required: { en: "Email address is required.", tl: "Kailangan ang email address." },
   err_cp_required: { en: "CP number is required.", tl: "Kailangan ang numero ng CP." },
-  err_valid_gmail: { en: "Enter a valid Gmail address.", tl: "Maglagay ng wastong Gmail address." },
+  err_valid_gmail: { en: "Enter a valid email address.", tl: "Maglagay ng wastong email address." },
   err_valid_phone: {
     en: "Enter a valid PH mobile number (e.g. 0912 345 6789).",
     tl: "Maglagay ng wastong numero ng cellphone (hal. 0912 345 6789).",
@@ -762,16 +763,16 @@ export const translations: Dict = {
   // Real accounts: what can go wrong once there is a server on the other end.
   // Said in the farmer's terms, with what to do next, never the server's words.
   err_login_wrong: {
-    en: "That number, Gmail or password is wrong. Check them and try again.",
-    tl: "Mali ang numero, Gmail o password. Tingnan at subukan ulit.",
+    en: "That number, email or password is wrong. Check them and try again.",
+    tl: "Mali ang numero, email o password. Tingnan at subukan ulit.",
   },
   err_account_exists: {
     en: "There is already an account with this. Sign in instead.",
     tl: "May account na gamit ito. Mag-sign in na lang.",
   },
   err_email_unconfirmed: {
-    en: "Confirm your Gmail first with the code we sent you.",
-    tl: "I-confirm muna ang Gmail mo gamit ang code na ipinadala namin.",
+    en: "Confirm your email first with the code we sent you.",
+    tl: "I-confirm muna ang email mo gamit ang code na ipinadala namin.",
   },
   err_code_wrong: {
     en: "That code is wrong or has expired. Check it, or send a new one.",
@@ -790,8 +791,8 @@ export const translations: Dict = {
   err_code_send_failed: { en: "We couldn't send the code. Try again in a moment.", tl: "Hindi namin naipadala ang code. Subukan ulit maya-maya." },
   err_code_wait: { en: "Wait {s} seconds before sending another code.", tl: "Maghintay ng {s} segundo bago magpadala ulit ng code." },
   err_code_sends: { en: "Too many codes have been sent. Try again in an hour.", tl: "Sobrang dami nang code na naipadala. Subukan ulit pagkalipas ng isang oras." },
-  err_gmail_taken: { en: "This Gmail already has an account. Sign in instead.", tl: "May account na ang Gmail na ito. Mag-sign in na lang." },
-  err_no_account_gmail: { en: "No AniSense account uses this Gmail. Check it, or create an account.", tl: "Walang AniSense account na gumagamit ng Gmail na ito. Tingnan ulit, o gumawa ng account." },
+  err_gmail_taken: { en: "This email already has an account. Sign in instead.", tl: "May account na ang email na ito. Mag-sign in na lang." },
+  err_no_account_gmail: { en: "No AniSense account uses this email. Check it, or create an account.", tl: "Walang AniSense account na gumagamit ng email na ito. Tingnan ulit, o gumawa ng account." },
   err_phone_taken: { en: "This CP number already has an account. Sign in instead.", tl: "May account na ang CP number na ito. Mag-sign in na lang." },
   err_no_account_phone: { en: "No AniSense account uses this CP number. Check it, or create an account.", tl: "Walang AniSense account na gumagamit ng CP number na ito. Tingnan ulit, o gumawa ng account." },
   err_sms_not_ready: {
@@ -809,10 +810,10 @@ export const translations: Dict = {
   },
   // Only a misconfigured project can show this one; it names the fix.
   err_phone_confirm_on: {
-    en: "CP number sign-up is not available yet. Use Gmail for now.",
-    tl: "Hindi pa puwede ang pag-sign up gamit ang CP number. Gmail muna ang gamitin.",
+    en: "CP number sign-up is not available yet. Use email for now.",
+    tl: "Hindi pa puwede ang pag-sign up gamit ang CP number. Email muna ang gamitin.",
   },
-  verify_title: { en: "Check your Gmail", tl: "Tingnan ang Gmail mo" },
+  verify_title: { en: "Check your email", tl: "Tingnan ang email mo" },
   verify_sub: { en: "We sent a 6-digit code to {email}.", tl: "Nagpadala kami ng 6-digit na code sa {email}." },
   verify_lbl: { en: "Verification code", tl: "Verification code" },
   verify_help: {
@@ -1149,9 +1150,9 @@ export const translations: Dict = {
   auth_code_demo: { en: "Demo only, nothing is sent yet. Your code is {code}.", tl: "Demo lamang, wala pang naipapadala. Ang code mo ay {code}." },
   auth_resend_in: { en: "You can send a new code in {s}s", tl: "Makakapagpadala ng bagong code sa loob ng {s}s" },
   auth_verified_cp: { en: "Number verified", tl: "Na-verify ang numero" },
-  auth_verified_gmail: { en: "Gmail verified", tl: "Na-verify ang Gmail" },
+  auth_verified_gmail: { en: "Email verified", tl: "Na-verify ang email" },
   err_verify_cp_first: { en: "Verify your number first: tap Send code.", tl: "I-verify muna ang numero mo: pindutin ang Ipadala ang code." },
-  err_verify_gmail_first: { en: "Verify your Gmail first: tap Send code.", tl: "I-verify muna ang Gmail mo: pindutin ang Ipadala ang code." },
+  err_verify_gmail_first: { en: "Verify your email first: tap Send code.", tl: "I-verify muna ang email mo: pindutin ang Ipadala ang code." },
   err_code_mismatch: { en: "That code is not right. Check it and type it again.", tl: "Mali ang code. Tingnan at i-type ulit." },
   err_code_expired: { en: "That code has expired. Send a new one.", tl: "Expired na ang code. Magpadala ng bago." },
   err_code_tries: { en: "Too many wrong tries. Send a new code.", tl: "Sobrang daming maling subok. Magpadala ng bagong code." },

@@ -547,7 +547,7 @@ export function AuthFormScreen({
       <div className="a-seg" role="radiogroup" aria-label={t("auth_contact_method")} data-mode={mode}>
         <span className="a-seg-thumb" aria-hidden="true" />
         {([["phone", <Smartphone key="i" size={18} strokeWidth={2.2} />, t("auth_cp_number")],
-           ["gmail", <Mail key="i" size={18} strokeWidth={2.2} />, "Gmail"]] as const).map(([id, ico, lbl]) => (
+           ["gmail", <Mail key="i" size={18} strokeWidth={2.2} />, t("auth_email")]] as const).map(([id, ico, lbl]) => (
           <button key={id} type="button" role="radio" aria-checked={mode === id}
             className={mode === id ? "on" : ""}
             onClick={() => {
@@ -562,7 +562,7 @@ export function AuthFormScreen({
       {label && <label className="a-lbl" htmlFor="f-contact">{labelContact}</label>}
       {mode === "gmail" ? (
         <input id="f-contact" className={`a-inp ${bad("contact")}`} type="email"
-          placeholder="juan@gmail.com" autoComplete={page === "signin" ? "username" : "email"} autoCapitalize="none" spellCheck={false}
+          placeholder="juan@email.com" autoComplete={page === "signin" ? "username" : "email"} autoCapitalize="none" spellCheck={false}
           enterKeyHint="next" onKeyDown={page === "signin" ? focusNext("f-password") : undefined} autoFocus={autoFocus}
           aria-label={label ? undefined : labelContact}
           {...errProps("contact", contactHelp ? "f-contact-help" : undefined)}
@@ -709,7 +709,7 @@ export function AuthFormScreen({
             </p>
           )}
           {/* No label over the field: the switch right above it already says
-              "CP Number" or "Gmail". It is still read out with the field. */}
+              "CP Number" or "Email". It is still read out with the field. */}
           <div className="a-field">{contactInput(false)}</div>
           <div className="a-field">
             {/* "Forgot?" sits on the password's own label row, where the need
