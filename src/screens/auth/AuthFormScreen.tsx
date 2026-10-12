@@ -24,6 +24,7 @@ import { codeKey, sendCode as sendVerifyCode, checkCode, saveNewPassword, CodeEr
 import { useHardwareBack } from "../../hooks/useHardwareBack";
 import { PRIVACY, LegalDocData } from "../../data/privacyPolicy";
 import { TERMS } from "../../data/termsOfService";
+import { passwordProblem, passwordRules } from "../../lib/password";
 
 // ─── Sign In / Create Account ─────────────────────────────────────────────────
 // Signing in is one short page: two fields, for someone who has done it before.
@@ -270,9 +271,13 @@ export function AuthFormScreen({
     if (!codeSent) return fail("contact", t(mode === "gmail" ? "err_verify_gmail_first" : "err_verify_cp_first"));
     return fail("vcode", t("err_code_required"));
   };
+  // A new password (a new account, or after a reset): the rules in
+  // lib/password, then the same once more. Signing in checks none of this.
   const passwordOk = () => {
     if (!password) return fail("password", t("err_password_required"));
-    if (password.length < 6) return fail("password", t("err_password_short"));
+    const problem = passwordProblem(password);
+    if (problem === "easy") return fail("password", t("err_password_easy"));
+    if (problem) return fail("password", t("err_password_short"));
     if (password !== confirm) return fail("confirm", t("err_password_mismatch"));
     return true;
   };
@@ -800,7 +805,7 @@ export function AuthFormScreen({
   // For a new account (where the question is the first one's label) and for
   // a new password (where each has a label of its own).
   const passwordFields = (labels?: { pw: string; confirm: string }) => {
-    const pwOk = password.length >= 6;
+    const rules = passwordRules(password);
     const confirmOk = confirm.length > 0 && confirm === password;
     return (
       <>
@@ -813,16 +818,20 @@ export function AuthFormScreen({
             value={password} onChange={e => { setPassword(e.target.value); clear(); }} />
           {reveal}
         </div>
-        {errField === "password"
-          ? fieldErr("password")
-          : (
-            // The rule turns into a tick the moment it's met: the page
-            // confirms progress as it happens, not only on Continue.
-            <p className={`a-help a-hint ${pwOk ? "ok" : ""}`} id="f-password-help">
+        {fieldErr("password")}
+        {/* The three rules, each turning into a tick the moment it's met:
+            the page confirms progress as it happens, not only on Continue,
+            and says which one is still missing. They stay under an error,
+            so the message and what to do about it are read together. */}
+        <ul className="a-pwrules" id="f-password-help">
+          {([["long", "pw_rule_len"], ["letter", "pw_rule_letter"], ["numOrSymbol", "pw_rule_numsym"]] as const).map(([rule, key]) => (
+            <li key={rule} className={`a-help a-hint ${rules[rule] ? "ok" : ""}`}>
               <span className="a-hint-ico"><Check size={12} strokeWidth={3.4} /></span>
-              {t("auth_help_pw")}
-            </p>
-          )}
+              {t(key)}
+              {rules[rule] && <span className="a-sr">, {t("pw_rule_done")}</span>}
+            </li>
+          ))}
+        </ul>
         <div className="a-field">
           <label className="a-lbl" htmlFor="f-confirm">{labels?.confirm ?? t("auth_confirm_password")}</label>
           <input id="f-confirm" className={`a-inp ${bad("confirm")}`}

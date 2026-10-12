@@ -258,8 +258,14 @@ async function check(key: string, purpose: Purpose, code: string) {
   return reply({ ok: true, result: "ok" });
 }
 
+// The app's rule for a new password (src/lib/password.ts): 8 characters or
+// more, with a letter and a number or a symbol. The app also turns away the
+// ones guessed first ("password1"); this is the floor nobody gets under by
+// calling the function without the app.
+const strongEnough = (pw: string) => pw.length >= 8 && /\p{L}/u.test(pw) && /[^\p{L}\s]/u.test(pw);
+
 async function resetPassword(key: string, loginEmail: string, token: string, password: string) {
-  if (password.length < 6) return reply({ ok: false, error: "WEAK_PASSWORD" });
+  if (!strongEnough(password)) return reply({ ok: false, error: "WEAK_PASSWORD" });
   const row = await rowFor(key);
   if (!row || !row.token_hash || !row.token_expires_at || Date.parse(row.token_expires_at) < Date.now()
       || (await sha256(token)) !== row.token_hash) return reply({ ok: false, error: "EXPIRED" });

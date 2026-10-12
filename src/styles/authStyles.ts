@@ -685,6 +685,10 @@ export const authCss = `
     animation: a-radio-pop 260ms var(--ease-out);
   }
   .a-hint-in { animation: a-err-in 180ms var(--ease-out); }
+  /* A new password's three rules, one under another, each its own tick. */
+  .a-pwrules { list-style: none; margin: 8px 0 0; padding: 0 0 0 4px; display: flex; flex-direction: column; gap: 6px; }
+  .a-pwrules .a-hint { margin: 0; }
+  .a-err + .a-pwrules { margin-top: 10px; }
   .a-field .a-help { padding-left: 4px; }
 
   /* Spins fast on purpose: a quicker spinner makes the same wait feel shorter. */

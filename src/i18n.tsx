@@ -752,8 +752,12 @@ export const translations: Dict = {
   },
   err_password_required: { en: "Password is required.", tl: "Kailangan ang password." },
   err_password_short: {
-    en: "Password must be at least 6 characters.",
-    tl: "Dapat hindi bababa sa 6 na karakter ang password.",
+    en: "Use at least 8 characters, with a letter and a number or symbol.",
+    tl: "Gumamit ng hindi bababa sa 8 karakter, may letra at numero o simbolo.",
+  },
+  err_password_easy: {
+    en: "That password is too easy to guess. Mix a word you'll remember with numbers or a symbol.",
+    tl: "Masyadong madaling hulaan ang password na iyan. Paghaluin ang salitang matatandaan mo at numero o simbolo.",
   },
   // Real accounts: what can go wrong once there is a server on the other end.
   // Said in the farmer's terms, with what to do next, never the server's words.
@@ -1151,10 +1155,10 @@ export const translations: Dict = {
   err_code_mismatch: { en: "That code is not right. Check it and type it again.", tl: "Mali ang code. Tingnan at i-type ulit." },
   err_code_expired: { en: "That code has expired. Send a new one.", tl: "Expired na ang code. Magpadala ng bago." },
   err_code_tries: { en: "Too many wrong tries. Send a new code.", tl: "Sobrang daming maling subok. Magpadala ng bagong code." },
-  auth_help_pw: {
-    en: "6 letters or numbers, or more.",
-    tl: "6 na letra o numero pataas.",
-  },
+  pw_rule_len: { en: "At least 8 characters", tl: "Hindi bababa sa 8 karakter" },
+  pw_rule_letter: { en: "A letter (a to z)", tl: "May letra (a hanggang z)" },
+  pw_rule_numsym: { en: "A number or a symbol (1 2 3, @ # !)", tl: "May numero o simbolo (1 2 3, @ # !)" },
+  pw_rule_done: { en: "done", tl: "ayos na" },
   auth_forgot: { en: "Forgot your password?", tl: "Nakalimutan ang password?" },
   reset_forgot_title: { en: "Forgot password", tl: "Nakalimutan ang password" },
   reset_forgot_sub: { en: "Choose the one you sign in with. We'll send a code there.", tl: "Piliin ang ginagamit mo sa pag-sign in. Doon namin ipapadala ang code." },
