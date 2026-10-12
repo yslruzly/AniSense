@@ -1,9 +1,9 @@
-import { CloudSun, CloudMoon, BarChart2, BookOpen, PlayCircle, CheckCircle, AlertTriangle, Bot, ChevronRight, ArrowUpRight, ArrowDownRight, ArrowRight, Sprout, Wallet, Megaphone, Store, Tag, MapPin, Search } from "lucide-react";
+import { CloudSun, CloudMoon, BarChart2, BookOpen, PlayCircle, CheckCircle, AlertTriangle, Bot, ChevronRight, ArrowUpRight, ArrowDownRight, ArrowRight, Sprout, Wallet, Megaphone, Store, Search } from "lucide-react";
 import { useState } from "react";
 import { useLang } from "../i18n";
 import { haptic } from "../lib/platform";
 import { Screen, UserRole, TradeIntent } from "../types";
-import { ShopByCrop, FeaturedProducts, FeaturedFarmers, YourPurchases, PriceMoves } from "../components/home/BuyerHome";
+import { ShopByCrop, FeaturedProducts, CheapestToday, FeaturedFarmers, YourPurchases, PriceMoves } from "../components/home/BuyerHome";
 import { YourHarvest } from "../components/home/FarmerHome";
 import { PriceAlerts } from "../components/home/PriceAlerts";
 import { CropTracker } from "../components/home/CropTracker";
@@ -13,7 +13,6 @@ import { Planting } from "../lib/plantings";
 import { PriceAlert } from "../lib/priceAlerts";
 import { useViewer } from "../store/viewer";
 import { CROPS, CROP_GROUP_BY_ID, hasPrice } from "../data/crops";
-import { cropPhotoFor } from "../data/cropPhotos";
 import { useWeather } from "../store/weather";
 import { nextWetDay, whenSaid } from "../services/weather";
 import { Sparkline } from "../components/charts/Micro";
@@ -21,7 +20,6 @@ import { cropPhoto } from "../data/cropPhotos";
 import { CropIcon } from "../components/icons";
 import { useMarket } from "../store/market";
 import { PriceSheet } from "../components/prices/PriceSheet";
-import { SkeletonMediaRows } from "../components/states";
 import { PriceItem } from "../services/prices";
 import { AIAdvisorCard } from "../components/analytics/AIAdvisorCard";
 import { PredictedPriceCard } from "../components/analytics/PredictedPriceCard";
@@ -31,7 +29,7 @@ import { useIsNight } from "../hooks/useIsNight";
 import anisensePoster from "../assets/anisense-poster.webp";
 import homePoster from "../assets/anisense-poster-home.webp";
 import { PosterCarousel } from "../components/home/PosterCarousel";
-import { peso, toCents } from "../lib/money";
+import { peso } from "../lib/money";
 
 // ─── Home ─────────────────────────────────────────────────────────────────────
 // A morning check, in the order a farmer asks:
@@ -84,9 +82,9 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
   // the day rain is likely in the advisory, when there is one.
   const wx = useWeather();
   const wet = wx.data ? nextWetDay(wx.data, new Date()) : undefined;
-  // The marketplace and the farmer's expenses, from the database for a real
-  // account and from the sample data otherwise.
-  const { listings, expenses, loadPhase } = useMarket();
+  // The farmer's expenses, from the database for a real account and from the
+  // sample data otherwise.
+  const { expenses } = useMarket();
   const isBuyer = userRole === "buyer";
   const now = new Date();
   const dateStr = now.toLocaleDateString(locale, { weekday: "long", month: "long", day: "numeric" });
@@ -105,21 +103,6 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
   const up = CROPS.filter(c => hasPrice(c) && c.change > 0).length;
 
   // ── Buyer figures ──────────────────────────────────────────────────────
-  // What a crop goes for today, so a listing can be called cheap or not.
-  const marketPrice = (crop: string, variety: string) => {
-    const named = CROPS.find(c => c.name.toLowerCase() === (variety || "").toLowerCase() || c.name.toLowerCase() === crop.toLowerCase());
-    if (named) return named.pricePerKg;
-    const inGroup = CROPS.find(c => CROP_GROUP_BY_ID[c.id] === crop);
-    return inGroup?.pricePerKg ?? null;
-  };
-  // The three cheapest kilos on the marketplace, with how each compares to
-  // today's price. Ranking by "under market" alone leaves the card empty on
-  // a day when every farmer is asking the going rate, and an empty card is
-  // worse than none: this one always has something to say.
-  const deals = [...listings]
-    .sort((a, b) => a.pricePerKg - b.pricePerKg)
-    .slice(0, 3)
-    .map(l => { const m = marketPrice(l.crop, l.variety); return { l, save: m ? toCents(m - l.pricePerKg) : 0 }; });
   const { location: buyerLocation } = useViewer();
   const shop = (intent: TradeIntent) => (onShop ? onShop(intent) : onNavigate("trade"));
 
@@ -231,51 +214,8 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
 
         {/* The cheapest kilos on the marketplace right now, straight after
             the featured harvests: the two "what to buy today" blocks together,
-            before the invitation to browse everything. A list to read, not
-            to tap: the rows are plain rows and go nowhere. */}
-        {isBuyer && (
-          <section className="hm-card tint-green" data-tour="b-deals">
-            <div className="hm-card-head">
-              <span className="hm-ico"><Tag size={20} strokeWidth={2.2} /></span>
-              <div>
-                <h2 className="hm-title">{t("home_deals")}</h2>
-                <div className="hm-sub">{t("home_deals_sub")}</div>
-              </div>
-            </div>
-            {loadPhase !== "ready" ? (
-              // Still loading: rows in the list's shape, not "no deals".
-              loadPhase === "skeleton" ? <SkeletonMediaRows rows={3} label={t("state_loading_listings")} /> : null
-            ) : deals.length === 0 ? (
-              <p className="hm-empty">{t("home_no_deals")}</p>
-            ) : (
-              <div className="stagger-list">
-                {deals.map(({ l, save }) => {
-                  const photo = cropPhotoFor(l.crop, l.variety);
-                  return (
-                    <div key={l.id} className="hm-crop still">
-                      <span className="hm-crop-photo">
-                        {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropIcon crop={l.crop} size={22} />}
-                      </span>
-                      <span className="hm-crop-body">
-                        <span className="hm-crop-name">{l.variety && l.variety !== l.crop ? l.variety : l.crop}</span>
-                        <span className="hm-crop-var"><MapPin size={12} strokeWidth={2.4} /> {l.location} · {l.seller}</span>
-                      </span>
-                      <span className="hm-crop-end">
-                        <span className="hm-crop-price">{peso(l.pricePerKg)}<small>{t("per_kg_short")}</small></span>
-                        {/* The saving, not just the price: a number means more
-                            beside the one it beats. */}
-                        {/* Only when there is something to say. A chip on
-                            every row reading "at market price" is noise, and
-                            it was squeezing the seller's name off the line. */}
-                        {save > 0 && <span className="pr-chg up">−{peso(save)} {t("home_below")}</span>}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </section>
-        )}
+            before the invitation to browse everything. */}
+        {isBuyer && <CheapestToday />}
 
         {/* 2 ── Your crops' prices, farmer only. A short vertical list: no
             swiping to find your own crop among twenty. Tapping one opens its

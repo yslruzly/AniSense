@@ -1,19 +1,19 @@
 import { useRef } from "react";
-import { ChevronRight, MapPin, RotateCcw, ArrowLeft, ArrowRight, TrendingUp, TrendingDown, ArrowLeftRight, ShoppingCart } from "lucide-react";
+import { ChevronRight, MapPin, RotateCcw, ArrowLeft, ArrowRight, ArrowDown, TrendingUp, TrendingDown, ArrowLeftRight, ShoppingCart } from "lucide-react";
 import { useLang, translations } from "../../i18n";
 import { CROPS, CROP_GROUP_BY_ID, familyCropNames } from "../../data/crops";
 import familyCrops from "../../assets/families/family-crops.webp";
 import familyFruits from "../../assets/families/family-fruits.webp";
 import familyVegetables from "../../assets/families/family-vegetables.webp";
 import { useMarket } from "../../store/market";
-import { SkeletonShelf, SkeletonFarmerCards, EmptyState } from "../states";
+import { SkeletonShelf, SkeletonFarmerCards, SkeletonMediaRows, EmptyState } from "../states";
 import { featuredLineup } from "../../lib/featured";
 import { FeaturedFarmerBig } from "./FeaturedFarmerBig";
 import { useAutoScroll } from "../../hooks/useAutoScroll";
 import { cropPhoto, cropPhotoFor, cropGroupPhoto } from "../../data/cropPhotos";
 import { CropEmoji } from "../icons/CropEmoji";
 import { Listing, TradeIntent } from "../../types";
-import { peso } from "../../lib/money";
+import { peso, toCents } from "../../lib/money";
 import { costOf, totalSpent } from "../../lib/purchases";
 import { rankOf } from "../../lib/rating";
 import leafMask from "../../assets/anisense-leaf-mask.png";
@@ -24,6 +24,15 @@ import leafMask from "../../assets/anisense-leaf-mask.png";
 // search box) rather than dropping the buyer at the top of it to start over.
 
 type Shop = (intent: TradeIntent) => void;
+
+// A harvest by name. "Red" under Onions reads as "Red Onions"; "Yellow Corn"
+// already says it, so it is said once.
+const harvestName = (l: Listing, tn: (name: string) => string) =>
+  !l.variety || l.variety === l.crop
+    ? tn(l.crop)
+    : l.variety.toLowerCase().includes(l.crop.toLowerCase())
+      ? l.variety
+      : l.variety + " " + tn(l.crop);
 
 // ── Shop by crop ─────────────────────────────────────────────────────────────
 // Three doors, not ten: Crops, Fruits, Vegetables. Ten small tiles asked a
@@ -219,13 +228,7 @@ export function FeaturedProducts({ onShop }: { onShop: Shop }) {
       <div className="fp-row">
         {picks.map(l => {
           const photo = l.photo || cropPhotoFor(l.crop, l.variety);
-          // "Red" under Onions reads as "Red Onions"; "Yellow Corn" already
-          // says it, so it is said once.
-          const name = !l.variety || l.variety === l.crop
-            ? tn(l.crop)
-            : l.variety.toLowerCase().includes(l.crop.toLowerCase())
-              ? l.variety
-              : l.variety + " " + tn(l.crop);
+          const name = harvestName(l, tn);
           return (
             // The card is that one harvest: tapping it opens the marketplace
             // on it, its details already up, with the same crop's other
@@ -246,6 +249,106 @@ export function FeaturedProducts({ onShop }: { onShop: Shop }) {
           );
         })}
       </div>
+    </section>
+  );
+}
+
+// ── Cheapest today ───────────────────────────────────────────────────────────
+// The three cheapest kilos on the marketplace, cheapest first, as a price
+// board. The cheapest is the big one: its photo, and its price in large
+// figures with the peso sign in green, as the receipt below shows its total
+// in gold. The next two are rows, the price beside the name.
+//
+// Under each price, how far it is below today's market price, when it is. A
+// crop with no price records has no market price to beat and says nothing,
+// rather than "at market price" on every row.
+//
+// A list to read, not to tap: the rows go nowhere. The featured harvests just
+// above are the ones that open.
+
+// What a crop goes for today, so a listing can be called cheap or not. 0 for
+// a crop with no price yet (data/crops.ts), which is no price at all.
+const marketPrice = (crop: string, variety: string) => {
+  const named = CROPS.find(c => c.name.toLowerCase() === (variety || "").toLowerCase() || c.name.toLowerCase() === crop.toLowerCase());
+  if (named) return named.pricePerKg;
+  const inGroup = CROPS.find(c => CROP_GROUP_BY_ID[c.id] === crop);
+  return inGroup?.pricePerKg ?? null;
+};
+
+export function CheapestToday() {
+  const { t, tn } = useLang();
+  const { listings, loadPhase } = useMarket();
+  // Ranked by price alone. Ranking by "under market" left the card empty on a
+  // day when every farmer asks the going rate, and an empty card is worse
+  // than none: this one always has something to say.
+  const deals = [...listings]
+    .sort((a, b) => a.pricePerKg - b.pricePerKg)
+    .slice(0, 3)
+    .map(l => { const m = marketPrice(l.crop, l.variety); return { l, save: m ? toCents(m - l.pricePerKg) : 0 }; });
+
+  const photo = (l: Listing, size: number) => {
+    const src = l.photo || cropPhotoFor(l.crop, l.variety);
+    return src ? <img src={src} alt="" loading="lazy" decoding="async" /> : <CropEmoji crop={l.crop} size={size} />;
+  };
+  const from = (l: Listing) => (
+    <span className="cd-from">
+      <MapPin size={13} strokeWidth={2.4} aria-hidden="true" />
+      <span>{l.location} · {l.seller}</span>
+    </span>
+  );
+  // The arrow and the words both say "below": never the colour alone.
+  const below = (save: number) => save > 0 && (
+    <span className="cd-save">
+      <ArrowDown size={14} strokeWidth={2.6} aria-hidden="true" />
+      {peso(save)} {t("home_below")}
+    </span>
+  );
+
+  return (
+    <section className="cd" aria-labelledby="cd-t" data-tour="b-deals">
+      <h2 className="cd-title" id="cd-t">
+        {t("home_deals")}
+        {/* Sample harvests stand in for an empty Market: say so here too. */}
+        {deals.some(d => d.l.sample) && <span className="ph-sample">{t("mp_sample")}</span>}
+      </h2>
+      <p className="cd-sub">{t("home_deals_sub")}</p>
+      {loadPhase !== "ready" ? (
+        // Still loading: rows in the list's shape, not "no listings".
+        loadPhase === "skeleton" ? <SkeletonMediaRows rows={3} label={t("state_loading_listings")} /> : null
+      ) : deals.length === 0 ? (
+        <p className="hm-empty">{t("home_no_deals")}</p>
+      ) : (
+        <ol className="cd-list stagger-list">
+          {deals.map(({ l, save }, i) => {
+            const price = peso(l.pricePerKg);
+            return i === 0 ? (
+              <li key={l.id} className="cd-lead">
+                <span className="cd-ph">{photo(l, 36)}</span>
+                <span className="cd-main">
+                  <span className="cd-name">{harvestName(l, tn)}</span>
+                  <span className="cd-big">
+                    <span className="cd-cur">{price.slice(0, 1)}</span>{price.slice(1)}<small>{t("per_kg_short")}</small>
+                  </span>
+                  {below(save)}
+                  {from(l)}
+                </span>
+              </li>
+            ) : (
+              <li key={l.id} className="cd-row">
+                <span className="cd-ph">{photo(l, 24)}</span>
+                <span className="cd-main">
+                  <span className="cd-top">
+                    <span className="cd-name">{harvestName(l, tn)}</span>
+                    <span className="cd-price">{price}<small>{t("per_kg_short")}</small></span>
+                  </span>
+                  {from(l)}
+                  {below(save)}
+                </span>
+              </li>
+            );
+          })}
+        </ol>
+      )}
     </section>
   );
 }

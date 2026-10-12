@@ -2137,11 +2137,6 @@ export const appCss = `
   .hm-crop:active { background: var(--paper); transition-duration: 0ms; }
   .hm-crop + .hm-crop::before { content: ""; position: absolute; top: 0; left: 70px; right: 8px; height: 1px; background: var(--line); }
   .hm-crop:active::before, .hm-crop:active + .hm-crop::before { opacity: 0; }
-  /* A row that is only read (Cheapest today): the same row, with nothing
-     that says "tap me". No pointer, and no change under a finger. */
-  .hm-crop.still { cursor: default; }
-  .hm-crop.still:active { background: none; }
-  .hm-crop.still:active::before, .hm-crop.still:active + .hm-crop::before { opacity: 1; }
   .hm-crop-photo {
     width: 50px; height: 50px; flex: 0 0 50px; border-radius: 13px; overflow: hidden;
     background: var(--tanim-sk); display: flex; align-items: center; justify-content: center;
@@ -3011,6 +3006,60 @@ export const appCss = `
 
   .hm-sec-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .hm-sec-row .hm-sec-title { margin-top: 8px; }
+
+  /* Cheapest today: a price board in the receipt's frame (the same corners,
+     the same lift), in this card's colour: green, washed under the title and
+     the cheapest harvest. The cheapest is the big one; the next two are rows
+     under a hairline. Green for "below market", and for the peso sign.
+     Nothing here is tapped, so nothing changes under a finger. */
+  .cd {
+    position: relative; isolation: isolate; padding: 16px 16px 8px; border-radius: 22px; background: var(--card);
+    box-shadow: 0 0 0 1px rgba(11,107,65,.14), 0 1px 2px rgba(22,33,27,.05), 0 16px 32px -24px rgba(22,33,27,.4);
+  }
+  .cd::before {
+    content: ""; position: absolute; z-index: -1; inset: 0 0 auto 0; height: 200px; border-radius: 22px 22px 0 0; pointer-events: none;
+    background: linear-gradient(180deg, #E8F3EC 0%, rgba(232,243,236,0) 100%);
+  }
+  .cd-title { margin: 0; font-family: var(--font-display); font-size: 18px; font-weight: 700; letter-spacing: -.01em; line-height: 1.25; color: var(--text); }
+  .cd-sub { margin: 3px 0 0; font-size: 14.5px; line-height: 1.4; color: var(--text-faint); }
+  .cd-list { list-style: none; margin: 0; padding: 0; }
+  .cd-ph { flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; background: var(--tanim-sk); }
+  .cd-ph img { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: inherit; outline: 1px solid rgba(22,33,27,.06); outline-offset: -1px; }
+  .cd-main { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; }
+  .cd-name { font-family: var(--font-display); font-weight: 700; line-height: 1.25; color: var(--text); overflow-wrap: break-word; }
+  /* Town and farmer on one line, cut with an ellipsis rather than wrapping. */
+  .cd-from { display: flex; align-items: center; gap: 4px; max-width: 100%; margin-top: 3px; font-size: 14px; line-height: 1.35; color: var(--text-faint); }
+  .cd-from svg { flex-shrink: 0; color: var(--tanim); }
+  .cd-from span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cd-save {
+    display: inline-flex; align-items: center; gap: 3px; margin-top: 7px; padding: 3px 10px 3px 7px; border-radius: 99px;
+    background: var(--tanim-sk); color: var(--tanim-deep); font-size: 13.5px; font-weight: 700; line-height: 1.3;
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  /* The cheapest: a big photo, lifted a little off the card, and the price
+     in large figures: proportional digits and tight tracking at this size,
+     the sign smaller and raised, as on the receipt's total. */
+  .cd-lead { display: flex; align-items: center; gap: 14px; padding: 16px 0; }
+  .cd-lead .cd-ph { width: 88px; height: 88px; border-radius: 18px; box-shadow: 0 1px 2px rgba(22,33,27,.08), 0 8px 18px -12px rgba(22,33,27,.45); }
+  .cd-lead .cd-name { font-size: 17px; }
+  .cd-big {
+    margin-top: 2px; font-family: var(--font-display); font-size: 30px; font-weight: 800; line-height: 1.1;
+    letter-spacing: -.02em; color: var(--text); white-space: nowrap;
+  }
+  .cd-cur { font-size: .62em; font-weight: 700; letter-spacing: 0; color: var(--tanim); vertical-align: .42em; margin-right: 2px; }
+  .cd-big small { margin-left: 2px; font-size: 15px; font-weight: 600; letter-spacing: 0; color: var(--text-faint); }
+  .cd-lead .cd-from { margin-top: 6px; }
+  /* The next two: the price beside the name, the town under both, so a long
+     town has the row's whole width. A full hairline under the cheapest, an
+     inset one between the two. */
+  .cd-row { position: relative; display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .cd-lead + .cd-row { border-top: 1px solid var(--line); }
+  .cd-row + .cd-row::before { content: ""; position: absolute; top: 0; left: 64px; right: 0; height: 1px; background: var(--line); }
+  .cd-row .cd-ph { width: 52px; height: 52px; border-radius: 13px; }
+  .cd-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; width: 100%; }
+  .cd-row .cd-name { flex: 1; min-width: 0; font-size: 16.5px; }
+  .cd-price { flex-shrink: 0; font-family: var(--font-display); font-size: 17px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .cd-price small { margin-left: 1px; font-size: .7em; font-weight: 600; color: var(--text-faint); }
 
   /* Your purchases: a receipt. White, with a warm gold wash under the title
      and the total; the peso sign in the readable gold. Its parts are torn
