@@ -1792,12 +1792,16 @@ export const appCss = `
   }
   /* "All" has no picture, so it is padded evenly. */
   .mp-chip.all { padding: 0 20px; }
+  /* The crop's photo, round, filling its circle; a hairline inside keeps a
+     pale photo (garlic, white corn) from melting into the white pill. */
   .mp-chip-ico {
-    width: 34px; height: 34px; flex-shrink: 0; border-radius: 50%;
+    position: relative; width: 34px; height: 34px; flex-shrink: 0; border-radius: 50%; overflow: hidden;
     display: flex; align-items: center; justify-content: center;
-    background: var(--paper); box-shadow: inset 0 0 0 1px rgba(22,33,27,.05);
+    background: var(--paper); color: var(--tanim);
     transition: opacity 180ms ease, filter 180ms ease;
   }
+  .mp-chip-ico img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .mp-chip-ico::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px rgba(22,33,27,.1); pointer-events: none; }
   /* Nothing for sale in it right now: the pill goes quiet (still tappable;
      the list then says so). */
   .mp-chip.none:not(.on) { color: var(--text-faint); }
@@ -1809,7 +1813,7 @@ export const appCss = `
     background: #F2F9F5; color: var(--tanim);
     box-shadow: 0 0 0 2px var(--tanim), 0 1px 2px rgba(11,107,65,.12), 0 10px 18px -14px rgba(11,107,65,.5);
   }
-  .mp-chip.on .mp-chip-ico { background: #fff; }
+  .mp-chip.on .mp-chip-ico::after { box-shadow: inset 0 0 0 1.5px rgba(11,107,65,.45); }
 
   /* Varieties arrive under the crops in two even columns: long names like
      "Shallots (Sibuyas Tagalog)" get room to wrap instead of being cut.

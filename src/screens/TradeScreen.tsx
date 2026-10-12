@@ -530,16 +530,23 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
               <button role="radio" aria-checked={category === "All Crops"} className={`mp-chip all ${category === "All Crops" ? "on" : ""}`} onClick={() => selectCategory("All Crops")}>
                 {t("all")}
               </button>
-              {(FAMILY_GROUPS[family] ?? []).map(cat => (
-                // A crop with nothing for sale right now is quieter, so a
-                // farmer or buyer sees where to tap before tapping.
-                <button key={cat} role="radio" aria-checked={category === cat}
-                  className={`mp-chip${category === cat ? " on" : ""}${countOf(cat) === 0 ? " none" : ""}`}
-                  onClick={() => selectCategory(cat)}>
-                  <span className="mp-chip-ico" aria-hidden="true"><CropEmoji crop={cat} size={22} /></span>
-                  {tn(cat)}
-                </button>
-              ))}
+              {(FAMILY_GROUPS[family] ?? []).map(cat => {
+                // The crop's own photo (the team's, in assets/crops), round,
+                // the same picture as its listings and its price.
+                const photo = cropGroupPhoto(cat);
+                return (
+                  // A crop with nothing for sale right now is quieter, so a
+                  // farmer or buyer sees where to tap before tapping.
+                  <button key={cat} role="radio" aria-checked={category === cat}
+                    className={`mp-chip${category === cat ? " on" : ""}${countOf(cat) === 0 ? " none" : ""}`}
+                    onClick={() => selectCategory(cat)}>
+                    <span className="mp-chip-ico" aria-hidden="true">
+                      {photo ? <img src={photo} alt="" loading="lazy" decoding="async" draggable={false} /> : <CropIcon crop={cat} size={18} />}
+                    </span>
+                    {tn(cat)}
+                  </button>
+                );
+              })}
             </div>
           )}
           {subVarieties.length > 0 && (
