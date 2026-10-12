@@ -1,10 +1,10 @@
-import { CloudSun, CloudMoon, BarChart2, BookOpen, PlayCircle, CheckCircle, AlertTriangle, Bot, ChevronRight, ArrowUpRight, ArrowDownRight, ArrowRight, Sprout, Wallet, Megaphone, Store, Search } from "lucide-react";
+import { CloudSun, CloudMoon, BarChart2, BookOpen, PlayCircle, CheckCircle, AlertTriangle, Bot, ChevronRight, Wallet, Megaphone, Store, Search } from "lucide-react";
 import { useState } from "react";
 import { useLang } from "../i18n";
 import { haptic } from "../lib/platform";
 import { Screen, UserRole, TradeIntent } from "../types";
 import { ShopByCrop, FeaturedProducts, CheapestToday, FeaturedFarmers, YourPurchases, PriceMoves } from "../components/home/BuyerHome";
-import { YourHarvest } from "../components/home/FarmerHome";
+import { YourHarvest, YourCropPrices } from "../components/home/FarmerHome";
 import { PriceAlerts } from "../components/home/PriceAlerts";
 import { CropTracker } from "../components/home/CropTracker";
 import { ProfitSnapshot } from "../components/home/ProfitSnapshot";
@@ -12,12 +12,9 @@ import { Sale } from "../lib/sales";
 import { Planting } from "../lib/plantings";
 import { PriceAlert } from "../lib/priceAlerts";
 import { useViewer } from "../store/viewer";
-import { CROPS, CROP_GROUP_BY_ID, hasPrice } from "../data/crops";
+import { CROPS, CROP_GROUP_BY_ID } from "../data/crops";
 import { useWeather } from "../store/weather";
 import { nextWetDay, whenSaid } from "../services/weather";
-import { Sparkline } from "../components/charts/Micro";
-import { cropPhoto } from "../data/cropPhotos";
-import { CropIcon } from "../components/icons";
 import { useMarket } from "../store/market";
 import { PriceSheet } from "../components/prices/PriceSheet";
 import { PriceItem } from "../services/prices";
@@ -41,19 +38,6 @@ import { peso } from "../lib/money";
 //   6. Where else can I go?           → the two pages the tab bar doesn't have
 // Market, Marketplace and Expenses used to be buttons here as well; the tab
 // bar already has them, so they only pushed the useful things further down.
-
-const dirOf = (n: number) => (n > 0 ? "up" : n < 0 ? "down" : "flat");
-
-function Chg({ value }: { value: number }) {
-  const dir = dirOf(value);
-  const Arrow = dir === "up" ? ArrowUpRight : dir === "down" ? ArrowDownRight : ArrowRight;
-  return (
-    <span className={`pr-chg ${dir}`}>
-      <Arrow size={14} strokeWidth={2.6} aria-hidden="true" />
-      {value > 0 ? "+" : value < 0 ? "−" : ""}{Math.abs(value)}%
-    </span>
-  );
-}
 
 export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffline, userName = "Juan", userInitials = "JD", userRole, farmerCrops = ["Rice", "Corn"], priceAlerts = [], onPriceAlerts, plantings = [], onPlantings, sales = [], onSales }: {
   onNavigate: (s: Screen) => void;
@@ -100,7 +84,6 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
   const myCrops = farmerCrops
     .map(g => CROPS.find(c => CROP_GROUP_BY_ID[c.id] === g))
     .filter((c): c is NonNullable<typeof c> => !!c);
-  const up = CROPS.filter(c => hasPrice(c) && c.change > 0).length;
 
   // ── Buyer figures ──────────────────────────────────────────────────────
   const { location: buyerLocation } = useViewer();
@@ -217,49 +200,16 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
             before the invitation to browse everything. */}
         {isBuyer && <CheapestToday />}
 
-        {/* 2 ── Your crops' prices, farmer only. A short vertical list: no
-            swiping to find your own crop among twenty. Tapping one opens its
-            price sheet right here (this year's prices and the forecast), the
-            same one the Prices page opens; "All prices" in the corner is the
-            way to the full page. */}
+        {/* 2 ── Your crops' prices, farmer only: a tile per crop. Tapping one
+            opens its price sheet right here (this year's prices and the
+            forecast), the same one the Prices page opens; "All prices" in
+            the corner is the way to the full page. */}
         {!isBuyer && (
-        <section className="hm-card tint-green" data-tour="prices">
-          <div className="hm-card-head">
-            {/* Each card carries one accent, and the accent means something:
-                green for what grows, gold for money, blue for the sky,
-                violet for the numbers. Never a colour for its own sake. */}
-            <span className="hm-ico"><Sprout size={20} strokeWidth={2.2} /></span>
-            <div>
-              <h2 className="hm-title">{t("home_your_crops")}</h2>
-              <div className="hm-sub">{t("mkt_pulse_head").replace("{up}", String(up)).replace("{n}", String(CROPS.filter(hasPrice).length))}</div>
-            </div>
-            <button className="hm-link" onClick={() => onNavigate("market")}>
-              {t("mkt_all")} <ChevronRight size={16} strokeWidth={2.6} />
-            </button>
-          </div>
-          <div className="stagger-list">
-            {myCrops.map(c => {
-              const photo = cropPhoto(c.id);
-              const group = CROP_GROUP_BY_ID[c.id] || "";
-              return (
-                <button key={c.id} className="hm-crop"
-                  onClick={() => { haptic.select(); setOpenCrop({ id: c.id, name: c.name, pricePerKg: c.pricePerKg, change: c.change, group }); }}>
-                  <span className="hm-crop-photo">
-                    {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropIcon crop={group || c.name} size={22} />}
-                  </span>
-                  <span className="hm-crop-body">
-                    <span className="hm-crop-name">{tn(group)}</span>
-                    <span className="hm-crop-var">{c.name}</span>
-                  </span>
-                  <span className="hm-crop-end">
-                    <span className="hm-crop-price">{peso(c.pricePerKg)}<small>{t("per_kg_short")}</small></span>
-                    {hasPrice(c) && <Chg value={c.change} />}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </section>
+          <YourCropPrices
+            crops={myCrops}
+            onOpen={c => { haptic.select(); setOpenCrop({ id: c.id, name: c.name, pricePerKg: c.pricePerKg, change: c.change, group: CROP_GROUP_BY_ID[c.id] || "" }); }}
+            onAll={() => onNavigate("market")}
+          />
         )}
 
         {/* Farmers see the marketplace's best harvests too: what is selling,

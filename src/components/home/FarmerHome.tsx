@@ -1,4 +1,5 @@
-import { ChevronRight, Plus, ArrowUp, ArrowDown, Package } from "lucide-react";
+import { useId } from "react";
+import { ChevronRight, Plus, ArrowUp, ArrowDown, Package, ArrowUpRight, ArrowDownRight, ArrowRight } from "lucide-react";
 import { useLang } from "../../i18n";
 import { CROPS, CROP_GROUP_BY_ID, hasPrice } from "../../data/crops";
 import { growArtFor } from "../../data/growArt";
@@ -7,6 +8,9 @@ import { useMarket } from "../../store/market";
 import { Skeleton, SkeletonMediaRows } from "../states";
 import { peso, toCents } from "../../lib/money";
 import { SAMPLE_HARVEST } from "../../data/demo/marketplace";
+import { cropPhoto } from "../../data/cropPhotos";
+import { historyOf } from "../../data/priceRecords";
+import { CropPrice } from "../../types";
 import leafMask from "../../assets/anisense-leaf-mask.png";
 
 // ─── Your harvest ─────────────────────────────────────────────────────────────
@@ -167,6 +171,110 @@ export function YourHarvest({ onPost, onOpenMarket, onOpen }: {
       <button className="fh-post" onClick={onPost}>
         <Plus size={20} strokeWidth={2.8} /> {t("fh_post")}
       </button>
+    </section>
+  );
+}
+
+// ─── Your crops' prices ───────────────────────────────────────────────────────
+// The crops the farmer grows, as price tiles side by side, the way a phone's
+// stocks widget shows a few at once: the crop, its price large, how it moved
+// from the month before, and under it the past twelve months as a line, so
+// "is this a good price?" has its answer on the same tile. Two to a row; an
+// odd one out takes the whole row. Tapping a tile opens its price sheet (this
+// year's prices and the forecast), the same one the Prices page opens.
+//
+// A crop with no price records shows ₱0 and says it has no history yet, in
+// the space its line would take, so the tiles in a row stay one height.
+
+const dirOf = (n: number) => (n > 0 ? "up" : n < 0 ? "down" : "flat");
+
+/** The past months as a line over a fading wash, in the tile's direction
+ *  colour, with a dot on the newest month: the price the tile shows. */
+function Trend({ values, dir }: { values: number[]; dir: string }) {
+  const id = "cp-g" + useId().replace(/:/g, "");
+  const max = Math.max(...values), min = Math.min(...values), span = max - min || 1;
+  // Drawn in a 100 × 40 box stretched to the tile's width; the line keeps
+  // its thickness however it is stretched (non-scaling stroke).
+  const x = (i: number) => (i / (values.length - 1)) * 100;
+  const y = (v: number) => 34 - ((v - min) / span) * 28;
+  const line = values.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(2)} ${y(v).toFixed(2)}`).join(" ");
+  const last = values[values.length - 1];
+  return (
+    <span className={`cp-chart ${dir}`} aria-hidden="true">
+      <svg viewBox="0 0 100 40" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="currentColor" stopOpacity=".22" />
+            <stop offset="1" stopColor="currentColor" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path d={`${line} L100 40 L0 40 Z`} fill={`url(#${id})`} />
+        <path d={line} fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+      </svg>
+      {/* The dot is HTML, not SVG: in a stretched drawing a circle would be an oval. */}
+      <span className="cp-dot" style={{ top: `${(y(last) / 40) * 100}%` }} />
+    </span>
+  );
+}
+
+export function YourCropPrices({ crops, onOpen, onAll }: {
+  /** Each crop the farmer grows, by its lead variety. */
+  crops: CropPrice[];
+  onOpen: (crop: CropPrice) => void;
+  /** The Prices page. */
+  onAll: () => void;
+}) {
+  const { t, tn } = useLang();
+  const priced = CROPS.filter(hasPrice);
+  const up = priced.filter(c => c.change > 0).length;
+  return (
+    <section className="hm-sec cp" aria-labelledby="cp-t" data-tour="prices">
+      <div className="hm-sec-row">
+        <h2 className="hm-sec-title" id="cp-t">{t("home_your_crops")}</h2>
+        <button className="hm-link" onClick={onAll}>
+          {t("mkt_all")} <ChevronRight size={16} strokeWidth={2.6} />
+        </button>
+      </div>
+      <p className="hm-sec-sub">{t("mkt_pulse_head").replace("{up}", String(up)).replace("{n}", String(priced.length))}</p>
+      <div className="cp-grid stagger-list">
+        {crops.map(c => {
+          const group = CROP_GROUP_BY_ID[c.id] || "";
+          const photo = cropPhoto(c.id);
+          const price = peso(c.pricePerKg);
+          const months = historyOf(c.id).slice(-12).map(p => p.price);
+          const dir = dirOf(c.change);
+          const Arrow = dir === "up" ? ArrowUpRight : dir === "down" ? ArrowDownRight : ArrowRight;
+          return (
+            <button key={c.id} type="button" className="cp-tile" onClick={() => onOpen(c)}>
+              <span className="cp-top">
+                <span className="cp-ph">
+                  {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropIcon crop={group || c.name} size={20} />}
+                </span>
+                {/* Arrow, sign and colour: the direction never rests on colour alone. */}
+                {hasPrice(c) && (
+                  <span className={`pr-chg ${dir}`}>
+                    <Arrow size={14} strokeWidth={2.6} aria-hidden="true" />
+                    {c.change > 0 ? "+" : c.change < 0 ? "−" : ""}{Math.abs(c.change)}%
+                  </span>
+                )}
+              </span>
+              <span className="cp-name">{tn(group || c.name)}</span>
+              <span className="cp-var">{c.name}</span>
+              <span className="cp-price">
+                <span className="cp-cur">{price.slice(0, 1)}</span>{price.slice(1)}<small>{t("per_kg_short")}</small>
+              </span>
+              {hasPrice(c) && months.length >= 2 ? (
+                <>
+                  <span className="cp-cap">{t("mkt_history_only").replace("{n}", String(months.length))}</span>
+                  <Trend values={months} dir={dir} />
+                </>
+              ) : (
+                <span className="cp-none">{t("mkt_no_history")}</span>
+              )}
+            </button>
+          );
+        })}
+      </div>
     </section>
   );
 }

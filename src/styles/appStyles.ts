@@ -2127,28 +2127,6 @@ export const appCss = `
   }
   .hm-link:active { transform: scale(.96); background: var(--tanim-sk); transition-duration: 90ms; }
 
-  /* Your crops: rows like the Prices list, so the two pages agree. */
-  .hm-crop {
-    position: relative; width: calc(100% + 16px); margin: 0 -8px; display: flex; align-items: center; gap: 12px;
-    padding: 10px 8px; border: none; border-radius: 14px; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer;
-    transition: background-color 180ms ease;
-    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-  }
-  .hm-crop:active { background: var(--paper); transition-duration: 0ms; }
-  .hm-crop + .hm-crop::before { content: ""; position: absolute; top: 0; left: 70px; right: 8px; height: 1px; background: var(--line); }
-  .hm-crop:active::before, .hm-crop:active + .hm-crop::before { opacity: 0; }
-  .hm-crop-photo {
-    width: 50px; height: 50px; flex: 0 0 50px; border-radius: 13px; overflow: hidden;
-    background: var(--tanim-sk); display: flex; align-items: center; justify-content: center;
-  }
-  .hm-crop-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .hm-crop-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-  .hm-crop-name { font-family: var(--font-display); font-size: 16.5px; font-weight: 700; color: var(--text); line-height: 1.25; }
-  .hm-crop-var { font-size: 14px; color: var(--text-faint); }
-  .hm-crop-end { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
-  .hm-crop-price { font-family: var(--font-display); font-size: 17px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .hm-crop-price small { font-size: .7em; font-weight: 600; color: var(--text-faint); margin-left: 1px; }
-
   .hm-empty { padding: 10px 2px 4px; font-size: 14.5px; line-height: 1.45; color: var(--text-faint); }
   /* "Buy again" as a quiet chip at the end of the row: the row is the
      button, so this only names what tapping it does. */
@@ -2157,11 +2135,6 @@ export const appCss = `
     border-radius: 99px; background: #DCEAF8; color: #2F6FA8;
     font-family: var(--font-display); font-size: 13.5px; font-weight: 700;
   }
-  /* One line, cut with an ellipsis: a seller's full name wrapping turned a
-     three-line row into four. */
-  .hm-crop-var { display: flex; align-items: center; gap: 4px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .hm-crop-var svg { flex-shrink: 0; }
-  .hm-crop-end { flex-shrink: 0; }
 
   /* ── Buyer Home ────────────────────────────────────────────────────────
      Section titles sit on the page, not inside another boxed card with an
@@ -3011,6 +2984,56 @@ export const appCss = `
 
   .hm-sec-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .hm-sec-row .hm-sec-title { margin-top: 8px; }
+
+  /* Your crops' prices: a tile per crop, two to a row, like a stocks
+     widget. The price large, its sign smaller and raised in the readable
+     gold (gold for money, as on the receipt); the month's change as the
+     usual chip; the past twelve months as a line over a fading wash, green
+     when the price rose, red when it fell. A tile is pressed like a card:
+     it gives a little under the finger. */
+  .cp-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+  /* An odd one out takes the whole row rather than leaving a hole. */
+  .cp-grid > .cp-tile:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .cp-tile {
+    position: relative; display: flex; flex-direction: column; align-items: flex-start; min-width: 0;
+    padding: 14px 14px 12px; border: none; border-radius: 20px; background: var(--card);
+    font: inherit; color: inherit; text-align: left; cursor: pointer;
+    box-shadow: 0 0 0 1px rgba(22,33,27,.07), 0 1px 2px rgba(22,33,27,.05), 0 12px 24px -18px rgba(22,33,27,.35);
+    transition: transform 160ms var(--ease-out);
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .cp-tile:active { transform: scale(.97); transition-duration: var(--dur-press); }
+  .cp-tile:focus-visible { outline: 3px solid var(--tanim); outline-offset: 2px; }
+  .cp-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; }
+  .cp-ph {
+    width: 42px; height: 42px; flex: 0 0 42px; border-radius: 50%; overflow: hidden;
+    display: flex; align-items: center; justify-content: center; background: var(--tanim-sk); color: var(--tanim);
+    box-shadow: 0 0 0 2px #fff, 0 0 0 3px rgba(22,33,27,.08);
+  }
+  .cp-ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .cp-name { max-width: 100%; margin-top: 12px; font-family: var(--font-display); font-size: 16.5px; font-weight: 700; line-height: 1.25; color: var(--text); overflow-wrap: break-word; }
+  .cp-var { max-width: 100%; font-size: 13.5px; line-height: 1.35; color: var(--text-faint); overflow-wrap: break-word; }
+  .cp-price {
+    margin-top: 8px; font-family: var(--font-display); font-size: 26px; font-weight: 800; line-height: 1.1;
+    letter-spacing: -.02em; color: var(--text); white-space: nowrap;
+  }
+  .cp-cur { font-size: .62em; font-weight: 700; letter-spacing: 0; color: var(--gold-text); vertical-align: .42em; margin-right: 2px; }
+  .cp-price small { margin-left: 2px; font-size: 13px; font-weight: 600; letter-spacing: 0; color: var(--text-faint); }
+  .cp-cap { margin-top: 10px; font-size: 12.5px; font-weight: 600; line-height: 1.3; color: var(--text-faint); }
+  .cp-chart { position: relative; display: block; width: 100%; height: 44px; margin-top: 4px; }
+  .cp-chart svg { display: block; width: 100%; height: 100%; overflow: visible; }
+  .cp-chart.up { color: var(--tanim); }
+  .cp-chart.down { color: var(--error); }
+  .cp-chart.flat { color: var(--text-faint); }
+  .cp-dot {
+    position: absolute; right: 0; width: 9px; height: 9px; margin: -4.5px -4.5px 0 0; border-radius: 50%;
+    background: currentColor; box-shadow: 0 0 0 2.5px #fff;
+  }
+  /* No records: said in the line's place, so the row's tiles stay level. */
+  .cp-none {
+    display: flex; align-items: center; width: 100%; flex: 1; min-height: 58px; margin-top: 10px; padding: 8px 10px; border-radius: 12px;
+    background: var(--paper); font-size: 13px; line-height: 1.4; color: var(--text-muted);
+  }
 
   /* Cheapest today: price tags, all in AniSense gold. Each is a paper tag
      with a pointed end and a hole punched through it, cut out with
