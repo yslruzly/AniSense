@@ -74,7 +74,13 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [viewMode, setViewMode] = useState<"all" | "by-crop" | "by-date">("all");
-  const transactions = market.expenses;
+  // A farmer with no expenses recorded yet sees sample ones (store/market),
+  // filed under their own crops: the samples' "Rice" under their first crop,
+  // "Corn" under their second (or the first again).
+  const expSamples = !isBuyer && market.expenses.some(e => e.sample);
+  const transactions = expSamples
+    ? market.expenses.map(e => ({ ...e, crop: (e.crop === "Corn" ? farmerCrops[1] ?? farmerCrops[0] : farmerCrops[0]) ?? e.crop }))
+    : market.expenses;
   const [saving, setSaving] = useState(false);
   // Expected harvest per crop, for the estimated profit. Read once from the
   // phone, written back on every change.
@@ -221,6 +227,8 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
   };
 
   const openEdit = (e: Expense) => {
+    // A sample is only looked at.
+    if (e.sample) return;
     setEditId(e.id);
     setForm({ description: e.description, category: e.category, amount: String(e.amount), date: e.date, crop: e.crop || farmerCrops[0] || "Rice" });
     setFormError("");
@@ -438,11 +446,18 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
                   </span>
                 )}
               </div>
+              {!busy && expSamples && <span className="ph-sample on-ink">{t("mp_sample")}</span>}
             </div>
+
+            {/* Sample expenses, while the farmer has recorded none: said once,
+                under the total. Adding one replaces them all. */}
+            {!busy && expSamples && (
+              <p className="mp-sample-note" role="note"><Receipt size={18} strokeWidth={2.4} aria-hidden="true" /> {t("exp_samples_note")}</p>
+            )}
 
             {/* Money out is only half of it: what the crops are worth and what
                 they actually sold for sit directly under the month's spending. */}
-            <ProfitCard transactions={transactions} sales={sales} plans={plans} onPlans={setPlans} farmerCrops={farmerCrops} />
+            <ProfitCard transactions={expSamples && sales.length > 0 ? [] : transactions} sales={sales} plans={plans} onPlans={setPlans} farmerCrops={farmerCrops} />
 
             {/* View mode tabs */}
             <Segmented
@@ -531,25 +546,29 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
                                   used to sit on every line as two 28px squares,
                                   crowding the text and leaving delete one slip
                                   away; both now live inside the entry. */}
-                              {g.items.map(e => (
-                                <button
-                                  key={e.id}
-                                  className="ph-row is-tap"
-                                  onClick={() => openEdit(e)}
-                                  aria-label={`${t("exp_edit_title")}: ${e.description}, ₱${e.amount.toLocaleString()}`}
-                                >
-                                  <span className="exp-tile"><ExpenseIcon cat={e.category} size={20} color="var(--text-soft)" /></span>
-                                  <span className="ph-body">
-                                    <span className="ph-title">{e.description}</span>
-                                    <span className="ph-sub">{tn(e.category)} · {tn(e.crop)}</span>
-                                  </span>
-                                  <span className="ph-end">
-                                    <span className="ph-amt">₱{e.amount.toLocaleString()}</span>
-                                    <span className="ph-date">{new Date(e.date).toLocaleDateString(locale, { month: "short", day: "numeric" })}</span>
-                                  </span>
-                                  <ChevronRight size={18} className="ph-chev" aria-hidden="true" />
-                                </button>
-                              ))}
+                              {g.items.map(e => {
+                                // A sample is a plain row: nothing to open.
+                                const Row = e.sample ? "div" : "button";
+                                return (
+                                  <Row
+                                    key={e.id}
+                                    className={`ph-row${e.sample ? "" : " is-tap"}`}
+                                    onClick={e.sample ? undefined : () => openEdit(e)}
+                                    aria-label={e.sample ? undefined : `${t("exp_edit_title")}: ${e.description}, ₱${e.amount.toLocaleString()}`}
+                                  >
+                                    <span className="exp-tile"><ExpenseIcon cat={e.category} size={20} color="var(--text-soft)" /></span>
+                                    <span className="ph-body">
+                                      <span className="ph-title">{e.description}</span>
+                                      <span className="ph-sub">{tn(e.category)} · {tn(e.crop)}</span>
+                                    </span>
+                                    <span className="ph-end">
+                                      <span className="ph-amt">₱{e.amount.toLocaleString()}</span>
+                                      <span className="ph-date">{new Date(e.date).toLocaleDateString(locale, { month: "short", day: "numeric" })}</span>
+                                    </span>
+                                    {!e.sample && <ChevronRight size={18} className="ph-chev" aria-hidden="true" />}
+                                  </Row>
+                                );
+                              })}
                             </section>
                           ))}
                         </div>
@@ -614,29 +633,30 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
                           <div className="mo-acc-in">
                             {sorted.map(e => {
                               const d = new Date(e.date);
+                              const Row = e.sample ? "div" : "button";
                               return (
-                                <button
-                                  key={e.id}
-                                  className="ph-row is-tap no-tile"
-                                  onClick={() => openEdit(e)}
-                                  aria-label={`${t("exp_edit_title")}: ${e.description}, ₱${e.amount.toLocaleString()}`}
-                                >
-                                  <span className="ph-body">
-                                    <span className="ph-title">{e.description}</span>
-                                    <span className="ph-sub">{tn(e.category)}</span>
-                                  </span>
-                                  <span className="ph-end">
-                                    <span className="ph-amt">₱{e.amount.toLocaleString()}</span>
-                                    {/* The year only when it isn't this one:
-                                        short enough to never wrap. */}
-                                    <span className="ph-date">
-                                      {d.toLocaleDateString(locale, d.getFullYear() === thisYear
-                                        ? { month: "short", day: "numeric" }
-                                        : { month: "short", day: "numeric", year: "numeric" })}
+                                  <Row
+                                    key={e.id}
+                                    className={`ph-row no-tile${e.sample ? "" : " is-tap"}`}
+                                    onClick={e.sample ? undefined : () => openEdit(e)}
+                                    aria-label={e.sample ? undefined : `${t("exp_edit_title")}: ${e.description}, ₱${e.amount.toLocaleString()}`}
+                                  >
+                                    <span className="ph-body">
+                                      <span className="ph-title">{e.description}</span>
+                                      <span className="ph-sub">{tn(e.category)}</span>
                                     </span>
-                                  </span>
-                                  <ChevronRight size={18} className="ph-chev" aria-hidden="true" />
-                                </button>
+                                    <span className="ph-end">
+                                      <span className="ph-amt">₱{e.amount.toLocaleString()}</span>
+                                      {/* The year only when it isn't this one:
+                                          short enough to never wrap. */}
+                                      <span className="ph-date">
+                                        {d.toLocaleDateString(locale, d.getFullYear() === thisYear
+                                          ? { month: "short", day: "numeric" }
+                                          : { month: "short", day: "numeric", year: "numeric" })}
+                                      </span>
+                                    </span>
+                                    {!e.sample && <ChevronRight size={18} className="ph-chev" aria-hidden="true" />}
+                                  </Row>
                               );
                             })}
                           </div>
@@ -705,24 +725,27 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
                             the months below glide instead of jumping. */}
                         <div className="mo-acc" id={`mo-${key}`} role="region" aria-label={label} {...(isOpen ? {} : { inert: "" })}>
                           <div className="mo-acc-in">
-                            {sorted.map(e => (
-                              <button
-                                key={e.id}
-                                className="ph-row is-tap no-tile"
-                                onClick={() => openEdit(e)}
-                                aria-label={`${t("exp_edit_title")}: ${e.description}, ₱${e.amount.toLocaleString()}`}
-                              >
-                                <span className="ph-body">
-                                  <span className="ph-title">{e.description}</span>
-                                  <span className="ph-sub">{tn(e.crop)} · {tn(e.category)}</span>
-                                </span>
-                                <span className="ph-end">
-                                  <span className="ph-amt">₱{e.amount.toLocaleString()}</span>
-                                  <span className="ph-date">{new Date(e.date).toLocaleDateString(locale, { month: "short", day: "numeric" })}</span>
-                                </span>
-                                <ChevronRight size={18} className="ph-chev" aria-hidden="true" />
-                              </button>
-                            ))}
+                            {sorted.map(e => {
+                              const Row = e.sample ? "div" : "button";
+                              return (
+                                <Row
+                                  key={e.id}
+                                  className={`ph-row no-tile${e.sample ? "" : " is-tap"}`}
+                                  onClick={e.sample ? undefined : () => openEdit(e)}
+                                  aria-label={e.sample ? undefined : `${t("exp_edit_title")}: ${e.description}, ₱${e.amount.toLocaleString()}`}
+                                >
+                                  <span className="ph-body">
+                                    <span className="ph-title">{e.description}</span>
+                                    <span className="ph-sub">{tn(e.crop)} · {tn(e.category)}</span>
+                                  </span>
+                                  <span className="ph-end">
+                                    <span className="ph-amt">₱{e.amount.toLocaleString()}</span>
+                                    <span className="ph-date">{new Date(e.date).toLocaleDateString(locale, { month: "short", day: "numeric" })}</span>
+                                  </span>
+                                  {!e.sample && <ChevronRight size={18} className="ph-chev" aria-hidden="true" />}
+                                </Row>
+                              );
+                            })}
                           </div>
                         </div>
                       </section>

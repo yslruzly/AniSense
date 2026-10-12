@@ -67,8 +67,9 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
   const wx = useWeather();
   const wet = wx.data ? nextWetDay(wx.data, new Date()) : undefined;
   // The farmer's expenses, from the database for a real account and from the
-  // sample data otherwise.
-  const { expenses } = useMarket();
+  // sample data otherwise. Not the sample ones a new account's Expenses page
+  // shows: a sample was never money spent.
+  const expenses = useMarket().expenses.filter(e => !e.sample);
   const isBuyer = userRole === "buyer";
   const now = new Date();
   const dateStr = now.toLocaleDateString(locale, { weekday: "long", month: "long", day: "numeric" });

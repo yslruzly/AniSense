@@ -30,6 +30,33 @@ export const MONTHLY_TRENDS = [
   { month: "Oct", amount: 31000 },
 ];
 
+// ─── In a real account, while the farmer has recorded no expenses yet ─────────
+// Nine entries over this month and the two before it, dated from today, so
+// every part of the Expenses page has something to show: this month's total
+// against last month's, the pie, the crops, the months. Each is marked as a
+// sample: the page says so, and none can be opened. The farmer's first real
+// expense replaces them all. The crops are placeholders: the page files the
+// "Rice" ones under the farmer's first crop and the "Corn" ones under their
+// second, so the samples are about what they actually grow.
+const dated = (monthsBack: number, day: number) => {
+  const now = new Date();
+  const d = new Date(now.getFullYear(), now.getMonth() - monthsBack, 1);
+  // This month's entries are never dated after today.
+  d.setDate(monthsBack === 0 ? Math.min(day, now.getDate()) : day);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
+export const SAMPLE_EXPENSES: Expense[] = [
+  { id: "sample-exp-1", category: "Seeds", description: "Certified seeds, 2 sacks", amount: 2400, date: dated(0, 3), icon: "Seeds", crop: "Rice" },
+  { id: "sample-exp-2", category: "Fertilizer", description: "Urea, 4 bags", amount: 6200, date: dated(0, 6), icon: "Fertilizer", crop: "Rice" },
+  { id: "sample-exp-3", category: "Labor", description: "Planting crew, 2 days", amount: 3000, date: dated(0, 9), icon: "Labor", crop: "Rice" },
+  { id: "sample-exp-4", category: "Equipment", description: "Tractor rental", amount: 3500, date: dated(1, 12), icon: "Equipment", crop: "Rice" },
+  { id: "sample-exp-5", category: "Irrigation", description: "Water pump fuel", amount: 900, date: dated(1, 18), icon: "Irrigation", crop: "Rice" },
+  { id: "sample-exp-6", category: "Fertilizer", description: "Complete fertilizer, 2 bags", amount: 3100, date: dated(1, 22), icon: "Fertilizer", crop: "Corn" },
+  { id: "sample-exp-7", category: "Labor", description: "Harvest crew, 3 days", amount: 5400, date: dated(2, 8), icon: "Labor", crop: "Corn" },
+  { id: "sample-exp-8", category: "Other", description: "Sacks and twine", amount: 650, date: dated(2, 20), icon: "Other", crop: "Corn" },
+  { id: "sample-exp-9", category: "Seeds", description: "Seedlings", amount: 1200, date: dated(2, 25), icon: "Seeds", crop: "Corn" },
+].map(e => ({ ...e, sample: true }));
+
 // ─── In a real account, while the buyer has no orders yet ─────────────────────
 // The same five purchases, each marked as a sample, so the Orders page and
 // Home's "What you bought" show what they will look like. The buyer's first

@@ -44,7 +44,8 @@ export function ProfitSnapshot({ sales, onChange, plantings, onOpenExpenses }: {
   const from = range === "season" && seasonStart ? seasonStart : monthStart;
 
   const earned = soldSince(sales, from);
-  const spent = expenses.filter(e => e.date >= from).reduce((sum, e) => sum + e.amount, 0);
+  // Real spending only: the samples a new account's Expenses page shows were never spent.
+  const spent = expenses.filter(e => !e.sample && e.date >= from).reduce((sum, e) => sum + e.amount, 0);
   const net = earned - spent;
 
   const [adding, setAdding] = useState(false);

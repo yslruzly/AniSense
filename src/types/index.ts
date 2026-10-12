@@ -16,7 +16,12 @@ export interface CropPrice {
   id: string; name: string; pricePerKg: number; change: number;
   volume: number; color: string;
 }
-export interface Expense { id: string; category: string; description: string; amount: number; date: string; icon: string; crop: string; }
+export interface Expense {
+  id: string; category: string; description: string; amount: number; date: string; icon: string; crop: string;
+  /** A sample expense, shown in a real account while the farmer has recorded
+   *  none (SAMPLE_EXPENSES): it can be looked at, not opened or changed. */
+  sample?: boolean;
+}
 /** Where an order line stands between buyer and farmer. */
 export type OrderStatus = "placed" | "confirmed" | "completed" | "cancelled";
 export interface BuyerTransaction {

@@ -480,6 +480,10 @@ export const translations: Dict = {
     tl: "Hindi puwedeng i-order ang sample na ani. Alisin ang mga ito sa cart: lalabas sa Merkado ang totoong ani kapag nag-post na ang mga magsasaka.",
   },
   mp_sample: { en: "Sample", tl: "Sample" },
+  exp_samples_note: {
+    en: "These are sample expenses, to show how your records will look. Yours replace them as soon as you add one.",
+    tl: "Mga sample na gastos ito, para makita kung paano lalabas ang mga tala mo. Papalitan sila ng sarili mong gastos kapag nagdagdag ka na.",
+  },
   ph_samples_note: {
     en: "These are sample orders, to show how your orders will look. Yours replace them as soon as you buy.",
     tl: "Mga sample na order ito, para makita kung paano lalabas ang mga order mo. Papalitan sila ng sarili mong order kapag bumili ka na.",

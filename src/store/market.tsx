@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { BuyerTransaction, CartItem, Expense, IncomingOrder, Listing, SellerDetail, UserRole } from "../types";
 import { LISTINGS, SELLER_DETAILS, SAMPLE_MARKET } from "../data/demo/marketplace";
-import { EXPENSES, BUYER_TRANSACTIONS, SAMPLE_PURCHASES } from "../data/demo/expenses";
+import { EXPENSES, BUYER_TRANSACTIONS, SAMPLE_PURCHASES, SAMPLE_EXPENSES } from "../data/demo/expenses";
 import { sampleIncomingOrders } from "../data/demo/orders";
 import { CROPS, CROP_GROUP_BY_ID, applyPrices } from "../data/crops";
 import { isSupabaseConfigured } from "../lib/supabase";
@@ -184,8 +184,11 @@ export function useMarketStore({ accountId, role, name, initials }: {
       // Send anything recorded offline first, once, so both fresh lists
       // include it (a second sync started alongside would return at once).
       const synced = syncNow().catch(() => 0);
+      // A farmer who has recorded no expenses sees sample ones on the
+      // Expenses page until their first: only when the server says there are
+      // none, not when it couldn't be asked.
       jobs.push(synced.then(() => fetchExpenses())
-        .then(r => { if (g === gen.current) setExpenses(r.data); return r.fromCache; }));
+        .then(r => { if (g === gen.current) setExpenses(r.data.length ? r.data : SAMPLE_EXPENSES); return r.fromCache; }));
       jobs.push(fetchMySales().then(r => { if (g === gen.current) setMarketSales(r.data); return r.fromCache; }));
       jobs.push(fetchIncomingOrders().then(r => { if (g === gen.current) setIncomingOrders(r.data); return r.fromCache; }));
       jobs.push(synced.then(() => fetchFarmRecords()).then(r => {
@@ -356,7 +359,8 @@ export function useMarketStore({ accountId, role, name, initials }: {
         setExpenses(es => es.map(e => (e.id === id ? toExpense(id, form) : e)));
       } else {
         const e = await addExpense(form);
-        setExpenses(es => [e, ...es]);
+        // The first real one takes the samples' place.
+        setExpenses(es => [e, ...es.filter(x => !x.sample)]);
       }
       return;
     }
