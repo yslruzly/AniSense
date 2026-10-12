@@ -4359,9 +4359,27 @@ export const appCss = `
   .wx-deg { position: relative; top: -.02em; margin-left: 2px; font-size: .56em; font-weight: 600; vertical-align: top; opacity: .9; }
   .wx-cond { margin-top: 4px; font-family: var(--font-display); font-size: 18px; font-weight: 600; letter-spacing: -.01em; }
   .wx-range {
-    display: flex; gap: 10px; margin-top: 4px;
+    display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 4px;
     font-size: 14px; font-weight: 600; color: rgba(255,255,255,.82); font-variant-numeric: tabular-nums;
   }
+  .wx-feels { color: rgba(255,255,255,.72); font-weight: 500; }
+  /* A saved forecast, shown with no signal: says from when, on a glass chip. */
+  .wx-saved {
+    display: inline-flex; align-items: center; gap: 5px; align-self: flex-start; margin-top: 6px; padding: 4px 10px; border-radius: 99px;
+    background: rgba(0,0,0,.28); box-shadow: inset 0 0 0 1px rgba(255,255,255,.18);
+    font-size: 12.5px; font-weight: 600; color: #fff;
+  }
+  /* No forecast to show at all: said plainly on the hero, with Try again. */
+  .wx-none { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding: 14px 0 6px; text-shadow: 0 1px 10px rgba(0,0,0,.35); }
+  .wx-none-t { font-family: var(--font-display); font-size: 20px; font-weight: 700; }
+  .wx-none-s { max-width: 30ch; font-size: 14.5px; line-height: 1.45; color: rgba(255,255,255,.86); }
+  .wx-retry {
+    display: inline-flex; align-items: center; gap: 8px; min-height: 44px; margin-top: 6px; padding: 0 18px; border: none; border-radius: 99px; cursor: pointer;
+    background: rgba(255,255,255,.92); color: var(--tanim-deep); font-family: var(--font-display); font-size: 15px; font-weight: 700; text-shadow: none;
+    transition: transform 160ms var(--ease-out);
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .wx-retry:active { transform: scale(.96); transition-duration: 90ms; }
   .wx-range > span { display: inline-flex; align-items: center; gap: 2px; }
 
   /* The sky, in layers. */
@@ -4430,13 +4448,21 @@ export const appCss = `
   .wx-hr-t { font-size: 12.5px; font-weight: 600; color: var(--text-faint); white-space: nowrap; }
   .wx-hr.now .wx-hr-t { color: var(--tanim); font-weight: 800; }
   .wx-hr-temp { font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+  /* The hour's chance of rain, in the rain's blue, where it is 20% or more;
+     the line is kept when empty so every hour stands the same height. */
+  .wx-hr-r { min-height: 16px; margin-top: -4px; font-size: 12.5px; font-weight: 700; color: #2F6FA8; font-variant-numeric: tabular-nums; }
 
   /* The week: day, sky, a word for it, high then low. */
   .wx-days { display: flex; flex-direction: column; }
-  .wx-day { display: grid; grid-template-columns: 44px 26px 1fr auto; align-items: center; gap: 10px; min-height: 48px; }
+  .wx-day { display: grid; grid-template-columns: 56px 26px 1fr auto; align-items: center; gap: 10px; min-height: 52px; padding: 4px 0; }
   .wx-day + .wx-day { border-top: 1px solid var(--line); }
   .wx-day-n { font-family: var(--font-display); font-size: 15.5px; font-weight: 700; color: var(--text); }
-  .wx-day-c { min-width: 0; font-size: 14px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* The word for the day, and under it how likely rain is: blue, and bold
+     when it is more likely than not. */
+  .wx-day-c { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .wx-day-cn { font-size: 14px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .wx-day-r { display: inline-flex; align-items: center; gap: 3px; font-size: 13px; font-weight: 600; color: #2F6FA8; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .wx-day-r.wet { font-weight: 800; }
   .wx-day-t { font-size: 15px; color: var(--text-faint); font-variant-numeric: tabular-nums; white-space: nowrap; }
   .wx-day-t b { font-weight: 800; color: var(--text); margin-right: 4px; }
 
@@ -4473,6 +4499,7 @@ export const appCss = `
 
   @media (prefers-reduced-motion: reduce) {
     .wx-sun, .wx-moon, .wx-cloud, .wx-rain i, .wx-bolt { animation: none; }
+    .wx-retry:active { transform: none; }
     .shell:not([data-revisit]) .wx-temp, .shell:not([data-revisit]) .wx-art { animation: wx-fade 200ms ease both; }
     @keyframes wx-fade { from { opacity: 0; } }
   }

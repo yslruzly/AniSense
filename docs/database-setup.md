@@ -23,8 +23,8 @@ Without `.env` the app runs exactly as before on the built-in sample data, so
 an APK built without keys still works for demos.
 
 **Still kept on the phone only:** the ID photo, and which achievements have
-already been celebrated. **Still sample data:** weather, and the prices of the
-18 varieties with no records.
+already been celebrated. **Still sample data:** the prices of the 18 varieties
+with no records. (The weather is live, from Open-Meteo, and needs no setup.)
 
 **Offline needs nothing here.** The app keeps its own SQLite database on the
 phone (the lists it fetched, and the changes made without signal), and opens

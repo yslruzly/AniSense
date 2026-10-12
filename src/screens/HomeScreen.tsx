@@ -14,7 +14,8 @@ import { PriceAlert } from "../lib/priceAlerts";
 import { useViewer } from "../store/viewer";
 import { CROPS, CROP_GROUP_BY_ID } from "../data/crops";
 import { cropPhotoFor } from "../data/cropPhotos";
-import { WEATHER_NOW } from "../data/demo/weather";
+import { useWeather } from "../store/weather";
+import { nextWetDay, whenSaid } from "../services/weather";
 import { Sparkline } from "../components/charts/Micro";
 import { cropPhoto } from "../data/cropPhotos";
 import { CropIcon } from "../components/icons";
@@ -79,6 +80,10 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
   const { t, tn, lang } = useLang();
   const locale = lang === "tl" ? "fil-PH" : "en-PH";
   const isNight = useIsNight();
+  // The forecast (store/weather): its temperature on the greeting card, and
+  // the day rain is likely in the advisory, when there is one.
+  const wx = useWeather();
+  const wet = wx.data ? nextWetDay(wx.data, new Date()) : undefined;
   // The marketplace and the farmer's expenses, from the database for a real
   // account and from the sample data otherwise.
   const { listings, expenses, loadPhase } = useMarket();
@@ -182,8 +187,16 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
                   <div className="hm-hero-foot">
                     <button className="hm-wx" onClick={() => onNavigate("weather")}>
                       {isNight ? <CloudMoon size={22} strokeWidth={2} /> : <CloudSun size={22} strokeWidth={2} />}
-                      <span className="hm-wx-temp">{WEATHER_NOW.temp}°</span>
-                      <span className="hm-wx-cond">{t(isNight && WEATHER_NOW.icon === "Sunny" ? "wx_cond_clear_night" : `wx_cond_${WEATHER_NOW.icon}`)}</span>
+                      {wx.data ? (
+                        <>
+                          <span className="hm-wx-temp">{wx.data.now.temp}°</span>
+                          <span className="hm-wx-cond">{t(isNight && wx.data.now.icon === "Sunny" ? "wx_cond_clear_night" : `wx_cond_${wx.data.now.icon}`)}</span>
+                        </>
+                      ) : (
+                        // Not here yet, or no signal the first time: the way
+                        // to the Weather page all the same, without a number.
+                        <span className="hm-wx-cond">{t("wx_title")}</span>
+                      )}
                       <ChevronRight size={18} strokeWidth={2.4} aria-hidden="true" />
                     </button>
                     {isOffline && (
@@ -374,7 +387,8 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
             </div>
             {[
               { tone: "good", ico: <CheckCircle size={20} strokeWidth={2.2} />, txt: t("home_adv_planting"), sub: t("home_adv_planting_sub") },
-              { tone: "warn", ico: <AlertTriangle size={20} strokeWidth={2.2} />, txt: t("home_adv_rain"), sub: t("home_adv_rain_sub") },
+              // Only when the forecast has rain coming, and which day.
+              ...(wet ? [{ tone: "warn", ico: <AlertTriangle size={20} strokeWidth={2.2} />, txt: t("home_adv_rain").replace("{when}", whenSaid(wet.date, new Date(), t, lang === "tl" ? "fil-PH" : "en-PH")), sub: t("home_adv_rain_sub") }] : []),
             ].map(a => (
               <div key={a.txt} className={`hm-adv ${a.tone}`}>
                 <span className="hm-adv-ico">{a.ico}</span>

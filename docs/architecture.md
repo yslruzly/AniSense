@@ -40,6 +40,7 @@ flowchart TB
   end
 
   Brevo["Brevo<br/>codes by email (Gmail)"]
+  Meteo["Open-Meteo<br/>weather forecast"]
   Sema["Semaphore<br/>codes by text (CP numbers)"]
   Web["Static web pages (site/)<br/>home, privacy policy, account deletion"]
 
@@ -50,7 +51,6 @@ flowchart TB
 
   subgraph Planned["Planned, not built yet"]
     Prices["Price ingestion<br/>government sources"]
-    Wx["Weather service"]
   end
 
   Farmer --> App
@@ -69,7 +69,7 @@ flowchart TB
   Train -->|bundled in the APK| App
   Train -.->|seed.sql| DB
   Prices -.-> DB
-  Wx -.-> App
+  App -->|HTTPS| Meteo
 ```
 
 There is no custom application server. The app talks to Supabase directly, and every rule that matters (who can read what, how an order is priced, how stock is reduced) is enforced inside the database.
@@ -568,7 +568,7 @@ flowchart LR
 | Crop prices | Monthly records for five varieties, added to a CSV by hand; sample values for the other 18 | Records for the remaining varieties; ingestion from government sources on a schedule. |
 | Price forecasts | ARIMA and LSTM trained on the five varieties' records. The ARIMA search picks the differencing order by AIC, which is not the right tool for it; the LSTM's settings were not tuned; neither model can foresee a price shock. | Choose the differencing order with a stationarity test; tune the LSTM with a small grid scored inside the training months; test a seasonal ARIMA; consider extra inputs (weather, costs) as later work. |
 | Order alerts | Read from the database, confirmed with what it sold for; sample orders in demo mode | Send a push notification when an order arrives. |
-| Weather | Sample values in `src/data/demo/weather.ts` | Connect a forecast service. PAGASA's TenDay API needs a token that PAGASA approves on request, and it gives daily forecasts, not current conditions. |
+| Weather | Live from Open-Meteo (`src/services/weather.ts`, shared through `src/store/weather.ts`): the farmer's town is looked up by name once and kept on the phone; the forecast is cached like any list. Its free tier is for non-commercial use and asks for a credit, which the app does not show at present. | Show the Open-Meteo credit somewhere in the app (an About page), or move to a paid plan if the app becomes commercial. PAGASA's TenDay API remains an option for official forecasts, with a token PAGASA approves on request. |
 | Phone and Gmail verification | Real once set up: Gmail through Brevo, CP numbers through Semaphore (both in `verify-code`). Sign-up is gated by the form, not by the server: a modified app could still create an account without a code. | Have account creation itself require a passed code (sign-up through the function), and a domain of our own in Brevo so codes don't land in Spam. |
 | Password reset | Real once set up, for Gmail and (with Semaphore) CP-number accounts. | — |
 | Offline | The app opens, reads and queues a farmer's records with no signal (section 6). Listing photos never opened with signal and the web fonts are not saved on the phone; placing an order and posting a listing need a connection; the phone's database is not encrypted. | Save listing photos with the market list; bundle the fonts in the APK; consider SQLCipher if records grow more sensitive. |

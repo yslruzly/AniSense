@@ -6,6 +6,8 @@ import { buildAlerts, openAlerts, Alert } from "../../lib/alerts";
 import { IncomingOrder } from "../../types";
 import { Sheet } from "../ui/Sheet";
 import { useViewer } from "../../store/viewer";
+import { useWeather } from "../../store/weather";
+import { nextWetDay, whenSaid } from "../../services/weather";
 import { peso } from "../../lib/money";
 import { isNetworkError } from "../../lib/cache";
 import { PesoField, pesoText, pesoValue } from "../ui/PesoField";
@@ -145,11 +147,14 @@ let bellRung = false;
 // below, and two doors to the same room is one more thing to read on every
 // screen. The bell takes its place at the edge.
 export function Hdr({ icon, title, sub, onBack, extra, center }: { icon?: React.ReactNode; title: string; sub?: string; onBack?: () => void; extra?: React.ReactNode; center?: boolean }) {
-  const { t, tn } = useLang();
+  const { t, tn, lang } = useLang();
   const [showAlerts, setShowAlerts] = useState(false);
   const { role, location, priceAlerts, plantings, orders, confirmOrder } = useViewer();
   const isBuyer = role === "buyer";
-  const alerts = buildAlerts(role, location, priceAlerts, plantings, orders);
+  // Rain coming, from the forecast (store/weather): the bell says which day.
+  const wx = useWeather();
+  const wet = wx.data ? nextWetDay(wx.data, new Date()) : undefined;
+  const alerts = buildAlerts(role, location, priceAlerts, plantings, orders, wet?.date);
 
   // The badge counts what the sheet can actually show. A hardcoded "3" over an
   // empty sheet is the kind of small lie that costs trust. An order the
@@ -196,7 +201,7 @@ export function Hdr({ icon, title, sub, onBack, extra, center }: { icon?: React.
     if (a.kind === "weather") {
       return {
         tone: "blue", kind: t("alert_kind_weather"), ico: <CloudRain {...I} />,
-        title: t("home_adv_rain"), body: t("home_adv_rain_sub"),
+        title: t("home_adv_rain").replace("{when}", whenSaid(a.day ?? "", new Date(), t, lang === "tl" ? "fil-PH" : "en-PH")), body: t("home_adv_rain_sub"),
       };
     }
     const down = a.kind === "price-down";

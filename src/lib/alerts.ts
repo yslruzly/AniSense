@@ -1,5 +1,4 @@
 import { CROPS } from "../data/crops";
-import { WEATHER_FORECAST } from "../data/demo/weather";
 import { LISTINGS } from "../data/demo/marketplace";
 import { UserRole } from "../types";
 import { PriceAlert, alertHit } from "./priceAlerts";
@@ -25,7 +24,7 @@ export interface Alert {
   crop?: string;
   /** Percent move, already rounded, for price alerts. */
   change?: number;
-  /** Weather day label, for weather alerts. */
+  /** For a weather alert: the date rain is likely, "2026-10-14". */
   day?: string;
   /** For new listings: who posted it and at what price. */
   seller?: string;
@@ -37,8 +36,6 @@ export interface Alert {
   /** For an order a buyer placed with this farmer. */
   order?: IncomingOrder;
 }
-
-const WET = ["Rainy", "Stormy", "LightRain"];
 
 /** The sharpest move in each direction, and only if it is worth a look. */
 function priceMoves(): Alert[] {
@@ -55,11 +52,12 @@ function priceMoves(): Alert[] {
   return out;
 }
 
-function farmerAlerts(): Alert[] {
+/** `wetDay`: the first of the next five days the forecast gives rain more
+ *  likely than not (store/weather), when there is one. */
+function farmerAlerts(wetDay?: string): Alert[] {
   const out: Alert[] = [];
   // Weather first: it is the one with a deadline attached.
-  const wet = WEATHER_FORECAST.find(d => WET.includes(d.icon));
-  if (wet) out.push({ id: "wx-" + wet.day, kind: "weather", day: wet.day });
+  if (wetDay) out.push({ id: "wx-" + wetDay, kind: "weather", day: wetDay });
   return [...out, ...priceMoves()];
 }
 
@@ -124,7 +122,8 @@ export function buildAlerts(
   priceAlerts: PriceAlert[] = [],
   plantings: Planting[] = [],
   orders: IncomingOrder[] = [],
+  wetDay?: string,
 ): Alert[] {
   if (role === "buyer") return buyerAlerts(location);
-  return [...orderAlerts(orders), ...harvestAlerts(plantings), ...targetAlerts(priceAlerts), ...farmerAlerts()];
+  return [...orderAlerts(orders), ...harvestAlerts(plantings), ...targetAlerts(priceAlerts), ...farmerAlerts(wetDay)];
 }

@@ -7,6 +7,5 @@ Sample values for demo mode: an app built without `.env`, or the demo sign-in. A
 | `marketplace.ts` | Five farmers (Oliver Baldeo, Christian Tiburcio, Ivan Pestanas, Marc Bawalan, Ruzly Macatula) and their 15 listings; `SAMPLE_MARKET` is the same, marked as samples, for a real account's empty Market |
 | `expenses.ts` | A farmer's expenses and a buyer's past purchases |
 | `orders.ts` | Two incoming orders for the demo farmer's alerts (a real account reads its own from the database) |
-| `weather.ts` | Current weather and the forecast (until a weather service is connected) |
 
 The phone numbers are invented (`+63 900 000 000x`).
