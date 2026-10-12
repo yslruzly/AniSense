@@ -3009,90 +3009,97 @@ export const appCss = `
   .fh-post:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
   @media (prefers-reduced-motion: reduce) { .mp-sell-btn:active, .fh-post:active { transform: none; } }
 
-  /* Your purchases: gold, because on this page gold means money. */
   .hm-sec-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .hm-sec-row .hm-sec-title { margin-top: 8px; }
+
+  /* Your purchases: a receipt. White, with a warm gold wash under the title
+     and the total; the peso sign in the readable gold. Its parts are torn
+     off from each other: a dashed rule with a notch bitten out of each edge,
+     in the page's own colour. Section names small and gold, like a
+     receipt's headings. Gold for money, as everywhere on this page; green
+     kept for the one thing to tap. */
   .yp {
-    margin-top: 14px; padding: 18px 16px 10px; border-radius: var(--radius);
-    background-image: linear-gradient(180deg, #FCF3DF 0%, #FFFFFF 46%);
-    box-shadow: inset 0 0 0 1px rgba(138,93,12,.18), 0 14px 30px -22px rgba(22,33,27,.35);
+    position: relative; isolation: isolate; padding: 16px 16px 10px; border-radius: 22px; background: var(--card);
+    box-shadow: 0 0 0 1px rgba(138,93,12,.14), 0 1px 2px rgba(22,33,27,.05), 0 16px 32px -24px rgba(22,33,27,.4);
   }
-  /* Proportional figures on the big number: tabular digits look loose at
-     this size. */
+  .yp::before {
+    content: ""; position: absolute; z-index: -1; inset: 0 0 auto 0; height: 132px; border-radius: 22px 22px 0 0; pointer-events: none;
+    background: linear-gradient(180deg, #FCF3DF 0%, rgba(252,243,223,0) 100%);
+  }
+  .yp-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 36px; }
+  .yp-title { margin: 0; font-family: var(--font-display); font-size: 18px; font-weight: 700; letter-spacing: -.01em; line-height: 1.25; color: var(--text); }
+  /* Proportional figures at this size (tabular digits look loose), tight
+     tracking as the type grows; the sign smaller, raised, in gold. */
   .yp-total {
-    font-family: var(--font-display); font-size: 34px; font-weight: 800; line-height: 1.05;
-    letter-spacing: -.025em; color: var(--text);
+    margin-top: 10px; font-family: var(--font-display); font-size: 40px; font-weight: 800; line-height: 1.05;
+    letter-spacing: -.03em; color: var(--text);
   }
-  .yp-summary { margin: 5px 0 0; font-size: 15px; color: var(--text-muted); }
-  /* Nothing bought yet: the same gold card, holding the empty state, its
-     icon in the card's own gold rather than the usual grey. */
-  .yp-empty { padding: 8px 16px 20px; }
+  .yp-cur { font-size: .6em; font-weight: 700; letter-spacing: 0; color: var(--gold-text); vertical-align: .45em; margin-right: 3px; }
+  .yp-summary { margin: 6px 0 0; font-size: 15px; line-height: 1.4; color: var(--text-muted); }
+  /* The tear, edge to edge of the card. */
+  .yp-cut { position: relative; height: 0; margin: 18px -16px 0; border-top: 2px dashed #EADCB8; }
+  .yp-cut::before, .yp-cut::after {
+    content: ""; position: absolute; top: -10px; width: 18px; height: 18px; border-radius: 50%; background: var(--bg);
+  }
+  .yp-cut::before { left: -9px; }
+  .yp-cut::after { right: -9px; }
+  .yp-h {
+    margin: 14px 2px 10px; font-size: 12.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--gold-text);
+  }
+  /* Nothing bought yet: the same card, holding the empty state, its icon in
+     the card's gold rather than the usual grey. */
+  .yp-empty { padding-bottom: 18px; }
   .yp-empty .state-block { padding: 14px 8px 0; }
   .yp-empty .state-ico { background: #FBEBC4; color: #8A5D0C; }
-  .yp-h {
-    margin: 18px 0 8px; font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--text);
-  }
 
   /* Where it went: name, bar, amount on one grid, so every bar starts on the
-     same line and every amount lines up on the right. */
-  .yp-bars { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
-  .yp-bar-row { display: grid; grid-template-columns: 78px minmax(0, 1fr) 64px; align-items: center; column-gap: 10px; }
-  .yp-bar-name { font-size: 14.5px; font-weight: 600; color: var(--text); overflow-wrap: anywhere; }
-  .yp-bar-track { height: 10px; }
-  /* Square at the start line, 4px round at the end, grows from the start. */
+     same line and every amount lines up on the right. Each bar runs in a
+     pale gold track, so its length reads against the whole. */
+  .yp-bars { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .yp-bar-row { display: grid; grid-template-columns: 80px minmax(0, 1fr) 72px; align-items: center; column-gap: 10px; }
+  .yp-bar-name { font-size: 15px; font-weight: 600; color: var(--text); overflow-wrap: anywhere; }
+  .yp-bar-track { height: 10px; border-radius: 99px; background: #F5ECD7; overflow: hidden; }
+  /* Grows from the start, rounded at both ends. */
   .yp-bar {
-    display: block; height: 100%; border-radius: 0 4px 4px 0; background: #B87A0B;
+    display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, #D49B2C 0%, #B87A0B 100%);
     transform-origin: left center; animation: bar-grow 520ms var(--ease-out) both;
   }
   .yp-bar-row:nth-child(2) .yp-bar { animation-delay: 50ms; }
   .yp-bar-row:nth-child(3) .yp-bar { animation-delay: 100ms; }
   .yp-bar-row:nth-child(4) .yp-bar { animation-delay: 150ms; }
-  .yp-bar-amt { font-size: 14.5px; font-weight: 700; color: var(--text); text-align: right; font-variant-numeric: tabular-nums; }
+  .yp-bar-amt { font-size: 15px; font-weight: 700; color: var(--text); text-align: right; font-variant-numeric: tabular-nums; }
 
-  /* Buy again: the last two orders as two small cards. The button lives
-     inside each card, along its bottom edge. As a row, a narrow phone
-     wrapped it loose into the corner, away from the order it would buy;
-     inside the card it can only belong to that order, at any width. */
-  .yp-h-again { padding-top: 16px; border-top: 1px solid var(--line); }
-  .yp-again { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding-bottom: 6px; }
-  .yp-item {
-    display: flex; flex-direction: column; min-width: 0; padding: 0; overflow: hidden;
-    border: none; border-radius: 16px; background: var(--card);
-    text-align: left; font: inherit; color: inherit; cursor: pointer;
-    box-shadow: inset 0 0 0 1px var(--line), 0 8px 18px -12px rgba(22,33,27,.35);
-    transition: transform 190ms var(--ease-out);
+  /* Buy again: the last two orders as rows. The whole row is the button; the
+     green "Buy again" at its end says what the tap does. */
+  .yp-again { list-style: none; margin: 0; padding: 0; }
+  .yp-again > li + li { position: relative; }
+  .yp-again > li + li::before { content: ""; position: absolute; top: 0; left: 60px; right: 0; height: 1px; background: var(--line); }
+  .yp-again-row {
+    width: calc(100% + 16px); margin: 0 -8px; padding: 10px 8px; display: flex; align-items: center; gap: 12px;
+    border: none; border-radius: 14px; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer;
+    transition: background-color 160ms ease;
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
-  /* A card-sized surface: a small scale reads as a press, not a collapse. */
-  .yp-item:active { transform: scale(.97); transition-duration: var(--dur-press); }
-  .yp-photo {
-    position: relative; height: 86px; display: flex; align-items: center; justify-content: center;
-    background: var(--tanim-sk); color: var(--tanim);
+  .yp-again-row:active { background: var(--paper); transition-duration: var(--dur-press); }
+  .yp-again-row:focus-visible { outline: 3px solid var(--tanim); outline-offset: -3px; }
+  .yp-again-ph {
+    width: 48px; height: 48px; flex: 0 0 48px; border-radius: 12px; overflow: hidden;
+    display: flex; align-items: center; justify-content: center; background: var(--tanim-sk); color: var(--tanim);
+    box-shadow: inset 0 0 0 1px rgba(22,33,27,.06);
   }
-  .yp-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
-  /* The date rides the photo like a stamp on a receipt: one line saved. */
-  .yp-date {
-    position: absolute; left: 8px; top: 8px; padding: 3px 9px; border-radius: 99px;
-    background: rgba(255,255,255,.94); color: var(--text); font-size: 13px; font-weight: 700;
-    box-shadow: 0 2px 6px rgba(0,0,0,.16);
-  }
-  .yp-item-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; padding: 10px 12px 12px; }
-  .yp-item-name { font-family: var(--font-display); font-size: 16px; font-weight: 700; line-height: 1.25; color: var(--text); }
-  .yp-item-meta { font-size: 14px; line-height: 1.35; color: var(--text-muted); overflow-wrap: anywhere; }
-  .yp-item-meta b { font-weight: 700; color: var(--text); }
-  /* Pinned to the bottom edge, so the two buttons line up even when one
-     name wraps and the other does not. */
-  .yp-again-btn {
-    margin: auto 10px 10px; display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px;
-    border-radius: 12px; background: var(--tanim-sk); color: var(--tanim-deep);
-    font-family: var(--font-display); font-size: 14.5px; font-weight: 700;
+  .yp-again-ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .yp-again-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .yp-again-name { font-family: var(--font-display); font-size: 16px; font-weight: 700; line-height: 1.25; color: var(--text); }
+  .yp-again-meta { font-size: 13.5px; line-height: 1.35; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .yp-again-go {
+    flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 12px; border-radius: 99px;
+    background: var(--tanim-sk); color: var(--tanim-deep); font-family: var(--font-display); font-size: 14px; font-weight: 700; white-space: nowrap;
     transition: background-color 160ms ease;
   }
-  .yp-item:active .yp-again-btn { background: #CFE6D8; transition-duration: var(--dur-press); }
+  .yp-again-row:active .yp-again-go { background: #CFE6D8; transition-duration: var(--dur-press); }
 
   @media (prefers-reduced-motion: reduce) {
     .yp-bar { animation: none; }
-    .yp-item:active { transform: none; }
   }
   .shell[data-revisit] .scroll .yp-bar { animation: none; }
 

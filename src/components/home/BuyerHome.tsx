@@ -309,8 +309,10 @@ export function FeaturedFarmers({ onShop, buyerLocation }: { onShop: Shop; buyer
 }
 
 // ── Your purchases ───────────────────────────────────────────────────────────
-// One number, where it went, and what to buy again. Laid out like the other
-// new sections: the title sits on the page, the card holds the content.
+// A receipt: what it all came to, where it went, and what to buy again, each
+// part torn off from the next. The title is inside, as on the other cards
+// with a number to read (Biggest moves, a farmer's Your harvest); History
+// opens the whole list.
 //
 // "Where it went" is part-to-whole across crops, so one bar per crop in one
 // colour, each labelled with its name and peso amount. Separate colours per
@@ -319,7 +321,11 @@ export function FeaturedFarmers({ onShop, buyerLocation }: { onShop: Shop; buyer
 // One gold, labels beside every bar: nothing to decode. Gold #B87A0B is
 // 3.6:1 on white, over the 3:1 a graphic needs.
 //
-// A new buyer, with nothing bought yet, still finds it: the same gold card,
+// "Buy again" is the last two orders as rows, each a button: the photo, what
+// it was, from whom and when, and the green "Buy again" that says what the
+// tap does. Rows, not cards: two orders read in one glance.
+//
+// A new buyer, with nothing bought yet, still finds it: the same card,
 // saying what will be here and with the way to the Market. Not while their
 // purchases are still loading, though, or a buyer who has some would be told
 // they have none. It is the last section, so nothing below moves when it
@@ -328,22 +334,33 @@ export function FeaturedFarmers({ onShop, buyerLocation }: { onShop: Shop; buyer
 export function YourPurchases({ onShop, onHistory }: { onShop: Shop; onHistory: () => void }) {
   const { t, tn, lang } = useLang();
   const { purchases, loadPhase } = useMarket();
+  const head = (history: boolean) => (
+    <div className="yp-head">
+      <h2 className="yp-title" id="yp-t">
+        {t("yp_title")}
+        {/* No orders yet: these are the sample ones, and say so. */}
+        {purchases.some(tx => tx.sample) && <span className="ph-sample">{t("mp_sample")}</span>}
+      </h2>
+      {history && (
+        <button className="hm-link" onClick={onHistory}>
+          {t("yp_history")} <ChevronRight size={16} strokeWidth={2.6} />
+        </button>
+      )}
+    </div>
+  );
+
   if (purchases.length === 0) {
     if (loadPhase !== "ready") return null;
     return (
-      <section className="hm-sec" aria-labelledby="yp-t" data-tour="b-purchases">
-        <div className="hm-sec-row">
-          <h2 className="hm-sec-title" id="yp-t">{t("yp_title")}</h2>
-        </div>
-        <div className="yp yp-empty">
-          <EmptyState
-            icon={<ShoppingCart size={26} aria-hidden="true" />}
-            title={t("state_no_purchases_title")}
-            body={t("yp_empty_body")}
-            action={t("cart_browse")}
-            onAction={() => onShop({})}
-          />
-        </div>
+      <section className="yp yp-empty" aria-labelledby="yp-t" data-tour="b-purchases">
+        {head(false)}
+        <EmptyState
+          icon={<ShoppingCart size={26} aria-hidden="true" />}
+          title={t("state_no_purchases_title")}
+          body={t("yp_empty_body")}
+          action={t("cart_browse")}
+          onAction={() => onShop({})}
+        />
       </section>
     );
   }
@@ -369,65 +386,55 @@ export function YourPurchases({ onShop, onHistory }: { onShop: Shop; onHistory: 
   const summary = t("yp_summary")
     .replace("{orders}", `${orders} ${orders === 1 ? t("yp_order_one") : t("yp_orders_n")}`)
     .replace("{farmers}", `${farmers} ${farmers === 1 ? t("yp_farmer_one") : t("yp_farmers")}`);
+  const total = peso(spent);
 
   return (
-    <section className="hm-sec" aria-labelledby="yp-t" data-tour="b-purchases">
-      <div className="hm-sec-row">
-        <h2 className="hm-sec-title" id="yp-t">
-          {t("yp_title")}
-          {/* No orders yet: these are the sample ones, and say so. */}
-          {purchases.some(tx => tx.sample) && <span className="ph-sample">{t("mp_sample")}</span>}
-        </h2>
-        <button className="hm-link" onClick={onHistory}>
-          {t("yp_history")} <ChevronRight size={16} strokeWidth={2.6} />
-        </button>
-      </div>
+    <section className="yp" aria-labelledby="yp-t" data-tour="b-purchases">
+      {head(true)}
+      {/* The one number, big, the peso sign in gold, with the sentence that
+          makes it mean something right under it. */}
+      <div className="yp-total"><span className="yp-cur">{total.slice(0, 1)}</span>{total.slice(1)}</div>
+      <p className="yp-summary">{summary}</p>
 
-      <div className="yp">
-        {/* The one number, big, with the sentence that makes it mean
-            something right under it. */}
-        <div className="yp-total">{peso(spent)}</div>
-        <p className="yp-summary">{summary}</p>
+      <div className="yp-cut" aria-hidden="true" />
+      <h3 className="yp-h">{t("yp_where")}</h3>
+      <ul className="yp-bars">
+        {parts.map(p => (
+          <li key={p.crop} className="yp-bar-row">
+            <span className="yp-bar-name">{p.crop === "__other" ? t("yp_other") : tn(p.crop)}</span>
+            <span className="yp-bar-track" aria-hidden="true">
+              <span className="yp-bar" style={{ width: `${Math.max(4, (p.amount / top) * 100)}%` }} />
+            </span>
+            <span className="yp-bar-amt">{peso(p.amount)}</span>
+          </li>
+        ))}
+      </ul>
 
-        <h3 className="yp-h">{t("yp_where")}</h3>
-        <ul className="yp-bars">
-          {parts.map(p => (
-            <li key={p.crop} className="yp-bar-row">
-              <span className="yp-bar-name">{p.crop === "__other" ? t("yp_other") : tn(p.crop)}</span>
-              <span className="yp-bar-track" aria-hidden="true">
-                <span className="yp-bar" style={{ width: `${Math.max(4, (p.amount / top) * 100)}%` }} />
-              </span>
-              <span className="yp-bar-amt">{peso(p.amount)}</span>
-            </li>
-          ))}
-        </ul>
-
-        <h3 className="yp-h yp-h-again">{t("home_buy_again")}</h3>
-        <div className="yp-again stagger-list">
-          {recent.map(tx => {
-            const photo = cropPhotoFor(tx.crop, tx.variety);
-            const when = new Date(tx.date).toLocaleDateString(locale, { month: "short", day: "numeric" });
-            return (
-              // Each past order is its own small card, and the card is the
-              // button: a big target for an older thumb. "Buy again" sits
-              // inside it, along the bottom, so it can only ever belong to
-              // this order.
-              <button key={tx.id} className="yp-item" onClick={() => onShop({ search: tx.variety || tx.crop })}>
-                <span className="yp-photo">
-                  {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropEmoji crop={tx.crop} size={30} />}
-                  <span className="yp-date">{when}</span>
+      <div className="yp-cut" aria-hidden="true" />
+      <h3 className="yp-h">{t("home_buy_again")}</h3>
+      <ul className="yp-again stagger-list">
+        {recent.map(tx => {
+          const photo = cropPhotoFor(tx.crop, tx.variety);
+          const when = new Date(tx.date).toLocaleDateString(locale, { month: "short", day: "numeric" });
+          const name = tx.variety || tn(tx.crop);
+          return (
+            <li key={tx.id}>
+              <button className="yp-again-row" onClick={() => onShop({ search: tx.variety || tx.crop })}
+                aria-label={`${t("home_buy_again")}: ${name}, ${tx.seller}, ${tx.kg} kg, ${when}`}>
+                <span className="yp-again-ph" aria-hidden="true">
+                  {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropEmoji crop={tx.crop} size={24} />}
                 </span>
-                <span className="yp-item-body">
-                  <span className="yp-item-name">{tx.variety || tn(tx.crop)}</span>
-                  <span className="yp-item-meta">{tx.seller}</span>
-                  <span className="yp-item-meta">{tx.kg} kg · <b>{peso(costOf(tx))}</b></span>
+                <span className="yp-again-body" aria-hidden="true">
+                  <span className="yp-again-name">{name}</span>
+                  <span className="yp-again-meta">{tx.seller}</span>
+                  <span className="yp-again-meta">{tx.kg} kg · {when}</span>
                 </span>
-                <span className="yp-again-btn"><RotateCcw size={16} strokeWidth={2.6} /> {t("home_buy_again")}</span>
+                <span className="yp-again-go" aria-hidden="true"><RotateCcw size={15} strokeWidth={2.6} /> {t("home_buy_again")}</span>
               </button>
-            );
-          })}
-        </div>
-      </div>
+            </li>
+          );
+        })}
+      </ul>
     </section>
   );
 }
