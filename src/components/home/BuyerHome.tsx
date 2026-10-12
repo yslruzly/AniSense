@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState, type PointerEvent } from "react";
 import { ChevronRight, MapPin, RotateCcw, ArrowLeft, ArrowRight, ArrowDown, TrendingUp, TrendingDown, ArrowLeftRight, ShoppingCart } from "lucide-react";
 import { useLang, translations } from "../../i18n";
 import { CROPS, CROP_GROUP_BY_ID, familyCropNames } from "../../data/crops";
@@ -24,6 +24,9 @@ import leafMask from "../../assets/anisense-leaf-mask.png";
 // search box) rather than dropping the buyer at the top of it to start over.
 
 type Shop = (intent: TradeIntent) => void;
+
+// Special Rice → Rice, Red → Onions: the crop a listing is filed under.
+const groupOf = (l: { crop: string }) => CROP_GROUP_BY_ID[CROPS.find(c => c.name === l.crop)?.id ?? ""] || l.crop;
 
 // A harvest by name. "Red" under Onions reads as "Red Onions"; "Yellow Corn"
 // already says it, so it is said once.
@@ -186,8 +189,6 @@ export function FeaturedProducts({ onShop }: { onShop: Shop }) {
   // four sacks of rice, because the top-rated sellers here all grow rice.
   // A featured shelf that shows the same thing four times is a shelf of one.
   const seen = new Set<string>();
-  // Special Rice → Rice, Red → Onions: the crop a listing is filed under.
-  const groupOf = (l: { crop: string }) => CROP_GROUP_BY_ID[CROPS.find(c => c.name === l.crop)?.id ?? ""] || l.crop;
   // A row holds more than a grid of four did, and the ones past the edge are
   // the reason to push it along.
   const picks = [...listings]
@@ -254,10 +255,11 @@ export function FeaturedProducts({ onShop }: { onShop: Shop }) {
 }
 
 // ── Cheapest today ───────────────────────────────────────────────────────────
-// The three cheapest kilos on the marketplace, cheapest first, as price tags:
+// The cheapest kilo of three different crops, cheapest first, as price tags:
 // the paper kind a stall hangs on its sacks, a pointed end with a hole
-// punched through it. The cheapest is the gold tag. The title sits on the
-// page, as over the featured harvests, with the tags under it.
+// punched through it, all in AniSense gold, the cheapest a size up. The
+// title sits on the page, as over the featured harvests, with the tags under
+// it.
 //
 // On a tag the price comes first and largest, since the price is why it is
 // here; then what it is, and from where and whom. The photo sits on the
@@ -267,8 +269,9 @@ export function FeaturedProducts({ onShop }: { onShop: Shop }) {
 // is. A crop with no price records has no market price to beat and says
 // nothing, rather than "at market price" on every tag.
 //
-// A list to read, not to tap: the tags go nowhere, and nothing changes under
-// a finger. The featured harvests just above are the ones that open.
+// A list to read: the tags go nowhere (the featured harvests just above are
+// the ones that open). A finger on one still gets an answer: the tag lights
+// up from the spot it touched and glows, and lets go a moment after.
 
 // What a crop goes for today, so a listing can be called cheap or not. 0 for
 // a crop with no price yet (data/crops.ts), which is no price at all.
@@ -284,11 +287,33 @@ export function CheapestToday() {
   const { listings, loadPhase } = useMarket();
   // Ranked by price alone. Ranking by "under market" left the card empty on a
   // day when every farmer asks the going rate, and an empty card is worse
-  // than none: this one always has something to say.
+  // than none: this one always has something to say. One tag per crop, the
+  // cheapest of it: three sacks of rice from three farmers is one crop told
+  // three times, as on the featured shelf.
+  const seen = new Set<string>();
   const deals = [...listings]
     .sort((a, b) => a.pricePerKg - b.pricePerKg)
+    .filter(l => { const g = groupOf(l); if (seen.has(g)) return false; seen.add(g); return true; })
     .slice(0, 3)
     .map(l => { const m = marketPrice(l.crop, l.variety); return { l, save: m ? toCents(m - l.pricePerKg) : 0 }; });
+
+  // The tag under the finger. Lit the moment it is pressed, from the spot
+  // pressed; let go, it stays lit a beat so even a quick tap shows, then
+  // fades. A scroll that starts on a tag takes the finger away (cancel), and
+  // the light goes at once.
+  const [lit, setLit] = useState<string | null>(null);
+  const letGo = useRef<number>();
+  const press = (id: string) => (e: PointerEvent<HTMLLIElement>) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    e.currentTarget.style.setProperty("--gx", `${e.clientX - r.left}px`);
+    e.currentTarget.style.setProperty("--gy", `${e.clientY - r.top}px`);
+    window.clearTimeout(letGo.current);
+    setLit(id);
+  };
+  const release = (after: number) => () => {
+    window.clearTimeout(letGo.current);
+    letGo.current = window.setTimeout(() => setLit(null), after);
+  };
 
   return (
     <section className="hm-sec ptags" aria-labelledby="ptag-t" data-tour="b-deals">
@@ -311,7 +336,9 @@ export function CheapestToday() {
             return (
               // The shadow is on the item, the tag's shape on the one inside:
               // a shadow drawn on the clipped tag itself would be clipped away.
-              <li key={l.id} className={`ptag${i === 0 ? " is-first" : ""}`}>
+              <li key={l.id} className={`ptag${i === 0 ? " is-first" : ""}`} data-lit={lit === l.id || undefined}
+                onPointerDown={press(l.id)} onPointerUp={release(180)} onPointerCancel={release(0)}
+                onPointerLeave={e => { if (e.buttons) release(0)(); }}>
                 <div className="ptag-in">
                   <span className="ptag-hole" aria-hidden="true" />
                   <span className="ptag-txt">

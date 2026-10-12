@@ -3007,68 +3007,76 @@ export const appCss = `
   .hm-sec-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .hm-sec-row .hm-sec-title { margin-top: 8px; }
 
-  /* Cheapest today: price tags. Each is a paper tag with a pointed end and
-     a hole punched through it, cut out with clip-path (the point is
-     flattened a little at its tip so it is not a needle). The item outside
-     carries the shadow, a hairline and a soft drop that follow the cut, which
-     a border or box-shadow on the clipped tag could not. The hole is the
-     page's own colour, pressed in. The cheapest tag is gold; the other two
-     are warm white paper.
-     Nothing here is tapped, so nothing changes under a finger. */
+  /* Cheapest today: price tags, all in AniSense gold. Each is a paper tag
+     with a pointed end and a hole punched through it, cut out with
+     clip-path (the point is flattened a little at its tip so it is not a
+     needle). The item outside carries the shadow, a hairline and a soft
+     drop that follow the cut, which a border or box-shadow on the clipped
+     tag could not. The hole is the page's own colour, pressed in. Everything
+     on the gold is ink: at 80% on the gold's darkest corner it is still over
+     4.5:1. The cheapest is a size up. */
   .ptag-list { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
-  .ptag { filter: drop-shadow(0 0 .75px rgba(138,93,12,.55)) drop-shadow(0 6px 10px rgba(22,33,27,.09)); }
+  .ptag {
+    filter: drop-shadow(0 0 .75px rgba(138,93,12,.6)) drop-shadow(0 8px 12px rgba(138,93,12,.26));
+    transition: filter 420ms var(--ease-out);
+    -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none;
+  }
   .ptag-in {
     position: relative; display: flex; align-items: center; gap: 12px; min-height: 92px; padding: 14px 14px 14px 34px;
-    border-radius: 0 16px 16px 0; background: #FFFDF8;
+    border-radius: 0 16px 16px 0;
+    background: linear-gradient(135deg, #F8CD62 0%, #F2B32C 55%, #E7A11C 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.45);
     clip-path: polygon(20px 0, 100% 0, 100% 100%, 20px 100%, 0 calc(50% + 6px), 0 calc(50% - 6px));
   }
-  .ptag-hole {
-    position: absolute; left: 8px; top: 50%; width: 11px; height: 11px; margin-top: -5.5px; border-radius: 50%; background: var(--bg);
-    box-shadow: inset 0 1px 2px rgba(22,33,27,.32), 0 0 0 2px rgba(138,93,12,.16);
+  /* Pressed: the paper lights up from the spot the finger touched (a soft
+     white light under the words, not over them) and the tag glows gold
+     around its cut. In at once, out over 420ms, so a tap reads as a glow
+     that fades rather than a flicker. Only opacity and the shadow move. */
+  .ptag-in::after {
+    content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0;
+    background:
+      radial-gradient(circle at var(--gx, 50%) var(--gy, 50%), rgba(255,255,255,.75) 0%, rgba(255,255,255,0) 62%),
+      rgba(255,248,225,.28);
+    transition: opacity 420ms var(--ease-out);
   }
-  .ptag-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; }
+  .ptag[data-lit] { filter: drop-shadow(0 0 .75px rgba(138,93,12,.6)) drop-shadow(0 0 16px rgba(247,190,52,.9)); transition-duration: 90ms; }
+  .ptag[data-lit] .ptag-in::after { opacity: 1; transition-duration: 90ms; }
+  .ptag-hole {
+    position: absolute; left: 8px; top: 50%; z-index: 1; width: 11px; height: 11px; margin-top: -5.5px; border-radius: 50%; background: var(--bg);
+    box-shadow: inset 0 1px 2px rgba(22,33,27,.38), 0 0 0 2px rgba(255,255,255,.5);
+  }
+  .ptag-txt { position: relative; z-index: 1; flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; }
   /* The price first and largest: proportional digits and tight tracking at
-     this size, the sign smaller and raised, in the readable gold. */
+     this size, the sign smaller and raised. */
   .ptag-price {
     font-family: var(--font-display); font-size: 26px; font-weight: 800; line-height: 1.1;
-    letter-spacing: -.02em; color: var(--text); white-space: nowrap;
+    letter-spacing: -.02em; color: var(--ink); white-space: nowrap;
   }
-  .ptag-cur { font-size: .62em; font-weight: 700; letter-spacing: 0; color: var(--gold-text); vertical-align: .42em; margin-right: 2px; }
-  .ptag-price small { margin-left: 2px; font-size: 14px; font-weight: 600; letter-spacing: 0; color: var(--text-faint); }
-  .ptag-name { max-width: 100%; margin-top: 4px; font-family: var(--font-display); font-size: 16.5px; font-weight: 700; line-height: 1.25; color: var(--text); overflow-wrap: break-word; }
+  .ptag-cur { font-size: .62em; font-weight: 700; letter-spacing: 0; vertical-align: .42em; margin-right: 2px; }
+  .ptag-price small { margin-left: 2px; font-size: 14px; font-weight: 600; letter-spacing: 0; color: rgba(22,33,27,.8); }
+  .ptag-name { max-width: 100%; margin-top: 4px; font-family: var(--font-display); font-size: 16.5px; font-weight: 700; line-height: 1.25; color: var(--ink); overflow-wrap: break-word; }
   /* Town and farmer on one line, cut with an ellipsis rather than wrapping. */
-  .ptag-from { display: flex; align-items: center; gap: 4px; max-width: 100%; margin-top: 2px; font-size: 14px; line-height: 1.35; color: var(--text-faint); }
-  .ptag-from svg { flex-shrink: 0; color: var(--gold-text); }
+  .ptag-from { display: flex; align-items: center; gap: 4px; max-width: 100%; margin-top: 2px; font-size: 14px; line-height: 1.35; color: rgba(22,33,27,.8); }
+  .ptag-from svg { flex-shrink: 0; color: var(--ink); }
   .ptag-from span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ptag-save {
     display: inline-flex; align-items: center; gap: 3px; margin-top: 8px; padding: 3px 10px 3px 7px; border-radius: 99px;
-    background: var(--tanim-sk); color: var(--tanim-deep); font-size: 13.5px; font-weight: 700; line-height: 1.3;
+    background: rgba(255,255,255,.72); color: var(--tanim-deep); font-size: 13.5px; font-weight: 700; line-height: 1.3;
     font-variant-numeric: tabular-nums; white-space: nowrap;
   }
   /* The photo on the right, round, in a white ring. */
   .ptag-ph {
-    flex-shrink: 0; width: 56px; height: 56px; border-radius: 50%; overflow: hidden;
+    position: relative; z-index: 1; flex-shrink: 0; width: 56px; height: 56px; border-radius: 50%; overflow: hidden;
     display: flex; align-items: center; justify-content: center; background: var(--tanim-sk);
-    box-shadow: 0 0 0 3px #fff, 0 2px 6px rgba(22,33,27,.18);
+    box-shadow: 0 0 0 3px rgba(255,255,255,.85), 0 4px 10px rgba(110,70,0,.3);
   }
   .ptag-ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  /* The cheapest: the gold tag, a size up, everything on it in ink. Ink at
-     80% on the gold's darkest corner is still over 4.5:1. */
-  .ptag.is-first { filter: drop-shadow(0 0 .75px rgba(138,93,12,.6)) drop-shadow(0 10px 14px rgba(138,93,12,.28)); }
-  .ptag.is-first .ptag-in {
-    min-height: 112px; padding-top: 16px; padding-bottom: 16px;
-    background: linear-gradient(135deg, #F8CD62 0%, #F2B32C 55%, #E7A11C 100%);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.45);
-  }
-  .ptag.is-first .ptag-hole { box-shadow: inset 0 1px 2px rgba(22,33,27,.38), 0 0 0 2px rgba(255,255,255,.5); }
-  .ptag.is-first .ptag-price { font-size: 34px; color: var(--ink); }
-  .ptag.is-first .ptag-cur { color: var(--ink); }
-  .ptag.is-first .ptag-price small { font-size: 15px; color: rgba(22,33,27,.8); }
-  .ptag.is-first .ptag-name { font-size: 17.5px; color: var(--ink); }
-  .ptag.is-first .ptag-from { color: rgba(22,33,27,.8); }
-  .ptag.is-first .ptag-from svg { color: var(--ink); }
-  .ptag.is-first .ptag-save { background: rgba(255,255,255,.72); }
-  .ptag.is-first .ptag-ph { width: 72px; height: 72px; box-shadow: 0 0 0 3px rgba(255,255,255,.85), 0 4px 10px rgba(110,70,0,.3); }
+  /* The cheapest: a size up. */
+  .ptag.is-first .ptag-in { min-height: 112px; padding-top: 16px; padding-bottom: 16px; }
+  .ptag.is-first .ptag-price { font-size: 34px; }
+  .ptag.is-first .ptag-price small { font-size: 15px; }
+  .ptag.is-first .ptag-name { font-size: 17.5px; }
+  .ptag.is-first .ptag-ph { width: 72px; height: 72px; }
 
   /* Your purchases: a receipt. White, with a warm gold wash under the title
      and the total; the peso sign in the readable gold. Its parts are torn
