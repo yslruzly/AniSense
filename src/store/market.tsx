@@ -103,6 +103,8 @@ export interface Market {
 }
 
 export const sellerKeyOf = (l: Listing) => l.sellerId ?? l.sellerInitials;
+/** Whose a harvest posted in the demo is: the person using it. */
+const DEMO_SELLER = "demo-you";
 export const sellerKeyOfDetail = (s: SellerDetail) => s.id ?? s.initials;
 
 /** "Special Rice" → "Rice": the crop group a listing's crop belongs to. */
@@ -288,7 +290,9 @@ export function useMarketStore({ accountId, role, name, initials }: {
     try { setFromCache(await loadMarket()); } catch { /* the list on screen stands */ }
   }, [live, loadMarket]);
 
-  const isMine = (l: Listing) => (live ? l.sellerId === accountId : l.sellerInitials === initials);
+  // In the demo a harvest is yours by the tag it was posted with, not by
+  // initials: a sample farmer shares the demo farmer's name (Juan Dela Cruz).
+  const isMine = (l: Listing) => (live ? l.sellerId === accountId : l.sellerId === DEMO_SELLER);
 
   const saveListing = async (id: string | null, form: ListingInput) => {
     if (live) {
@@ -304,7 +308,7 @@ export function useMarketStore({ accountId, role, name, initials }: {
     if (id) setListings(ls => ls.map(l => (l.id === id ? { ...l, ...fields } : l)));
     else setListings(ls => [{
       id: Date.now().toString(), ...fields, date: localISO(),
-      seller: name, sellerInitials: initials, rating: 5.0,
+      seller: name, sellerInitials: initials, sellerId: DEMO_SELLER, rating: 5.0,
     }, ...ls]);
   };
 

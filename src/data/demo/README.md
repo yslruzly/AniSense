@@ -4,7 +4,7 @@ Sample values for demo mode: an app built without `.env`, or the demo sign-in. A
 
 | File | Holds |
 |---|---|
-| `marketplace.ts` | Five farmers (Oliver Baldeo, Christian Tiburcio, Ivan Pestanas, Marc Bawalan, Ruzly Macatula) and their 15 listings; `SAMPLE_MARKET` is the same, marked as samples, for a real account's empty Market |
+| `marketplace.ts` | Five farmers (Juan Dela Cruz, Maria Dela Cruz, Jose Reyes, Pedro Cruz, Manuel Garcia) and their 15 listings; `SAMPLE_MARKET` is the same, marked as samples, for a real account's empty Market |
 | `expenses.ts` | A farmer's expenses and a buyer's past purchases |
 | `orders.ts` | Two incoming orders for the demo farmer's alerts (a real account reads its own from the database) |
 
