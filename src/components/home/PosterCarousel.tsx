@@ -17,17 +17,20 @@ import { PosterViewer } from "./PosterViewer";
 // is not the one showing, it can't be tapped, reached with Tab or read out.
 //
 // Posters of another shape are cropped to the frame (2:1), placed by
-// `position` so their words stay in.
+// `position` so their words stay in. The Market uses the same banner in a
+// 16:9 frame, its posters' own shape, so none of theirs is cut.
 
 export type Poster = { src: string; alt: string; width: number; height: number; position?: string };
 
 /** Long enough to read a poster's line or two, at the pace of the app's audience. */
 const EVERY = 6000;
 
-export function PosterCarousel({ posters, lead }: {
+export function PosterCarousel({ posters, lead, className = "" }: {
   posters: Poster[];
   /** A card shown first, before the posters, with what its dot is called. */
   lead?: { node: ReactNode; label: string };
+  /** Another frame for the same banner: the Market's is 16:9 (.mp-banner). */
+  className?: string;
 }) {
   const { t } = useLang();
   const first = lead ? 1 : 0;                 // where the posters start
@@ -59,7 +62,7 @@ export function PosterCarousel({ posters, lead }: {
   }, [at, held, away, viewing, n]);
 
   return (<>
-    <section className={`hm-banner${lead ? " has-lead" : ""}`} aria-roledescription="carousel" aria-label={t("home_posters")}
+    <section className={`hm-banner${lead ? " has-lead" : ""}${className ? ` ${className}` : ""}`} aria-roledescription="carousel" aria-label={t("home_posters")}
       onPointerDown={e => { startX.current = e.clientX; moved.current = false; setHeld(true); }}
       onPointerUp={e => {
         const dx = startX.current === null ? 0 : e.clientX - startX.current;

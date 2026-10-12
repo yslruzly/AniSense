@@ -379,6 +379,10 @@ export const translations: Dict = {
     en: "AniSense marketplace for farmers: sell your harvest, reach more buyers, grow your farm. Easy listing, more buyers, fair prices, support local communities.",
     tl: "AniSense bentahan para sa magsasaka: ibenta ang ani, maabot ang mas maraming mamimili, palaguin ang bukid. Madaling mag-post, mas maraming mamimili, patas na presyo, suportahan ang lokal na komunidad.",
   },
+  mp_poster_support_alt: {
+    en: "AniSense: Support our local farmers. Buy fresh, grow stronger communities. A smiling farmer carries a basket of vegetables through the fields.",
+    tl: "AniSense: Suportahan ang ating lokal na magsasaka. Bumili ng sariwa, palakasin ang komunidad. Isang nakangiting magsasaka na may dalang basket ng gulay sa bukid.",
+  },
   mp_poster_alt: {
     en: "AniSense: Fresh from the farm. Connect directly with local farmers. Fresh, quality produce; support local farmers. A smiling farmer holds up a crate of vegetables.",
     tl: "AniSense: Sariwa mula sa bukid. Direktang kumonekta sa lokal na magsasaka. Sariwa at de-kalidad na ani; suportahan ang lokal na magsasaka. Isang nakangiting magsasaka na may hawak na kahon ng gulay.",

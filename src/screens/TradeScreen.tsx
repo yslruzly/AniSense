@@ -10,6 +10,8 @@ import { cropPhotoFor, cropGroupPhoto } from "../data/cropPhotos";
 import { GROW_ART } from "../data/growArt";
 import marketPoster from "../assets/anisense-poster-market.webp";
 import sellPoster from "../assets/farmer-market-poster.webp";
+import supportPoster from "../assets/support-local-farmers.webp";
+import { PosterCarousel } from "../components/home/PosterCarousel";
 import { CropEmoji } from "../components/icons/CropEmoji";
 import { Sheet } from "../components/ui/Sheet";
 import { useRetained } from "../hooks/usePresence";
@@ -456,14 +458,16 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
         {/* Each side opens on its own poster: buyers on "connect with local
             farmers", farmers on "marketplace for farmers: sell your harvest,
             reach more buyers" — the thing each of them came here to do, said
-            once, where a line of copy used to be. The header above already
-            names the page. Both are 16:9, so they share one frame. Neither is
-            lazy-loaded: it is the first thing on screen. */}
-        <figure className="mp-poster">
-          {userRole === "buyer"
-            ? <img src={marketPoster} alt={t("mp_poster_alt")} width={1200} height={675} decoding="async" />
-            : <img src={sellPoster} alt={t("mp_poster_sell_alt")} width={1200} height={675} decoding="async" />}
-        </figure>
+            once, where a line of copy used to be. Then, for both, "Support
+            our local farmers": the two take turns, as Home's posters do (the
+            same banner: dots, a swipe, a tap to see one whole). All 16:9, in
+            a frame of that shape. The header above already names the page. */}
+        <PosterCarousel className="mp-banner" posters={[
+          userRole === "buyer"
+            ? { src: marketPoster, alt: t("mp_poster_alt"), width: 1200, height: 675 }
+            : { src: sellPoster, alt: t("mp_poster_sell_alt"), width: 1200, height: 675 },
+          { src: supportPoster, alt: t("mp_poster_support_alt"), width: 1200, height: 675 },
+        ]} />
 
         {userRole !== "buyer" && (
           <button className="mp-sell-btn" onClick={openPost}>

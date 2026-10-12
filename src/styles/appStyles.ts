@@ -3287,14 +3287,15 @@ export const appCss = `
      large radius, and the hairline drawn over the image (not under it,
      where the picture would hide it). aspect-ratio holds its shape before
      the image arrives, so the search box below never jumps. */
-  .mp-poster {
-    position: relative; margin: 0; aspect-ratio: 1000 / 562; overflow: hidden;
-    border-radius: var(--radius-lg); background: #EAF3E6;
+  /* The Market's posters: Home's banner (PosterCarousel) in a 16:9 frame,
+     their own shape, with the rounder corners and the hairline the single
+     poster had. The hairline sits over the pictures, under the dots. */
+  .hm-banner.mp-banner {
+    aspect-ratio: 1000 / 562; border-radius: var(--radius-lg);
     box-shadow: 0 14px 30px -20px rgba(22,33,27,.4);
   }
-  .mp-poster img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .mp-poster::after {
-    content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  .mp-banner::after {
+    content: ""; position: absolute; inset: 0; z-index: 1; border-radius: inherit; pointer-events: none;
     box-shadow: inset 0 0 0 1px rgba(11,107,65,.16);
   }
   .mp-title { font-family: var(--font-display); font-size: var(--fs-title); font-weight:700; color:var(--text); }
