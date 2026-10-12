@@ -2986,6 +2986,11 @@ export const appCss = `
   .fh-empty-t { font-family: var(--font-display); font-size: 18px; font-weight: 700; line-height: 1.25; color: #fff; }
   .fh-empty-s { margin: 4px 0 0; font-size: 14.5px; line-height: 1.45; color: rgba(255,255,255,.76); }
   .fh-skel-panel { padding: 2px 12px; }
+  /* Samples: the line saying what they are, under the figure, and rows that
+     are only read: no chevron column, nothing under a finger. */
+  .fh-sample-note { margin: 10px 0 0; font-size: 14px; line-height: 1.45; color: rgba(255,255,255,.78); }
+  .fh-row.is-sample { grid-template-columns: 52px minmax(0, 1fr) auto; cursor: default; }
+  .fh-row.is-sample:active { background: none; }
 
   /* The one action on the whole page, in palay: on the green, the app's
      accent on dark, where its own green would disappear. Ink on palay is

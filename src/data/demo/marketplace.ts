@@ -43,6 +43,16 @@ export const SELLER_DETAILS: Record<string, SellerDetail> = {
   "MG": { name: "Manuel Garcia", initials: "MG", phone: "+63 900 000 0005", location: "Talavera, Nueva Ecija", yearsfarming: 7, rating: 4.6, totalSales: 156, crops: ["Well Milled", "Regular Milled"], bio: "Rice farmer in Talavera with a small family mill. Clean, properly milled rice in every sack." },
 };
 
+// ─── A farmer's own harvest, before their first post ──────────────────────────
+// Three listings of the main crops, marked as samples, for Your harvest on a
+// farmer's Home: one priced above the market, one below, one at it, so each
+// way the card compares a price shows. Never in the Market, never opened.
+export const SAMPLE_HARVEST: Listing[] = [
+  { id: "sample-harvest-1", crop: "Rice", variety: "Special Rice", desc: "", pricePerKg: 60, kg: 500, date: "2026-10-10", seller: "", sellerInitials: "", rating: 0, location: "", sample: true },
+  { id: "sample-harvest-2", crop: "Onions", variety: "Red Onion", desc: "", pricePerKg: 90, kg: 120, date: "2026-10-09", seller: "", sellerInitials: "", rating: 0, location: "", sample: true },
+  { id: "sample-harvest-3", crop: "Calamansi", variety: "Regular Calamansi", desc: "", pricePerKg: 55, kg: 45, date: "2026-10-08", seller: "", sellerInitials: "", rating: 0, location: "", sample: true },
+];
+
 // ─── In a real account, while nobody has posted yet ───────────────────────────
 // The same farmers and harvests, each marked as a sample: the Market says so,
 // checkout refuses them, and their phone numbers are never offered to call.

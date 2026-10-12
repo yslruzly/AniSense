@@ -305,6 +305,10 @@ export const translations: Dict = {
   fh_at: { en: "at market price", tl: "kapantay ng merkado" },
   fh_post: { en: "Post a harvest", tl: "Mag-post ng ani" },
   fh_empty_t: { en: "Nothing on sale yet", tl: "Wala ka pang benta" },
+  fh_samples_note: {
+    en: "These are samples, to show how your harvest will look here. Yours replace them as soon as you post.",
+    tl: "Mga sample ito, para makita kung paano lalabas dito ang ani mo. Papalitan sila ng sarili mong ani kapag nag-post ka na.",
+  },
   fh_empty_s: {
     en: "Post your harvest and buyers across Nueva Ecija can find it.",
     tl: "I-post ang ani mo para makita ka ng mga bumibili sa buong Nueva Ecija.",
