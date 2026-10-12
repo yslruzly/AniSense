@@ -254,17 +254,21 @@ export function FeaturedProducts({ onShop }: { onShop: Shop }) {
 }
 
 // ── Cheapest today ───────────────────────────────────────────────────────────
-// The three cheapest kilos on the marketplace, cheapest first, as a price
-// board. The cheapest is the big one: its photo, and its price in large
-// figures with the peso sign in green, as the receipt below shows its total
-// in gold. The next two are rows, the price beside the name.
+// The three cheapest kilos on the marketplace, cheapest first, as price tags:
+// the paper kind a stall hangs on its sacks, a pointed end with a hole
+// punched through it. The cheapest is the gold tag. The title sits on the
+// page, as over the featured harvests, with the tags under it.
 //
-// Under each price, how far it is below today's market price, when it is. A
-// crop with no price records has no market price to beat and says nothing,
-// rather than "at market price" on every row.
+// On a tag the price comes first and largest, since the price is why it is
+// here; then what it is, and from where and whom. The photo sits on the
+// right, round, so the price leads the line.
 //
-// A list to read, not to tap: the rows go nowhere. The featured harvests just
-// above are the ones that open.
+// Under the town, how far the price is below today's market price, when it
+// is. A crop with no price records has no market price to beat and says
+// nothing, rather than "at market price" on every tag.
+//
+// A list to read, not to tap: the tags go nowhere, and nothing changes under
+// a finger. The featured harvests just above are the ones that open.
 
 // What a crop goes for today, so a listing can be called cheap or not. 0 for
 // a crop with no price yet (data/crops.ts), which is no price at all.
@@ -286,64 +290,51 @@ export function CheapestToday() {
     .slice(0, 3)
     .map(l => { const m = marketPrice(l.crop, l.variety); return { l, save: m ? toCents(m - l.pricePerKg) : 0 }; });
 
-  const photo = (l: Listing, size: number) => {
-    const src = l.photo || cropPhotoFor(l.crop, l.variety);
-    return src ? <img src={src} alt="" loading="lazy" decoding="async" /> : <CropEmoji crop={l.crop} size={size} />;
-  };
-  const from = (l: Listing) => (
-    <span className="cd-from">
-      <MapPin size={13} strokeWidth={2.4} aria-hidden="true" />
-      <span>{l.location} · {l.seller}</span>
-    </span>
-  );
-  // The arrow and the words both say "below": never the colour alone.
-  const below = (save: number) => save > 0 && (
-    <span className="cd-save">
-      <ArrowDown size={14} strokeWidth={2.6} aria-hidden="true" />
-      {peso(save)} {t("home_below")}
-    </span>
-  );
-
   return (
-    <section className="cd" aria-labelledby="cd-t" data-tour="b-deals">
-      <h2 className="cd-title" id="cd-t">
+    <section className="hm-sec ptags" aria-labelledby="ptag-t" data-tour="b-deals">
+      <h2 className="hm-sec-title" id="ptag-t">
         {t("home_deals")}
         {/* Sample harvests stand in for an empty Market: say so here too. */}
         {deals.some(d => d.l.sample) && <span className="ph-sample">{t("mp_sample")}</span>}
       </h2>
-      <p className="cd-sub">{t("home_deals_sub")}</p>
+      <p className="hm-sec-sub">{t("home_deals_sub")}</p>
       {loadPhase !== "ready" ? (
         // Still loading: rows in the list's shape, not "no listings".
         loadPhase === "skeleton" ? <SkeletonMediaRows rows={3} label={t("state_loading_listings")} /> : null
       ) : deals.length === 0 ? (
         <p className="hm-empty">{t("home_no_deals")}</p>
       ) : (
-        <ol className="cd-list stagger-list">
+        <ol className="ptag-list stagger-list">
           {deals.map(({ l, save }, i) => {
             const price = peso(l.pricePerKg);
-            return i === 0 ? (
-              <li key={l.id} className="cd-lead">
-                <span className="cd-ph">{photo(l, 36)}</span>
-                <span className="cd-main">
-                  <span className="cd-name">{harvestName(l, tn)}</span>
-                  <span className="cd-big">
-                    <span className="cd-cur">{price.slice(0, 1)}</span>{price.slice(1)}<small>{t("per_kg_short")}</small>
+            const src = l.photo || cropPhotoFor(l.crop, l.variety);
+            return (
+              // The shadow is on the item, the tag's shape on the one inside:
+              // a shadow drawn on the clipped tag itself would be clipped away.
+              <li key={l.id} className={`ptag${i === 0 ? " is-first" : ""}`}>
+                <div className="ptag-in">
+                  <span className="ptag-hole" aria-hidden="true" />
+                  <span className="ptag-txt">
+                    <span className="ptag-price">
+                      <span className="ptag-cur">{price.slice(0, 1)}</span>{price.slice(1)}<small>{t("per_kg_short")}</small>
+                    </span>
+                    <span className="ptag-name">{harvestName(l, tn)}</span>
+                    <span className="ptag-from">
+                      <MapPin size={13} strokeWidth={2.4} aria-hidden="true" />
+                      <span>{l.location} · {l.seller}</span>
+                    </span>
+                    {/* The arrow and the words both say "below": never the colour alone. */}
+                    {save > 0 && (
+                      <span className="ptag-save">
+                        <ArrowDown size={14} strokeWidth={2.6} aria-hidden="true" />
+                        {peso(save)} {t("home_below")}
+                      </span>
+                    )}
                   </span>
-                  {below(save)}
-                  {from(l)}
-                </span>
-              </li>
-            ) : (
-              <li key={l.id} className="cd-row">
-                <span className="cd-ph">{photo(l, 24)}</span>
-                <span className="cd-main">
-                  <span className="cd-top">
-                    <span className="cd-name">{harvestName(l, tn)}</span>
-                    <span className="cd-price">{price}<small>{t("per_kg_short")}</small></span>
+                  <span className="ptag-ph">
+                    {src ? <img src={src} alt="" loading="lazy" decoding="async" /> : <CropEmoji crop={l.crop} size={i === 0 ? 34 : 26} />}
                   </span>
-                  {from(l)}
-                  {below(save)}
-                </span>
+                </div>
               </li>
             );
           })}
