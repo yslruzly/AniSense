@@ -3674,6 +3674,26 @@ export const appCss = `
   .scroll.has-dock { padding-bottom: 10px; }
 
   .add-btn  { width:100%; padding:15px; background:var(--green); color:#fff; border:none; border-radius:var(--radius); font-family:inherit; font-size: var(--fs-label); font-weight:700; cursor:pointer; }
+  /* Expenses: Add expense and the calculator on one row, two equal halves,
+     like Sell and Your listings in the Market: the one to do solid green,
+     its helper outlined. A long Filipino label wraps to a second line
+     inside its half rather than pushing the other button smaller. */
+  .screen-dock.exp-dock { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .exp-dock-btn {
+    min-width: 0; min-height: 54px; display: flex; align-items: center; justify-content: center; gap: 7px;
+    padding: 6px 10px; border-radius: 16px; cursor: pointer;
+    font-family: var(--font-display); font-size: 15px; font-weight: 700; line-height: 1.2; text-align: center;
+  }
+  .exp-dock-btn svg { flex-shrink: 0; }
+  .add-btn.exp-dock-btn { width: auto; padding: 6px 10px; background: var(--tanim); box-shadow: 0 10px 20px -12px rgba(11,107,65,.8); }
+  .exp-calc-btn {
+    border: none; background: var(--card); color: var(--tanim-deep);
+    box-shadow: inset 0 0 0 1.5px rgba(11,107,65,.4), 0 8px 18px -14px rgba(22,33,27,.45);
+    transition: transform 180ms var(--ease-out), background-color 160ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .exp-calc-btn:active { transform: scale(.97); background: var(--tanim-sk); transition-duration: var(--dur-press); }
+  @media (prefers-reduced-motion: reduce) { .exp-calc-btn:active { transform: none; } }
 
   /* ── Analytics ── */
   .bar-row { display:flex; align-items:center; gap:9px; margin-bottom:11px; }
