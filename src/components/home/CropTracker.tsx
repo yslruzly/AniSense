@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Sprout, CalendarPlus, Minus, Plus, X, Scissors } from "lucide-react";
+import { Sprout, Leaf, Flower2, Wheat, Cherry, Minus, Plus, X, Scissors } from "lucide-react";
 import { useLang } from "../../i18n";
 import { cropGroupPhoto } from "../../data/cropPhotos";
+import { growArtFor } from "../../data/growArt";
 import { CROP_CYCLES, cycleFor, stageOf } from "../../data/cropCycles";
 import { CropIcon } from "../icons";
 import { Sheet } from "../ui/Sheet";
@@ -16,13 +17,41 @@ import { Planting, dayOf, daysLeft, progressOf, newPlantingId, localISO } from "
 //
 // Nothing to maintain: a crop, a date and a day count are all it stores, and
 // every line on screen is worked out from those.
+//
+// Each planting is a card about its season: the crop's drawing, when it went
+// in; the day it is on, in large figures, since that is what changed
+// overnight; then the season as a path of its five stages, the ones a farmer
+// names out loud (seedling, growing, flowering, filling, harvest), each a
+// picture, the stages behind it filled, the one it is in solid, the line
+// drawn up to today; and at the foot, the weeks left and the date it should
+// be ready. A crop due for cutting turns gold, the colour of a harvest.
+
+type Stage = "seedling" | "growing" | "flowering" | "filling" | "ready";
+
+/** Where each stage begins, as a share of the season (data/cropCycles). */
+const PATH: { stage: Stage; at: number }[] = [
+  { stage: "seedling", at: 0 }, { stage: "growing", at: 0.2 }, { stage: "flowering", at: 0.45 },
+  { stage: "filling", at: 0.7 }, { stage: "ready", at: 1 },
+];
+
+/** The picture for a stage. Filling is grain for rice and corn, fruit for
+ *  the others (onion, garlic, squash, tomato). */
+const stageIcon = (stage: Stage, crop: string) =>
+  stage === "seedling" ? Sprout : stage === "growing" ? Leaf : stage === "flowering" ? Flower2
+    : stage === "filling" ? (crop === "Rice" || crop === "Corn" ? Wheat : Cherry) : Scissors;
 
 export function CropTracker({ plantings, onChange }: {
   plantings: Planting[];
   onChange: (next: Planting[]) => void;
 }) {
-  const { t, tn } = useLang();
+  const { t, tn, lang } = useLang();
   const [adding, setAdding] = useState(false);
+  const locale = lang === "tl" ? "fil-PH" : "en-PH";
+  const thisYear = new Date().getFullYear();
+  // "Aug 12", with the year only when it isn't this one.
+  const dateOf = (d: Date) => d.toLocaleDateString(locale, d.getFullYear() === thisYear
+    ? { month: "short", day: "numeric" } : { month: "short", day: "numeric", year: "numeric" });
+  const plus = (iso: string, days: number) => { const d = new Date(iso + "T00:00:00"); d.setDate(d.getDate() + days); return d; };
   const [crop, setCrop] = useState(CROP_CYCLES[0].crop);
   const [planted, setPlanted] = useState(localISO());
   const [days, setDays] = useState(CROP_CYCLES[0].days);
@@ -53,6 +82,8 @@ export function CropTracker({ plantings, onChange }: {
     if (d <= 14) return t("ct_days_left").replace("{n}", String(d));
     return t("ct_weeks_left").replace("{n}", String(Math.round(d / 7)));
   };
+  // At the start of a line: "About 7 weeks to harvest".
+  const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
   return (
     <section className="hm-sec" aria-labelledby="ct-t" data-tour="tracker">
@@ -61,60 +92,90 @@ export function CropTracker({ plantings, onChange }: {
       </div>
       <p className="hm-sec-sub">{t("ct_sub")}</p>
 
-      <div className="ct">
-        {plantings.length === 0 ? (
-          <p className="ct-empty">{t("ct_empty")}</p>
-        ) : (
-          <ul className="ct-list">
-            {plantings.map(p => {
-              const day = dayOf(p);
-              const progress = Math.min(1, progressOf(p));
-              const stage = stageOf(progressOf(p));
-              const ready = stage === "ready";
-              const photo = cropGroupPhoto(p.crop);
-              return (
-                <li key={p.id} className={`ct-row ${ready ? "ready" : ""}`}>
-                  <div className="ct-head">
-                    <span className="ct-photo">
-                      {photo ? <img src={photo} alt="" loading="lazy" decoding="async" /> : <CropIcon crop={p.crop} size={20} />}
-                    </span>
-                    <span className="ct-id">
-                      <span className="ct-name">{tn(p.crop)}</span>
-                      {/* The day number first: it is what changed since
-                          yesterday, and the reason to look. */}
-                      <span className="ct-day">
-                        {t("ct_day").replace("{day}", String(day)).replace("{days}", String(p.days))}
-                      </span>
-                    </span>
-                    <span className={`ct-stage ${stage}`}>
-                      {ready && <Scissors size={13} strokeWidth={2.8} />}
-                      {t(`ct_stage_${stage}`)}
-                    </span>
-                    <button className="ct-x" onClick={() => remove(p.id)} aria-label={`${t("ct_remove")} ${tn(p.crop)}`}>
-                      <X size={17} strokeWidth={2.6} />
-                    </button>
-                  </div>
-                  <div
-                    className="ct-track"
-                    role="progressbar"
-                    aria-valuemin={0}
-                    aria-valuemax={p.days}
-                    aria-valuenow={Math.min(day, p.days)}
-                    aria-label={`${tn(p.crop)}: ${left(p)}`}
-                  >
-                    <span className="ct-fill" style={{ width: `${progress * 100}%` }} />
-                  </div>
-                  <div className="ct-foot">{left(p)}</div>
-                </li>
-              );
-            })}
-          </ul>
-        )}
+      {plantings.length === 0 ? (
+        // Nothing yet: a sprout, and what tracking one would tell them.
+        <div className="ct-empty">
+          <span className="ct-empty-ico"><Sprout size={26} strokeWidth={2.2} aria-hidden="true" /></span>
+          <div>
+            <div className="ct-empty-t">{t("ct_empty")}</div>
+            <p className="ct-empty-s">{t("ct_example").replace("{date}", dateOf(plus(localISO(), CROP_CYCLES[0].days - 1)))}</p>
+          </div>
+        </div>
+      ) : (
+        <ul className="ct-list stagger-list">
+          {plantings.map(p => {
+            const day = dayOf(p);
+            const progress = Math.min(1, progressOf(p));
+            const stage = stageOf(progressOf(p));
+            const ready = stage === "ready";
+            const now = PATH.findIndex(s => s.stage === stage);
+            const art = growArtFor(p.crop);
+            const photo = art ? undefined : cropGroupPhoto(p.crop);
+            const StageIcon = stageIcon(stage, p.crop);
+            // Today's mark on the line, unless it sits on a stage already.
+            const between = !ready && PATH.every(s => Math.abs(s.at - progress) > 0.04);
+            return (
+              <li key={p.id} className={`ct-card${ready ? " ready" : ""}`}>
+                <div className="ct-head">
+                  <span className="ct-art">
+                    {art || photo ? <img src={art || photo} alt="" loading="lazy" decoding="async" draggable={false} /> : <CropIcon crop={p.crop} size={22} />}
+                  </span>
+                  <span className="ct-id">
+                    <span className="ct-name">{tn(p.crop)}</span>
+                    <span className="ct-planted">{t("ct_planted_on").replace("{date}", dateOf(new Date(p.planted + "T00:00:00")))}</span>
+                  </span>
+                  <button className="ct-x" onClick={() => remove(p.id)} aria-label={`${t("ct_remove")} ${tn(p.crop)}`}>
+                    <X size={18} strokeWidth={2.6} />
+                  </button>
+                </div>
 
-        <button className="ct-add" onClick={open}>
-          <CalendarPlus size={19} strokeWidth={2.4} /> {t("ct_add")}
-        </button>
-      </div>
+                {/* The day it is on: the reason to look this morning. */}
+                <div className="ct-hero">
+                  <span className="ct-day">
+                    <span className="ct-day-n">{t("ct_day_n").replace("{day}", String(day))}</span>
+                    <span className="ct-of">{t("ct_of_days").replace("{days}", String(p.days))}</span>
+                  </span>
+                  <span className="ct-stage"><StageIcon size={15} strokeWidth={2.6} aria-hidden="true" /> {t(`ct_stage_${stage}`)}</span>
+                </div>
+
+                {/* The season as its five stages: behind, now, ahead. */}
+                <div
+                  className="ct-path"
+                  role="progressbar"
+                  aria-valuemin={0}
+                  aria-valuemax={p.days}
+                  aria-valuenow={Math.min(day, p.days)}
+                  aria-label={`${tn(p.crop)}: ${t(`ct_stage_${stage}`)}, ${left(p)}`}
+                >
+                  <span className="ct-rail" aria-hidden="true"><span className="ct-rail-fill" style={{ transform: `scaleX(${progress})` }} /></span>
+                  {PATH.map((s, i) => {
+                    const Icon = stageIcon(s.stage, p.crop);
+                    return (
+                      <span key={s.stage} aria-hidden="true"
+                        className={`ct-node ${i < now ? "done" : i === now ? "now" : "next"}`}
+                        style={{ ["--at" as string]: s.at }}>
+                        <Icon size={i === now ? 16 : 14} strokeWidth={2.6} />
+                      </span>
+                    );
+                  })}
+                  {between && <span className="ct-today" aria-hidden="true" style={{ ["--at" as string]: progress }} />}
+                </div>
+
+                <p className="ct-left">
+                  {ready && <Scissors size={16} strokeWidth={2.6} aria-hidden="true" />}
+                  <b>{cap(left(p))}</b>
+                  <span> · {t("ct_harvest_on").replace("{date}", dateOf(plus(p.planted, p.days - 1)))}</span>
+                </p>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      {/* Another planting: the same add tile as the price alerts. */}
+      <button className="ct-add" onClick={open}>
+        <span className="ct-add-ico"><Plus size={18} strokeWidth={3} aria-hidden="true" /></span> {t("ct_add")}
+      </button>
 
       <Sheet open={adding} onClose={() => setAdding(false)} className="pa-sheet" label={t("ct_add")}>
         <div className="pa-sheet-head">

@@ -2654,64 +2654,90 @@ export const appCss = `
   .ps-total b { font-family: var(--font-display); font-size: 19px; font-weight: 800; }
 
   /* ── Crop tracker ───────────────────────────────────────────────────────
-     A row per planting: what it is and which day it is on, a bar for the
-     season, and the weeks left underneath. The bar is the only thing on the
-     farmer's Home that moves without the market moving. */
-  .ct {
-    margin-top: 12px; padding: 6px 14px 14px; border-radius: var(--radius); background: var(--card);
-    box-shadow: inset 0 0 0 1px var(--line), 0 14px 30px -22px rgba(22,33,27,.35);
+     A card per planting, about its season. The day it is on in large
+     figures; the season as a path of five stage pictures on a line that
+     fills up to today (the stages behind it filled pale, the one it is in
+     solid and a size up, the ones ahead outlined); the weeks left and the
+     date at the foot. Green (--tone) while it grows; gold once it is due,
+     the colour of a harvest. The line draws itself once, the first time
+     Home is seen in a session. */
+  .ct-list { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .ct-card {
+    --tone: var(--tanim); --tone-sk: var(--tanim-sk); --tone-wash: #E8F3EC; --tone-fill: linear-gradient(90deg, #7EC478, var(--tanim));
+    position: relative; isolation: isolate; padding: 14px 8px 14px 14px; border-radius: 20px; background: var(--card);
+    box-shadow: 0 0 0 1px rgba(22,33,27,.07), 0 1px 2px rgba(22,33,27,.05), 0 12px 24px -18px rgba(22,33,27,.35);
   }
-  .ct-empty { margin: 12px 2px; font-size: 14.5px; color: var(--text-muted); }
-  .ct-list { list-style: none; margin: 0; padding: 0; }
-  .ct-row { padding: 12px 0; }
-  .ct-row + .ct-row { border-top: 1px solid var(--line); }
-  .ct-head { display: flex; align-items: center; gap: 11px; }
-  .ct-photo {
-    width: 42px; height: 42px; flex: 0 0 42px; border-radius: 12px; overflow: hidden;
-    display: flex; align-items: center; justify-content: center; background: var(--tanim-sk); color: var(--tanim);
+  .ct-card.ready {
+    --tone: #8A5D0C; --tone-sk: #FBEBC4; --tone-wash: #FCF3DF; --tone-fill: linear-gradient(90deg, #E9B949, #B87A0B);
+    box-shadow: 0 0 0 1.5px rgba(138,93,12,.3), 0 1px 2px rgba(22,33,27,.05), 0 14px 26px -18px rgba(138,93,12,.5);
   }
-  .ct-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .ct-card::before {
+    content: ""; position: absolute; z-index: -1; inset: 0 0 auto 0; height: 110px; border-radius: 20px 20px 0 0; pointer-events: none;
+    background: linear-gradient(180deg, var(--tone-wash) 0%, rgba(255,255,255,0) 100%);
+  }
+  .ct-head { display: flex; align-items: center; gap: 12px; }
+  .ct-art {
+    width: 48px; height: 48px; flex: 0 0 48px; border-radius: 50%; overflow: hidden;
+    display: flex; align-items: center; justify-content: center; color: var(--tone);
+    background: radial-gradient(circle at 50% 30%, #fff 0%, var(--tone-sk) 100%); box-shadow: 0 0 0 1px rgba(22,33,27,.06);
+  }
+  .ct-art img { width: 84%; height: 84%; object-fit: contain; display: block; }
   .ct-id { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
-  .ct-name { font-family: var(--font-display); font-size: 15.5px; font-weight: 700; color: var(--text); }
-  /* The day number is the headline: it is what changed overnight. */
-  .ct-day { font-family: var(--font-display); font-size: 14.5px; font-weight: 600; color: var(--tanim-deep); font-variant-numeric: tabular-nums; }
-  .ct-stage {
-    flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 99px;
-    background: var(--paper-alt); color: var(--text-muted); font-size: 13px; font-weight: 700;
-  }
-  .ct-stage.ready { background: var(--tanim-sk); color: var(--tanim-deep); }
+  .ct-name { font-family: var(--font-display); font-size: 17px; font-weight: 700; line-height: 1.25; color: var(--text); }
+  .ct-planted { font-size: 13.5px; line-height: 1.35; color: var(--text-faint); }
   .ct-x {
-    flex-shrink: 0; width: 34px; height: 34px; border: none; border-radius: 50%; background: none; cursor: pointer;
+    flex-shrink: 0; align-self: flex-start; width: 44px; height: 44px; margin: -6px 0 0; border: none; border-radius: 50%; background: none; cursor: pointer;
     display: inline-flex; align-items: center; justify-content: center; color: var(--text-faint);
     transition: transform 190ms var(--ease-out), background-color 160ms ease;
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
   .ct-x:active { transform: scale(.9); background: var(--paper); transition-duration: var(--dur-press); }
-
-  .ct-track {
-    height: 10px; margin: 10px 0 7px; border-radius: 99px; overflow: hidden;
-    background: var(--paper-alt); box-shadow: inset 0 0 0 1px rgba(22,33,27,.06);
+  /* The day, large: proportional figures, tight tracking at this size. */
+  /* The stage chip drops under the day when the two won't share a line. */
+  .ct-hero { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 8px 10px; margin: 14px 6px 0 0; }
+  .ct-day { display: flex; align-items: baseline; gap: 6px; flex-shrink: 0; }
+  .ct-day-n { font-family: var(--font-display); font-size: 30px; font-weight: 800; line-height: 1; letter-spacing: -.025em; color: var(--text); white-space: nowrap; }
+  .ct-of { font-family: var(--font-display); font-size: 15px; font-weight: 600; color: var(--text-faint); white-space: nowrap; }
+  .ct-stage {
+    flex-shrink: 0; display: inline-flex; align-items: center; gap: 5px; padding: 5px 11px 5px 9px; border-radius: 99px;
+    background: var(--tone-sk); color: var(--tone); font-family: var(--font-display); font-size: 13.5px; font-weight: 700; white-space: nowrap;
   }
-  /* Grows from the left on the first visit of a session; on later visits it
-     is simply at today's mark. */
-  .ct-fill {
-    display: block; height: 100%; border-radius: 99px;
-    background: linear-gradient(90deg, #7EC478, var(--tanim));
-    transform-origin: left center; animation: bar-grow 620ms var(--ease-out) both;
+  /* The path: a rail between the first and last stage's centres, nodes on it.
+     The ends sit 17px in: half the larger, current node, so it never pokes out. */
+  .ct-path { position: relative; height: 34px; margin: 14px 6px 0 0; }
+  .ct-rail { position: absolute; left: 17px; right: 17px; top: 50%; height: 4px; margin-top: -2px; border-radius: 99px; background: var(--paper-alt); overflow: hidden; }
+  .ct-rail-fill { display: block; height: 100%; border-radius: 99px; background: var(--tone-fill); transform-origin: left center; animation: ct-draw 800ms var(--ease-out) 120ms both; }
+  @keyframes ct-draw { from { transform: scaleX(0); } }
+  .ct-node {
+    position: absolute; top: 50%; left: calc(17px + (100% - 34px) * var(--at)); width: 30px; height: 30px; transform: translate(-50%, -50%);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
   }
-  .ct-row.ready .ct-fill { background: linear-gradient(90deg, var(--tanim), var(--palay)); }
-  .ct-foot { font-size: 14px; color: var(--text-muted); }
-  .ct-row.ready .ct-foot { color: var(--tanim-deep); font-weight: 700; }
-
-  .ct-add {
-    width: 100%; margin-top: 12px; min-height: 48px; display: flex; align-items: center; justify-content: center; gap: 8px;
-    border: none; border-radius: 14px; cursor: pointer;
-    background: var(--tanim-sk); color: var(--tanim-deep);
-    font-family: var(--font-display); font-size: 15.5px; font-weight: 700;
-    transition: transform 190ms var(--ease-out), background-color 160ms ease;
-    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  .ct-node.done { background: var(--tone-sk); color: var(--tone); }
+  .ct-node.now {
+    width: 34px; height: 34px; background: var(--tone); color: #fff;
+    box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--tone-sk), 0 6px 12px -4px var(--tone);
   }
-  .ct-add:active { transform: scale(.97); background: #CFE6D8; transition-duration: var(--dur-press); }
+  .ct-node.next { background: var(--card); color: var(--line-strong); box-shadow: inset 0 0 0 1.5px var(--line); }
+  /* Today, between two stages: a small dot where the line ends. */
+  .ct-today {
+    position: absolute; top: 50%; left: calc(17px + (100% - 34px) * var(--at)); width: 10px; height: 10px; transform: translate(-50%, -50%);
+    border-radius: 50%; background: var(--tone); box-shadow: 0 0 0 2.5px #fff;
+  }
+  .ct-left { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; margin: 12px 6px 0 0; font-size: 14.5px; line-height: 1.4; color: var(--text-muted); }
+  .ct-left b { font-weight: 700; color: var(--tone); }
+  .ct-left svg { color: var(--tone); }
+  /* Nothing yet: a sprout on a soft green disc, and an example. */
+  .ct-empty {
+    display: flex; align-items: center; gap: 14px; margin-top: 12px; padding: 16px; border-radius: 20px; background: var(--card);
+    box-shadow: 0 0 0 1px rgba(22,33,27,.07), 0 12px 24px -18px rgba(22,33,27,.35);
+  }
+  .ct-empty-ico {
+    width: 56px; height: 56px; flex: 0 0 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(circle at 50% 30%, #F4FAF6 0%, #CFE6D8 100%); color: var(--tanim);
+    box-shadow: inset 0 0 0 1px rgba(11,107,65,.12);
+  }
+  .ct-empty-t { font-family: var(--font-display); font-size: 16.5px; font-weight: 700; line-height: 1.25; color: var(--text); }
+  .ct-empty-s { margin: 3px 0 0; font-size: 14px; line-height: 1.45; color: var(--text-muted); }
 
   /* The phone's own date field, dressed like the app's other inputs. */
   .ct-date {
@@ -2722,10 +2748,10 @@ export const appCss = `
   .ct-date:focus { outline: none; box-shadow: inset 0 0 0 2px var(--tanim); }
 
   @media (prefers-reduced-motion: reduce) {
-    .ct-fill { animation: none; }
+    .ct-rail-fill { animation: none; }
     .ct-x:active, .ct-add:active { transform: none; }
   }
-  .shell[data-revisit] .scroll .ct-fill { animation: none; }
+  .shell[data-revisit] .scroll .ct-rail-fill { animation: none; }
 
   /* ── Price alerts ───────────────────────────────────────────────────────
      A card per alert: the crop's drawing inside a ring that fills as the
@@ -2790,7 +2816,7 @@ export const appCss = `
   .pa-empty-t { font-family: var(--font-display); font-size: 16.5px; font-weight: 700; line-height: 1.25; color: var(--text); }
   .pa-empty-s { margin: 3px 0 0; font-size: 14px; line-height: 1.45; color: var(--text-muted); }
   /* Add another: a dashed tile, the plus in its own green disc. */
-  .pa-add {
+  .pa-add, .ct-add {
     width: 100%; margin-top: 10px; min-height: 56px; display: flex; align-items: center; justify-content: center; gap: 10px;
     border: 1.5px dashed rgba(11,107,65,.45); border-radius: 18px; cursor: pointer;
     background: rgba(215,234,221,.35); color: var(--tanim-deep);
@@ -2798,9 +2824,9 @@ export const appCss = `
     transition: transform 190ms var(--ease-out), background-color 160ms ease;
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
-  .pa-add:active { transform: scale(.98); background: var(--tanim-sk); transition-duration: var(--dur-press); }
-  .pa-add:focus-visible { outline: 3px solid var(--tanim); outline-offset: 2px; }
-  .pa-add-ico {
+  .pa-add:active, .ct-add:active { transform: scale(.98); background: var(--tanim-sk); transition-duration: var(--dur-press); }
+  .pa-add:focus-visible, .ct-add:focus-visible { outline: 3px solid var(--tanim); outline-offset: 2px; }
+  .pa-add-ico, .ct-add-ico {
     width: 30px; height: 30px; flex: 0 0 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
     background: var(--tanim); color: #fff; box-shadow: 0 4px 10px -4px rgba(11,107,65,.7);
   }
