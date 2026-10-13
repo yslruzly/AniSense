@@ -1775,6 +1775,34 @@ export const appCss = `
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
   .mp-sell-btn:active { transform: scale(.97); transition-duration: 90ms; }
+  /* A farmer's two ways in, side by side: Sell, solid, the one to do; Your
+     listings, outlined, the one to check, a little wider for its longer
+     name, with how many are up in a green count. */
+  .mp-sell-row { display: flex; gap: 10px; }
+  .mp-sell-row .mp-sell-btn { flex: 1 1 0; min-width: 0; }
+  .mp-mine-btn {
+    flex: 1.35 1 0; min-width: 0; min-height: 54px; display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 0 10px; border: none; border-radius: 16px; cursor: pointer; white-space: nowrap;
+    background: var(--card); color: var(--tanim-deep);
+    box-shadow: inset 0 0 0 1.5px rgba(11,107,65,.4), 0 8px 18px -14px rgba(22,33,27,.45);
+    font-family: var(--font-display); font-size: 16px; font-weight: 700;
+    transition: transform 180ms var(--ease-out), background-color 160ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .mp-mine-btn:active { transform: scale(.97); background: var(--tanim-sk); transition-duration: 90ms; }
+  .mp-mine-btn:focus-visible { outline: 3px solid var(--tanim); outline-offset: 2px; }
+  .mp-mine-n {
+    min-width: 24px; height: 24px; padding: 0 7px; border-radius: 99px; display: inline-flex; align-items: center; justify-content: center;
+    background: var(--tanim); color: #fff; font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums;
+  }
+  /* The sheet: the cart's frame (green head, round close), the rows on the page grey. */
+  .yl-body { display: flex; flex-direction: column; gap: 12px; padding: 14px 14px 16px; }
+  .yl-body .fh-panel { margin: 0; box-shadow: 0 0 0 1px rgba(22,33,27,.07), 0 12px 24px -18px rgba(22,33,27,.35); }
+  .yl-body .mp-sample-note { margin: 0; }
+  .yl-sheet .cart-hdr-t .ph-sample { vertical-align: 3px; }
+  @media (prefers-reduced-motion: reduce) {
+    .mp-mine-btn:active { transform: none; }
+  }
 
   /* The filters: the family switch, then the chosen family's crops as a
      wrapping row of pills, each with its crop's picture. White pills held

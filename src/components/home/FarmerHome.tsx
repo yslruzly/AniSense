@@ -9,7 +9,7 @@ import { Skeleton, SkeletonMediaRows } from "../states";
 import { peso, toCents } from "../../lib/money";
 import { SAMPLE_HARVEST } from "../../data/demo/marketplace";
 import { historyOf, latestOf, monthLabel, MonthPrice } from "../../data/priceRecords";
-import { CropPrice } from "../../types";
+import { CropPrice, Listing } from "../../types";
 import leafMask from "../../assets/anisense-leaf-mask.png";
 
 // ─── Your harvest ─────────────────────────────────────────────────────────────
@@ -32,20 +32,89 @@ function marketPrice(crop: string, variety: string) {
   return named && hasPrice(named) ? named.pricePerKg : null;
 }
 
+/** The farmer's own listings, or before their first post the sample ones:
+ *  only once the Market has answered. With nothing loaded at all (offline,
+ *  nothing saved) nobody knows yet whether they have listings, and samples
+ *  would stand in for real ones. Home's Your harvest and the Market's Your
+ *  listings both read it, so the two always show the same. */
+export function useOwnHarvest() {
+  const { listings, isMine, loadPhase } = useMarket();
+  const mine = listings.filter(isMine);
+  const samples = mine.length === 0 && listings.length > 0;
+  return { mine, samples, shown: samples ? SAMPLE_HARVEST : mine, loadPhase };
+}
+
+/** Their listings as rows: the picture, what it is and its price, the kilos
+ *  left, and how the price stands against the market's. A row opens the
+ *  listing (Edit, Remove); a sample is only read. */
+export function HarvestRows({ listings, onOpen }: { listings: Listing[]; onOpen: (id: string) => void }) {
+  const { t, tn } = useLang();
+  return (
+    <ul className="fh-panel fh-list">
+      {listings.map(l => {
+        // Their own photo of the harvest first; without one, the crop's
+        // drawing, the same as on the sign-up tiles.
+        const art = l.photo ? undefined : growArtFor(l.crop);
+        const market = marketPrice(l.crop, l.variety);
+        const diff = market ? toCents(l.pricePerKg - market) : 0;
+        // For a seller, above the market price means more money per
+        // kilo — the opposite of what it means to a buyer, so the
+        // green sits on the other side here.
+        const dir = diff > 0 ? "up" : diff < 0 ? "down" : "same";
+        const row = (
+          <>
+            <span className={`fh-photo${art ? " is-art" : ""}`}>
+              {l.photo || art
+                ? <img src={l.photo || art} alt="" loading="lazy" decoding="async" draggable={false} />
+                : <CropIcon crop={l.crop} size={22} />}
+            </span>
+            {/* Name and price on the first line; the kilos, then how
+                the price stands against the market, under them, each
+                with the row's full width to wrap into (in Filipino
+                the comparison runs to some thirty letters). */}
+            <span className="fh-name">{l.variety && l.variety !== l.crop ? l.variety : tn(l.crop)}</span>
+            <span className="fh-price">{peso(l.pricePerKg)}<small>{t("per_kg_short")}</small></span>
+            <span className="fh-meta">{l.kg.toLocaleString()} {t("fh_left")}</span>
+            {/* Only against a market price: a crop at ₱0 has none. */}
+            {market !== null && (
+              <span className={`fh-vs ${dir}`}>
+                {dir === "up" && <ArrowUp size={14} strokeWidth={3} aria-hidden="true" />}
+                {dir === "down" && <ArrowDown size={14} strokeWidth={3} aria-hidden="true" />}
+                <span>
+                  {dir === "same"
+                    ? t("fh_at")
+                    : `${peso(Math.abs(diff))} ${dir === "up" ? t("fh_above") : t("fh_below")}`}
+                </span>
+              </span>
+            )}
+          </>
+        );
+        return (
+          <li key={l.id}>
+            {l.sample ? (
+              // A sample is only read: there is no listing to open.
+              <div className="fh-row is-sample">{row}</div>
+            ) : (
+              <button type="button" className="fh-row" onClick={() => onOpen(l.id)}>
+                {row}
+                <ChevronRight size={18} strokeWidth={2.4} className="fh-chev" aria-hidden="true" />
+              </button>
+            )}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 export function YourHarvest({ onPost, onOpenMarket, onOpen }: {
   onPost: () => void;
   onOpenMarket: () => void;
   /** One of their listings, opened in the marketplace (Edit, Remove). */
   onOpen: (id: string) => void;
 }) {
-  const { t, tn } = useLang();
-  const { listings, isMine, loadPhase } = useMarket();
-  const mine = listings.filter(isMine);
-  // Samples only once the Market has answered. With nothing loaded at all
-  // (offline, nothing saved) nobody knows yet whether they have listings,
-  // and samples would stand in for real ones: then it says nothing is on sale.
-  const samples = mine.length === 0 && listings.length > 0;
-  const shown = samples ? SAMPLE_HARVEST : mine;
+  const { t } = useLang();
+  const { mine, samples, shown, loadPhase } = useOwnHarvest();
   // What the harvest on sale is worth at the price they set: kilos × price.
   // Their asking price, not a forecast, and not a promise that it sells —
   // which is what the line above the figure says.
@@ -107,60 +176,7 @@ export function YourHarvest({ onPost, onOpenMarket, onOpen }: {
             {samples && <p className="fh-sample-note">{t("fh_samples_note")}</p>}
           </div>
 
-          <ul className="fh-panel fh-list">
-            {shown.map(l => {
-              // Their own photo of the harvest first; without one, the crop's
-              // drawing, the same as on the sign-up tiles.
-              const art = l.photo ? undefined : growArtFor(l.crop);
-              const market = marketPrice(l.crop, l.variety);
-              const diff = market ? toCents(l.pricePerKg - market) : 0;
-              // For a seller, above the market price means more money per
-              // kilo — the opposite of what it means to a buyer, so the
-              // green sits on the other side here.
-              const dir = diff > 0 ? "up" : diff < 0 ? "down" : "same";
-              const row = (
-                <>
-                  <span className={`fh-photo${art ? " is-art" : ""}`}>
-                    {l.photo || art
-                      ? <img src={l.photo || art} alt="" loading="lazy" decoding="async" draggable={false} />
-                      : <CropIcon crop={l.crop} size={22} />}
-                  </span>
-                  {/* Name and price on the first line; the kilos, then how
-                      the price stands against the market, under them, each
-                      with the row's full width to wrap into (in Filipino
-                      the comparison runs to some thirty letters). */}
-                  <span className="fh-name">{l.variety && l.variety !== l.crop ? l.variety : tn(l.crop)}</span>
-                  <span className="fh-price">{peso(l.pricePerKg)}<small>{t("per_kg_short")}</small></span>
-                  <span className="fh-meta">{l.kg.toLocaleString()} {t("fh_left")}</span>
-                  {/* Only against a market price: a crop at ₱0 has none. */}
-                  {market !== null && (
-                    <span className={`fh-vs ${dir}`}>
-                      {dir === "up" && <ArrowUp size={14} strokeWidth={3} aria-hidden="true" />}
-                      {dir === "down" && <ArrowDown size={14} strokeWidth={3} aria-hidden="true" />}
-                      <span>
-                        {dir === "same"
-                          ? t("fh_at")
-                          : `${peso(Math.abs(diff))} ${dir === "up" ? t("fh_above") : t("fh_below")}`}
-                      </span>
-                    </span>
-                  )}
-                </>
-              );
-              return (
-                <li key={l.id}>
-                  {l.sample ? (
-                    // A sample is only read: there is no listing to open.
-                    <div className="fh-row is-sample">{row}</div>
-                  ) : (
-                    <button type="button" className="fh-row" onClick={() => onOpen(l.id)}>
-                      {row}
-                      <ChevronRight size={18} strokeWidth={2.4} className="fh-chev" aria-hidden="true" />
-                    </button>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
+          <HarvestRows listings={shown} onOpen={onOpen} />
         </>
       )}
 

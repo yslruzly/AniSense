@@ -435,6 +435,7 @@ export const translations: Dict = {
   trade_call_seller: { en: "Call seller", tl: "Tawagan ang nagbebenta" },
   trade_view_details: { en: "View details", tl: "Tingnan ang detalye" },
   mp_your_listing: { en: "Your listing", tl: "Iyong listing" },
+  mp_your_listings: { en: "Your listings", tl: "Mga listing mo" },
   mp_seller_photo: { en: "Seller's photo", tl: "Litrato ng nagbebenta" },
   mp_step_photo: { en: "Photo of your harvest", tl: "Litrato ng iyong ani" },
   mp_step_photo_sub: { en: "Buyers trust listings with a real photo.", tl: "Mas pinagkakatiwalaan ng mamimili ang may totoong litrato." },

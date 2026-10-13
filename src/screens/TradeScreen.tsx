@@ -28,6 +28,7 @@ import { townsOf } from "../data/locations";
 import { QtyField } from "../components/ui/QtyField";
 import { useViewer } from "../store/viewer";
 import { useMarket, sellerKeyOfDetail } from "../store/market";
+import { useOwnHarvest, HarvestRows } from "../components/home/FarmerHome";
 import { FeaturedFarmersRow } from "../components/marketplace/FeaturedFarmersRow";
 import { BackToTop } from "../components/ui/BackToTop";
 import { rankOf, ratingText, unrated } from "../lib/rating";
@@ -104,6 +105,9 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
   // ── Cart state ──
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showCart, setShowCart] = useState(false);
+  // A farmer's own listings, in one sheet (samples before their first post).
+  const [showMine, setShowMine] = useState(false);
+  const own = useOwnHarvest();
   const [qtyMap, setQtyMap] = useState<Record<string, number>>({});
   const [checkoutDone, setCheckoutDone] = useState(false);
   // Checkout on its way, and why it didn't go through if it didn't. The cart
@@ -469,10 +473,19 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
           { src: supportPoster, alt: t("mp_poster_support_alt"), width: 1200, height: 675 },
         ]} />
 
+        {/* A farmer's two ways in: sell something, or see what they are
+            already selling. Their own listings used to be found only by
+            scrolling the whole market for the "Your listing" tag. */}
         {userRole !== "buyer" && (
-          <button className="mp-sell-btn" onClick={openPost}>
-            <Plus size={20} strokeWidth={2.6} /> {t("trade_sell")}
-          </button>
+          <div className="mp-sell-row">
+            <button className="mp-sell-btn" onClick={openPost}>
+              <Plus size={20} strokeWidth={2.6} /> {t("trade_sell")}
+            </button>
+            <button className="mp-mine-btn" onClick={() => setShowMine(true)}>
+              <Package size={19} strokeWidth={2.4} aria-hidden="true" /> {t("mp_your_listings")}
+              {own.mine.length > 0 && <span className="mp-mine-n">{own.mine.length}</span>}
+            </button>
+          </div>
         )}
 
         <div className="search-box">
@@ -658,6 +671,45 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
           />
         )}
       </div>
+
+      {/* ── Your listings ── A farmer's own harvests, the same rows as Home's
+          Your harvest: what each fetches and how it stands against the
+          market. A row opens the listing (Edit, Remove) once this sheet has
+          gone, so one sheet leaves before the next arrives. Before their
+          first post, the sample ones, tagged and only to read. */}
+      <Sheet open={showMine} onClose={() => setShowMine(false)} className="cart-sheet yl-sheet" label={t("mp_your_listings")}>
+        <div className="cart-sheet-hdr">
+          <div>
+            <div className="cart-hdr-t">
+              {t("mp_your_listings")}
+              {own.samples && <span className="ph-sample">{t("mp_sample")}</span>}
+            </div>
+            <div className="cart-hdr-s">
+              {own.shown.length > 0
+                ? t("fh_summary")
+                    .replace("{n}", own.shown.length === 1 ? t("fh_listing_one") : t("fh_listings_n").replace("{n}", String(own.shown.length)))
+                    .replace("{kg}", own.shown.reduce((sum, l) => sum + l.kg, 0).toLocaleString())
+                : t("fh_empty_t")}
+            </div>
+          </div>
+          <button className="alerts-close" onClick={() => setShowMine(false)} aria-label={t("close")}>
+            <X size={22} color="#fff" strokeWidth={2.4} />
+          </button>
+        </div>
+        <div className="modal-sheet cart-body yl-body">
+          {own.samples && (
+            <p className="mp-sample-note" role="note"><Package size={18} strokeWidth={2.4} aria-hidden="true" /> {t("fh_samples_note")}</p>
+          )}
+          {own.shown.length > 0 ? (
+            <HarvestRows listings={own.shown} onOpen={id => { setShowMine(false); window.setTimeout(() => setOpenId(id), 200); }} />
+          ) : (
+            <EmptyState icon={<Package size={26} aria-hidden="true" />} title={t("fh_empty_t")} body={t("fh_empty_s")} />
+          )}
+          <button className="mp-sell-btn yl-post" onClick={() => { setShowMine(false); window.setTimeout(openPost, 200); }}>
+            <Plus size={20} strokeWidth={2.6} /> {t("fh_post")}
+          </button>
+        </div>
+      </Sheet>
 
       {/* ── Listing detail ── */}
       <Sheet open={!!openListing} onClose={() => setOpenId(null)} className="pr-sheet mp-sheet modal-sheet" label={shownListing ? titleOf(shownListing) : t("trade_marketplace")}>
