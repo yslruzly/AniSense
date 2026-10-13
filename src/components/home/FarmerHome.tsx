@@ -37,6 +37,18 @@ function marketPrice(crop: string, variety: string) {
  *  nothing saved) nobody knows yet whether they have listings, and samples
  *  would stand in for real ones. Home's Your harvest and the Market's Your
  *  listings both read it, so the two always show the same. */
+/** How a listing's price stands against today's market price for its crop:
+ *  above, below or at it, and by how much. Null for a crop with no market
+ *  price (₱0), which has nothing to be above or below. For a seller, above
+ *  means more money per kilo. */
+export function vsMarket(l: { crop: string; variety: string; pricePerKg: number }) {
+  const market = marketPrice(l.crop, l.variety);
+  if (market === null) return null;
+  const diff = toCents(l.pricePerKg - market);
+  const dir: "up" | "down" | "same" = diff > 0 ? "up" : diff < 0 ? "down" : "same";
+  return { diff, dir };
+}
+
 export function useOwnHarvest() {
   const { listings, isMine, loadPhase } = useMarket();
   const mine = listings.filter(isMine);
@@ -47,7 +59,7 @@ export function useOwnHarvest() {
 /** Their listings as rows: the picture, what it is and its price, the kilos
  *  left, and how the price stands against the market's. A row opens the
  *  listing (Edit, Remove); a sample is only read. */
-export function HarvestRows({ listings, onOpen }: { listings: Listing[]; onOpen: (id: string) => void }) {
+function HarvestRows({ listings, onOpen }: { listings: Listing[]; onOpen: (id: string) => void }) {
   const { t, tn } = useLang();
   return (
     <ul className="fh-panel fh-list">
@@ -55,12 +67,11 @@ export function HarvestRows({ listings, onOpen }: { listings: Listing[]; onOpen:
         // Their own photo of the harvest first; without one, the crop's
         // drawing, the same as on the sign-up tiles.
         const art = l.photo ? undefined : growArtFor(l.crop);
-        const market = marketPrice(l.crop, l.variety);
-        const diff = market ? toCents(l.pricePerKg - market) : 0;
         // For a seller, above the market price means more money per
         // kilo — the opposite of what it means to a buyer, so the
         // green sits on the other side here.
-        const dir = diff > 0 ? "up" : diff < 0 ? "down" : "same";
+        const vs = vsMarket(l);
+        const dir = vs?.dir ?? "same", diff = vs?.diff ?? 0;
         const row = (
           <>
             <span className={`fh-photo${art ? " is-art" : ""}`}>
@@ -76,7 +87,7 @@ export function HarvestRows({ listings, onOpen }: { listings: Listing[]; onOpen:
             <span className="fh-price">{peso(l.pricePerKg)}<small>{t("per_kg_short")}</small></span>
             <span className="fh-meta">{l.kg.toLocaleString()} {t("fh_left")}</span>
             {/* Only against a market price: a crop at ₱0 has none. */}
-            {market !== null && (
+            {vs && (
               <span className={`fh-vs ${dir}`}>
                 {dir === "up" && <ArrowUp size={14} strokeWidth={3} aria-hidden="true" />}
                 {dir === "down" && <ArrowDown size={14} strokeWidth={3} aria-hidden="true" />}

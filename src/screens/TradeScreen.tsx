@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { ShoppingCart, Plus, Minus, X, Check, Search, Pencil, Trash2, ChevronRight, Package, Calendar, Star, MapPin, Phone, AlertTriangle, Wheat, Sprout, ArrowUpDown, Camera, ImageOff } from "lucide-react";
+import { ShoppingCart, Plus, Minus, X, Check, Search, Pencil, Trash2, ChevronRight, Package, Calendar, Star, MapPin, Phone, AlertTriangle, Wheat, Sprout, ArrowUpDown, Camera, ImageOff, ArrowUp, ArrowDown } from "lucide-react";
 import { haptic } from "../lib/platform";
 import { useLang, translations } from "../i18n";
 import { UserRole, CartItem, SellerDetail, TradeIntent, Listing } from "../types";
@@ -28,7 +28,8 @@ import { townsOf } from "../data/locations";
 import { QtyField } from "../components/ui/QtyField";
 import { useViewer } from "../store/viewer";
 import { useMarket, sellerKeyOfDetail } from "../store/market";
-import { useOwnHarvest, HarvestRows } from "../components/home/FarmerHome";
+import { useOwnHarvest, vsMarket } from "../components/home/FarmerHome";
+import { growArtFor } from "../data/growArt";
 import { FeaturedFarmersRow } from "../components/marketplace/FeaturedFarmersRow";
 import { BackToTop } from "../components/ui/BackToTop";
 import { rankOf, ratingText, unrated } from "../lib/rating";
@@ -481,9 +482,14 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
             <button className="mp-sell-btn" onClick={openPost}>
               <Plus size={20} strokeWidth={2.6} /> {t("trade_sell")}
             </button>
-            <button className="mp-mine-btn" onClick={() => setShowMine(true)}>
-              <Package size={19} strokeWidth={2.4} aria-hidden="true" /> {t("mp_your_listings")}
-              {own.mine.length > 0 && <span className="mp-mine-n">{own.mine.length}</span>}
+            <button className="mp-mine-btn" onClick={() => setShowMine(true)}
+              aria-label={own.mine.length > 0 ? `${t("mp_your_listings")} (${own.mine.length})` : t("mp_your_listings")}>
+              {/* The count rides on the box, like the cart's: it costs the button no width. */}
+              <span className="mp-mine-ico" aria-hidden="true">
+                <Package size={19} strokeWidth={2.4} />
+                {own.mine.length > 0 && <span className="mp-mine-n">{own.mine.length}</span>}
+              </span>
+              {t("mp_your_listings")}
             </button>
           </div>
         )}
@@ -672,11 +678,14 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
         )}
       </div>
 
-      {/* ── Your listings ── A farmer's own harvests, the same rows as Home's
-          Your harvest: what each fetches and how it stands against the
-          market. A row opens the listing (Edit, Remove) once this sheet has
-          gone, so one sheet leaves before the next arrives. Before their
-          first post, the sample ones, tagged and only to read. */}
+      {/* ── Your listings ── A farmer's own harvests, a card each: the
+          picture, what it is, its price, the kilos left and when it went up,
+          and how the price stands against the market. The card opens the
+          listing (Edit, Remove) once this sheet has gone, so one sheet leaves
+          before the next arrives; the red bin beside it removes it straight
+          from here, after the same "Remove listing?" as everywhere, and the
+          list closes up under it. Before their first post, the sample ones,
+          tagged and only to read: no bin, nothing to open. */}
       <Sheet open={showMine} onClose={() => setShowMine(false)} className="cart-sheet yl-sheet" label={t("mp_your_listings")}>
         <div className="cart-sheet-hdr">
           <div>
@@ -701,7 +710,50 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
             <p className="mp-sample-note" role="note"><Package size={18} strokeWidth={2.4} aria-hidden="true" /> {t("fh_samples_note")}</p>
           )}
           {own.shown.length > 0 ? (
-            <HarvestRows listings={own.shown} onOpen={id => { setShowMine(false); window.setTimeout(() => setOpenId(id), 200); }} />
+            <ul className="yl-list">
+              {own.shown.map(l => {
+                const vs = vsMarket(l);
+                const art = l.photo ? undefined : growArtFor(l.crop);
+                const pic = l.photo || art;
+                const name = titleOf(l);
+                const body = (
+                  <>
+                    <span className={`yl-ph${art ? " is-art" : ""}`}>
+                      {pic ? <img src={pic} alt="" loading="lazy" decoding="async" draggable={false} /> : <CropIcon crop={l.crop} size={24} />}
+                    </span>
+                    <span className="yl-txt">
+                      <span className="yl-name">{name}</span>
+                      <span className="yl-price">{peso(l.pricePerKg)}<small>{t("per_kg_short")}</small></span>
+                      <span className="yl-meta">{l.kg.toLocaleString()} {t("fh_left")} · {posted(l.date)}</span>
+                      {vs && (
+                        <span className={`yl-vs ${vs.dir}`}>
+                          {vs.dir === "up" && <ArrowUp size={14} strokeWidth={3} aria-hidden="true" />}
+                          {vs.dir === "down" && <ArrowDown size={14} strokeWidth={3} aria-hidden="true" />}
+                          {vs.dir === "same" ? t("fh_at") : `${peso(Math.abs(vs.diff))} ${vs.dir === "up" ? t("fh_above") : t("fh_below")}`}
+                        </span>
+                      )}
+                    </span>
+                  </>
+                );
+                return (
+                  <li key={l.id} className={`yl-card${l.sample ? " is-sample" : ""}`}>
+                    {l.sample ? (
+                      <div className="yl-main">{body}</div>
+                    ) : (
+                      <>
+                        <button type="button" className="yl-main" onClick={() => { setShowMine(false); window.setTimeout(() => setOpenId(l.id), 200); }}>
+                          {body}
+                          <ChevronRight size={18} strokeWidth={2.4} className="yl-chev" aria-hidden="true" />
+                        </button>
+                        <button type="button" className="yl-del" onClick={() => { haptic.select(); setConfirmDelete(l.id); }} aria-label={`${t("trade_remove")}: ${name}`}>
+                          <Trash2 size={20} strokeWidth={2.2} />
+                        </button>
+                      </>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
           ) : (
             <EmptyState icon={<Package size={26} aria-hidden="true" />} title={t("fh_empty_t")} body={t("fh_empty_s")} />
           )}

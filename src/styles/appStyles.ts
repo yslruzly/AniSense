@@ -1775,14 +1775,14 @@ export const appCss = `
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
   .mp-sell-btn:active { transform: scale(.97); transition-duration: 90ms; }
-  /* A farmer's two ways in, side by side: Sell, solid, the one to do; Your
-     listings, outlined, the one to check, a little wider for its longer
-     name, with how many are up in a green count. */
-  .mp-sell-row { display: flex; gap: 10px; }
-  .mp-sell-row .mp-sell-btn { flex: 1 1 0; min-width: 0; }
+  /* A farmer's two ways in, side by side and the same size: Sell, solid, the
+     one to do; Your listings, outlined, the one to check, how many are up in
+     a green count on its box (it costs the button no width). */
+  .mp-sell-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .mp-sell-row > button { min-width: 0; }
   .mp-mine-btn {
-    flex: 1.35 1 0; min-width: 0; min-height: 54px; display: flex; align-items: center; justify-content: center; gap: 8px;
-    padding: 0 10px; border: none; border-radius: 16px; cursor: pointer; white-space: nowrap;
+    min-width: 0; min-height: 54px; display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 0 8px; border: none; border-radius: 16px; cursor: pointer; white-space: nowrap;
     background: var(--card); color: var(--tanim-deep);
     box-shadow: inset 0 0 0 1.5px rgba(11,107,65,.4), 0 8px 18px -14px rgba(22,33,27,.45);
     font-family: var(--font-display); font-size: 16px; font-weight: 700;
@@ -1791,17 +1791,60 @@ export const appCss = `
   }
   .mp-mine-btn:active { transform: scale(.97); background: var(--tanim-sk); transition-duration: 90ms; }
   .mp-mine-btn:focus-visible { outline: 3px solid var(--tanim); outline-offset: 2px; }
+  .mp-mine-ico { position: relative; display: inline-flex; flex-shrink: 0; }
   .mp-mine-n {
-    min-width: 24px; height: 24px; padding: 0 7px; border-radius: 99px; display: inline-flex; align-items: center; justify-content: center;
-    background: var(--tanim); color: #fff; font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums;
+    position: absolute; top: -9px; right: -11px; min-width: 19px; height: 19px; padding: 0 5px; border-radius: 99px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--tanim); color: #fff; box-shadow: 0 0 0 2px var(--card);
+    font-family: var(--font-body); font-size: 11.5px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums;
   }
   /* The sheet: the cart's frame (green head, round close), the rows on the page grey. */
   .yl-body { display: flex; flex-direction: column; gap: 12px; padding: 14px 14px 16px; }
-  .yl-body .fh-panel { margin: 0; box-shadow: 0 0 0 1px rgba(22,33,27,.07), 0 12px 24px -18px rgba(22,33,27,.35); }
+  /* A card per listing: the part that opens it, and the red bin beside it. */
+  .yl-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .yl-card {
+    display: flex; align-items: center; gap: 8px; padding: 8px 10px 8px 8px; border-radius: 18px; background: var(--card);
+    box-shadow: 0 0 0 1px rgba(22,33,27,.07), 0 10px 22px -18px rgba(22,33,27,.4);
+  }
+  .yl-main {
+    flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 4px; border: none; border-radius: 14px;
+    background: none; font: inherit; color: inherit; text-align: left; cursor: pointer;
+    transition: background-color 160ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  button.yl-main:active { background: var(--paper); transition-duration: var(--dur-press); }
+  button.yl-main:focus-visible { outline: 3px solid var(--tanim); outline-offset: 0; }
+  div.yl-main { cursor: default; }
+  .yl-ph {
+    width: 60px; height: 60px; flex: 0 0 60px; border-radius: 14px; overflow: hidden;
+    display: flex; align-items: center; justify-content: center; background: var(--tanim-sk); color: var(--tanim);
+  }
+  .yl-ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .yl-ph.is-art { background: radial-gradient(circle at 50% 30%, #F4FAF6 0%, var(--tanim-sk) 100%); }
+  .yl-ph.is-art img { width: 84%; height: 84%; object-fit: contain; }
+  .yl-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .yl-name { font-family: var(--font-display); font-size: 16.5px; font-weight: 700; line-height: 1.25; color: var(--text); overflow-wrap: break-word; }
+  .yl-price { font-family: var(--font-display); font-size: 16px; font-weight: 800; line-height: 1.3; color: var(--text); font-variant-numeric: tabular-nums; }
+  .yl-price small { margin-left: 1px; font-size: .8em; font-weight: 600; color: var(--text-faint); }
+  .yl-meta { font-size: 13.5px; line-height: 1.35; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+  .yl-vs { display: inline-flex; align-items: flex-start; gap: 3px; margin-top: 2px; font-size: 13px; font-weight: 700; line-height: 1.35; }
+  .yl-vs svg { flex-shrink: 0; margin-top: 1px; }
+  .yl-vs.up { color: var(--tanim); }
+  .yl-vs.down { color: #8A5A0B; }
+  .yl-vs.same { color: var(--text-muted); }
+  .yl-chev { flex-shrink: 0; color: var(--line-strong); }
+  .yl-del {
+    flex: 0 0 48px; width: 48px; height: 48px; border: none; border-radius: 14px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; background: var(--error-sk); color: var(--error);
+    transition: transform 160ms var(--ease-out), background-color 160ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .yl-del:active { transform: scale(.94); background: #F6D6D2; transition-duration: var(--dur-press); }
+  .yl-del:focus-visible { outline: 3px solid var(--error); outline-offset: 2px; }
   .yl-body .mp-sample-note { margin: 0; }
   .yl-sheet .cart-hdr-t .ph-sample { vertical-align: 3px; }
   @media (prefers-reduced-motion: reduce) {
-    .mp-mine-btn:active { transform: none; }
+    .mp-mine-btn:active, .yl-del:active { transform: none; }
   }
 
   /* The filters: the family switch, then the chosen family's crops as a
