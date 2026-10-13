@@ -3142,6 +3142,32 @@ export const appCss = `
   .sw-bot svg { position: relative; z-index: 1; }
   .sw .hm-sec-title { margin-top: 8px; }
   .sw-list { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
+  /* Side by side, one crop to a swipe: the row runs to the screen's edges,
+     each card 86% of the width so the next shows at the right, snapping one
+     at a time. Room under the cards for their shadows. */
+  .sw-list.swipe {
+    flex-direction: row; align-items: stretch; overflow-x: auto; overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory; scroll-padding-inline: 16px;
+    margin: 12px -16px 0; padding: 2px 16px 16px; scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .sw-list.swipe::-webkit-scrollbar { display: none; }
+  .sw-list.swipe > .sw-card { flex: 0 0 86%; min-width: 0; scroll-snap-align: start; }
+  /* The dots: which crop is showing, the current one a longer green bar.
+     Each a 24px target around an 8px dot. */
+  .sw-dots { display: flex; justify-content: center; gap: 2px; margin-top: -6px; }
+  .sw-dot {
+    width: 24px; height: 24px; padding: 0; border: none; background: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .sw-dot::before {
+    content: ""; display: block; width: 8px; height: 8px; border-radius: 99px; background: var(--line-strong);
+    transition: width 240ms var(--ease-out), background-color 200ms ease;
+  }
+  .sw-dot.on::before { width: 22px; background: var(--tanim); }
+  .sw-dot:focus-visible { outline: 3px solid var(--tanim); outline-offset: -2px; border-radius: 99px; }
+  @media (prefers-reduced-motion: reduce) { .sw-dot::before { transition: none; } }
   /* The cards: clear frosted glass, no colour. A pane of white that lets the
      page through, frosted (backdrop blur), lit along its top edge and
      crossed by a soft diagonal sheen; the AniSense leaf, a faint dark

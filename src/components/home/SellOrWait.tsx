@@ -1,3 +1,4 @@
+import { useRef, useState, type UIEvent } from "react";
 import { HandCoins, Hourglass, Eye, Star, Bot, Info } from "lucide-react";
 import { useLang } from "../../i18n";
 import { growArtFor } from "../../data/growArt";
@@ -27,6 +28,12 @@ import leafMask from "../../assets/anisense-leaf-mask.png";
 //
 // No chart. Four numbers in a row are read at once by anyone; a line has to
 // be decoded. Crops with no price records have no forecast and are left out.
+//
+// The cards sit side by side, one crop to a swipe: each takes most of the
+// width and the next one shows at the right edge, so there is plainly more to
+// see. They snap one at a time. Dots under them say which crop is showing,
+// and a dot is also a way to it, for anyone who would not think to swipe. A
+// farmer with one crop gets one card, the full width.
 
 const ICON: Record<Action, typeof Eye> = { SELL: HandCoins, HOLD: Hourglass, WATCH: Eye };
 
@@ -35,6 +42,12 @@ export function SellOrWait({ farmerCrops }: { farmerCrops: string[] }) {
   // "AniSense AI Recommendations" / "Mga Rekomendasyon ng AniSense AI": the
   // name in gold wherever the language puts it.
   const [badgeBefore, badgeAfter] = t("home_ai_recos").split("{brand}");
+  // Which card is in view, from where the row has been swiped to.
+  const row = useRef<HTMLDivElement>(null);
+  const [at, setAt] = useState(0);
+  const stepOf = (el: HTMLElement) => { const first = el.firstElementChild as HTMLElement | null; return first ? first.offsetWidth + 12 : el.clientWidth; };
+  const onSwipe = (e: UIEvent<HTMLDivElement>) => setAt(Math.round(e.currentTarget.scrollLeft / stepOf(e.currentTarget)));
+  const goTo = (i: number) => { const el = row.current; if (el) el.scrollTo({ left: i * stepOf(el), behavior: "smooth" }); };
   const recs = farmerCrops
     .map(adviceFor)
     .filter((a): a is Advice => a !== null)
@@ -55,7 +68,7 @@ export function SellOrWait({ farmerCrops }: { farmerCrops: string[] }) {
       <h2 className="hm-sec-title" id="sw-t">{t("ana_suggestion")}</h2>
       <p className="hm-sec-sub">{t("ana_suggestion_sub")}</p>
 
-      <div className="sw-list stagger-list">
+      <div ref={row} className={`sw-list stagger-list${recs.length > 1 ? " swipe" : ""}`} onScroll={recs.length > 1 ? onSwipe : undefined}>
         {recs.map(({ group, run, action, last }) => {
           const now = run.current.price;
           const cells = [{ month: run.current.month, price: now }, ...run.next.map(p => ({ month: p.month, price: p.price }))];
@@ -120,6 +133,16 @@ export function SellOrWait({ farmerCrops }: { farmerCrops: string[] }) {
           );
         })}
       </div>
+
+      {/* Which crop is showing; a dot takes you to its crop. */}
+      {recs.length > 1 && (
+        <div className="sw-dots">
+          {recs.map((r, i) => (
+            <button key={r.group} type="button" className={`sw-dot${i === at ? " on" : ""}`} onClick={() => goTo(i)}
+              aria-label={tn(r.group)} aria-current={i === at ? "true" : undefined} />
+          ))}
+        </div>
+      )}
 
       <p className="sw-foot">{t("ana_forecast_note")}</p>
     </section>
