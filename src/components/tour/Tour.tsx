@@ -54,12 +54,11 @@ type Step = {
 // judging a price, and buying again.
 const FARMER_STEPS: Step[] = [
   { id: "intro" },
+  // Browse marketplace, under the search bar and the posters: the same three
+  // doors (and the same words) as on a buyer's Home.
+  { id: "b_crops", targets: ['[data-tour="b-crops"]'] },
   { id: "harvest", targets: ['[data-tour="harvest"]'] },
   { id: "prices", targets: ['[data-tour="prices"]'] },
-  // The marketplace's best, which a farmer's Home shows under their own
-  // prices: the same section the buyer's tour points at. Never empty: while
-  // no farmer has posted, the sample harvests fill it (SAMPLE_MARKET).
-  { id: "featured", targets: ['[data-tour="b-featured"]'] },
   // The heading and the card under it: one light over the pair, because the
   // heading alone explains nothing and the card alone looks unannounced.
   { id: "forecast", targets: ['[data-tour="forecast"]', ".adv-card"] },

@@ -178,6 +178,12 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
             ]} />
         )}
 
+        {/* Farmers: the search bar, the posters, then the way into the
+            whole Market, as a buyer has it: Crops, Fruits or Vegetables, a
+            picture each. A farmer goes there to see who else sells their
+            crop and for how much. */}
+        {!isBuyer && <ShopByCrop onShop={shop} />}
+
         {/* Farmers: their own half of the marketplace. Everything else on
             this page is something to read; this is the one block about their
             business, and the only place on Home they can act from. */}
@@ -211,10 +217,6 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
             onAll={() => onNavigate("market")}
           />
         )}
-
-        {/* Farmers see the marketplace's best harvests too: what is selling,
-            from whom and for how much, right under their own prices. */}
-        {!isBuyer && <FeaturedProducts onShop={shop} />}
 
         {/* Who grows it: the trust half of a marketplace. */}
         {isBuyer && <FeaturedFarmers onShop={shop} buyerLocation={buyerLocation} />}

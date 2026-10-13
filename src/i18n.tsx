@@ -1351,11 +1351,6 @@ export const translations: Dict = {
     en: "The retail price of the crops you grow, and whether it rose or fell from the month before. Tap one to see its prices this year and the forecast.",
     tl: "Ang presyong tingi ng mga tinatanim mo, at kung tumaas o bumaba mula sa nakaraang buwan. Pindutin ang isa para makita ang presyo nito ngayong taon at ang taya.",
   },
-  tour_featured_t: { en: "What's selling", tl: "Ang mabenta" },
-  tour_featured_b: {
-    en: "The best-rated harvests in the Market right now, and what they ask per kilo. Swipe to compare with your own.",
-    tl: "Ang pinakamataas ang rating na ani sa Merkado ngayon, at ang presyo kada kilo. Mag-swipe para ikumpara sa iyo.",
-  },
   tour_forecast_t: { en: "Sell, hold, or wait", tl: "Ibenta, itago, o maghintay" },
   tour_forecast_b: {
     en: "What the model expects the price to do next, and what it suggests you do about it. Treat it as advice, not a promise.",
