@@ -1,5 +1,7 @@
 import { useRef, useState, type PointerEvent } from "react";
-import { ArrowUpRight, ArrowDownRight, ArrowRight } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, ArrowRight, ShieldCheck, AlertTriangle } from "lucide-react";
+import { growArtFor } from "../../data/growArt";
+import { CropIcon } from "../icons";
 import { translations } from "../../i18n";
 import { forecastForGroup } from "../../data/forecast";
 import { monthLabel } from "../../data/priceRecords";
@@ -9,29 +11,35 @@ import { haptic } from "../../lib/platform";
 // The page's centrepiece, answered in the order a farmer asks: which crop,
 // what is it now, what will it be in three months, and how sure are we.
 //
-// The prices are monthly records and the forecast is the LSTM's, trained on
-// them (src/data/forecast.ts). One price line per crop: solid for the last
-// twelve recorded months, dashed for the forecast, with the shaded band
-// showing where the price will likely land. The line is always the same
-// blue; whether the months ahead are good news is said by the chip above it
-// (arrow, sign and colour), so a falling forecast is never drawn in "good"
-// green or a rising one in alarm red.
+// Built for a phone held in a field: a white card (it reads in sunlight, where
+// a dark one turns to a mirror), large figures, and nothing that has to be
+// decoded first.
 //
-// How sure: under the chart, how far off the model was when tested on the
-// last year of prices. Where that is a lot (onion and calamansi swing by
-// half in a month), the chip stops saying "expected to rise" and says the
-// forecast is too uncertain to call.
+//   1. The crop, picked from chips with its drawing, as on Home.
+//   2. Now → the last forecast month, as two large prices, and what it means
+//      ("Expected to fall") on a chip with arrow, sign and colour.
+//   3. The chart, one blue line: the past twelve months solid over a faint
+//      wash, then the forecast dashed through hollow dots (they have not
+//      happened yet) with the likely range shaded round it. The forecast
+//      months sit in their own tinted zone, labelled "Forecast", the rest
+//      "Past 12 months": no legend to match up. Touch and slide to read any
+//      month; the page still scrolls through it (touch-action: pan-y).
+//   4. The three forecast months as a list, each with its likely range, so
+//      no number needs the chart to be touched.
+//   5. How sure: how far off the model was when tested on the last year.
+//      Where that is a lot (onion and calamansi swing by half in a month),
+//      the chip stops saying "expected to rise" and says it is too uncertain.
 //
-// Touch and slide along the chart to read any month. The page still scrolls
-// vertically through it (touch-action: pan-y).
+// The line is the same blue whatever the price does; whether the months
+// ahead are good news is said by the chip, so a falling forecast is never
+// drawn in "good" green or a rising one in alarm red.
 //
-// Only the farmer's own crops, in the order they chose them: a forecast for
-// something they don't grow is noise on their page. Crops they grow that
-// have no forecast yet are named under the chart, so nothing just vanishes.
+// Only the farmer's own crops, in the order they chose them. Crops they grow
+// that have no forecast yet are named at the foot, so nothing just vanishes.
 
-// Validated on --ink with the dataviz checker: L 0.48–0.67, C ≥ 0.10, ≥ 3:1.
-const LINE = "#4E9BDB";
-const W = 320, H = 170, P = { t: 22, r: 52, b: 26, l: 36 };
+// Validated on white with the dataviz checker: L and chroma in band, 5.1:1.
+const LINE = "#2F6FA8";
+const W = 320, H = 200, P = { t: 30, r: 12, b: 30, l: 42 };
 
 /** 1, 2 or 5 × a power of ten: tick steps that read as round numbers. */
 function niceStep(raw: number) {
@@ -133,7 +141,11 @@ export function ForecastHero({ farmerCrops = [] }: { farmerCrops?: string[] }) {
   };
 
   const hx = hover !== null ? x(hover) : 0;
-  const tipLeft = hover !== null ? Math.min(84, Math.max(16, (hx / W) * 100)) : 0;
+  const tipLeft = hover !== null ? Math.min(82, Math.max(18, (hx / W) * 100)) : 0;
+  // Under the chart: every third month back from now, now itself, and the last.
+  const xLabels = [nowIdx - 9, nowIdx - 6, nowIdx - 3, nowIdx, n - 1].filter(i => i >= 0);
+  const signed = (d: number) => `${d > 0.005 ? "+" : d < -0.005 ? "−" : "±"}${peso(Math.abs(d))}`;
+  const past = `${line(0, nowIdx)} L${x(nowIdx).toFixed(1)} ${H - P.b} L${x(0).toFixed(1)} ${H - P.b} Z`;
 
   return (
     <section className="fc" aria-labelledby="fc-t">
@@ -144,30 +156,28 @@ export function ForecastHero({ farmerCrops = [] }: { farmerCrops?: string[] }) {
         <span className="fc-s">{run.name} · {t("ana_next_months").replace("{n}", String(run.next.length))}</span>
       </div>
 
-      {/* The crop switch: the same sliding pill as the marketplace's, on ink,
-          sized to however many crops the farmer grows that have a forecast. */}
+      {/* The crop, as on Home: chips with its drawing, wrapping, never a row to swipe. */}
       {crops.length > 1 && (
-        <div className="fseg on-ink" role="tablist" aria-label={t("ana_forecast")}>
-          <span className="fseg-pill" aria-hidden="true" style={{
-            width: `calc((100% - 10px) / ${crops.length})`,
-            transform: `translateX(${crops.indexOf(crop) * 100}%)`,
-          }} />
-          {crops.map(c => (
-            <button key={c} role="tab" aria-selected={crop === c} className={`fseg-tab ${crop === c ? "on" : ""}`} onClick={() => pickCrop(c)}>
-              {tn(c)}
-            </button>
-          ))}
+        <div className="cs-chips fc-chips" role="group" aria-label={t("ana_forecast")}>
+          {crops.map(c => {
+            const art = growArtFor(c);
+            return (
+              <button key={c} type="button" className="cs-chip" aria-pressed={crop === c} onClick={() => pickCrop(c)}>
+                <span className="cs-chip-art">{art ? <img src={art} alt="" decoding="async" draggable={false} /> : <CropIcon crop={c} size={16} />}</span>
+                {tn(c)}
+              </button>
+            );
+          })}
         </div>
       )}
 
-      {/* The newest record → the last forecast month: two labelled numbers,
-          then what it means. */}
+      {/* Now → the last forecast month: two large prices, then what it means. */}
       <div className="fc-read" key={`r-${crop}`}>
         <div className="fc-col">
-          <span className="fc-k">{month(nowIdx, "long")}</span>
+          <span className="fc-k">{t("ana_now_month").replace("{month}", month(nowIdx, "long"))}</span>
           <span className="fc-v">{peso(today)}</span>
         </div>
-        <ArrowRight size={20} strokeWidth={2.4} className="fc-to" aria-hidden="true" />
+        <ArrowRight size={22} strokeWidth={2.4} className="fc-to" aria-hidden="true" />
         <div className="fc-col">
           <span className="fc-k">{month(n - 1, "long")}</span>
           <span className="fc-v">{peso(next)}</span>
@@ -176,7 +186,7 @@ export function ForecastHero({ farmerCrops = [] }: { farmerCrops?: string[] }) {
       <div className="fc-verdict">
         <span className={`fc-chip ${run.reliable ? dir : "flat"}`}>
           <Arrow size={16} strokeWidth={2.6} aria-hidden="true" />
-          {diff >= 0 ? "+" : "−"}{peso(Math.abs(diff))} · {pct >= 0 ? "+" : "−"}{Math.abs(pct).toFixed(1)}%
+          {signed(diff)} · {pct >= 0 ? "+" : "−"}{Math.abs(pct).toFixed(1)}%
         </span>
         {/* A forecast that tested badly makes no promise about direction. */}
         <span className="fc-say">{t(!run.reliable ? "ana_exp_unsure" : dir === "up" ? "ana_exp_rise" : dir === "down" ? "ana_exp_fall" : "ana_exp_flat")}</span>
@@ -185,7 +195,7 @@ export function ForecastHero({ farmerCrops = [] }: { farmerCrops?: string[] }) {
       <div className="fc-chart">
         {hover !== null && (
           <div className="fc-tip" style={{ left: `${tipLeft}%` }} aria-hidden="true">
-            <span className="fc-tip-k">{when(hover)}</span>
+            <span className="fc-tip-k">{when(hover)}{hover === nowIdx ? ` · ${t("ana_now")}` : ""}</span>
             <span className="fc-tip-v">{peso(value(hover))}</span>
             {hover > nowIdx && <span className="fc-tip-r">{t("ana_likely").replace("{lo}", peso(s[hover].lower)).replace("{hi}", peso(s[hover].upper))}</span>}
           </div>
@@ -202,52 +212,78 @@ export function ForecastHero({ farmerCrops = [] }: { farmerCrops?: string[] }) {
           onPointerCancel={onEnd}
           onPointerLeave={onEnd}
         >
-          {/* Recessive grid: three round numbers, faint lines. */}
+          {/* The forecast months in their own tinted zone, named at its top;
+              the recorded months named on the left. */}
+          <rect x={x(nowIdx)} y={P.t - 22} width={W - x(nowIdx)} height={H - P.b - (P.t - 22)} rx={10} className="fc-zone" />
+          <text x={P.l} y={P.t - 8} className="fc-zone-lbl" textAnchor="start">{t("ana_past_12")}</text>
+          <text x={(x(nowIdx) + W) / 2} y={P.t - 8} className="fc-zone-lbl ahead" textAnchor="middle">{t("ana_leg_forecast")}</text>
+
+          {/* Recessive grid: a few round numbers, hairlines. */}
           {ticks.map(v => (
             <g key={v}>
               <line x1={P.l} x2={W - P.r} y1={y(v)} y2={y(v)} className="fc-grid" />
-              <text x={P.l - 6} y={y(v) + 3.5} className="fc-axis" textAnchor="end">₱{Math.round(v)}</text>
+              <text x={P.l - 7} y={y(v) + 4.5} className="fc-axis" textAnchor="end">₱{Math.round(v)}</text>
             </g>
           ))}
-          {/* The newest record, as a divider the eye can hang the story on. */}
-          <line x1={x(nowIdx)} x2={x(nowIdx)} y1={P.t - 10} y2={H - P.b} className="fc-now" />
 
           <g className={`fc-plot ${switched ? "swap" : "first"}`} key={crop}>
+            <path d={past} className="fc-wash" fill={LINE} />
             <path d={band} className="fc-band" fill={LINE} />
             <path d={line(nowIdx, n - 1)} className="fc-future" stroke={LINE} />
             <path d={line(0, nowIdx)} className="fc-past" stroke={LINE} pathLength={1} />
-            {/* The newest record's dot, ringed in the surface colour so it sits on the line. */}
-            <circle cx={x(nowIdx)} cy={y(today)} r={4.5} className="fc-dot" fill="#fff" />
+            {/* The forecast months: hollow, since they have not happened. */}
             <g className="fc-end">
-              <circle cx={x(n - 1)} cy={y(next)} r={4} fill={LINE} className="fc-dot" />
-              <text x={x(n - 1) + 8} y={y(next) + 4} className="fc-endlbl">₱{next.toFixed(1)}</text>
+              {s.slice(nowIdx + 1).map((p, k) => (
+                <circle key={p.month} cx={x(nowIdx + 1 + k)} cy={y(p.price)} r={4.5} className="fc-dot-ahead" stroke={LINE} />
+              ))}
             </g>
+            {/* Today's price: filled, ringed in white to sit on the line. */}
+            <circle cx={x(nowIdx)} cy={y(today)} r={5.5} fill={LINE} className="fc-dot" />
           </g>
 
           {hover !== null && (
             <g className="fc-scrub" aria-hidden="true">
-              <line x1={hx} x2={hx} y1={P.t - 10} y2={H - P.b} />
-              <circle cx={hx} cy={y(value(hover))} r={5} fill="#fff" stroke={LINE} strokeWidth={2.5} />
+              <line x1={hx} x2={hx} y1={P.t - 4} y2={H - P.b} />
+              <circle cx={hx} cy={y(value(hover))} r={6} fill="#fff" stroke={LINE} strokeWidth={3} />
             </g>
           )}
 
-          <text x={x(0)} y={H - 7} className="fc-axis" textAnchor="start">{month(0, "short", true)}</text>
-          <text x={x(nowIdx)} y={H - 7} className="fc-axis now" textAnchor="middle">{month(nowIdx)}</text>
-          <text x={x(n - 1)} y={H - 7} className="fc-axis" textAnchor="end">{month(n - 1)}</text>
+          {xLabels.map(i => (
+            <text key={i} x={x(i)} y={H - 9} className={`fc-axis${i === nowIdx ? " now" : ""}`}
+              textAnchor={i === n - 1 ? "end" : i === xLabels[0] && x(i) - P.l < 20 ? "start" : "middle"}>
+              {i === nowIdx ? t("ana_now") : month(i)}
+            </text>
+          ))}
         </svg>
       </div>
-
-      {/* Two series and a band: a legend, drawn with the marks themselves. */}
-      <div className="fc-legend">
-        <span><i className="solid" style={{ background: LINE }} />{t("ana_actual")}</span>
-        <span><i className="dashed" style={{ color: LINE }} />{t("ana_leg_forecast")}</span>
-        <span><i className="band" style={{ background: LINE }} />{t("ana_leg_range")}</span>
-      </div>
       <p className="fc-hint">{t("ana_scrub_hint")}</p>
+
+      {/* The months ahead as a list: the chart's numbers, no touching needed. */}
+      <div className="fc-months">
+        <h3 className="fc-months-t">{t("ana_month_by_month")}</h3>
+        <ul>
+          {run.next.map(p => (
+            <li key={p.month} className="fc-mrow">
+              <span className="fc-mrow-l">
+                <span className="fc-mrow-m">{monthLabel(p.month, "en", "long", true)}</span>
+                <span className="fc-mrow-r">{t("ana_likely").replace("{lo}", peso(p.lower)).replace("{hi}", peso(p.upper))}</span>
+              </span>
+              <span className="fc-mrow-end">
+                <span className="fc-mrow-p">{peso(p.price)}</span>
+                <span className="fc-mrow-d">{signed(p.price - today)}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
       {/* How sure: the model's average miss on the last year of prices. */}
-      <p className="fc-hint">
-        {t("ana_fc_tested").replace("{pct}", String(Math.round(run.mape)))}
-        {!run.reliable && ` ${t("ana_fc_swings")}`}
+      <p className={`fc-trust${run.reliable ? "" : " unsure"}`}>
+        {run.reliable ? <ShieldCheck size={18} strokeWidth={2.4} aria-hidden="true" /> : <AlertTriangle size={18} strokeWidth={2.4} aria-hidden="true" />}
+        <span>
+          {t("ana_fc_tested").replace("{pct}", String(Math.round(run.mape)))}
+          {!run.reliable && ` ${t("ana_fc_swings")}`}
+        </span>
       </p>
       {without.length > 0 && (
         <p className="fc-hint">{t("ana_fc_missing").replace("{crops}", listOf(without))}</p>

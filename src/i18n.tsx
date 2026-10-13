@@ -604,7 +604,10 @@ export const translations: Dict = {
   ana_fc_swings: { en: "This price swings a lot from month to month. Treat the forecast as a rough guide.", tl: "Malaki ang galaw ng presyong ito buwan-buwan. Ituring na tantiya lamang ang taya." },
   ana_likely: { en: "Likely {lo}–{hi}", tl: "Malamang {lo}–{hi}" },
   ana_leg_forecast: { en: "Forecast", tl: "Taya" },
-  ana_leg_range: { en: "Likely range", tl: "Malamang na saklaw" },
+  ana_now: { en: "Now", tl: "Ngayon" },
+  ana_now_month: { en: "Now · {month}", tl: "Ngayon · {month}" },
+  ana_past_12: { en: "Past 12 months", tl: "Nakaraang 12 buwan" },
+  ana_month_by_month: { en: "Month by month", tl: "Bawat buwan" },
   ana_scrub_hint: { en: "Touch and slide on the chart to see each month.", tl: "Pindutin at i-slide sa chart para makita ang bawat buwan." },
   ana_fc_missing: { en: "No forecast yet for {crops}.", tl: "Wala pang taya para sa {crops}." },
   ana_fc_none: {
@@ -1116,7 +1119,6 @@ export const translations: Dict = {
   exp_buyer_sub: { en: "Purchase history", tl: "Mga binili" },
 
   // ── Extra: analytics ──────────────────────────────────────────────────────
-  ana_actual: { en: "Actual Price", tl: "Aktwal na Presyo" },
   ana_watch: { en: "WATCH", tl: "BANTAYAN" },
   ana_act_sell: { en: "Sell now", tl: "Ibenta na" },
   ana_act_hold: { en: "Hold", tl: "Hintayin" },

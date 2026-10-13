@@ -1022,92 +1022,103 @@ export const appCss = `
   }
 
   /* ── Analytics ───────────────────────────────────────────────────────────── */
-  /* The forecast: the page's hero, on the same ink as Prices' "Today's market"
-     card, so the two dark cards read as the app's two data centrepieces. */
+  /* The forecast: the page's centrepiece, on white so it reads in sunlight.
+     Figures large; the chart's words at 12–13px, never the 10px a chart
+     usually gets; ink for every word, the blue only on the marks. */
   .fc {
-    position: relative; overflow: hidden; isolation: isolate; flex-shrink: 0;
+    position: relative; isolation: isolate; flex-shrink: 0;
     display: flex; flex-direction: column; gap: 14px;
-    padding: 18px 18px 16px; border-radius: 26px; color: #fff;
-    background:
-      radial-gradient(120% 90% at 100% 0%, rgba(78,155,219,.2), transparent 58%),
-      linear-gradient(150deg, #1D2E25 0%, var(--ink) 60%, #0D1511 100%);
-    box-shadow: 0 18px 34px -22px rgba(22,33,27,.8), inset 0 0 0 1px rgba(255,255,255,.05);
+    padding: 18px 16px 16px; border-radius: 24px; background: var(--card); color: var(--text);
+    box-shadow: 0 0 0 1px rgba(22,33,27,.07), 0 1px 2px rgba(22,33,27,.05), 0 18px 34px -24px rgba(22,33,27,.45);
   }
-  .fc-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
-  .fc-t { margin: 0; font-family: var(--font-display); font-size: 19px; font-weight: 700; letter-spacing: -.01em; }
-  .fc-s { font-size: 13px; font-weight: 600; color: rgba(255,255,255,.6); }
+  .fc-head { display: flex; flex-direction: column; gap: 2px; }
+  .fc-t { margin: 0; font-family: var(--font-display); font-size: 20px; font-weight: 700; letter-spacing: -.015em; color: var(--text); }
+  .fc-s { font-size: 14px; font-weight: 600; color: var(--text-faint); }
+  .fc-chips { margin-top: -2px; }
 
-  /* The crop switch on ink: the same pill, a darker well. */
-  .fseg.on-ink {
-    background: rgba(0,0,0,.28);
-    box-shadow: inset 0 1px 2px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.06);
-  }
-  .fseg.on-ink .fseg-tab { color: rgba(255,255,255,.68); }
-  .fseg.on-ink .fseg-tab.on { color: #fff; }
-
+  /* Now → then: two large prices, proportional figures, tight tracking. */
   .fc-read { display: flex; align-items: flex-end; gap: 12px; animation: fc-in 260ms var(--ease-out) both; }
-  .fc-col { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-  .fc-k { font-size: 12.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: rgba(255,255,255,.6); }
-  .fc-v { font-family: var(--font-display); font-size: 30px; font-weight: 700; line-height: 1.05; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
-  .fc-to { color: rgba(255,255,255,.45); margin-bottom: 6px; flex-shrink: 0; }
+  .fc-col { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .fc-k { font-size: 13px; font-weight: 700; letter-spacing: .02em; color: var(--text-faint); }
+  .fc-v { font-family: var(--font-display); font-size: 30px; font-weight: 800; line-height: 1.05; letter-spacing: -.025em; color: var(--text); white-space: nowrap; }
+  .fc-to { color: var(--line-strong); margin-bottom: 5px; flex-shrink: 0; }
   @keyframes fc-in { from { opacity: 0; transform: translateY(4px); } }
 
   .fc-verdict { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 10px; margin-top: -4px; }
   .fc-chip {
     display: inline-flex; align-items: center; gap: 4px; padding: 5px 11px 5px 8px; border-radius: 99px;
     font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums;
-    background: rgba(255,255,255,.1); color: rgba(255,255,255,.88);
+    background: var(--paper); color: var(--text-muted);
   }
-  .fc-chip.up { background: rgba(126,196,120,.16); color: #9BD796; box-shadow: inset 0 0 0 1px rgba(126,196,120,.28); }
-  .fc-chip.down { background: rgba(240,138,126,.16); color: #F4B2AB; box-shadow: inset 0 0 0 1px rgba(240,138,126,.28); }
-  .fc-say { font-size: 14px; font-weight: 600; color: rgba(255,255,255,.78); }
+  .fc-chip.up { background: var(--tanim-sk); color: var(--tanim-deep); }
+  .fc-chip.down { background: var(--error-sk); color: var(--error); }
+  .fc-say { font-size: 15px; font-weight: 700; color: var(--text); }
 
-  /* The chart. Recessive grid and axis; the line and band do the talking. */
-  .fc-chart { position: relative; margin: 0 -4px; }
-  .fc-svg { display: block; width: 100%; height: auto; touch-action: pan-y; user-select: none; -webkit-user-select: none; cursor: crosshair; overflow: visible; }
-  .fc-grid { stroke: rgba(255,255,255,.07); stroke-width: 1; }
-  .fc-axis { font-size: 10.5px; fill: rgba(255,255,255,.5); font-variant-numeric: tabular-nums; }
-  .fc-axis.now { fill: rgba(255,255,255,.85); font-weight: 700; }
-  .fc-now { stroke: rgba(255,255,255,.22); stroke-width: 1; stroke-dasharray: 3 3; }
-  .fc-band { opacity: .2; }
+  /* The chart. The forecast zone tinted, the grid hairlines, the line and
+     band the only colour. */
+  .fc-chart { position: relative; margin: 2px -4px 0; }
+  .fc-svg { display: block; width: 100%; height: auto; touch-action: pan-y; user-select: none; -webkit-user-select: none; overflow: visible; }
+  .fc-zone { fill: #EEF4FA; }
+  .fc-zone-lbl { font-size: 12.5px; font-weight: 700; fill: var(--text-faint); }
+  .fc-zone-lbl.ahead { fill: #235887; }
+  .fc-grid { stroke: var(--line); stroke-width: 1; }
+  .fc-axis { font-size: 12.5px; font-weight: 600; fill: var(--text-faint); font-variant-numeric: tabular-nums; }
+  .fc-axis.now { fill: var(--text); font-weight: 800; }
+  .fc-wash { opacity: .08; }
+  .fc-band { opacity: .16; }
   .fc-past { fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 0; }
-  .fc-future { fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 5 5; }
-  /* A 2px ring in the card's colour lifts each dot off the line under it. */
-  .fc-dot { stroke: #16211B; stroke-width: 2; }
-  .fc-endlbl { font-size: 12px; font-weight: 700; fill: #fff; font-variant-numeric: tabular-nums; }
-  .fc-scrub line { stroke: rgba(255,255,255,.4); stroke-width: 1; }
+  .fc-future { fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 6 5; }
+  /* A 2px white ring lifts each dot off the line under it. */
+  .fc-dot { stroke: #fff; stroke-width: 2.5; }
+  .fc-dot-ahead { fill: #fff; stroke-width: 2.5; }
+  .fc-scrub line { stroke: var(--text-faint); stroke-width: 1; }
 
   /* The story told once: what happened draws in from the left, then the
      forecast and its range fade up after it. On a crop switch the same, in
      less time; coming back to the page, it is simply there. */
   .shell:not([data-revisit]) .fc-plot.first .fc-past { animation: fc-draw 620ms var(--ease-out) 120ms both; }
-  .shell:not([data-revisit]) .fc-plot.first :is(.fc-band, .fc-future, .fc-end) { animation: fc-fade 320ms var(--ease-out) 620ms both; }
+  .shell:not([data-revisit]) .fc-plot.first :is(.fc-band, .fc-future, .fc-end, .fc-wash) { animation: fc-fade 320ms var(--ease-out) 620ms both; }
   .fc-plot.swap .fc-past { animation: fc-draw 380ms var(--ease-out) both; }
-  .fc-plot.swap :is(.fc-band, .fc-future, .fc-end) { animation: fc-fade 240ms var(--ease-out) 300ms both; }
+  .fc-plot.swap :is(.fc-band, .fc-future, .fc-end, .fc-wash) { animation: fc-fade 240ms var(--ease-out) 300ms both; }
   @keyframes fc-draw { from { stroke-dashoffset: 1; } }
   @keyframes fc-fade { from { opacity: 0; } }
 
-  /* The tooltip rides above the finger, never under it. */
+  /* The tooltip rides above the finger, never under it: ink, value first. */
   .fc-tip {
-    position: absolute; top: -8px; z-index: 2; transform: translate(-50%, -100%);
-    display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 7px 11px; border-radius: 12px;
-    background: #fff; color: var(--text); white-space: nowrap; pointer-events: none;
+    position: absolute; top: -10px; z-index: 2; transform: translate(-50%, -100%);
+    display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 8px 12px; border-radius: 12px;
+    background: var(--ink); color: #fff; white-space: nowrap; pointer-events: none;
     box-shadow: 0 10px 22px -10px rgba(0,0,0,.55);
     animation: fc-tip-in 120ms var(--ease-out);
   }
-  .fc-tip-k { font-size: 12px; font-weight: 700; color: var(--text-faint); }
-  .fc-tip-v { font-family: var(--font-display); font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; }
-  .fc-tip-r { font-size: 11.5px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+  .fc-tip-k { font-size: 12.5px; font-weight: 700; color: rgba(255,255,255,.72); }
+  .fc-tip-v { font-family: var(--font-display); font-size: 18px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .fc-tip-r { font-size: 12.5px; color: rgba(255,255,255,.78); font-variant-numeric: tabular-nums; }
   @keyframes fc-tip-in { from { opacity: 0; transform: translate(-50%, calc(-100% + 4px)); } }
+  .fc-hint { margin: -6px 2px 0; font-size: 13px; line-height: 1.45; color: var(--text-faint); }
 
-  .fc-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; font-weight: 600; color: rgba(255,255,255,.72); }
-  .fc-legend span { display: inline-flex; align-items: center; gap: 6px; }
-  .fc-legend i { display: inline-block; width: 18px; height: 3px; border-radius: 2px; }
-  .fc-legend i.dashed { height: 0; border-top: 3px dashed currentColor; background: none; }
-  .fc-legend i.band { height: 10px; border-radius: 3px; opacity: .3; }
-  .fc-hint { margin: -6px 0 0; font-size: 12.5px; color: rgba(255,255,255,.5); }
-  .fc-hint + .fc-hint { margin-top: -10px; }
-  .fc-none { margin: 0; font-size: 15px; line-height: 1.5; color: rgba(255,255,255,.8); }
+  /* Month by month: the forecast as a list, the month and its likely range
+     on the left, the price and how far from now on the right. */
+  .fc-months { padding-top: 12px; border-top: 1px solid var(--line); }
+  .fc-months-t { margin: 0 2px 4px; font-size: 13px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--text-faint); }
+  .fc-months ul { list-style: none; margin: 0; padding: 0; }
+  .fc-mrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 2px; }
+  .fc-mrow + .fc-mrow { border-top: 1px solid var(--line); }
+  .fc-mrow-l, .fc-mrow-end { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .fc-mrow-end { align-items: flex-end; flex-shrink: 0; }
+  .fc-mrow-m { font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--text); }
+  .fc-mrow-r { font-size: 13.5px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+  .fc-mrow-p { font-family: var(--font-display); font-size: 17px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .fc-mrow-d { font-size: 13.5px; font-weight: 600; color: var(--text-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  /* How sure: a shield when the forecast has a good record, a warning when not. */
+  .fc-trust {
+    display: flex; align-items: flex-start; gap: 8px; margin: 0; padding: 11px 12px; border-radius: 14px;
+    background: var(--tanim-sk); color: var(--tanim-deep); font-size: 14px; line-height: 1.45;
+  }
+  .fc-trust svg { flex-shrink: 0; margin-top: 1px; }
+  .fc-trust.unsure { background: var(--gold-sk); color: #6B4A08; box-shadow: inset 0 0 0 1px var(--gold-line); }
+  .fc-none { margin: 0; font-size: 15px; line-height: 1.5; color: var(--text-muted); }
 
   /* White cards under the hero. */
   .an-stack { display: flex; flex-direction: column; gap: 14px; }
@@ -1145,8 +1156,8 @@ export const appCss = `
 
   @media (prefers-reduced-motion: reduce) {
     .shell:not([data-revisit]) .fc-plot.first .fc-past, .fc-plot.swap .fc-past { animation: none; }
-    .shell:not([data-revisit]) .fc-plot.first :is(.fc-band, .fc-future, .fc-end),
-    .fc-plot.swap :is(.fc-band, .fc-future, .fc-end) { animation: fc-fade 200ms ease both; }
+    .shell:not([data-revisit]) .fc-plot.first :is(.fc-band, .fc-future, .fc-end, .fc-wash),
+    .fc-plot.swap :is(.fc-band, .fc-future, .fc-end, .fc-wash) { animation: fc-fade 200ms ease both; }
     .fc-read, .fc-tip { animation: none; }
     .shell:not([data-revisit]) .mc-bar { animation: none; }
   }
