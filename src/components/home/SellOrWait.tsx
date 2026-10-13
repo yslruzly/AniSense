@@ -30,6 +30,9 @@ const ICON: Record<Action, typeof Eye> = { SELL: HandCoins, HOLD: Hourglass, WAT
 
 export function SellOrWait({ farmerCrops }: { farmerCrops: string[] }) {
   const { t, tn, lang } = useLang();
+  // "AniSense AI Recommendations" / "Mga Rekomendasyon ng AniSense AI": the
+  // name in gold wherever the language puts it.
+  const [badgeBefore, badgeAfter] = t("home_ai_recos").split("{brand}");
   const recs = farmerCrops
     .map(adviceFor)
     .filter((a): a is Advice => a !== null)
@@ -45,7 +48,7 @@ export function SellOrWait({ farmerCrops }: { farmerCrops: string[] }) {
       {/* The robot marks this as the AI's advice, as it always has. */}
       <span className="sw-eyebrow">
         <span className="sw-bot"><Bot size={17} strokeWidth={2.4} aria-hidden="true" /></span>
-        {t("home_ai_recos")}
+        <span>{badgeBefore}<b className="sw-brand">AniSense AI</b>{badgeAfter}</span>
       </span>
       <h2 className="hm-sec-title" id="sw-t">{t("ana_suggestion")}</h2>
       <p className="hm-sec-sub">{t("ana_suggestion_sub")}</p>

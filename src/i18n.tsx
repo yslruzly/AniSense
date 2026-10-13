@@ -153,7 +153,8 @@ export const translations: Dict = {
   home_mod_weather_desc: { en: "Farm conditions", tl: "Lagay ng panahon" },
 
   /** Heading for the two model cards (ARIMA + AI, ARIMA forecast). */
-  home_ai_recos: { en: "AI Recommendations", tl: "Mga rekomendasyon ng AI" },
+  // {brand} is "AniSense AI", said in gold on the badge, in either language.
+  home_ai_recos: { en: "{brand} Recommendations", tl: "Mga Rekomendasyon ng {brand}" },
   home_your_crops: { en: "Your crops' prices", tl: "Presyo ng iyong mga pananim" },
   cs_choose: { en: "Your crops", tl: "Ang mga pananim mo" },
   cs_from: { en: "from {month}", tl: "mula {month}" },

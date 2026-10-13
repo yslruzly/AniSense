@@ -3020,15 +3020,32 @@ export const appCss = `
      sell in. Gold and blue are their readable shades: white on them, and
      they on white, are over 4.5:1. */
   /* "AI Recommendations" on ink, the robot in a palay disc at its start. */
+  /* "AniSense AI Recommendations": the AniSense green, deepening from its
+     brand shade to the forest under it, with a faint gold rim and the light
+     catching its top edge. The name in a light gold that keeps 4.7:1 on the
+     lightest green; the rest in white. */
   .sw-eyebrow {
-    align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; margin: 8px 2px 0; padding: 4px 13px 4px 4px;
-    border-radius: 99px; background: var(--ink); color: #fff;
-    font-family: var(--font-display); font-size: 13.5px; font-weight: 700; letter-spacing: .01em;
+    align-self: flex-start; display: inline-flex; align-items: center; gap: 9px; max-width: 100%; margin: 8px 2px 0; padding: 4px 15px 4px 4px;
+    border-radius: 99px; color: #fff;
+    background: linear-gradient(135deg, #0B6B41 0%, #08583A 55%, #063F27 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.16), inset 0 0 0 1px rgba(255,214,107,.32), 0 8px 16px -10px rgba(6,63,39,.9);
+    font-family: var(--font-display); font-size: 14px; font-weight: 600; line-height: 1.25; letter-spacing: .005em;
   }
+  .sw-brand { font-weight: 800; color: #FFD66B; }
+  /* The robot on a gold-plated disc: a metal gradient lit from the top left,
+     a bright rim above, a darker one below, a gold ring around it, and the
+     robot in AniSense's deepest green. */
   .sw-bot {
-    width: 28px; height: 28px; flex: 0 0 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    background: var(--palay); color: var(--ink); box-shadow: inset 0 1px 0 rgba(255,255,255,.35);
+    position: relative; width: 30px; height: 30px; flex: 0 0 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    color: var(--tanim-deep);
+    background: linear-gradient(145deg, #FFF1C4 0%, #F7CC5B 28%, #D99A1E 52%, #F3C24E 74%, #B07A16 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.75), inset 0 -1.5px 1px rgba(110,70,0,.45), 0 0 0 1.5px rgba(255,214,107,.6), 0 2px 5px rgba(0,0,0,.3);
   }
+  .sw-bot::after {
+    content: ""; position: absolute; inset: 2px 6px auto 4px; height: 45%; border-radius: 50% 50% 40% 40%; pointer-events: none;
+    background: linear-gradient(180deg, rgba(255,255,255,.55) 0%, rgba(255,255,255,0) 100%);
+  }
+  .sw-bot svg { position: relative; z-index: 1; }
   .sw .hm-sec-title { margin-top: 8px; }
   .sw-list { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
   .sw-card {
