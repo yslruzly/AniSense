@@ -3030,11 +3030,7 @@ export const appCss = `
   .hm-sec-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .hm-sec-row .hm-sec-title { margin-top: 8px; }
 
-  /* Sell now or wait?: one card per crop. Each card wears its verdict's
-     colour (--tone): gold for Sell now, green for Hold, blue for Watch, as a
-     wash down from the top, the verdict's disc and word, and the month to
-     sell in. Gold and blue are their readable shades: white on them, and
-     they on white, are over 4.5:1. */
+  /* Sell now or wait?: the AniSense AI badge, then one card per crop. */
   /* "AI Recommendations" on ink, the robot in a palay disc at its start. */
   /* "AniSense AI Recommendations": the AniSense green, deepening from its
      brand shade to the forest under it, with a faint gold rim and the light
@@ -3064,56 +3060,74 @@ export const appCss = `
   .sw-bot svg { position: relative; z-index: 1; }
   .sw .hm-sec-title { margin-top: 8px; }
   .sw-list { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
+  /* The cards: clear frosted glass, no colour. A pane of white that lets the
+     page through, frosted (backdrop blur), lit along its top edge and
+     crossed by a soft diagonal sheen; the AniSense leaf, a faint dark
+     silhouette, in its corner. Everything on it is ink: the verdict is its
+     word and its picture, never a colour. The month to sell in is filled
+     with ink, its words white. Where the phone asks for less transparency,
+     the glass turns solid white. */
   .sw-card {
-    --tone: var(--tanim); --tone-wash: #E8F3EC; --tone-sk: var(--tanim-sk);
-    position: relative; isolation: isolate; padding: 16px 16px 14px; border-radius: 22px; background: var(--card);
-    box-shadow: 0 0 0 1px rgba(22,33,27,.07), 0 1px 2px rgba(22,33,27,.05), 0 16px 32px -24px rgba(22,33,27,.4);
+    position: relative; overflow: hidden; isolation: isolate; padding: 16px 16px 14px; border-radius: 22px; color: var(--text);
+    background: linear-gradient(140deg, rgba(255,255,255,.86) 0%, rgba(255,255,255,.58) 55%, rgba(255,255,255,.72) 100%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%); backdrop-filter: blur(18px) saturate(160%);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.95), inset 0 0 0 1px rgba(255,255,255,.7),
+      0 0 0 1px rgba(22,33,27,.07), 0 1px 2px rgba(22,33,27,.05), 0 18px 36px -24px rgba(22,33,27,.45);
   }
-  .sw-card[data-act="sell"] { --tone: #8A5D0C; --tone-wash: #FCF3DF; --tone-sk: #FBEBC4; }
-  .sw-card[data-act="watch"] { --tone: #2F6FA8; --tone-wash: #E9F1FA; --tone-sk: #DCEAF8; }
-  .sw-card::before {
-    content: ""; position: absolute; z-index: -1; inset: 0 0 auto 0; height: 160px; border-radius: 22px 22px 0 0; pointer-events: none;
-    background: linear-gradient(180deg, var(--tone-wash) 0%, rgba(255,255,255,0) 100%);
+  /* The sheen: light catching the glass from the top left. */
+  .sw-card::after {
+    content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: inherit;
+    background: linear-gradient(115deg, rgba(255,255,255,.75) 0%, rgba(255,255,255,0) 32%, rgba(255,255,255,0) 68%, rgba(255,255,255,.35) 100%);
+  }
+  .sw-mark {
+    position: absolute; right: -30px; top: -26px; z-index: -2; width: 160px; height: auto;
+    opacity: .06; filter: brightness(0); transform: rotate(-14deg); pointer-events: none; user-select: none;
   }
   .sw-id { display: flex; align-items: center; gap: 12px; }
   .sw-art {
     width: 48px; height: 48px; flex: 0 0 48px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    background: radial-gradient(circle at 50% 30%, #fff 0%, var(--tone-sk) 100%);
-    box-shadow: 0 0 0 1px rgba(22,33,27,.06);
+    background: radial-gradient(circle at 50% 30%, #fff 0%, #EEF0F2 100%);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.9), 0 0 0 1px rgba(22,33,27,.07), 0 4px 10px -4px rgba(22,33,27,.25);
   }
   .sw-art img { width: 84%; height: 84%; object-fit: contain; display: block; filter: drop-shadow(0 3px 4px rgba(22,33,27,.18)); }
   .sw-crop { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .sw-name { font-family: var(--font-display); font-size: 17px; font-weight: 700; line-height: 1.25; color: var(--text); }
   .sw-var { font-size: 13.5px; line-height: 1.35; color: var(--text-faint); }
-  /* The answer: the largest words on the card. */
+  /* The answer: the largest words on the card, in ink, its picture on a
+     small pane of the same glass. */
   .sw-verdict { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
   .sw-v-ico {
     width: 38px; height: 38px; flex: 0 0 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    background: var(--tone); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.25), 0 6px 12px -6px var(--tone);
+    color: var(--text); background: linear-gradient(145deg, #fff 0%, rgba(255,255,255,.55) 100%);
+    box-shadow: inset 0 1px 0 #fff, inset 0 0 0 1px rgba(255,255,255,.8), 0 0 0 1px rgba(22,33,27,.1), 0 6px 14px -8px rgba(22,33,27,.4);
   }
-  .sw-v-txt { font-family: var(--font-display); font-size: 24px; font-weight: 800; line-height: 1.15; letter-spacing: -.02em; color: var(--tone); }
+  .sw-v-txt { font-family: var(--font-display); font-size: 24px; font-weight: 800; line-height: 1.15; letter-spacing: -.02em; color: var(--text); }
   .sw-line { margin: 8px 0 0; font-size: 15.5px; line-height: 1.5; color: var(--text-soft); }
-  /* The four months: one strip, four cells, the hairlines between them. */
+  /* The four months: an inner pane, four cells, hairlines between them. */
   .sw-months {
     list-style: none; margin: 14px 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
-    border-radius: 16px; background: var(--card); box-shadow: inset 0 0 0 1px var(--line); overflow: hidden;
+    border-radius: 16px; background: rgba(255,255,255,.55); box-shadow: inset 0 0 0 1px rgba(22,33,27,.08), inset 0 1px 0 #fff; overflow: hidden;
   }
   .sw-months li { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; padding: 10px 2px 9px; text-align: center; }
-  .sw-months li + li { box-shadow: inset 1px 0 0 var(--line); }
+  .sw-months li + li { box-shadow: inset 1px 0 0 rgba(22,33,27,.08); }
   .sw-m { display: inline-flex; align-items: center; gap: 3px; font-size: 12.5px; font-weight: 700; letter-spacing: .02em; color: var(--text-faint); text-transform: capitalize; }
   .sw-p { font-family: var(--font-display); font-size: 15px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; white-space: nowrap; }
   .sw-d { font-size: 12.5px; font-weight: 600; color: var(--text-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
-  /* The month to sell in, filled and starred. */
+  /* The month to sell in: filled with ink, starred, its words white. */
   .sw-months li.is-best, .sw-months li.is-best + li { box-shadow: none; }
-  .sw-months li.is-best { background: var(--tone); }
+  .sw-months li.is-best { background: var(--ink); }
   .sw-months li.is-best .sw-m, .sw-months li.is-best .sw-p, .sw-months li.is-best .sw-d { color: #fff; }
   /* A forecast that tested badly: the months ahead hatched, as unsurveyed ground. */
   .sw-months.unsure li:not(:first-child) {
-    background-image: repeating-linear-gradient(135deg, rgba(47,111,168,.09) 0 5px, transparent 5px 11px);
+    background-image: repeating-linear-gradient(135deg, rgba(22,33,27,.06) 0 5px, transparent 5px 11px);
   }
   .sw-range { display: flex; align-items: flex-start; gap: 6px; margin: 10px 2px 0; font-size: 13.5px; line-height: 1.4; color: var(--text-muted); }
-  .sw-range svg { flex-shrink: 0; margin-top: 1px; color: var(--tone); }
+  .sw-range svg { flex-shrink: 0; margin-top: 1px; color: var(--text-faint); }
+  @media (prefers-reduced-transparency: reduce) {
+    .sw-card { background: var(--card); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  }
   .sw-foot { margin: 12px 2px 0; font-size: 13px; line-height: 1.45; color: var(--text-faint); }
 
   /* Your crops' prices: one crop at a time. Chips to choose it (they wrap;

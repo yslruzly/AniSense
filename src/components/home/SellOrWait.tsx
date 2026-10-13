@@ -5,19 +5,21 @@ import { monthLabel } from "../../data/priceRecords";
 import { CropIcon } from "../icons";
 import { peso } from "../../lib/money";
 import { adviceFor, ACTION_ORDER, Action, Advice } from "../../lib/advice";
+import leafMask from "../../assets/anisense-leaf-mask.png";
 
 // ─── Sell now or wait? ────────────────────────────────────────────────────────
 // The AI's advice and the price forecast behind it, as one card per crop, read
 // top to bottom the way the decision is made:
 //
-//   1. what to do, large, in its own colour and with its own picture
-//      (gold for "Sell now", green for "Hold", blue for "Watch"), so the
-//      answer never rests on colour alone;
+//   1. what to do, large, with its own picture (coins for "Sell now", an
+//      hourglass for "Hold", an eye for "Watch"): the card is clear frosted
+//      glass with the AniSense leaf behind it, and no colour at all, so the
+//      word and the picture carry the answer;
 //   2. why, in one sentence with the numbers in it: the price expected, in
 //      which month, and how far from today's;
 //   3. the four months, now and the three ahead, as a strip of prices with
-//      how each differs from now. The month to sell in is filled in the
-//      verdict's colour and starred: now when the price is set to fall, the
+//      how each differs from now. The month to sell in is filled with ink
+//      and starred: now when the price is set to fall, the
 //      highest month ahead when it is set to rise, none when unsure. A
 //      forecast that tested badly is hatched, the way a map marks ground
 //      that has not been surveyed;
@@ -74,6 +76,8 @@ export function SellOrWait({ farmerCrops }: { farmerCrops: string[] }) {
           const id = `sw-${group.replace(/\s+/g, "-").toLowerCase()}`;
           return (
             <article key={group} className="sw-card" data-act={action.toLowerCase()} aria-labelledby={id}>
+              {/* The AniSense leaf, faint, behind the glass's corner. */}
+              <img className="sw-mark" src={leafMask} alt="" aria-hidden="true" />
               <div className="sw-id">
                 <span className="sw-art">{art ? <img src={art} alt="" decoding="async" draggable={false} /> : <CropIcon crop={group} size={24} />}</span>
                 <span className="sw-crop">
