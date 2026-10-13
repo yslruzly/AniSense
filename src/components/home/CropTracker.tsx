@@ -3,6 +3,7 @@ import { Sprout, Leaf, Flower2, Wheat, Cherry, Minus, Plus, X, Scissors } from "
 import { useLang } from "../../i18n";
 import { cropGroupPhoto } from "../../data/cropPhotos";
 import { growArtFor } from "../../data/growArt";
+import leafMask from "../../assets/anisense-leaf-mask.png";
 import { CROP_CYCLES, cycleFor, stageOf } from "../../data/cropCycles";
 import { CropIcon } from "../icons";
 import { Sheet } from "../ui/Sheet";
@@ -24,7 +25,9 @@ import { Planting, dayOf, daysLeft, progressOf, newPlantingId, localISO } from "
 // names out loud (seedling, growing, flowering, filling, harvest), each a
 // picture, the stages behind it filled, the one it is in solid, the line
 // drawn up to today; and at the foot, the weeks left and the date it should
-// be ready. A crop due for cutting turns gold, the colour of a harvest.
+// be ready. The card is AniSense green, as Your harvest is, the AniSense leaf
+// large and faint across its corner; the season is drawn in palay gold on
+// it. A crop due for cutting glows gold, the colour of a harvest.
 
 type Stage = "seedling" | "growing" | "flowering" | "filling" | "ready";
 
@@ -116,6 +119,8 @@ export function CropTracker({ plantings, onChange }: {
             const between = !ready && PATH.every(s => Math.abs(s.at - progress) > 0.04);
             return (
               <li key={p.id} className={`ct-card${ready ? " ready" : ""}`}>
+                {/* The AniSense leaf, large and faint, off the card's corner. */}
+                <img className="ct-mark" src={leafMask} alt="" aria-hidden="true" />
                 <div className="ct-head">
                   <span className="ct-art">
                     {art || photo ? <img src={art || photo} alt="" loading="lazy" decoding="async" draggable={false} /> : <CropIcon crop={p.crop} size={22} />}

@@ -2662,70 +2662,86 @@ export const appCss = `
      the colour of a harvest. The line draws itself once, the first time
      Home is seen in a session. */
   .ct-list { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  /* The card: AniSense green, as Your harvest is, a warm gold light off its
+     top corner and the AniSense leaf, large and faint, behind it. On the
+     green, words are white (the quieter ones at 72%, still over 4.5:1 on its
+     lightest green) and the season is palay gold: the line, the stages
+     behind, the one it is in on a gold-plated disc. A crop due for cutting
+     glows gold. */
   .ct-card {
-    --tone: var(--tanim); --tone-sk: var(--tanim-sk); --tone-wash: #E8F3EC; --tone-fill: linear-gradient(90deg, #7EC478, var(--tanim));
-    position: relative; isolation: isolate; padding: 14px 8px 14px 14px; border-radius: 20px; background: var(--card);
-    box-shadow: 0 0 0 1px rgba(22,33,27,.07), 0 1px 2px rgba(22,33,27,.05), 0 12px 24px -18px rgba(22,33,27,.35);
+    position: relative; overflow: hidden; isolation: isolate; padding: 14px 8px 14px 14px; border-radius: 20px; color: #fff;
+    background:
+      radial-gradient(90% 70% at 100% 0%, rgba(242,179,44,.16), transparent 60%),
+      linear-gradient(160deg, #145E3F 0%, #0E4630 55%, #0A3525 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.1), inset 0 0 0 1px rgba(255,255,255,.05), 0 18px 32px -22px rgba(8,42,29,.75);
   }
   .ct-card.ready {
-    --tone: #8A5D0C; --tone-sk: #FBEBC4; --tone-wash: #FCF3DF; --tone-fill: linear-gradient(90deg, #E9B949, #B87A0B);
-    box-shadow: 0 0 0 1.5px rgba(138,93,12,.3), 0 1px 2px rgba(22,33,27,.05), 0 14px 26px -18px rgba(138,93,12,.5);
+    background:
+      radial-gradient(110% 80% at 100% 0%, rgba(242,179,44,.34), transparent 62%),
+      linear-gradient(160deg, #145E3F 0%, #0E4630 55%, #0A3525 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.12), inset 0 0 0 1.5px rgba(242,179,44,.5), 0 18px 32px -20px rgba(138,93,12,.6);
   }
-  .ct-card::before {
-    content: ""; position: absolute; z-index: -1; inset: 0 0 auto 0; height: 110px; border-radius: 20px 20px 0 0; pointer-events: none;
-    background: linear-gradient(180deg, var(--tone-wash) 0%, rgba(255,255,255,0) 100%);
+  .ct-mark {
+    position: absolute; right: -32px; top: -28px; z-index: -1; width: 160px; height: auto;
+    opacity: .1; transform: rotate(-14deg); pointer-events: none; user-select: none;
   }
   .ct-head { display: flex; align-items: center; gap: 12px; }
   .ct-art {
     width: 48px; height: 48px; flex: 0 0 48px; border-radius: 50%; overflow: hidden;
-    display: flex; align-items: center; justify-content: center; color: var(--tone);
-    background: radial-gradient(circle at 50% 30%, #fff 0%, var(--tone-sk) 100%); box-shadow: 0 0 0 1px rgba(22,33,27,.06);
+    display: flex; align-items: center; justify-content: center; color: var(--tanim);
+    background: radial-gradient(circle at 50% 30%, #fff 0%, #DDEFE3 100%); box-shadow: 0 0 0 2px rgba(255,255,255,.16), 0 4px 10px -4px rgba(0,0,0,.4);
   }
   .ct-art img { width: 84%; height: 84%; object-fit: contain; display: block; }
   .ct-id { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
-  .ct-name { font-family: var(--font-display); font-size: 17px; font-weight: 700; line-height: 1.25; color: var(--text); }
-  .ct-planted { font-size: 13.5px; line-height: 1.35; color: var(--text-faint); }
+  .ct-name { font-family: var(--font-display); font-size: 17px; font-weight: 700; line-height: 1.25; color: #fff; }
+  .ct-planted { font-size: 13.5px; line-height: 1.35; color: rgba(255,255,255,.72); }
   .ct-x {
     flex-shrink: 0; align-self: flex-start; width: 44px; height: 44px; margin: -6px 0 0; border: none; border-radius: 50%; background: none; cursor: pointer;
-    display: inline-flex; align-items: center; justify-content: center; color: var(--text-faint);
+    display: inline-flex; align-items: center; justify-content: center; color: rgba(255,255,255,.75);
     transition: transform 190ms var(--ease-out), background-color 160ms ease;
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
-  .ct-x:active { transform: scale(.9); background: var(--paper); transition-duration: var(--dur-press); }
-  /* The day, large: proportional figures, tight tracking at this size. */
-  /* The stage chip drops under the day when the two won't share a line. */
+  .ct-x:active { transform: scale(.9); background: rgba(255,255,255,.12); transition-duration: var(--dur-press); }
+  /* The day, large: proportional figures, tight tracking at this size.
+     The stage chip drops under the day when the two cannot share a line. */
   .ct-hero { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 8px 10px; margin: 14px 6px 0 0; }
   .ct-day { display: flex; align-items: baseline; gap: 6px; flex-shrink: 0; }
-  .ct-day-n { font-family: var(--font-display); font-size: 30px; font-weight: 800; line-height: 1; letter-spacing: -.025em; color: var(--text); white-space: nowrap; }
-  .ct-of { font-family: var(--font-display); font-size: 15px; font-weight: 600; color: var(--text-faint); white-space: nowrap; }
+  .ct-day-n { font-family: var(--font-display); font-size: 30px; font-weight: 800; line-height: 1; letter-spacing: -.025em; color: #fff; white-space: nowrap; }
+  .ct-of { font-family: var(--font-display); font-size: 15px; font-weight: 600; color: rgba(255,255,255,.72); white-space: nowrap; }
   .ct-stage {
     flex-shrink: 0; display: inline-flex; align-items: center; gap: 5px; padding: 5px 11px 5px 9px; border-radius: 99px;
-    background: var(--tone-sk); color: var(--tone); font-family: var(--font-display); font-size: 13.5px; font-weight: 700; white-space: nowrap;
+    background: rgba(255,255,255,.12); box-shadow: inset 0 0 0 1px rgba(255,255,255,.18); color: #fff;
+    font-family: var(--font-display); font-size: 13.5px; font-weight: 700; white-space: nowrap;
   }
+  .ct-stage svg { color: #FFD66B; }
+  .ct-card.ready .ct-stage { background: var(--palay); box-shadow: none; color: var(--ink); }
+  .ct-card.ready .ct-stage svg { color: var(--ink); }
   /* The path: a rail between the first and last stage's centres, nodes on it.
      The ends sit 17px in: half the larger, current node, so it never pokes out. */
   .ct-path { position: relative; height: 34px; margin: 14px 6px 0 0; }
-  .ct-rail { position: absolute; left: 17px; right: 17px; top: 50%; height: 4px; margin-top: -2px; border-radius: 99px; background: var(--paper-alt); overflow: hidden; }
-  .ct-rail-fill { display: block; height: 100%; border-radius: 99px; background: var(--tone-fill); transform-origin: left center; animation: ct-draw 800ms var(--ease-out) 120ms both; }
+  .ct-rail { position: absolute; left: 17px; right: 17px; top: 50%; height: 4px; margin-top: -2px; border-radius: 99px; background: rgba(255,255,255,.16); overflow: hidden; }
+  .ct-rail-fill { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, #D99A1E, #FFD66B); transform-origin: left center; animation: ct-draw 800ms var(--ease-out) 120ms both; }
   @keyframes ct-draw { from { transform: scaleX(0); } }
   .ct-node {
     position: absolute; top: 50%; left: calc(17px + (100% - 34px) * var(--at)); width: 30px; height: 30px; transform: translate(-50%, -50%);
     border-radius: 50%; display: flex; align-items: center; justify-content: center;
   }
-  .ct-node.done { background: var(--tone-sk); color: var(--tone); }
+  .ct-node.done { background: #3A5A2E; color: #FFD66B; box-shadow: inset 0 0 0 1px rgba(255,214,107,.35); }
+  /* The stage it is in: a gold-plated disc, as the AI badge's robot sits on. */
   .ct-node.now {
-    width: 34px; height: 34px; background: var(--tone); color: #fff;
-    box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--tone-sk), 0 6px 12px -4px var(--tone);
+    width: 34px; height: 34px; color: var(--tanim-deep);
+    background: linear-gradient(145deg, #FFF1C4 0%, #F7CC5B 30%, #D99A1E 58%, #F3C24E 80%, #B07A16 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.7), inset 0 -1.5px 1px rgba(110,70,0,.4), 0 0 0 3px #0E4630, 0 0 0 5px rgba(242,179,44,.35), 0 6px 14px -4px rgba(0,0,0,.5);
   }
-  .ct-node.next { background: var(--card); color: var(--line-strong); box-shadow: inset 0 0 0 1.5px var(--line); }
-  /* Today, between two stages: a small dot where the line ends. */
+  .ct-node.next { background: #0F4A33; color: rgba(255,255,255,.5); box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.22); }
+  /* Today, between two stages: a small gold dot where the line ends. */
   .ct-today {
     position: absolute; top: 50%; left: calc(17px + (100% - 34px) * var(--at)); width: 10px; height: 10px; transform: translate(-50%, -50%);
-    border-radius: 50%; background: var(--tone); box-shadow: 0 0 0 2.5px #fff;
+    border-radius: 50%; background: #FFD66B; box-shadow: 0 0 0 2.5px #0E4630;
   }
-  .ct-left { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; margin: 12px 6px 0 0; font-size: 14.5px; line-height: 1.4; color: var(--text-muted); }
-  .ct-left b { font-weight: 700; color: var(--tone); }
-  .ct-left svg { color: var(--tone); }
+  .ct-left { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; margin: 12px 6px 0 0; font-size: 14.5px; line-height: 1.4; color: rgba(255,255,255,.75); }
+  .ct-left b { font-weight: 700; color: #FFD66B; }
+  .ct-left svg { color: #FFD66B; }
   /* Nothing yet: a sprout on a soft green disc, and an example. */
   .ct-empty {
     display: flex; align-items: center; gap: 14px; margin-top: 12px; padding: 16px; border-radius: 20px; background: var(--card);
