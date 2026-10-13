@@ -847,61 +847,92 @@ export const appCss = `
   .ph-row.is-tap.no-tile { grid-template-columns: minmax(0, 1fr) auto 18px; }
   .ph-row.is-tap.no-tile + .ph-row.is-tap.no-tile::before { left: 10px; }
 
-  /* ── Expenses by month ───────────────────────────────────────────────────── */
+  /* ── Expenses by crop and by month ──────────────────────────────────────
+     A card per crop or month. The head on one grid: a badge (the crop's
+     drawing, or a calendar leaf for a month), then the name, the count and a
+     bar, then the total with the chevron under it. Opened, the expenses as
+     rows on their own grid: a small picture of the kind, what and the line
+     under it, the amount and the day. */
   .mo-list { display: flex; flex-direction: column; gap: 10px; }
   .mo-item {
-    background: var(--card); border-radius: var(--radius);
-    box-shadow: inset 0 0 0 1px var(--line); overflow: hidden;
+    background: var(--card); border-radius: 20px; overflow: hidden;
+    box-shadow: 0 0 0 1px rgba(22,33,27,.07), 0 1px 2px rgba(22,33,27,.05), 0 12px 24px -18px rgba(22,33,27,.35);
   }
   .mo-head {
-    width: 100%; display: block; padding: 14px 16px 14px; border: none; background: none;
-    font: inherit; color: inherit; text-align: left; cursor: pointer;
+    width: 100%; display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; align-items: center; column-gap: 12px;
+    padding: 14px; border: none; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer;
     transition: background-color 180ms ease;
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
   .mo-head:active { background: var(--paper); transition-duration: 0ms; }
   .mo-head:disabled { cursor: default; }
   .mo-head:disabled:active { background: none; }
-  .mo-top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
-  .mo-name { font-family: var(--font-display); font-size: 17px; font-weight: 700; color: var(--text); letter-spacing: -.01em; }
-  .mo-total {
-    font-family: var(--font-display); font-size: 17px; font-weight: 800; color: var(--text);
-    font-variant-numeric: tabular-nums; white-space: nowrap;
+  .mo-head:focus-visible { outline: 3px solid var(--tanim); outline-offset: -3px; border-radius: 20px; }
+  .mo-badge {
+    width: 48px; height: 48px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    border-radius: 14px; overflow: hidden; color: var(--tanim);
   }
-  .mo-sub {
-    display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 2px;
-    font-size: 14px; color: var(--text-faint);
+  .mo-badge.is-art { border-radius: 50%; background: radial-gradient(circle at 50% 30%, #F4FAF6 0%, var(--tanim-sk) 100%); box-shadow: inset 0 0 0 1px rgba(11,107,65,.1); }
+  .mo-badge.is-art img { width: 82%; height: 82%; object-fit: contain; display: block; }
+  /* The calendar leaf: the month on a green band, the year below. */
+  .mo-badge.cal { justify-content: flex-start; background: var(--card); box-shadow: inset 0 0 0 1.5px var(--line); }
+  .mo-cal-m {
+    width: 100%; padding: 3px 0 2px; background: var(--tanim); color: #fff; text-align: center;
+    font-size: 11.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
   }
-  /* Turns to point down when open, on the same curve as the panel, so the
-     arrow and the list read as one movement. */
-  .mo-chev { color: var(--line-strong); transition: transform 240ms var(--ease-out); }
-  .mo-item.open .mo-chev { transform: rotate(90deg); color: var(--text-faint); }
-  .mo-bar { display: block; height: 6px; margin-top: 10px; border-radius: 99px; background: var(--paper-alt); overflow: hidden; }
+  .mo-cal-y { flex: 1; display: flex; align-items: center; font-family: var(--font-display); font-size: 14px; font-weight: 800; color: var(--text); }
+  .mo-mid { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .mo-name { font-family: var(--font-display); font-size: 16.5px; font-weight: 700; line-height: 1.25; letter-spacing: -.01em; color: var(--text); overflow-wrap: break-word; }
+  .mo-sub { font-size: 13.5px; line-height: 1.35; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+  .mo-bar { display: block; height: 6px; margin-top: 6px; border-radius: 99px; background: var(--paper-alt); overflow: hidden; }
   /* Drawn with scaleX rather than width, so it animates on the compositor. */
   .mo-fill {
     display: block; height: 100%; width: 100%; border-radius: 99px; background: var(--tanim);
     transform-origin: left center; animation: mo-grow 600ms var(--ease-out) both;
   }
   @keyframes mo-grow { from { transform: scaleX(0); } }
+  .mo-end { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+  .mo-total { font-family: var(--font-display); font-size: 17px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  /* Turns over when the card opens, on the same curve as the panel. */
+  .mo-chev { color: var(--text-faint); transition: transform 240ms var(--ease-out); }
+  .mo-item.open .mo-chev { transform: rotate(180deg); }
 
   /* The panel opens by animating its grid row from 0fr to 1fr: a real height
      animation with no measuring, and interruptible mid-way. */
-  .mo-acc {
-    display: grid; grid-template-rows: 0fr;
-    transition: grid-template-rows 260ms var(--ease-out);
-  }
+  .mo-acc { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 260ms var(--ease-out); }
   .mo-item.open .mo-acc { grid-template-rows: 1fr; }
-  .mo-acc-in {
-    min-height: 0; overflow: hidden; padding: 0 16px;
-    opacity: 0; transition: opacity 180ms ease;
-  }
+  .mo-acc-in { min-height: 0; overflow: hidden; opacity: 0; transition: opacity 180ms ease; }
   .mo-item.open .mo-acc-in { opacity: 1; transition: opacity 220ms ease 60ms; }
-  .mo-acc-in::before { content: ""; display: block; height: 1px; background: var(--line); }
-  .mo-acc-in > :last-child { margin-bottom: 6px; }
+  .mo-rows { list-style: none; margin: 0; padding: 4px 8px 8px; border-top: 1px solid var(--line); }
+  .mo-rows > li { position: relative; }
+  /* Rules between rows start where the words do. */
+  .mo-rows > li + li::before { content: ""; position: absolute; top: 0; left: 56px; right: 6px; height: 1px; background: var(--line); }
+  .mo-row {
+    width: 100%; display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; align-items: center; column-gap: 12px;
+    padding: 10px 6px; border: none; border-radius: 12px; background: none; font: inherit; color: inherit; text-align: left;
+  }
+  .mo-row.is-tap {
+    grid-template-columns: 36px minmax(0, 1fr) auto 16px; cursor: pointer; transition: background-color 160ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .mo-row.is-tap:active { background: var(--paper); transition-duration: 0ms; }
+  .mo-row.is-tap:focus-visible { outline: 3px solid var(--tanim); outline-offset: -3px; }
+  .mo-row-ico {
+    width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    background: var(--paper); box-shadow: inset 0 0 0 1px var(--line);
+  }
+  .mo-row-body { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .mo-row-t { font-family: var(--font-display); font-size: 15.5px; font-weight: 700; line-height: 1.3; color: var(--text); overflow-wrap: break-word; }
+  .mo-row-s { font-size: 13px; line-height: 1.35; color: var(--text-muted); }
+  .mo-row-end { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; }
+  .mo-row-amt { font-family: var(--font-display); font-size: 15.5px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .mo-row-d { font-size: 12.5px; color: var(--text-faint); white-space: nowrap; }
+  .mo-row-chev { color: var(--line-strong); justify-self: end; }
 
   @media (prefers-reduced-motion: reduce) {
     .mo-acc { transition: none; }
     .mo-fill { animation: none; }
+    .mo-chev { transition: none; }
   }
 
   /* ── Date field ──────────────────────────────────────────────────────────── */

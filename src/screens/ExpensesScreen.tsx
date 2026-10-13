@@ -1,12 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import { EmptyState, Skeleton, SkeletonMediaRows } from "../components/states";
-import { PhilippinePeso, PieChart as PieIcon, CalendarDays, MapPin, Pencil, Trash2, X, ChevronRight, Calendar, Calculator, Receipt, Plus, CheckCircle, AlertTriangle, Sprout, ShoppingCart, Filter, Store, Clock, Check, HandCoins } from "lucide-react";
+import { PhilippinePeso, PieChart as PieIcon, CalendarDays, MapPin, Pencil, Trash2, X, ChevronRight, ChevronDown, Calendar, Calculator, Receipt, Plus, CheckCircle, AlertTriangle, Sprout, ShoppingCart, Filter, Store, Clock, Check, HandCoins } from "lucide-react";
 import { useLang } from "../i18n";
 import { Expense, BuyerTransaction } from "../types";
 import { useMarket } from "../store/market";
 import { Hdr } from "../components/layout/Hdr";
 import { CropIcon, ExpenseIcon } from "../components/icons";
 import { cropPhotoFor } from "../data/cropPhotos";
+import { growArtFor } from "../data/growArt";
 import { CropEmoji } from "../components/icons/CropEmoji";
 import { PieChart } from "../components/charts/PieChart";
 import { MonthlyTrendsChart } from "../components/charts/MonthlyTrendsChart";
@@ -224,6 +225,45 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
     setFormError("");
     setBad(null);
     setShowModal(true);
+  };
+
+  // "Oct 6", with the year only when it isn't this one: short enough never
+  // to wrap.
+  const dayOf = (iso: string, locale: string) => {
+    const d = new Date(iso);
+    return d.toLocaleDateString(locale, d.getFullYear() === new Date().getFullYear()
+      ? { month: "short", day: "numeric" } : { month: "short", day: "numeric", year: "numeric" });
+  };
+  // One expense in an opened crop or month: its kind as a small picture,
+  // what it was and the line under it, the amount and the day on the right.
+  // A real one opens to edit; a sample is the same row, only to read, with
+  // no chevron (one grid for both, so they line up).
+  const expRow = (e: Expense, sub: string, when: string) => {
+    const inner = (
+      <>
+        <span className="mo-row-ico"><ExpenseIcon cat={e.category} size={18} color="var(--text-soft)" /></span>
+        <span className="mo-row-body">
+          <span className="mo-row-t">{e.description}</span>
+          <span className="mo-row-s">{sub}</span>
+        </span>
+        <span className="mo-row-end">
+          <span className="mo-row-amt">₱{e.amount.toLocaleString()}</span>
+          <span className="mo-row-d">{when}</span>
+        </span>
+      </>
+    );
+    return (
+      <li key={e.id}>
+        {e.sample ? (
+          <div className="mo-row">{inner}</div>
+        ) : (
+          <button type="button" className="mo-row is-tap" onClick={() => openEdit(e)} aria-label={`${t("exp_edit_title")}: ${e.description}, ₱${e.amount.toLocaleString()}`}>
+            {inner}
+            <ChevronRight size={18} className="mo-row-chev" aria-hidden="true" />
+          </button>
+        )}
+      </li>
+    );
   };
 
   const openEdit = (e: Expense) => {
@@ -580,9 +620,12 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
             )}
 
             {/* ═══ BY CROP TAB ═══ */}
+            {/* A card per crop, biggest spend first: its drawing, its name,
+                how many expenses and their share of all spending, the total
+                on the right and a bar drawn to that share. Opened, its
+                expenses as rows, newest first. */}
             {viewMode === "by-crop" && (() => {
               const locale = lang === "tl" ? "fil-PH" : "en-PH";
-              const thisYear = new Date().getFullYear();
               const cropsWithData = farmerCrops.filter(c => transactions.some(e => e.crop === c));
               const allCrops = (cropsWithData.length > 0 ? cropsWithData : farmerCrops)
                 .map(crop => {
@@ -597,15 +640,12 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
                 <div className="mo-list stagger-list">
                   {allCrops.map(({ crop, txns, amt }) => {
                     const share = total > 0 ? amt / total : 0;
-                    const pct = Math.round(share * 100);
                     const isOpen = expandedCrop === crop;
                     const sorted = [...txns].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
                     const key = crop.replace(/\s+/g, "-").toLowerCase();
+                    const art = growArtFor(crop);
                     return (
-                      <section key={crop} className={`mo-item ${isOpen ? "open" : ""}`}>
-                        {/* Same header as By Month: crop and total, then the
-                            count with its share of all spending, then the bar
-                            drawn to that share. */}
+                      <section key={crop} className={`mo-item${isOpen ? " open" : ""}`}>
                         <button
                           className="mo-head"
                           onClick={() => setExpandedCrop(isOpen ? null : crop)}
@@ -613,52 +653,30 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
                           aria-controls={`crop-${key}`}
                           disabled={txns.length === 0}
                         >
-                          <span className="mo-top">
+                          <span className="mo-badge is-art" aria-hidden="true">
+                            {art ? <img src={art} alt="" decoding="async" draggable={false} /> : <CropIcon crop={crop} size={22} />}
+                          </span>
+                          <span className="mo-mid">
                             <span className="mo-name">{tn(crop)}</span>
-                            <span className="mo-total">₱{amt.toLocaleString()}</span>
-                          </span>
-                          <span className="mo-sub">
-                            <span>
+                            <span className="mo-sub">
                               {txns.length} {txns.length !== 1 ? t("exp_expenses_many") : t("exp_expense_one")}
-                              {total > 0 && <> · {pct}%</>}
+                              {total > 0 && <> · {t("exp_share").replace("{pct}", String(Math.round(share * 100)))}</>}
                             </span>
-                            {txns.length > 0 && <ChevronRight size={18} className="mo-chev" aria-hidden="true" />}
+                            <span className="mo-bar" aria-hidden="true">
+                              <span className="mo-fill" style={{ transform: `scaleX(${share})` }} />
+                            </span>
                           </span>
-                          <span className="mo-bar" aria-hidden="true">
-                            <span className="mo-fill" style={{ transform: `scaleX(${share})` }} />
+                          <span className="mo-end">
+                            <span className="mo-total">₱{amt.toLocaleString()}</span>
+                            {txns.length > 0 && <ChevronDown size={20} strokeWidth={2.4} className="mo-chev" aria-hidden="true" />}
                           </span>
                         </button>
 
                         <div className="mo-acc" id={`crop-${key}`} role="region" aria-label={tn(crop)} {...(isOpen ? {} : { inert: "" })}>
                           <div className="mo-acc-in">
-                            {sorted.map(e => {
-                              const d = new Date(e.date);
-                              const Row = e.sample ? "div" : "button";
-                              return (
-                                  <Row
-                                    key={e.id}
-                                    className={`ph-row no-tile${e.sample ? "" : " is-tap"}`}
-                                    onClick={e.sample ? undefined : () => openEdit(e)}
-                                    aria-label={e.sample ? undefined : `${t("exp_edit_title")}: ${e.description}, ₱${e.amount.toLocaleString()}`}
-                                  >
-                                    <span className="ph-body">
-                                      <span className="ph-title">{e.description}</span>
-                                      <span className="ph-sub">{tn(e.category)}</span>
-                                    </span>
-                                    <span className="ph-end">
-                                      <span className="ph-amt">₱{e.amount.toLocaleString()}</span>
-                                      {/* The year only when it isn't this one:
-                                          short enough to never wrap. */}
-                                      <span className="ph-date">
-                                        {d.toLocaleDateString(locale, d.getFullYear() === thisYear
-                                          ? { month: "short", day: "numeric" }
-                                          : { month: "short", day: "numeric", year: "numeric" })}
-                                      </span>
-                                    </span>
-                                    {!e.sample && <ChevronRight size={18} className="ph-chev" aria-hidden="true" />}
-                                  </Row>
-                              );
-                            })}
+                            <ul className="mo-rows">
+                              {sorted.map(e => expRow(e, tn(e.category), dayOf(e.date, locale)))}
+                            </ul>
                           </div>
                         </div>
                       </section>
@@ -669,6 +687,10 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
             })()}
 
             {/* ═══ BY MONTH TAB ═══ */}
+            {/* A card per month, newest first: a small calendar leaf for the
+                month, its name, how many expenses, the total on the right and
+                a bar drawn against the biggest month, so heavy months stand
+                out. Opened, its expenses as rows, newest first. */}
             {viewMode === "by-date" && (() => {
               // Keyed by YYYY-MM so sorting never depends on parsing a
               // translated month name; the label is formatted separately.
@@ -685,39 +707,38 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
               const maxAmt = Math.max(...months.map(([, v]) => v.total), 1);
 
               return months.length === 0 ? (
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "40px 0", gap: 8 }}>
-                  <Calendar size={32} color="var(--line-strong)" />
-                  <span style={{ fontSize: "var(--fs-label)", color: "var(--text-faint)" }}>{t("exp_none")}</span>
-                </div>
+                <EmptyState icon={<Calendar size={26} aria-hidden="true" />} title={t("state_no_expenses_title")} body={t("state_no_expenses_body")} action={t("state_add_first_expense")} onAction={openAdd} />
               ) : (
                 <div className="mo-list stagger-list">
                   {months.map(([key, { label, total, expenses: mExps }]) => {
                     const share = total / maxAmt;
                     const isOpen = expandedMonth === key;
                     const sorted = [...mExps].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                    const [y, m] = key.split("-").map(Number);
+                    const first = new Date(y, m - 1, 1);
                     return (
-                      <section key={key} className={`mo-item ${isOpen ? "open" : ""}`}>
-                        {/* Month header: name and total on one line, count
-                            and chevron on the next, the bar underneath. No
-                            icons, so nothing competes with the numbers. */}
+                      <section key={key} className={`mo-item${isOpen ? " open" : ""}`}>
                         <button
                           className="mo-head"
                           onClick={() => setExpandedMonth(isOpen ? null : key)}
                           aria-expanded={isOpen}
                           aria-controls={`mo-${key}`}
                         >
-                          <span className="mo-top">
+                          {/* A calendar leaf: the month on a green band, the year under it. */}
+                          <span className="mo-badge cal" aria-hidden="true">
+                            <span className="mo-cal-m">{first.toLocaleDateString(locale, { month: "short" }).replace(".", "")}</span>
+                            <span className="mo-cal-y">{y}</span>
+                          </span>
+                          <span className="mo-mid">
                             <span className="mo-name">{label}</span>
+                            <span className="mo-sub">{mExps.length} {mExps.length !== 1 ? t("exp_expenses_many") : t("exp_expense_one")}</span>
+                            <span className="mo-bar" aria-hidden="true">
+                              <span className="mo-fill" style={{ transform: `scaleX(${share})` }} />
+                            </span>
+                          </span>
+                          <span className="mo-end">
                             <span className="mo-total">₱{total.toLocaleString()}</span>
-                          </span>
-                          <span className="mo-sub">
-                            <span>{mExps.length} {mExps.length !== 1 ? t("exp_expenses_many") : t("exp_expense_one")}</span>
-                            <ChevronRight size={18} className="mo-chev" aria-hidden="true" />
-                          </span>
-                          {/* Bar length is this month against the biggest
-                              month, so the heavy months stand out at a glance. */}
-                          <span className="mo-bar" aria-hidden="true">
-                            <span className="mo-fill" style={{ transform: `scaleX(${share})` }} />
+                            <ChevronDown size={20} strokeWidth={2.4} className="mo-chev" aria-hidden="true" />
                           </span>
                         </button>
 
@@ -725,27 +746,9 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
                             the months below glide instead of jumping. */}
                         <div className="mo-acc" id={`mo-${key}`} role="region" aria-label={label} {...(isOpen ? {} : { inert: "" })}>
                           <div className="mo-acc-in">
-                            {sorted.map(e => {
-                              const Row = e.sample ? "div" : "button";
-                              return (
-                                <Row
-                                  key={e.id}
-                                  className={`ph-row no-tile${e.sample ? "" : " is-tap"}`}
-                                  onClick={e.sample ? undefined : () => openEdit(e)}
-                                  aria-label={e.sample ? undefined : `${t("exp_edit_title")}: ${e.description}, ₱${e.amount.toLocaleString()}`}
-                                >
-                                  <span className="ph-body">
-                                    <span className="ph-title">{e.description}</span>
-                                    <span className="ph-sub">{tn(e.crop)} · {tn(e.category)}</span>
-                                  </span>
-                                  <span className="ph-end">
-                                    <span className="ph-amt">₱{e.amount.toLocaleString()}</span>
-                                    <span className="ph-date">{new Date(e.date).toLocaleDateString(locale, { month: "short", day: "numeric" })}</span>
-                                  </span>
-                                  {!e.sample && <ChevronRight size={18} className="ph-chev" aria-hidden="true" />}
-                                </Row>
-                              );
-                            })}
+                            <ul className="mo-rows">
+                              {sorted.map(e => expRow(e, `${tn(e.crop)} · ${tn(e.category)}`, dayOf(e.date, locale)))}
+                            </ul>
                           </div>
                         </div>
                       </section>

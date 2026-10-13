@@ -1099,12 +1099,12 @@ export const translations: Dict = {
   exp_no_txn: { en: "No transactions found.", tl: "Walang nahanap na gastos." },
   exp_expense_one: { en: "expense", tl: "gastos" },
   exp_expenses_many: { en: "expenses", tl: "gastos" },
+  exp_share: { en: "{pct}% of all", tl: "{pct}% ng lahat" },
   exp_per_crop_stacked: { en: "per crop · stacked", tl: "kada pananim · nakasalansan" },
   exp_no_data: {
     en: "No data yet. Add expenses to see monthly breakdown.",
     tl: "Wala pang datos. Magdagdag ng gastos para makita ang buwanang buod.",
   },
-  exp_none: { en: "No expenses yet.", tl: "Wala pang gastos." },
   err_amount: { en: "Enter a valid amount.", tl: "Maglagay ng wastong halaga." },
   err_expense_failed: { en: "Couldn't save this expense. Please try again.", tl: "Hindi na-save ang gastos na ito. Pakisubukan ulit." },
   save_saving: { en: "Saving…", tl: "Sine-save…" },
