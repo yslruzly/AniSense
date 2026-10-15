@@ -1020,13 +1020,15 @@ export const translations: Dict = {
   alert_buy_rising_note: { en: "buy before it climbs", tl: "bumili na bago tumaas pa" },
 
   home_advisory: { en: "Today's Advisory", tl: "Payo Ngayon" },
-  home_advisory_sub: { en: "From your local DA office", tl: "Mula sa lokal na opisina ng DA" },
   home_adv_planting: { en: "Good planting conditions", tl: "Mainam ang panahon sa pagtatanim" },
   home_adv_planting_sub: {
     en: "Rice and corn seedlings can be transplanted this week.",
     tl: "Pwede nang ilipat ang punla ng palay at mais ngayong linggo.",
   },
   home_adv_rain: { en: "Rain likely {when}", tl: "Malamang umulan {when}" },
+  home_adv_kind_rain: { en: "Weather warning", tl: "Babala sa panahon" },
+  home_adv_kind_planting: { en: "Planting", tl: "Pagtatanim" },
+  home_adv_more: { en: "See the weather forecast", tl: "Tingnan ang taya ng panahon" },
   home_adv_rain_sub: {
     en: "Harvest now. Protect harvested crops from moisture.",
     tl: "Mag-ani na. Protektahan ang ani mula sa halumigmig.",

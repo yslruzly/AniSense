@@ -1973,13 +1973,13 @@ export const appCss = `
   }
   .mp-sell-btn:active { transform: scale(.97); transition-duration: 90ms; }
   /* A farmer's two ways in, side by side and the same size: Sell, solid, the
-     one to do; Your listings, outlined, the one to check, how many are up in
-     a green count on its box (it costs the button no width). */
+     one to do; Your listings, white with a green outline, the one to check -
+     just its name, and how many are up in a green count on its corner. */
   .mp-sell-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .mp-sell-row > button { min-width: 0; }
   .mp-mine-btn {
-    min-width: 0; min-height: 54px; display: flex; align-items: center; justify-content: center; gap: 8px;
-    padding: 0 8px; border: none; border-radius: 16px; cursor: pointer; white-space: nowrap;
+    position: relative; min-width: 0; min-height: 54px; padding: 0 10px; border: none; border-radius: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; white-space: nowrap;
     background: var(--card); color: var(--tanim-deep);
     box-shadow: inset 0 0 0 1.5px rgba(11,107,65,.4), 0 8px 18px -14px rgba(22,33,27,.45);
     font-family: var(--font-display); font-size: 16px; font-weight: 700;
@@ -1988,12 +1988,11 @@ export const appCss = `
   }
   .mp-mine-btn:active { transform: scale(.97); background: var(--tanim-sk); transition-duration: 90ms; }
   .mp-mine-btn:focus-visible { outline: 3px solid var(--tanim); outline-offset: 2px; }
-  .mp-mine-ico { position: relative; display: inline-flex; flex-shrink: 0; }
   .mp-mine-n {
-    position: absolute; top: -9px; right: -11px; min-width: 19px; height: 19px; padding: 0 5px; border-radius: 99px;
+    position: absolute; top: -8px; right: -6px; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 99px;
     display: inline-flex; align-items: center; justify-content: center;
-    background: var(--tanim); color: #fff; box-shadow: 0 0 0 2px var(--card);
-    font-family: var(--font-body); font-size: 11.5px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums;
+    background: var(--tanim); color: #fff; box-shadow: 0 0 0 2px var(--paper);
+    font-family: var(--font-body); font-size: 12.5px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums;
   }
   /* The sheet: the cart's frame (green head, round close), the rows on the page grey. */
   .yl-body { display: flex; flex-direction: column; gap: 12px; padding: 14px 14px 16px; }
@@ -3831,16 +3830,87 @@ export const appCss = `
   }
   .hm-spend-chart { flex-shrink: 0; display: flex; align-items: center; }
 
-  /* Advisory rows: tinted icon, then the message; the tint carries the tone. */
-  .hm-adv {
-    display: flex; gap: 12px; padding: 12px; margin-top: 10px; border-radius: 14px;
-    background: var(--card); box-shadow: inset 0 0 0 1px var(--line);
+  /* ── Today's Advisory (farmer Home) ─────────────────────────────────────
+     A bulletin: one card, a deep-blue head (the DA's notice, and the colour
+     the app gives the weather), the notices as rows on white under it, and
+     a last row to the full forecast. */
+  .tadv {
+    position: relative; overflow: hidden; border-radius: 22px; background: var(--card);
+    box-shadow: 0 0 0 1px rgba(23,63,102,.12), 0 1px 2px rgba(22,33,27,.05), 0 16px 30px -22px rgba(23,63,102,.55);
   }
-  .hm-adv-ico { width: 38px; height: 38px; flex: 0 0 38px; border-radius: 11px; display: flex; align-items: center; justify-content: center; }
-  .hm-adv.good .hm-adv-ico { background: var(--tanim-sk); color: var(--tanim); }
-  .hm-adv.warn .hm-adv-ico { background: var(--gold-sk); color: var(--gold-text); }
-  .hm-adv-t { display: block; font-family: var(--font-display); font-size: 15.5px; font-weight: 700; color: var(--text); line-height: 1.3; }
-  .hm-adv-s { display: block; margin-top: 2px; font-size: 14px; line-height: 1.45; color: var(--text-muted); }
+  /* The head: deep blue with a soft light off its top corner, the megaphone
+     on a gold-plated disc, the title in white, and the day in a glass chip
+     on the same line, so it is plain this is today's and not last week's. */
+  .tadv-head {
+    position: relative; display: flex; align-items: center; gap: 12px; padding: 16px 14px 16px 16px; color: #fff;
+    background:
+      radial-gradient(80% 120% at 100% 0%, rgba(255,255,255,.08), transparent 60%),
+      linear-gradient(160deg, #235E95 0%, #1C4D7C 55%, #15395C 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.14);
+  }
+  .tadv-disc {
+    position: relative; flex: 0 0 44px; width: 44px; height: 44px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; color: #18436C;
+    background: linear-gradient(145deg, #FFF1C4 0%, #F7CC5B 28%, #D99A1E 52%, #F3C24E 74%, #B07A16 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.75), inset 0 -1.5px 1px rgba(110,70,0,.45), 0 0 0 1.5px rgba(255,214,107,.55), 0 4px 10px rgba(0,0,0,.28);
+  }
+  .tadv-disc::after {
+    content: ""; position: absolute; inset: 3px 9px auto 6px; height: 44%; border-radius: 50% 50% 40% 40%; pointer-events: none;
+    background: linear-gradient(180deg, rgba(255,255,255,.55) 0%, rgba(255,255,255,0) 100%);
+  }
+  .tadv-disc svg { position: relative; z-index: 1; }
+  .tadv-head-txt { flex: 1; min-width: 0; }
+  .tadv-t { margin: 0; font-family: var(--font-display); font-size: 19px; font-weight: 700; letter-spacing: -.012em; line-height: 1.2; color: #fff; }
+  .tadv-date {
+    flex-shrink: 0; padding: 5px 10px; border-radius: 99px; white-space: nowrap;
+    font-size: 13px; font-weight: 800; letter-spacing: .01em; font-variant-numeric: tabular-nums; color: #fff;
+    background: rgba(5,22,40,.24); box-shadow: inset 0 0 0 1px rgba(255,255,255,.22);
+  }
+
+  /* The notices: a row each, a coloured edge down the left for its tone, a
+     lit disc with its picture, the kind in small capitals above, then what
+     it is and what to do. A warning sits on a warm wash, ahead of the rest. */
+  .tadv-list { list-style: none; margin: 0; padding: 0; }
+  .tadv-row { position: relative; display: flex; gap: 12px; padding: 14px 14px 14px 18px; }
+  .tadv-row + .tadv-row { box-shadow: inset 0 1px 0 var(--line); }
+  .tadv-row::before { content: ""; position: absolute; left: 0; top: 12px; bottom: 12px; width: 4px; border-radius: 0 4px 4px 0; }
+  .tadv-row.warn { background: linear-gradient(90deg, #FFF6E2 0%, #FFFBF2 55%, #FFFFFF 100%); }
+  .tadv-row.warn::before { background: linear-gradient(180deg, #F2B32C, #D99A1E); }
+  .tadv-row.good::before { background: linear-gradient(180deg, #16895B, var(--tanim)); }
+  .tadv-ico {
+    flex: 0 0 44px; width: 44px; height: 44px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .tadv-row.warn .tadv-ico {
+    color: #4A3000; background: linear-gradient(180deg, #FFDB7A 0%, #F2B32C 60%, #D99A1E 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.6), inset 0 -1px 0 rgba(110,70,0,.3), 0 4px 10px -5px rgba(138,93,12,.6);
+  }
+  .tadv-row.good .tadv-ico {
+    color: #fff; background: linear-gradient(180deg, #16895B 0%, var(--tanim) 55%, #07522F 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.24), inset 0 -1px 0 rgba(0,0,0,.18), 0 4px 10px -5px rgba(11,107,65,.6);
+  }
+  .tadv-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .tadv-kind { font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; line-height: 1.3; }
+  .tadv-row.warn .tadv-kind { color: var(--gold-text); }
+  .tadv-row.good .tadv-kind { color: var(--tanim); }
+  .tadv-row-t { font-family: var(--font-display); font-size: 17px; font-weight: 700; letter-spacing: -.005em; line-height: 1.25; color: var(--text); }
+  .tadv-row-s { font-size: 14.5px; line-height: 1.45; color: var(--text-muted); }
+
+  /* The way on: the full forecast, a full-width row under a hairline. */
+  .tadv-more {
+    width: 100%; min-height: 54px; padding: 0 14px 0 18px; border: none; cursor: pointer;
+    display: flex; align-items: center; gap: 10px; text-align: left; font: inherit;
+    font-family: var(--font-display); font-size: 16px; font-weight: 700; color: #215A8E;
+    background: #F4F8FC; box-shadow: inset 0 1px 0 rgba(23,63,102,.1);
+    transition: background-color var(--dur-fast) ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .tadv-more span { flex: 1; min-width: 0; }
+  .tadv-more svg:last-child { color: rgba(33,90,142,.7); transition: transform 190ms var(--ease-out); }
+  .tadv-more:active { background: #E6EFF8; transition-duration: var(--dur-press); }
+  .tadv-more:active svg:last-child { transform: translateX(3px); }
+  .tadv-more:focus-visible { outline: 3px solid #2E73B0; outline-offset: -3px; }
+  @media (prefers-reduced-motion: reduce) { .tadv-more:active svg:last-child { transform: none; } }
 
   /* More tools: exactly two tiles, side by side. */
   /* One tool, one full-width card: a lone tile beside an empty half looks

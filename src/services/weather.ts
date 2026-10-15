@@ -194,7 +194,8 @@ export function fetchWeather(place: string, forBuyer: boolean): Promise<FetchRes
 // ── Read at the time of drawing ──────────────────────────────────────────────
 
 const pad = (n: number) => String(n).padStart(2, "0");
-const localDate = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+/** A day as the forecast keys it: "2026-10-15", in the phone's own time. */
+export const localDate = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 const localHour = (d: Date) => `${localDate(d)}T${pad(d.getHours())}:00`;
 
 /** The next `n` hours, starting with this one. */

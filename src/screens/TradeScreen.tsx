@@ -482,14 +482,12 @@ export function TradeScreen({ onProfile, onBack, userName = "Juan Dela Cruz", us
             <button className="mp-sell-btn" onClick={openPost}>
               <Plus size={20} strokeWidth={2.6} /> {t("trade_sell")}
             </button>
+            {/* Just the name, with the whole width for the longer Tagalog one;
+                how many are up rides on its corner, costing it no room. */}
             <button className="mp-mine-btn" onClick={() => setShowMine(true)}
               aria-label={own.mine.length > 0 ? `${t("mp_your_listings")} (${own.mine.length})` : t("mp_your_listings")}>
-              {/* The count rides on the box, like the cart's: it costs the button no width. */}
-              <span className="mp-mine-ico" aria-hidden="true">
-                <Package size={19} strokeWidth={2.4} />
-                {own.mine.length > 0 && <span className="mp-mine-n">{own.mine.length}</span>}
-              </span>
               {t("mp_your_listings")}
+              {own.mine.length > 0 && <span className="mp-mine-n" aria-hidden="true">{own.mine.length}</span>}
             </button>
           </div>
         )}

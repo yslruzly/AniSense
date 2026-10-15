@@ -1,10 +1,11 @@
-import { CloudSun, CloudMoon, BarChart2, BookOpen, PlayCircle, CheckCircle, AlertTriangle, ChevronRight, Wallet, Megaphone, Store, Search } from "lucide-react";
+import { CloudSun, CloudMoon, BarChart2, BookOpen, PlayCircle, ChevronRight, Wallet, Store, Search } from "lucide-react";
 import { useState } from "react";
 import { useLang } from "../i18n";
 import { haptic } from "../lib/platform";
 import { Screen, UserRole, TradeIntent } from "../types";
 import { ShopByCrop, FeaturedProducts, CheapestToday, FeaturedFarmers, YourPurchases, PriceMoves } from "../components/home/BuyerHome";
 import { YourHarvest, YourCropPrices } from "../components/home/FarmerHome";
+import { TodaysAdvisory } from "../components/home/TodaysAdvisory";
 import { PriceAlerts } from "../components/home/PriceAlerts";
 import { CropTracker } from "../components/home/CropTracker";
 import { ProfitSnapshot } from "../components/home/ProfitSnapshot";
@@ -14,7 +15,7 @@ import { PriceAlert } from "../lib/priceAlerts";
 import { useViewer } from "../store/viewer";
 import { CROPS, CROP_GROUP_BY_ID } from "../data/crops";
 import { useWeather } from "../store/weather";
-import { nextWetDay, whenSaid } from "../services/weather";
+import { nextWetDay } from "../services/weather";
 import { useMarket } from "../store/market";
 import { PriceSheet } from "../components/prices/PriceSheet";
 import { PriceItem } from "../services/prices";
@@ -256,31 +257,9 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
           />
         )}
 
-        {/* 5 ── Advisory, farmer only: one card, two rows. */}
-        {!isBuyer && (
-          <section className="hm-card tint-blue">
-            <div className="hm-card-head">
-              <span className="hm-ico"><Megaphone size={20} strokeWidth={2.2} /></span>
-              <div>
-                <h2 className="hm-title">{t("home_advisory")}</h2>
-                <div className="hm-sub">{t("home_advisory_sub")}</div>
-              </div>
-            </div>
-            {[
-              { tone: "good", ico: <CheckCircle size={20} strokeWidth={2.2} />, txt: t("home_adv_planting"), sub: t("home_adv_planting_sub") },
-              // Only when the forecast has rain coming, and which day.
-              ...(wet ? [{ tone: "warn", ico: <AlertTriangle size={20} strokeWidth={2.2} />, txt: t("home_adv_rain").replace("{when}", whenSaid(wet.date, new Date(), t, lang === "tl" ? "fil-PH" : "en-PH")), sub: t("home_adv_rain_sub") }] : []),
-            ].map(a => (
-              <div key={a.txt} className={`hm-adv ${a.tone}`}>
-                <span className="hm-adv-ico">{a.ico}</span>
-                <span>
-                  <span className="hm-adv-t">{a.txt}</span>
-                  <span className="hm-adv-s">{a.sub}</span>
-                </span>
-              </div>
-            ))}
-          </section>
-        )}
+        {/* 5 ── Advisory, farmer only: the DA's notices for today, the
+            rain warning first when the forecast has one. */}
+        {!isBuyer && <TodaysAdvisory wet={wet} onWeather={() => onNavigate("weather")} />}
 
         {/* 6 ── The pages the tab bar doesn't reach. Weather is here for
             both: a buyer drives out to collect what they buy, so rain is
