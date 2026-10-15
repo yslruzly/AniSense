@@ -4,7 +4,6 @@ import { useLang } from "../../i18n";
 import { useMarket } from "../../store/market";
 import { Sale } from "../../lib/sales";
 import { ACHIEVEMENTS, AchievementId, earnedAchievements } from "../../lib/achievements";
-import leafMask from "../../assets/anisense-leaf-mask.png";
 
 // ─── Achievements ─────────────────────────────────────────────────────────────
 // What a farmer has earned on AniSense, in the order they earn it: joining,
@@ -12,11 +11,10 @@ import leafMask from "../../assets/anisense-leaf-mask.png";
 // worked out from what the app already knows (src/lib/achievements.ts), never
 // typed in, so a badge means the thing happened.
 //
-// A trophy case in AniSense green: how many are earned and a bar of six to
-// fill, then the medals. Earned ones hang on their ribbon in a gold-plated
-// rim; the rest are outlines with a lock that say how to earn them, and the
-// first of those is marked as the next goal, so there is always one thing to
-// aim for.
+// Earned badges sit on a brushed-metal plate, the medal gold-rimmed on its
+// ribbon. The rest are dashed outlines with a lock that say how to earn them,
+// and the first of those is marked as the next goal, so there is always one
+// thing to aim for.
 
 export const ACH_ICON: Record<AchievementId, (size: number) => ReactNode> = {
   newbie: s => <Sprout size={s} strokeWidth={2.2} />,
@@ -60,24 +58,16 @@ export function Achievements({ sales = [], memberSince }: { sales?: Sale[]; memb
   const { listings, isMine, sellers, sellerKeyOf, awards } = useMarket();
   const locale = lang === "tl" ? "fil-PH" : "en-PH";
   const have = earnedAchievements({ listings, isMine, sellers, sellerKeyOf, sales, awarded: awards });
-  const total = ACHIEVEMENTS.length;
   const next = ACHIEVEMENTS.find(a => !have.has(a.id))?.id;
 
   return (
+    // A Profile section like the others: its gold chip and name at the top
+    // of the card, with the count at the far end of the same line.
     <section className="card prof-card ach" aria-labelledby="pg-ach">
-      <img className="ach-mark" src={leafMask} alt="" aria-hidden="true" />
-
-      {/* The head: the trophy on a gold-plated disc, the name, how many are
-          earned, and a bar of six that fills in gold, one step a badge. */}
-      <div className="ach-top">
-        <span className="ach-cup" aria-hidden="true"><Trophy size={22} strokeWidth={2.3} /></span>
-        <div className="ach-top-txt">
-          <h2 className="ach-title" id="pg-ach">{t("ach_title")}</h2>
-          <div className="ach-sub">{t("ach_count").replace("{n}", String(have.size)).replace("{total}", String(total))}</div>
-        </div>
-      </div>
-      <div className="ach-bar" aria-hidden="true">
-        {ACHIEVEMENTS.map((a, i) => <span key={a.id} className={i < have.size ? "on" : undefined} />)}
+      <div className="card-head">
+        <span className="card-ico tint-gold" aria-hidden="true"><Trophy size={20} strokeWidth={2.2} /></span>
+        <div className="card-title" id="pg-ach" style={{ margin: 0 }}>{t("ach_title")}</div>
+        <span className="ach-count">{t("ach_count").replace("{n}", String(have.size)).replace("{total}", String(ACHIEVEMENTS.length))}</span>
       </div>
 
       <ul className="ach-grid stagger-list">

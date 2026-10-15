@@ -1781,63 +1781,43 @@ export const appCss = `
   .card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 13px; }
 
   /* ── Achievements (farmer Profile) ──────────────────────────────────────── */
-  /* A trophy case in AniSense green, as Your harvest and In the ground: a
-     warm gold light off its corner and the AniSense leaf faint behind. The
-     head: the trophy on a gold-plated disc, the name and the count in white,
-     and a bar of six that fills in palay gold, a step a badge. Then the
-     medals, two to a row. Words on the green are white, the quieter ones at
-     70% or more (over 4.5:1 on its lightest green). */
-  .card.prof-card.ach {
-    position: relative; overflow: hidden; isolation: isolate; padding: 18px 14px 16px; color: #fff;
-    background:
-      radial-gradient(90% 46% at 100% 0%, rgba(242,179,44,.2), transparent 62%),
-      linear-gradient(165deg, #145E3F 0%, #0E4630 50%, #0A3525 100%);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.1), inset 0 0 0 1px rgba(255,255,255,.05), 0 18px 32px -22px rgba(8,42,29,.75);
+  /* A medal per achievement, two to a row, in a white Profile card like the
+     others. Earned: the medal on a plate of brushed metal. Not yet: flat
+     paper, the medal a dashed outline with a lock, and the words say how to
+     earn it; the first of those is marked as the next goal. */
+  .ach .card-head { margin-bottom: 14px; }
+  .ach-count {
+    margin-left: auto; flex-shrink: 0; padding: 4px 10px; border-radius: 99px;
+    font-size: 12.5px; font-weight: 800; background: var(--gold-sk); color: var(--gold-text);
   }
-  .ach-mark {
-    position: absolute; right: -34px; top: -30px; z-index: -1; width: 170px; height: auto;
-    opacity: .1; transform: rotate(-14deg); pointer-events: none; user-select: none;
-  }
-  .ach-top { display: flex; align-items: center; gap: 12px; padding: 0 2px; }
-  .ach-cup {
-    position: relative; flex: 0 0 48px; width: 48px; height: 48px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center; color: var(--tanim-deep);
-    background: linear-gradient(145deg, #FFF1C4 0%, #F7CC5B 28%, #D99A1E 52%, #F3C24E 74%, #B07A16 100%);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.75), inset 0 -1.5px 1px rgba(110,70,0,.45), 0 0 0 1.5px rgba(255,214,107,.6), 0 4px 10px rgba(0,0,0,.3);
-  }
-  .ach-cup::after {
-    content: ""; position: absolute; inset: 3px 9px auto 6px; height: 44%; border-radius: 50% 50% 40% 40%; pointer-events: none;
-    background: linear-gradient(180deg, rgba(255,255,255,.55) 0%, rgba(255,255,255,0) 100%);
-  }
-  .ach-cup svg { position: relative; z-index: 1; }
-  .ach-top-txt { min-width: 0; }
-  .ach-title { font-family: var(--font-display); font-size: 21px; font-weight: 700; line-height: 1.2; letter-spacing: -.015em; color: #fff; }
-  .ach-sub { margin-top: 2px; font-size: 14px; line-height: 1.35; color: rgba(255,255,255,.8); font-variant-numeric: tabular-nums; }
-  .ach-bar { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 5px; margin: 14px 2px 22px; }
-  .ach-bar > span { height: 6px; border-radius: 99px; background: rgba(255,255,255,.14); }
-  .ach-bar > span.on { background: linear-gradient(90deg, #F7CC5B, #F2B32C); box-shadow: 0 0 8px rgba(242,179,44,.4); }
-
-  .ach-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 18px 10px; }
+  .ach-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 16px 10px; }
   .ach-badge {
-    position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px;
-    padding: 18px 10px 14px; border-radius: 18px; text-align: center;
+    position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 16px 10px 13px;
+    border-radius: 18px; text-align: center; background: var(--paper);
+    box-shadow: inset 0 0 0 1px var(--line);
   }
-  /* Earned: a lit tile, a soft gold light behind the medal, a fine gold edge. */
+  /* Earned: a plate of brushed metal. Fine horizontal grain, broad bands of
+     light and shade across it the way a polished surface catches a room, a
+     bright top edge where the light lands and a darker lower one, and a thin
+     steel rim. Locked badges stay flat paper, so the metal itself says
+     "earned". */
   .ach-badge.on {
     background:
-      radial-gradient(70% 44% at 50% 28%, rgba(242,179,44,.2), transparent 72%),
-      linear-gradient(180deg, rgba(255,255,255,.13) 0%, rgba(255,255,255,.05) 100%);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.14), inset 0 0 0 1px rgba(255,214,107,.26);
+      repeating-linear-gradient(0deg, rgba(255,255,255,.07) 0 1px, rgba(0,0,0,.022) 1px 2px),
+      linear-gradient(155deg, #F7F8F9 0%, #DDE0E4 30%, #F1F2F4 48%, #CFD3D8 72%, #E6E8EB 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.95),
+      inset 0 -1px 0 rgba(60,66,74,.14),
+      inset 0 0 0 1px rgba(120,127,136,.32),
+      0 10px 20px -14px rgba(40,46,54,.5);
   }
-  /* Not yet: sunk a little into the green, a plain edge. The first of them,
-     the next to aim for, has a gold edge and a tab on top that says so. */
-  .ach-badge.off { background: rgba(0,0,0,.12); box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); }
-  .ach-badge.next { background: rgba(242,179,44,.07); box-shadow: inset 0 0 0 1.5px rgba(242,179,44,.6); }
+  /* The next goal: a warm paper, a gold edge, and a tab on top saying so. */
+  .ach-badge.next { background: #FFFBF1; box-shadow: inset 0 0 0 1.5px #E0B654; }
   .ach-next {
     position: absolute; top: 0; left: 50%; z-index: 2; transform: translate(-50%, -50%); white-space: nowrap;
     padding: 3px 10px; border-radius: 99px; font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
     background: linear-gradient(180deg, #F7CC5B 0%, #F2B32C 100%); color: #3A2A05;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.5), 0 3px 8px -3px rgba(0,0,0,.45);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.5), 0 2px 6px -2px rgba(138,93,12,.55);
   }
 
   /* The medal: its face in its own colour inside a gold-plated rim, a ring
@@ -1883,21 +1863,21 @@ export const appCss = `
   /* Not yet earned: an outline of the medal, dashed, its picture faint, a
      lock at its foot; gold on the next goal. */
   .ach-badge.off .ach-medal {
-    background: rgba(255,255,255,.05); border: 2px dashed rgba(255,255,255,.3); color: rgba(255,255,255,.55); box-shadow: none;
+    background: var(--paper-alt); border: 2px dashed var(--line-strong); color: var(--text-faint); box-shadow: none;
   }
   .ach-badge.off .ach-medal::before { display: none; }
   .ach-badge.off .ach-medal > svg { filter: none; }
-  .ach-badge.next .ach-medal { border-color: rgba(242,179,44,.75); color: rgba(255,214,107,.95); }
+  .ach-badge.next .ach-medal { background: #fff; border-color: #D9A53A; color: var(--gold-text); }
   .ach-lock {
     position: absolute; z-index: 2; right: -7px; bottom: -7px; width: 24px; height: 24px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    background: #0E4630; color: rgba(255,255,255,.88); box-shadow: 0 0 0 1.5px rgba(255,255,255,.3), 0 2px 6px -2px rgba(0,0,0,.5);
+    background: #fff; color: var(--text-muted); box-shadow: 0 0 0 1px var(--line), 0 2px 6px -2px rgba(0,0,0,.25);
   }
-  .ach-badge.next .ach-lock { color: #F7CC5B; box-shadow: 0 0 0 1.5px rgba(242,179,44,.75), 0 2px 6px -2px rgba(0,0,0,.5); }
-  .ach-name { font-family: var(--font-display); font-size: 15px; font-weight: 700; line-height: 1.25; color: #fff; text-wrap: balance; }
-  .ach-badge.off .ach-name { color: rgba(255,255,255,.88); }
-  .ach-note { font-size: 13px; line-height: 1.35; color: rgba(255,255,255,.78); text-wrap: balance; }
-  .ach-badge.off .ach-note { color: rgba(255,255,255,.72); }
+  .ach-badge.next .ach-lock { color: var(--gold-text); box-shadow: 0 0 0 1px var(--gold-line), 0 2px 6px -2px rgba(138,93,12,.35); }
+  .ach-name { font-family: var(--font-display); font-size: 15px; font-weight: 700; line-height: 1.25; color: var(--text); text-wrap: balance; }
+  .ach-badge.off .ach-name { color: var(--text-muted); }
+  .ach-note { font-size: 13px; line-height: 1.35; color: var(--text-faint); text-wrap: balance; }
+  .ach-badge.on .ach-note { color: var(--text-muted); }
   /* ── Achievement unlocked ──────────────────────────────────────────────
      The welcome ID's dimmed stage: the kicker, Juan rising from behind the
      plate with his thumbs up, the badge landing on brushed metal, then the
