@@ -3,7 +3,7 @@ import { useLang } from "../../i18n";
 import { haptic } from "../../lib/platform";
 import { ACHIEVEMENTS, AchievementId } from "../../lib/achievements";
 import { Sheet } from "../ui/Sheet";
-import { ACH_ICON, achNote } from "./Achievements";
+import { AchMedal, achNote } from "./Achievements";
 import mascotThumbs from "../../assets/mascot-thumbs.webp";
 import mascotThumbsEyes from "../../assets/mascot-thumbs-eyes.webp";
 
@@ -53,7 +53,7 @@ export function AchievementUnlocked({ id, open, remaining, memberSince, onNext, 
               <img className="au-m-eyes" src={mascotThumbsEyes} alt="" width={420} height={443} decoding="async" />
             </div>
             <div className="au-plate">
-              <span className={`ach-medal au-medal ${tone}`} aria-hidden="true">{ACH_ICON[id](36)}</span>
+              <AchMedal id={id} tone={tone} earned size={36} className="au-medal" />
               <h2 className="au-name">{t(`ach_${id}_t`)}</h2>
               <p className="au-note">{achNote(id, true, t, locale, memberSince)}</p>
               <span className="au-shine" aria-hidden="true" />

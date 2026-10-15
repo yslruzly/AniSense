@@ -726,7 +726,8 @@ export const translations: Dict = {
   fs_none_yet: { en: "None recorded yet", tl: "Wala pang naitala" },
   // Achievements on the farmer's Profile.
   ach_title: { en: "Achievements", tl: "Mga Nakamit" },
-  ach_count: { en: "{n} of {total}", tl: "{n} sa {total}" },
+  ach_count: { en: "{n} of {total} earned", tl: "Nakuha ang {n} sa {total}" },
+  ach_next: { en: "Next goal", tl: "Susunod" },
   ach_locked: { en: "not earned yet", tl: "hindi pa nakukuha" },
   ach_newbie_t: { en: "Newbie", tl: "Bagong Salta" },
   ach_newbie_on: { en: "Joined AniSense in {date}", tl: "Sumali sa AniSense noong {date}" },
