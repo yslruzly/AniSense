@@ -193,24 +193,28 @@ export const tourCss = `
   }
 
   /* ── The guide page ──────────────────────────────────────────────────────
-     Same walkthrough, at the farmer's own pace and in their own order. */
-  /* The replay card. Light, like the guide's tile on Home, so the one green
-     thing on it is the button; the tour's mascot stands at the right. */
+     Same walkthrough, at the reader's own pace and in their own order.
+     Nothing on it under 16px: it reads at the walkthrough's own sizes. */
+
+  /* The replay card in AniSense green, as the premium cards on Home are: a
+     warm gold light off its top corner, the words in white, the one who
+     gives the tour waving at the right, and one gold button - the page's
+     main action, so the only gold thing on it. */
   .gd-intro {
-    position: relative; overflow: hidden; border-radius: var(--radius);
-    padding: 18px 18px 16px;
+    position: relative; overflow: hidden; isolation: isolate; border-radius: 24px;
+    padding: 20px 18px 16px; color: #fff;
     display: grid; grid-template-columns: 1fr 118px; grid-template-areas: "copy art" "btn btn"; column-gap: 6px;
-    background: linear-gradient(160deg, #E2F0E6 0%, #F3F9F5 58%, #FFFFFF 100%);
-    box-shadow: inset 0 0 0 1px rgba(11,107,65,.14), 0 10px 24px -20px rgba(15,53,36,.5);
+    background:
+      radial-gradient(70% 90% at 100% 0%, rgba(242,179,44,.26), transparent 62%),
+      linear-gradient(160deg, #145E3F 0%, #0E4630 55%, #0A3525 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.1), inset 0 0 0 1px rgba(255,255,255,.05), 0 18px 32px -22px rgba(8,42,29,.75);
   }
   .gd-intro-copy { grid-area: copy; align-self: center; padding: 2px 0 6px; }
-  /* The guide reads at the same sizes as the walkthrough: nothing under
-     16px. */
   .gd-intro-t {
     margin: 0; font-family: var(--font-display); font-size: var(--fs-title); font-weight: 700;
-    letter-spacing: -.015em; line-height: 1.2; color: var(--text);
+    letter-spacing: -.015em; line-height: 1.2; color: #fff;
   }
-  .gd-intro-s { margin: 6px 0 0; font-size: var(--fs-body); line-height: 1.45; color: var(--text-soft); }
+  .gd-intro-s { margin: 6px 0 0; font-size: var(--fs-body); line-height: 1.45; color: rgba(255,255,255,.84); }
   /* Anchored to the card's right edge; the negative bottom margin lets the
      button's row start over his waist, so the cut-off drawing never shows. */
   .gd-mascot {
@@ -220,85 +224,128 @@ export const tourCss = `
   .gd-mascot .tm-hand { animation: tm-wave 1.7s var(--ease-io) 450ms both; }
   .gd-mascot .tm-eyes { animation: tm-blink 3.8s step-end 2.3s infinite; }
 
-  /* The same button as Continue: a gradient with a top and a bottom, a
-     highlight where light catches the top edge, a darker line for its
-     thickness. On top of that, a soft cast shadow below it - dark and pulled
-     in, so it reads as the button standing off the card, not as a glow. */
+  /* Palay gold with a top and a bottom: a highlight where light catches the
+     top edge, a darker line for its thickness, a cast shadow under it. Dark
+     words on it (over 9:1). Pressed, it sinks: the light dims and the shadow
+     draws in. */
   .gd-replay {
     grid-area: btn; position: relative; z-index: 1; margin-top: 12px;
     min-height: 56px; width: 100%; border: none; border-radius: 16px; cursor: pointer;
     display: inline-flex; align-items: center; justify-content: center; gap: 9px;
-    font-family: var(--font-display); font-size: var(--fs-lead); font-weight: 700; letter-spacing: -.01em; color: #fff;
-    background-image: linear-gradient(180deg, #14875A 0%, var(--tanim) 54%, #075232 100%);
+    font-family: var(--font-display); font-size: var(--fs-lead); font-weight: 700; letter-spacing: -.01em; color: #2E2104;
+    background-image: linear-gradient(180deg, #FFDB7A 0%, #F2B32C 55%, #D99A1E 100%);
     box-shadow:
-      inset 0 1px 0 rgba(255,255,255,.26),
-      inset 0 -1px 0 rgba(0,0,0,.24),
-      inset 0 0 0 1px rgba(4,40,24,.22),
-      0 1px 2px rgba(6,38,23,.30),
-      0 12px 22px -12px rgba(6,38,23,.62);
+      inset 0 1px 0 rgba(255,255,255,.55),
+      inset 0 -1px 0 rgba(110,70,0,.35),
+      0 1px 2px rgba(0,0,0,.25),
+      0 12px 22px -12px rgba(0,0,0,.6);
     transition: transform 190ms var(--ease-out), box-shadow 190ms var(--ease-out);
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
-  /* Pressed in, not just smaller: the highlight dims and the cast shadow
-     draws up under the button. */
+  .gd-replay svg { color: var(--tanim-deep); }
   .gd-replay:active {
     transform: scale(.975); transition-duration: 90ms;
     box-shadow:
-      inset 0 1px 0 rgba(255,255,255,.12),
-      inset 0 -1px 0 rgba(0,0,0,.28),
-      inset 0 0 0 1px rgba(4,40,24,.26),
-      0 1px 1px rgba(6,38,23,.34),
-      0 4px 10px -8px rgba(6,38,23,.5);
+      inset 0 1px 0 rgba(255,255,255,.3),
+      inset 0 -1px 0 rgba(110,70,0,.4),
+      0 1px 1px rgba(0,0,0,.3),
+      0 4px 10px -8px rgba(0,0,0,.5);
   }
+  .gd-replay:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
 
-  .gd-list { display: flex; flex-direction: column; gap: 10px; }
+  /* The page's one question, then the groups that answer it. */
+  .gd-ask {
+    margin: 10px 2px 0; font-family: var(--font-display); font-size: 21px; font-weight: 700;
+    letter-spacing: -.015em; line-height: 1.25; color: var(--text);
+  }
+  /* A group: its plain name, a fine rule running out after it, then one
+     white card with a row for each job in it. */
+  .gd-group-t {
+    display: flex; align-items: center; gap: 10px; margin: 0 4px 10px;
+    font-size: var(--fs-label); font-weight: 700; line-height: 1.3; color: var(--text-muted);
+  }
+  .gd-group-t::after { content: ""; flex: 1; min-width: 24px; height: 1px; background: linear-gradient(90deg, var(--line-strong), rgba(194,197,201,0)); }
+  .gd-list {
+    border-radius: 20px; background: var(--card); overflow: hidden;
+    box-shadow: 0 0 0 1px rgba(22,33,27,.07), 0 1px 2px rgba(22,33,27,.05), 0 14px 28px -20px rgba(22,33,27,.4);
+  }
+  /* A hairline between rows, starting where the words do. */
+  .gd-item { position: relative; }
+  .gd-item + .gd-item::before { content: ""; position: absolute; z-index: 1; top: 0; left: 74px; right: 0; height: 1px; background: var(--line); }
+  /* The open one: its name on a pale green, a green bar down its left edge
+     for as long as its steps run, so it is plain which row these steps
+     belong to. */
+  .gd-item.on::after {
+    content: ""; position: absolute; z-index: 1; left: 0; top: 0; bottom: 0; width: 4px;
+    background: linear-gradient(180deg, var(--tanim) 0%, #16895B 100%);
+  }
 
   /* One topic. Closed it is a row you can read in a glance; open it is the
-     steps in order, numbered, one line each. Only one is open at a time —
+     steps in order, numbered, one stop each. Only one is open at a time —
      the page is a list of questions, not a wall of answers. */
-  .gd-item { background: var(--card); border-radius: var(--radius); box-shadow: inset 0 0 0 1px var(--line); overflow: hidden; }
   .gd-head {
-    width: 100%; min-height: 64px; padding: 12px 14px; border: none; background: none; cursor: pointer;
-    display: flex; align-items: center; gap: 12px; text-align: left; font: inherit;
+    width: 100%; min-height: 76px; padding: 14px; border: none; background: none; cursor: pointer;
+    display: flex; align-items: center; gap: 14px; text-align: left; font: inherit; color: inherit;
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+    transition: background-color var(--dur-fast) ease;
   }
-  .gd-head { transition: background-color var(--dur-fast) ease; }
-  .gd-head:active { background: var(--paper-alt); transition-duration: var(--dur-press); }
+  .gd-head:active { background: rgba(11,107,65,.07); transition-duration: var(--dur-press); }
+  .gd-head:focus-visible { outline: 3px solid var(--tanim); outline-offset: -3px; }
+  .gd-item.on .gd-head { background: #F1F8F3; }
   .gd-ico {
-    flex-shrink: 0; width: 42px; height: 42px; border-radius: 13px;
-    display: inline-flex; align-items: center; justify-content: center;
-    background: linear-gradient(180deg, #16895B 0%, var(--tanim) 55%, #07522F 100%); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.24), inset 0 -1px 0 rgba(0,0,0,.18), 0 1px 2px rgba(0,0,0,.18), 0 6px 12px -8px rgba(11,107,65,.6);
+    flex-shrink: 0; width: 46px; height: 46px; border-radius: 14px;
+    display: inline-flex; align-items: center; justify-content: center; color: #fff;
+    background: linear-gradient(180deg, #16895B 0%, var(--tanim) 55%, #07522F 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.24), inset 0 -1px 0 rgba(0,0,0,.18), 0 1px 2px rgba(0,0,0,.18), 0 6px 12px -8px rgba(11,107,65,.6);
   }
   .gd-head-body { flex: 1; min-width: 0; }
-  .gd-head-t { display: block; font-size: var(--fs-lead); font-weight: 700; color: var(--text); line-height: 1.25; }
+  .gd-head-t { display: block; font-family: var(--font-display); font-size: var(--fs-lead); font-weight: 700; letter-spacing: -.01em; color: var(--text); line-height: 1.25; }
   .gd-head-s { display: block; margin-top: 3px; font-size: var(--fs-label); line-height: 1.35; color: var(--text-muted); }
-  /* A quarter turn is movement on screen, so it eases in and out, and it is
-     short: this one is pressed over and over while a farmer reads down. */
-  .gd-chev { flex-shrink: 0; color: var(--text-faint); transition: transform 200ms var(--ease-io); }
-  .gd-item.on .gd-chev { transform: rotate(90deg); }
-
-  .gd-steps { padding: 2px 16px 16px 16px; display: flex; flex-direction: column; gap: 12px; }
-  .gd-step { display: flex; gap: 12px; align-items: flex-start; }
-  .gd-n {
-    flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; margin-top: 0;
+  /* Down to open, up to close: a half turn is movement on screen, so it
+     eases in and out, and it is short - this is pressed over and over while
+     a farmer reads down. */
+  .gd-chev {
+    flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%;
     display: inline-flex; align-items: center; justify-content: center;
-    background: var(--tanim); color: #fff; font-size: 15px; font-weight: 800;
-    font-variant-numeric: tabular-nums;
+    background: var(--paper); color: var(--text-muted);
+    transition: transform 220ms var(--ease-io), background-color 160ms ease, color 160ms ease;
   }
-  .gd-step-b { font-size: var(--fs-body); line-height: 1.5; color: var(--text-soft); }
-  .gd-step-b strong { color: var(--text); font-weight: 700; }
-  /* The one line that matters most in a step: where to tap. */
-  .gd-where {
-    display: inline-flex; align-items: center; gap: 5px; margin-top: 8px;
-    padding: 6px 11px; border-radius: 10px; background: var(--paper-alt);
-    font-size: var(--fs-label); font-weight: 600; color: var(--text-muted);
+  .gd-item.on .gd-chev { transform: rotate(180deg); background: var(--tanim-sk); color: var(--tanim); }
+
+  /* The steps: a path of numbered stops joined by a line, the words beside
+     each. The number is the order; the line says "then". */
+  .gd-body { padding: 16px 16px 18px 18px; }
+  .gd-steps { list-style: none; margin: 0; padding: 0; }
+  .gd-step { position: relative; display: grid; grid-template-columns: 32px minmax(0, 1fr); column-gap: 14px; padding-bottom: 18px; }
+  .gd-step:last-child { padding-bottom: 0; }
+  .gd-step:not(:last-child)::before {
+    content: ""; position: absolute; left: 15px; top: 38px; bottom: 4px; width: 2px; border-radius: 2px;
+    background: linear-gradient(180deg, #9CC9AE 0%, #D7EADD 100%);
   }
+  .gd-n {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: var(--font-display); font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; color: #fff;
+    background: linear-gradient(180deg, #16895B 0%, var(--tanim) 55%, #07522F 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.26), inset 0 -1px 0 rgba(0,0,0,.2), 0 0 0 3px #fff, 0 0 0 4px #CFE5D7;
+  }
+  .gd-step-b { padding-top: 3px; font-size: var(--fs-body); line-height: 1.5; color: var(--text-soft); }
+
+  /* A tip, set apart from the steps: warm paper, the bulb on a gold-plated
+     disc, "Tip" named above the words. */
   .gd-note {
-    display: flex; gap: 10px; padding: 12px 14px; border-radius: 14px;
-    background: var(--gold-sk); box-shadow: inset 0 0 0 1px var(--gold-line);
-    font-size: var(--fs-label); line-height: 1.5; color: var(--text-soft);
+    display: flex; gap: 12px; align-items: flex-start; margin-top: 20px; padding: 14px; border-radius: 16px;
+    background: linear-gradient(180deg, #FFF9EC 0%, #FDF3DD 100%); box-shadow: inset 0 0 0 1px var(--gold-line);
   }
-  .gd-note svg { flex-shrink: 0; color: var(--gold-text); margin-top: 2px; }
+  .gd-note-ico {
+    flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center; color: #4A3000;
+    background: linear-gradient(145deg, #FFF1C4 0%, #F7CC5B 30%, #D99A1E 58%, #F3C24E 80%, #B07A16 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.7), inset 0 -1px 1px rgba(110,70,0,.4), 0 2px 6px -2px rgba(138,93,12,.5);
+  }
+  .gd-note-txt { margin: 0; min-width: 0; font-size: var(--fs-label); line-height: 1.5; color: var(--text-soft); }
+  .gd-note-k { display: block; margin-bottom: 2px; font-family: var(--font-display); font-weight: 700; color: var(--gold-text); }
+
   @media (prefers-reduced-motion: reduce) {
     .gd-chev { transition: none; }
     .gd-replay:active { transform: none; }

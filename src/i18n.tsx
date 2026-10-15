@@ -1518,6 +1518,12 @@ export const translations: Dict = {
   },
   gd_replay_btn: { en: "Start the tour", tl: "Simulan ang gabay" },
   gd_topics: { en: "What do you want to do?", tl: "Ano ang gusto mong gawin?" },
+  gd_group_sell: { en: "Selling your harvest", tl: "Pagbebenta ng ani" },
+  gd_group_market: { en: "Prices and weather", tl: "Presyo at panahon" },
+  gd_group_farm: { en: "Your farm records", tl: "Talaan ng bukid mo" },
+  gd_group_buy: { en: "Buying", tl: "Pagbili" },
+  gd_group_know: { en: "Good to know", tl: "Mabuting malaman" },
+  gd_tip: { en: "Tip", tl: "Payo" },
   gd_foot: {
     en: "AniSense v1.0.0 · Ani mo, alam mo.",
     tl: "AniSense v1.0.0 · Ani mo, alam mo.",
