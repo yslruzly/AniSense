@@ -1209,15 +1209,16 @@ export const translations: Dict = {
   },
 
   // ── Welcome ───────────────────────────────────────────────────────────────
-  splash_lines: {
-    en: "Prices, marketplace, expenses,\nand weather: all in one place.",
-    tl: "Presyo, bentahan, gastos, at panahon:\nnasa isang lugar na lang.",
-  },
   splash_have_account: { en: "I already have an account", tl: "Mayroon na akong account" },
-  splash_sr: {
-    en: "AniSense. Real farmers, real produce, a stronger tomorrow. Prices, marketplace, expenses and weather in one place.",
-    tl: "AniSense. Totoong magsasaka, totoong ani, mas matibay na bukas. Presyo, bentahan, gastos at panahon sa iisang lugar.",
-  },
+  wel_title_a: { en: "Welcome to", tl: "Maligayang pagdating sa" },
+  wel_f1_t: { en: "Prices you can trust", tl: "Presyong mapagkakatiwalaan" },
+  wel_f1_s: { en: "This year's prices, and where they may go next.", tl: "Ang presyo ngayong taon, at kung saan ito papunta." },
+  wel_f2_t: { en: "Sell and buy near you", tl: "Magbenta at bumili malapit sa iyo" },
+  wel_f2_s: { en: "Fresh harvests, straight from Nueva Ecija farmers.", tl: "Sariwang ani, mula mismo sa mga magsasaka ng Nueva Ecija." },
+  wel_f3_t: { en: "Your farm's records", tl: "Talaan ng bukid mo" },
+  wel_f3_s: { en: "Expenses, sales and what is in the ground.", tl: "Gastos, benta, at ang nakatanim." },
+  wel_f4_t: { en: "Weather for your town", tl: "Panahon sa bayan mo" },
+  wel_f4_s: { en: "The right day to spray, dry or harvest.", tl: "Ang tamang araw para mag-spray, magbilad o mag-ani." },
 
   // ── Role ──────────────────────────────────────────────────────────────────
   role_pick_one: {

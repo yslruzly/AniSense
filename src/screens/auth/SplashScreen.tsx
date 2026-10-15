@@ -1,29 +1,58 @@
+import type { ReactNode } from "react";
+import { TrendingUp, Store, ReceiptText, CloudSun } from "lucide-react";
 import { useLang } from "../../i18n";
+import { AniSenseLogo } from "../../components/brand/AniSenseLogo";
 
 // ─── Welcome ──────────────────────────────────────────────────────────────────
-// The AniSense poster, full screen: the name, its promise ("Real farmers. Real
-// produce.") and Juan with the day's harvest are all in the picture, so the
-// screen adds only what the app does, its slogan and the two ways in, low
-// under the thumb. The picture carries no text a screen reader can see, so
-// the heading says it for them.
+// The first screen, set the way an iPhone app welcomes you: a calm, light
+// page with a soft green and gold light at the top, the AniSense icon on its
+// tile, "Welcome to AniSense" large, the slogan, then what the app does in
+// four lines - each a coloured icon, a bold name and one plain sentence - and
+// the two ways in pinned to the foot, the one to do solid, the other as words.
 //
-// Nothing under the two buttons: the Terms of Service and the Privacy Policy
-// are asked for where an account is made (sign-up's first page, with Accept
-// and Decline), and stay on Profile to read again.
+// It arrives once, in order: the icon settles, the title rises, the four
+// lines follow one after another, then the buttons. Seen at the very start
+// (and again only after signing out), so it can afford that one entrance.
+//
+// The Terms of Service and the Privacy Policy are asked for where an account
+// is made (sign-up's first page), not here.
+
+const FEATURES: { tone: string; ico: ReactNode; title: string; line: string }[] = [
+  { tone: "green", ico: <TrendingUp size={24} strokeWidth={2.4} />, title: "wel_f1_t", line: "wel_f1_s" },
+  { tone: "gold",  ico: <Store size={24} strokeWidth={2.4} />,      title: "wel_f2_t", line: "wel_f2_s" },
+  { tone: "blue",  ico: <ReceiptText size={24} strokeWidth={2.4} />, title: "wel_f3_t", line: "wel_f3_s" },
+  { tone: "sky",   ico: <CloudSun size={24} strokeWidth={2.4} />,   title: "wel_f4_t", line: "wel_f4_s" },
+];
 
 export function SplashScreen({ onSignIn, onSignUp }: { onSignIn: () => void; onSignUp: () => void }) {
   const { t } = useLang();
   return (
-    <div className="a-screen a-welcome-shell">
-      <div className="a-welcome a-stagger">
-        <h1 className="a-sr">{t("splash_sr")}</h1>
-        <p className="a-tagline">
-          {t("splash_lines")}{"\n"}<em>{t("splash_slogan")}</em>
-        </p>
-        <div className="a-welcome-cta">
-          <button className="a-btn a-btn-gold" onClick={onSignUp}>{t("splash_create_account")}</button>
-          <button className="a-btn a-btn-ghost-ink" onClick={onSignIn}>{t("splash_have_account")}</button>
-        </div>
+    <div className="a-screen wl">
+      <div className="wl-page">
+        <div className="wl-icon" aria-hidden="true"><AniSenseLogo size={62} /></div>
+        <h1 className="wl-title">
+          {t("wel_title_a")}<br /><span className="wl-name">AniSense</span>
+        </h1>
+        <p className="wl-slogan">{t("splash_slogan")}</p>
+
+        <ul className="wl-list">
+          {FEATURES.map((f, i) => (
+            <li key={f.title} className={`wl-item ${f.tone}`} style={{ animationDelay: `${300 + i * 70}ms` }}>
+              <span className="wl-ico" aria-hidden="true">{f.ico}</span>
+              <span className="wl-txt">
+                <span className="wl-item-t">{t(f.title)}</span>
+                <span className="wl-item-s">{t(f.line)}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* The two ways in, under the thumb: the one to do, solid; the other,
+          for someone who is back, as words. */}
+      <div className="wl-dock">
+        <button type="button" className="wl-primary" onClick={onSignUp}>{t("splash_create_account")}</button>
+        <button type="button" className="wl-secondary" onClick={onSignIn}>{t("splash_have_account")}</button>
       </div>
     </div>
   );

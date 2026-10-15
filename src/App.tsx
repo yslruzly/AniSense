@@ -305,7 +305,7 @@ export default function App() {
     // Every signup screen is ink at the top -- the terraces photo on welcome,
     // the ink header on the rest -- and the bar now sits over it, so the icons
     // stay light for the whole flow.
-    // The welcome poster is bright sky at the top, so its icons go dark.
+    // The welcome is a light page, so its icons go dark.
     if (!isAuthed) { setStatusBar(authScreen === "splash" ? "light" : "dark"); return; }
     // Home used to open on a full-bleed ink header; the greeting is a card on
     // paper now, so the bar matches the paper like every other screen.

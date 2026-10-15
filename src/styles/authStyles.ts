@@ -4,7 +4,6 @@
 //   · every tappable thing ≥ 52dp; primary actions 60dp (Material floor is 48dp)
 //   · secondary text #454F49 ≈ 7.4:1 on paper, no gray-on-gray
 //   · motion: transform/opacity only, <300ms, custom ease-out, reduced-motion honoured
-import wallpaper from "../assets/anisense-wallpaper.webp";
 import leafMask from "../assets/anisense-leaf-mask.png";
 
 export const authCss = `
@@ -33,9 +32,9 @@ export const authCss = `
   @media (max-width: 430px) {
     .auth-shell {
       width: 100vw; height: 100dvh; max-height: none; border-radius: 0; box-shadow: none;
-      /* The insets live on .a-inkhead, .a-welcome and .a-dock rather than
-         here, so the ink header and the terraces photo reach the top edge
-         instead of stopping below the status bar. */
+      /* The insets live on .a-inkhead, .wl-page, .wl-dock and .a-dock
+         rather than here, so the ink header and the welcome's light reach
+         the top edge instead of stopping below the status bar. */
     }
   }
 
@@ -252,113 +251,112 @@ export const authCss = `
 
   .a-help { font-size: var(--fs-label); color: var(--dilim); margin-top: 8px; line-height: 1.45; }
 
-  /* ── Welcome: the AniSense poster ──────────────────────────────────────── */
-  /* The poster, full-bleed. Everything on it stays as drawn except the foot,
-     where a soft green scrim rises just enough to hold the buttons and the
-     line under them; it starts below Juan's face so he stays bright. Pushed a
-     little right of centre on a narrow phone, so his basket isn't the part
-     that gets cropped. A faint light haze along the very top keeps the
-     status bar's dark icons readable over the leaves in the corner. */
-  /* The picture lives on the screen, which never scrolls, so it stays put. */
-  .a-welcome-shell { background: #CFE3C0; position: relative; isolation: isolate; }
-  .a-welcome-shell::before {
-    content: ""; position: absolute; inset: 0; z-index: -1;
-    background-image:
-      linear-gradient(180deg, rgba(255,255,255,.5) 0, rgba(255,255,255,0) calc(56px + var(--safe-top))),
-      linear-gradient(180deg, rgba(8,28,16,0) 52%, rgba(8,28,16,.5) 66%, rgba(6,24,13,.9) 100%),
-      url(${wallpaper});
-    background-size: cover, cover, cover; background-position: center, center, 64% center;
+  /* ── Welcome ────────────────────────────────────────────────────────────
+     The way an iPhone app welcomes you: a calm light page, a soft green and
+     gold light at the top, the app's icon on its tile, a large title, what
+     the app does in four lines, and the two ways in pinned to the foot. */
+  .wl {
+    position: relative; isolation: isolate; color: #0F1A14;
+    background:
+      radial-gradient(120% 46% at 50% -8%, rgba(22,137,91,.14), transparent 62%),
+      radial-gradient(70% 34% at 100% 0%, rgba(242,179,44,.14), transparent 60%),
+      #FBFCFA;
   }
-  .a-welcome {
-    flex: 1; min-height: 0; display: flex; flex-direction: column;
-    padding: calc(20px + var(--safe-top)) 22px calc(22px + var(--safe-bottom));
-    overflow-y: auto; overscroll-behavior: contain;
+  /* The page scrolls only if a small phone needs it to; the buttons stay. */
+  .wl-page {
+    flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none;
+    display: flex; flex-direction: column; align-items: center;
+    padding: calc(52px + var(--safe-top)) 28px 12px;
   }
-  .a-welcome::-webkit-scrollbar { width: 0; }
-  /* What the app does and its slogan, above the buttons. The scrim rises
-     a little higher for it than it would for the buttons alone, and a soft
-     shadow keeps the white type clear of the busy picture behind it. */
-  .a-tagline {
-    margin-top: auto; margin-bottom: 20px; font-family: var(--font-display); font-weight: 500;
-    font-size: var(--fs-lead); line-height: 1.45; color: #fff; white-space: pre-line;
-    text-shadow: 0 1px 12px rgba(0,0,0,.5), 0 1px 2px rgba(0,0,0,.35);
+  .wl-page::-webkit-scrollbar { display: none; }
+  /* The icon on its tile, as on a phone's home screen: white, a rounded
+     square, a hairline and a soft green shadow under it. */
+  .wl-icon {
+    width: 96px; height: 96px; border-radius: 24px; flex: none;
+    display: flex; align-items: center; justify-content: center; background: #fff;
+    box-shadow: 0 0 0 1px rgba(15,26,20,.05), 0 1px 2px rgba(15,26,20,.06), 0 18px 36px -16px rgba(11,107,65,.45);
+    animation: wl-pop 620ms cubic-bezier(.22,1,.36,1) 60ms both;
   }
-  .a-tagline em { font-style: normal; font-weight: 700; color: var(--palay); }
-  .a-welcome-cta { display: flex; flex-direction: column; gap: 12px; }
-  /* The two ways in, as capsules, the same shape as Continue on the next
-     step, and built the way an iPhone button is: out of light, not lines.
-       · a crisp bright rim along the top edge, where light catches it
-       · a soft gloss filling the upper half, so the surface has a curve
-       · a slight shade along the bottom, where the capsule turns away
-       · three shadows under it: a tight one where it touches the page, a
-         close one, and a wide soft one, so it floats a little above the
-         picture instead of being printed on it
-     The shadows are dark, never gold: a coloured halo reads as glow, not
-     depth. Pressed, all of it collapses: the gloss dims, the shade moves
-     inside and the shadows pull in tight, so it reads as pushed down into
-     the page rather than merely smaller. Both states list the same layers
-     in the same order, so the press animates instead of snapping. */
-  .a-welcome-cta .a-btn { border-radius: var(--r-pill); }
-  .a-welcome-cta .a-btn-gold {
-    background-image: linear-gradient(180deg, #FFD066 0%, #F7BB33 52%, #ECA81E 100%);
-    box-shadow:
-      inset 0 1px 0 rgba(255,255,255,.7),
-      inset 0 12px 16px -12px rgba(255,255,255,.5),
-      inset 0 -3px 4px -2px rgba(150,95,0,.3),
-      inset 0 0 0 1px rgba(120,78,0,.2),
-      0 1px 1px rgba(0,0,0,.3),
-      0 4px 10px -2px rgba(0,0,0,.32),
-      0 16px 30px -10px rgba(0,0,0,.55);
+  .wl-title {
+    margin: 26px 0 0; text-align: center; font-family: var(--font-display); font-weight: 700;
+    font-size: 34px; line-height: 1.08; letter-spacing: -.03em; color: #0F1A14;
+    animation: wl-rise 460ms var(--ease-out) 140ms both;
   }
-  .a-welcome-cta .a-btn-gold:active {
-    box-shadow:
-      inset 0 1px 0 rgba(255,255,255,.4),
-      inset 0 12px 16px -12px rgba(255,255,255,.2),
-      inset 0 3px 7px -1px rgba(150,95,0,.32),
-      inset 0 0 0 1px rgba(120,78,0,.26),
-      0 1px 1px rgba(0,0,0,.3),
-      0 2px 4px -1px rgba(0,0,0,.26),
-      0 6px 12px -8px rgba(0,0,0,.4);
-    filter: brightness(.97);
+  .wl-name {
+    background: linear-gradient(180deg, #16895B 0%, #0B6B41 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
   }
-  /* I already have an account is glass: the poster shows through, blurred
-     and a little richer. Its rim is bright on top and fainter along the
-     bottom, where the same light passes through the glass and out the
-     other side. Pressed, the glass lights up under the finger, the way
-     Apple's glass buttons answer a touch. */
-  .a-welcome-cta .a-btn-ghost-ink {
-    color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.3);
-    background-color: rgba(255,255,255,.14);
-    background-image: linear-gradient(180deg, rgba(255,255,255,.2) 0%, rgba(255,255,255,.04) 55%, rgba(255,255,255,.09) 100%);
-    backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%);
-    box-shadow:
-      inset 0 1px 0 rgba(255,255,255,.55),
-      inset 0 -1px 0 rgba(255,255,255,.16),
-      inset 0 12px 16px -12px rgba(255,255,255,.35),
-      inset 0 0 0 1px rgba(255,255,255,.22),
-      0 1px 1px rgba(0,0,0,.28),
-      0 4px 10px -2px rgba(0,0,0,.3),
-      0 16px 30px -10px rgba(0,0,0,.5);
+  .wl-slogan {
+    margin: 10px 0 0; text-align: center; font-family: var(--font-display); font-size: 17px; font-weight: 500;
+    color: #5B6660; animation: wl-rise 460ms var(--ease-out) 200ms both;
   }
-  .a-welcome-cta .a-btn-ghost-ink:active {
-    background-color: rgba(255,255,255,.24);
-    box-shadow:
-      inset 0 1px 0 rgba(255,255,255,.4),
-      inset 0 -1px 0 rgba(255,255,255,.1),
-      inset 0 12px 16px -12px rgba(255,255,255,.18),
-      inset 0 0 0 1px rgba(255,255,255,.32),
-      0 1px 1px rgba(0,0,0,.28),
-      0 2px 4px -1px rgba(0,0,0,.24),
-      0 6px 12px -8px rgba(0,0,0,.36);
+  /* What the app does: a coloured icon tile, a bold name, one plain line. */
+  .wl-list { list-style: none; margin: 34px 0 0; padding: 0; width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 22px; }
+  .wl-item { display: flex; align-items: center; gap: 16px; animation: wl-rise 460ms var(--ease-out) both; }
+  .wl-ico {
+    flex: none; width: 48px; height: 48px; border-radius: 13px;
+    display: flex; align-items: center; justify-content: center; color: #fff;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.28), inset 0 -1px 0 rgba(0,0,0,.14), 0 6px 14px -8px rgba(15,26,20,.45);
   }
-  /* For people who have asked the phone for less see-through glass: the
-     same button, solid. */
-  @media (prefers-reduced-transparency: reduce) {
-    .a-welcome-cta .a-btn-ghost-ink {
-      backdrop-filter: none; -webkit-backdrop-filter: none;
-      background-color: #1E3A2A; background-image: none;
-    }
+  .wl-item.green .wl-ico { background: linear-gradient(180deg, #22A06B 0%, #0B6B41 100%); }
+  .wl-item.gold  .wl-ico { background: linear-gradient(180deg, #F7C04A 0%, #D99A1E 100%); }
+  .wl-item.blue  .wl-ico { background: linear-gradient(180deg, #4F94D4 0%, #2462A0 100%); }
+  .wl-item.sky   .wl-ico { background: linear-gradient(180deg, #3FB3E0 0%, #1F86B8 100%); }
+  .wl-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .wl-item-t { font-family: var(--font-display); font-size: 17px; font-weight: 700; line-height: 1.25; letter-spacing: -.01em; color: #0F1A14; }
+  .wl-item-s { font-size: 15px; line-height: 1.4; color: #5B6660; }
+
+  /* The foot: the page's own light behind the buttons, rising out of it so
+     the list can pass under on a small phone. */
+  .wl-dock {
+    position: relative; flex: none; display: flex; flex-direction: column; gap: 6px;
+    padding: 14px 24px calc(18px + var(--safe-bottom)); background: #FBFCFA;
+    animation: wl-fade 500ms ease 620ms both;
   }
+  .wl-dock::before {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 100%; height: 28px; pointer-events: none;
+    background: linear-gradient(180deg, rgba(251,252,250,0) 0%, #FBFCFA 100%);
+  }
+  .wl-primary {
+    width: 100%; min-height: 58px; border: none; border-radius: 16px; cursor: pointer;
+    font-family: var(--font-display); font-size: 18px; font-weight: 600; letter-spacing: -.01em; color: #fff;
+    background-image: linear-gradient(180deg, #14875A 0%, var(--tanim) 54%, #075232 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.24), inset 0 -1px 0 rgba(0,0,0,.2), 0 1px 2px rgba(6,38,23,.25), 0 12px 24px -14px rgba(6,38,23,.7);
+    transition: transform 160ms var(--ease-out), box-shadow 160ms var(--ease-out);
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .wl-primary:active { transform: scale(.97); transition-duration: 90ms; box-shadow: inset 0 1px 0 rgba(255,255,255,.14), inset 0 -1px 0 rgba(0,0,0,.24), 0 1px 1px rgba(6,38,23,.3); }
+  .wl-secondary {
+    width: 100%; min-height: 50px; border: none; border-radius: 14px; cursor: pointer; background: none;
+    font-family: var(--font-display); font-size: 17px; font-weight: 600; color: var(--tanim);
+    transition: background-color 160ms ease, transform 160ms var(--ease-out);
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .wl-secondary:active { background: rgba(11,107,65,.08); transform: scale(.98); transition-duration: 90ms; }
+  .wl-primary:focus-visible, .wl-secondary:focus-visible { outline: 3px solid var(--tanim); outline-offset: 3px; }
+
+  /* On a phone up to 820px tall (most of them), a little less air, so the
+     whole welcome still shows at once in either language; taller phones
+     keep the roomier page. */
+  @media (max-height: 820px) {
+    .wl-page { padding-top: calc(36px + var(--safe-top)); }
+    .wl-icon { width: 88px; height: 88px; border-radius: 22px; }
+    .wl-title { margin-top: 20px; font-size: 32px; }
+    .wl-slogan { margin-top: 8px; }
+    .wl-list { margin-top: 26px; gap: 18px; }
+    .wl-dock { padding-top: 12px; }
+  }
+
+  /* The one entrance. The icon settles from a little small, never from
+     nothing; the rest rises a few pixels into place. */
+  @keyframes wl-pop  { from { opacity: 0; transform: translateY(10px) scale(.88); } to { opacity: 1; transform: none; } }
+  @keyframes wl-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  @keyframes wl-fade { from { opacity: 0; } to { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) {
+    .wl-icon, .wl-title, .wl-slogan, .wl-item { animation: wl-fade 240ms ease both; }
+    .wl-primary:active, .wl-secondary:active { transform: none; }
+  }
+
   /* For screen readers only: the poster's words are in the picture. */
   .a-sr {
     position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
