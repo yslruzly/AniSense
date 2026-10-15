@@ -10,7 +10,7 @@ import leafMask from "../assets/anisense-leaf-mask.png";
 import { Achievements } from "../components/profile/Achievements";
 import { Sale } from "../lib/sales";
 import { DeleteAccount } from "../components/profile/DeleteAccount";
-import { PRIVACY } from "../data/privacyPolicy";
+import { PRIVACY, LegalDocData } from "../data/privacyPolicy";
 import { TERMS } from "../data/termsOfService";
 import { LegalSheet } from "../components/legal/LegalSheet";
 import { FarmStats } from "../components/profile/FarmStats";
@@ -60,7 +60,8 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
   const ico = (node: React.ReactNode) => <span className="setting-ico" aria-hidden="true">{node}</span>;
   const chev = <ChevronRight className="setting-chev" size={20} strokeWidth={2} aria-hidden="true" />;
   const [editing, setEditing] = useState(false);
-  const [showTerms, setShowTerms] = useState(false);
+  // The Privacy Policy or the Terms of Service, open in their sheet.
+  const [legal, setLegal] = useState<LegalDocData | null>(null);
   const [draft, setDraft] = useState({ ...profile });
 
   const ALL_CROPS = ["Rice", "Corn", "Onions", "Tomatoes", "Calamansi", "Mango", "Garlic", "Squash", "Mongo"];
@@ -314,21 +315,21 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
             {group("manage", "tint-slate", <UserCog {...C} />, t("prof_manage"), <>
               {/* A real button: it opens the Privacy screen. The policy's
                   name is in English in both languages, like the policy. */}
-              <button className="setting-row as-btn" onClick={() => onNavigate("privacy")}>
+              <button className="setting-row as-btn" onClick={() => setLegal(PRIVACY)}>
                 {ico(<ShieldCheck {...I} />)}
                 <span className="setting-lbl" lang="en">{PRIVACY.title}</span>
                 {chev}
               </button>
               {/* The terms agreed to at sign-up, readable again any time.
                   A sheet over Profile, like the delete step below. */}
-              <button className="setting-row as-btn" onClick={() => setShowTerms(true)}>
+              <button className="setting-row as-btn" onClick={() => setLegal(TERMS)}>
                 {ico(<FileText {...I} />)}
                 <span className="setting-lbl" lang="en">{TERMS.title}</span>
                 {chev}
               </button>
               {onDeleteAccount && <DeleteAccount role={userRole} onDelete={onDeleteAccount} onSignOut={onSignOut} />}
             </>, { card: "manage", list: true })}
-            <LegalSheet doc={showTerms ? TERMS : null} onClose={() => setShowTerms(false)} />
+            <LegalSheet doc={legal} onClose={() => setLegal(null)} />
 
             <button className="signout-btn" onClick={onSignOut} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
               <LogOut size={18} strokeWidth={2.4} aria-hidden="true" /> {t("prof_sign_out")}

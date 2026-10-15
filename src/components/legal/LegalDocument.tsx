@@ -2,10 +2,9 @@ import React from "react";
 import { PRIVACY, PrivacySection, LegalDocData, fillPrivacy, privacyDate } from "../../data/privacyPolicy";
 
 // ─── A legal document ─────────────────────────────────────────────────────────
-// The Privacy Policy or the Terms of Service. The policy shows on the Privacy
-// screen (Profile) and in a sheet from the welcome screen and from sign-up;
-// the terms in a sheet from sign-up and from Profile. Both ship inside the
-// app, so they can be read without signal.
+// The Privacy Policy or the Terms of Service, shown in their sheet
+// (LegalSheet) from the welcome screen, from sign-up and from Profile. Both
+// ship inside the app, so they can be read without signal.
 //
 // Always in English, whichever language the app is set to: there is one text
 // and it is never translated. It is marked lang="en" so a screen reader reads

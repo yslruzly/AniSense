@@ -1010,7 +1010,11 @@ export function AuthFormScreen({
         </div>
         {fieldErr("terms")}
 
-        <LegalSheet doc={legal} onClose={() => setLegal(null)} />
+        {/* The documents ask, here: Accept ticks the box above, Decline
+            leaves it clear. */}
+        <LegalSheet doc={legal} onClose={() => setLegal(null)} figure={role === "buyer" ? "buyer" : "farmer"}
+          onAccept={() => { setAgreed(true); haptic.success(); clear(); setLegal(null); }}
+          onDecline={() => { setAgreed(false); setLegal(null); }} />
       </>,
       onward,
     );

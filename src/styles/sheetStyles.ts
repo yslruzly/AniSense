@@ -105,39 +105,109 @@ export const sheetCss = `
   .pp-ul li::marker { color: var(--text-faint); }
   .pp a { color: var(--tanim); font-weight: 600; text-decoration: none; overflow-wrap: anywhere; }
 
-  /* On the Privacy screen it is one white page, with a page's margins. */
-  .pp-page { padding: 22px 20px 26px; }
+  /* ── The two legal documents (LegalSheet) ──────────────────────────────
+     The whole screen: AniSense green across the top with a word of welcome
+     (and, at sign-up, the farmer or buyer waving), then the document on a
+     white card rising over it - a switch between the two, the title, the
+     date, the text, the only part that scrolls - and the buttons fixed at
+     the foot under a soft fade, as a sign-up's "read and accept" does. */
+  .lg-sheet {
+    position: relative; isolation: isolate; width: 100%; height: 100%; overflow: hidden;
+    display: flex; flex-direction: column; color: #fff;
+    background:
+      radial-gradient(90% 34% at 100% 0%, rgba(242,179,44,.22), transparent 62%),
+      linear-gradient(170deg, #145E3F 0%, #0E4630 40%, #0A3525 100%);
+  }
+  .lg-mark {
+    position: absolute; right: -36px; top: -24px; z-index: -1; width: 180px; height: auto;
+    opacity: .08; transform: rotate(-14deg); pointer-events: none; user-select: none;
+  }
+  .lg-top { flex: none; display: flex; align-items: center; justify-content: space-between; padding: calc(12px + var(--safe-top)) 14px 0; }
+  .lg-x {
+    width: 44px; height: 44px; border: none; border-radius: 50%; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; color: #fff;
+    background: rgba(255,255,255,.14); box-shadow: inset 0 0 0 1px rgba(255,255,255,.22);
+    transition: transform 160ms var(--ease-out), background-color 160ms ease; -webkit-tap-highlight-color: transparent;
+  }
+  .lg-x:active { transform: scale(.94); background: rgba(255,255,255,.24); transition-duration: 90ms; }
+  .lg-x:focus-visible { outline: 3px solid #F7CC5B; outline-offset: 2px; }
+  .lg-brand { display: inline-flex; align-items: center; gap: 7px; font-family: var(--font-display); font-size: 15px; font-weight: 700; color: rgba(255,255,255,.92); }
+  .lg-brand-mark {
+    width: 20px; height: 20px; background: linear-gradient(145deg, #FFF1C4 0%, #F7CC5B 35%, #D99A1E 70%, #F3C24E 100%);
+    -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+    -webkit-mask-position: center; mask-position: center;
+  }
+  /* The welcome: the words, and at sign-up the figure standing at the
+     right, its feet tucked behind the card's top edge. */
+  .lg-hello { flex: none; position: relative; display: flex; align-items: flex-end; gap: 6px; padding: 10px 18px 18px 20px; }
+  .lg-hello.is-asking { padding-bottom: 0; }
+  .lg-hello-txt { flex: 1; min-width: 0; }
+  .lg-hello.is-asking .lg-hello-txt { padding-bottom: 20px; }
+  .lg-hello-t { margin: 0; font-family: var(--font-display); font-size: 26px; font-weight: 700; letter-spacing: -.02em; line-height: 1.15; color: #fff; }
+  .lg-hello-s { margin: 6px 0 0; font-size: 15px; line-height: 1.45; color: rgba(255,255,255,.88); }
+  .lg-hello-s b { color: #F7CC5B; font-weight: 700; }
+  /* The figure's own rules, here and not borrowed from the walkthrough's
+     sheet: sign-up does not load that one. Three layers - the drawing, the
+     eyelids (off but for a blink), the hand that waves from the wrist. */
+  .lg-fig { position: relative; flex: none; width: 104px; aspect-ratio: 420 / 435; margin: -8px -6px -14px 0; }
+  .lg-fig img { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .lg-fig .tm-eyes { opacity: 0; animation: lg-blink 3.8s step-end 2.3s infinite; }
+  .lg-fig .tm-hand { transform-origin: 14.47% 61.55%; animation: lg-wave 1.7s var(--ease-io) 450ms both; }
+  .lg-fig.buyer .tm-hand { transform-origin: 14.37% 55.91%; }
+  @keyframes lg-blink { 0% { opacity: 1; } 4% { opacity: 0; } 100% { opacity: 0; } }
+  @keyframes lg-wave {
+    0%   { transform: rotate(0deg); }
+    16%  { transform: rotate(-16deg); }
+    32%  { transform: rotate(10deg); }
+    48%  { transform: rotate(-16deg); }
+    64%  { transform: rotate(10deg); }
+    82%  { transform: rotate(-5deg); }
+    100% { transform: rotate(0deg); }
+  }
 
-  /* The same policy from the welcome screen, in a tall white sheet: a title
-     bar that stays put with a 48px Close, the document scrolling under it,
-     and one button at the foot to go back. */
-  .pp-sheet {
-    width: 100%; height: 90%; background: var(--card); border-radius: 24px 24px 0 0;
-    display: flex; flex-direction: column; overflow: hidden;
+  .lg-card {
+    position: relative; z-index: 1; flex: 1; min-height: 0; display: flex; flex-direction: column;
+    background: var(--card); color: var(--text); border-radius: 28px 28px 0 0;
+    box-shadow: 0 -12px 30px -14px rgba(0,0,0,.5);
   }
-  .pp-sheet-head {
-    flex: none; display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    padding: 16px 14px 14px 22px; box-shadow: 0 1px 0 var(--line);
+  /* The switch between the two: a pale track, the chosen one lifted white. */
+  .lg-tabs { flex: none; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin: 14px 16px 0; padding: 4px; border-radius: 14px; background: var(--paper-alt); }
+  .lg-tab {
+    min-height: 44px; padding: 0 6px; border: none; border-radius: 11px; cursor: pointer; background: none;
+    font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--text-muted);
+    transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease; -webkit-tap-highlight-color: transparent;
   }
-  .pp-sheet-title { margin: 0; font-family: var(--font-display); font-size: var(--fs-title); font-weight: 700; letter-spacing: -.015em; color: var(--text); }
-  .pp-sheet-close {
-    width: 48px; height: 48px; flex-shrink: 0; border: none; border-radius: 50%; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; background: var(--paper-alt); color: var(--text-soft);
-    transition: transform 160ms var(--ease-out); -webkit-tap-highlight-color: transparent;
+  .lg-tab[aria-selected="true"] { background: #fff; color: var(--tanim-deep); box-shadow: 0 1px 3px rgba(22,33,27,.14), 0 0 0 1px rgba(22,33,27,.05); }
+  .lg-tab:focus-visible { outline: 3px solid var(--tanim); outline-offset: 1px; }
+  .lg-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 18px 22px 36px; scrollbar-width: none; }
+  .lg-body::-webkit-scrollbar { display: none; }
+  .lg-body:focus-visible { outline: none; }
+  .lg-title { margin: 0 0 6px; font-family: var(--font-display); font-size: 24px; font-weight: 700; letter-spacing: -.015em; line-height: 1.2; color: var(--text); }
+  /* The foot: fixed, with the text fading out above it. */
+  .lg-foot {
+    position: relative; flex: none; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    padding: 8px 16px calc(14px + var(--safe-bottom)); background: var(--card);
   }
-  .pp-sheet-close:active { transform: scale(.94); transition-duration: 90ms; }
-  .pp-sheet-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 20px 22px 28px; }
-  .pp-sheet-foot { flex: none; padding: 12px 22px calc(18px + var(--safe-bottom)); box-shadow: 0 -1px 0 var(--line); }
-  .pp-done {
-    width: 100%; min-height: 56px; border: none; border-radius: 999px; cursor: pointer;
-    font-family: var(--font-display); font-size: var(--fs-lead); font-weight: 600; color: #fff;
-    background-image: linear-gradient(180deg, #14875A 0%, var(--tanim) 54%, #075232 100%);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.26), inset 0 -1px 0 rgba(0,0,0,.24), 0 1px 2px rgba(6,38,23,.3);
-    transition: transform 190ms var(--ease-out); -webkit-tap-highlight-color: transparent;
+  .lg-foot.one { grid-template-columns: 1fr; }
+  .lg-foot::before {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 100%; height: 44px; pointer-events: none;
+    background: linear-gradient(180deg, rgba(255,255,255,0) 0%, #fff 100%);
   }
-  .pp-done:active { transform: scale(.975); transition-duration: 90ms; }
+  .lg-decline, .lg-accept {
+    min-height: 56px; border: none; border-radius: 16px; cursor: pointer;
+    font-family: var(--font-display); font-size: var(--fs-lead); font-weight: 700;
+    transition: transform 190ms var(--ease-out), background-color 160ms ease; -webkit-tap-highlight-color: transparent;
+  }
+  .lg-decline { background: var(--paper-alt); color: var(--text-soft); }
+  .lg-accept {
+    color: #fff; background-image: linear-gradient(180deg, #14875A 0%, var(--tanim) 54%, #075232 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.26), inset 0 -1px 0 rgba(0,0,0,.24), 0 8px 18px -10px rgba(6,38,23,.7);
+  }
+  .lg-decline:active, .lg-accept:active { transform: scale(.975); transition-duration: 90ms; }
+  .lg-decline:focus-visible, .lg-accept:focus-visible { outline: 3px solid var(--tanim); outline-offset: 2px; }
 
   @media (prefers-reduced-motion: reduce) {
-    .pp-done:active, .pp-sheet-close:active { transform: none; }
+    .lg-decline:active, .lg-accept:active, .lg-x:active { transform: none; }
+    .lg-fig .tm-hand, .lg-fig .tm-eyes { animation: none; }
   }
 `;
