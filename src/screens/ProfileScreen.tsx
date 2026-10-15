@@ -323,7 +323,7 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
                 <span className="setting-lbl" lang="en">{TERMS.title}</span>
                 {chev}
               </button>
-              {onDeleteAccount && <DeleteAccount role={userRole} onDelete={onDeleteAccount} />}
+              {onDeleteAccount && <DeleteAccount role={userRole} onDelete={onDeleteAccount} onSignOut={onSignOut} />}
             </>, { card: "manage", list: true })}
             <LegalSheet doc={showTerms ? TERMS : null} onClose={() => setShowTerms(false)} />
 

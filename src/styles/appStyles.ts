@@ -5606,28 +5606,79 @@ export const appCss = `
      others, with its icon and label in red so it is never taken for one of
      them. */
   .del-row-lbl, .del-row .setting-ico { color: var(--error); }
-  .del-sheet { max-height: 92%; overflow-y: auto; }
+  .del-sheet { max-height: 92%; overflow-y: auto; padding-top: 24px; }
+  /* The head: the bin on a soft red disc with a faint halo, then the
+     question and that it is for good. Serious, not alarming. */
+  .del-head { display: flex; flex-direction: column; align-items: center; text-align: center; }
   .del-ico {
-    width: 56px; height: 56px; border-radius: 18px; margin: 0 auto 14px;
-    display: flex; align-items: center; justify-content: center;
-    background: var(--error-sk); color: var(--error);
+    width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 14px;
+    display: flex; align-items: center; justify-content: center; color: var(--error);
+    background: radial-gradient(circle at 50% 35%, #FFF5F4 0%, #FBEAE8 100%);
+    box-shadow: inset 0 0 0 1px rgba(165,35,27,.18), 0 0 0 7px rgba(165,35,27,.06);
   }
   .del-title { margin: 0; text-align: center; font-family: var(--font-display); font-size: var(--fs-title); font-weight: 700; letter-spacing: -.015em; color: var(--text); }
   .del-body { margin: 8px 0 0; text-align: center; font-size: var(--fs-body); line-height: 1.5; color: var(--text-muted); }
-  /* What goes, one line each, marked with the same red cross. */
-  .del-list { list-style: none; margin: 18px 0 0; padding: 14px 16px; border-radius: 16px; background: var(--error-sk); display: flex; flex-direction: column; gap: 10px; }
-  .del-list li { display: flex; align-items: flex-start; gap: 10px; font-size: var(--fs-body); line-height: 1.35; font-weight: 600; color: var(--text); }
-  .del-list svg { flex-shrink: 0; margin-top: 3px; color: var(--error); }
-  .del-kept { margin: 12px 4px 0; font-size: var(--fs-label); line-height: 1.5; color: var(--text-muted); }
-  /* The tick that arms the button: the whole row is the target, 52px tall. */
-  .del-check {
-    display: flex; align-items: center; gap: 12px; min-height: 52px; margin-top: 14px; padding: 0 4px; cursor: pointer;
-    font-size: var(--fs-body); font-weight: 600; color: var(--text); -webkit-tap-highlight-color: transparent;
+  /* Two boxes, each named: what goes (red, a picture for each line), and
+     apart from it, what other people keep (plain). */
+  .del-box { margin-top: 18px; padding: 14px 16px; border-radius: 16px; }
+  .del-box + .del-box { margin-top: 10px; }
+  .del-box.is-gone { background: #FDF1EF; box-shadow: inset 0 0 0 1px rgba(165,35,27,.14); }
+  .del-box.is-kept { background: var(--paper); box-shadow: inset 0 0 0 1px var(--line); }
+  .del-box-t {
+    display: flex; align-items: center; gap: 7px; margin: 0 0 10px;
+    font-size: 13px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; line-height: 1.3;
   }
-  .del-check input { width: 24px; height: 24px; flex-shrink: 0; accent-color: var(--error); }
-  .del-actions { display: flex; gap: 12px; margin-top: 16px; }
-  .del-actions > * { flex: 1; }
+  .is-gone .del-box-t { color: var(--error); }
+  .is-kept .del-box-t { color: var(--text-muted); margin-bottom: 6px; }
+  .del-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .del-list li { display: flex; align-items: center; gap: 12px; font-size: var(--fs-body); line-height: 1.35; font-weight: 600; color: var(--text); }
+  .del-li-ico {
+    flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: #fff; color: var(--error); box-shadow: inset 0 0 0 1px rgba(165,35,27,.18);
+  }
+  .del-kept { margin: 0; font-size: var(--fs-label); line-height: 1.5; color: var(--text-soft); }
+  /* The tick that arms the button: a card, the whole of it the target, at
+     least 60px tall, that turns red once ticked. The real checkbox is under
+     the drawn box, so it still works by keyboard and screen reader. */
+  .del-check {
+    position: relative; display: flex; align-items: center; gap: 12px; min-height: 60px; margin-top: 14px; padding: 12px 14px;
+    border-radius: 16px; cursor: pointer; background: var(--card); box-shadow: inset 0 0 0 1.5px var(--line-strong);
+    font-size: var(--fs-body); font-weight: 700; line-height: 1.35; color: var(--text);
+    transition: background-color 160ms ease, box-shadow 160ms ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .del-check.on { background: #FDF1EF; box-shadow: inset 0 0 0 2px var(--error); }
+  .del-check:has(.del-check-in:focus-visible) { outline: 3px solid var(--error); outline-offset: 2px; }
+  .del-check:has(.del-check-in:disabled) { opacity: .6; cursor: default; }
+  .del-check-in { position: absolute; left: 14px; top: 50%; width: 26px; height: 26px; margin: -13px 0 0; opacity: 0; }
+  .del-check-box {
+    flex-shrink: 0; width: 26px; height: 26px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; color: transparent;
+    background: #fff; box-shadow: inset 0 0 0 2px var(--line-strong);
+    transition: background-color 160ms ease, box-shadow 160ms ease, color 160ms ease;
+  }
+  .del-check-box svg { transform: scale(.6); transition: transform 180ms var(--ease-out); }
+  .del-check.on .del-check-box { background: var(--error); color: #fff; box-shadow: none; }
+  .del-check.on .del-check-box svg { transform: none; }
+  /* Stacked, full width, so neither has to wrap: the red one, off until the
+     box is ticked, then Cancel at the foot where the thumb rests. */
+  .del-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+  .del-go, .del-cancel { min-height: 56px; padding: 0 18px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .del-go {
+    background-image: linear-gradient(180deg, #C2392E 0%, var(--error) 60%, #8C1D16 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 10px 20px -12px rgba(165,35,27,.8);
+  }
   .del-actions .btn-danger:disabled { background: var(--paper-alt); color: var(--text-faint); cursor: default; box-shadow: none; background-image: none; }
+  .del-actions .btn-danger:disabled:active { transform: none; }
+  /* The gentler way out, under it all. */
+  .del-alt { margin: 12px 0 0; text-align: center; font-size: 15px; line-height: 1.5; color: var(--text-muted); }
+  .del-alt-btn {
+    display: inline-block; padding: 10px 2px; border: none; background: none; cursor: pointer;
+    font: inherit; font-weight: 700; color: var(--tanim); text-decoration: underline; text-underline-offset: 3px;
+  }
+  .del-alt-btn:disabled { color: var(--text-faint); cursor: default; }
+  @media (prefers-reduced-motion: reduce) { .del-check-box svg { transition: none; } }
 
   .version-txt { text-align: center; font-size: var(--fs-label); color: var(--text-faint); padding: 8px 0 12px; }
 
