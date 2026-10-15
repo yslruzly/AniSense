@@ -256,12 +256,44 @@ export const authCss = `
      gold light at the top, the app's icon on its tile, a large title, what
      the app does in four lines, and the two ways in pinned to the foot. */
   .wl {
-    position: relative; isolation: isolate; color: #0F1A14;
+    position: relative; isolation: isolate; overflow: hidden; color: #0F1A14;
     background:
       radial-gradient(120% 46% at 50% -8%, rgba(22,137,91,.14), transparent 62%),
       radial-gradient(70% 34% at 100% 0%, rgba(242,179,44,.14), transparent 60%),
       #FBFCFA;
   }
+  /* Behind it all: three soft lights drifting, slowly enough to be felt
+     rather than watched (18-26 seconds a sway), and the fine lines of rice
+     terraces rising from the foot and fading out by the middle - the same
+     terraces as the Profile card. Only transforms move, so it costs the
+     phone almost nothing. */
+  .wl-bg { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+  .wl-orb { position: absolute; border-radius: 50%; will-change: transform; }
+  .wl-orb.o1 {
+    width: 340px; height: 340px; left: -110px; top: -120px;
+    background: radial-gradient(circle, rgba(126,201,155,.55) 0%, rgba(126,201,155,0) 68%);
+    animation: wl-drift-a 18s ease-in-out infinite alternate;
+  }
+  .wl-orb.o2 {
+    width: 300px; height: 300px; right: -120px; top: 10px;
+    background: radial-gradient(circle, rgba(255,214,112,.55) 0%, rgba(255,214,112,0) 68%);
+    animation: wl-drift-b 22s ease-in-out infinite alternate;
+  }
+  .wl-orb.o3 {
+    width: 380px; height: 380px; left: 12%; top: 200px;
+    background: radial-gradient(circle, rgba(184,226,199,.42) 0%, rgba(184,226,199,0) 66%);
+    animation: wl-drift-c 26s ease-in-out infinite alternate;
+  }
+  .wl-terraces {
+    position: absolute; left: -30%; right: -30%; bottom: -4%; height: 64%;
+    background: repeating-radial-gradient(ellipse 120% 80% at 50% 118%, rgba(11,107,65,.085) 0 1px, transparent 1.6px 17px);
+    -webkit-mask-image: linear-gradient(0deg, #000 0%, rgba(0,0,0,.6) 45%, transparent 100%);
+    mask-image: linear-gradient(0deg, #000 0%, rgba(0,0,0,.6) 45%, transparent 100%);
+  }
+  @keyframes wl-drift-a { from { transform: translate(0, 0) scale(1); } to { transform: translate(60px, 50px) scale(1.12); } }
+  @keyframes wl-drift-b { from { transform: translate(0, 0) scale(1.05); } to { transform: translate(-70px, 60px) scale(.94); } }
+  @keyframes wl-drift-c { from { transform: translate(0, 0) scale(.96); } to { transform: translate(-40px, -50px) scale(1.08); } }
+
   /* The page scrolls only if a small phone needs it to; the buttons stay. */
   .wl-page {
     flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none;
@@ -275,8 +307,15 @@ export const authCss = `
     width: 96px; height: 96px; border-radius: 24px; flex: none;
     display: flex; align-items: center; justify-content: center; background: #fff;
     box-shadow: 0 0 0 1px rgba(15,26,20,.05), 0 1px 2px rgba(15,26,20,.06), 0 18px 36px -16px rgba(11,107,65,.45);
+    position: relative; overflow: hidden;
     animation: wl-pop 620ms cubic-bezier(.22,1,.36,1) 60ms both;
   }
+  .wl-icon::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,.85) 50%, transparent 65%);
+    transform: translateX(-130%); animation: wl-shine 900ms ease-in-out 800ms 1 forwards;
+  }
+  @keyframes wl-shine { to { transform: translateX(130%); } }
   .wl-title {
     margin: 26px 0 0; text-align: center; font-family: var(--font-display); font-weight: 700;
     font-size: 34px; line-height: 1.08; letter-spacing: -.03em; color: #0F1A14;
@@ -310,12 +349,17 @@ export const authCss = `
      the list can pass under on a small phone. */
   .wl-dock {
     position: relative; flex: none; display: flex; flex-direction: column; gap: 6px;
-    padding: 14px 24px calc(18px + var(--safe-bottom)); background: #FBFCFA;
+    padding: 14px 24px calc(18px + var(--safe-bottom));
+    background: rgba(251,252,250,.72); -webkit-backdrop-filter: blur(18px) saturate(140%); backdrop-filter: blur(18px) saturate(140%);
     animation: wl-fade 500ms ease 620ms both;
   }
   .wl-dock::before {
     content: ""; position: absolute; left: 0; right: 0; bottom: 100%; height: 28px; pointer-events: none;
-    background: linear-gradient(180deg, rgba(251,252,250,0) 0%, #FBFCFA 100%);
+    background: linear-gradient(180deg, rgba(251,252,250,0) 0%, rgba(251,252,250,.72) 100%);
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    .wl-dock { background: #FBFCFA; -webkit-backdrop-filter: none; backdrop-filter: none; }
+    .wl-dock::before { background: linear-gradient(180deg, rgba(251,252,250,0) 0%, #FBFCFA 100%); }
   }
   .wl-primary {
     width: 100%; min-height: 58px; border: none; border-radius: 16px; cursor: pointer;
@@ -354,6 +398,8 @@ export const authCss = `
   @keyframes wl-fade { from { opacity: 0; } to { opacity: 1; } }
   @media (prefers-reduced-motion: reduce) {
     .wl-icon, .wl-title, .wl-slogan, .wl-item { animation: wl-fade 240ms ease both; }
+    .wl-orb { animation: none; }
+    .wl-icon::after { display: none; }
     .wl-primary:active, .wl-secondary:active { transform: none; }
   }
 

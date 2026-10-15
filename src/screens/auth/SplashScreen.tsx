@@ -28,6 +28,15 @@ export function SplashScreen({ onSignIn, onSignUp }: { onSignIn: () => void; onS
   const { t } = useLang();
   return (
     <div className="a-screen wl">
+      {/* Behind it all: three soft lights drifting slowly - green, gold and a
+          pale leaf green - and the fine lines of rice terraces rising from
+          the foot. Felt more than seen. */}
+      <div className="wl-bg" aria-hidden="true">
+        <span className="wl-orb o1" />
+        <span className="wl-orb o2" />
+        <span className="wl-orb o3" />
+        <span className="wl-terraces" />
+      </div>
       <div className="wl-page">
         <div className="wl-icon" aria-hidden="true"><AniSenseLogo size={62} /></div>
         <h1 className="wl-title">
