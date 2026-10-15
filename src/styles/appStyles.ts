@@ -1476,17 +1476,21 @@ export const appCss = `
   @keyframes wid-spin { to { transform: rotate(360deg); } }
   @media (prefers-reduced-motion: reduce) { .wid-btn-lbl { animation: none; } }
 
-  /* "Show Member ID" on the profile card: glass on the dark, full width at
-     the card's foot, 48px so it's an easy reach. */
+  /* "Show Member ID" on the profile card: solid white on the green, full
+     width at the card's foot, 50px so it is an easy reach - the one thing on
+     the card to press, so the brightest. */
   .prof-id-btn {
-    margin-top: 16px; width: 100%; min-height: 48px; border: none; border-radius: 14px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    background: rgba(255,255,255,.12); color: #fff; box-shadow: inset 0 0 0 1px rgba(255,255,255,.26);
-    font-family: var(--font-display); font-size: 15.5px; font-weight: 700;
+    margin-top: 18px; width: 100%; min-height: 50px; border: none; border-radius: 14px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 9px;
+    background: #fff; color: var(--tanim-deep);
+    box-shadow: inset 0 -1px 0 rgba(11,107,65,.12), 0 1px 2px rgba(0,0,0,.2), 0 10px 20px -12px rgba(0,0,0,.6);
+    font-family: var(--font-display); font-size: 16px; font-weight: 700;
     transition: transform 160ms var(--ease-out), background-color 160ms ease;
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
-  .prof-id-btn:active { transform: scale(.97); background: rgba(255,255,255,.2); transition-duration: 90ms; }
+  .prof-id-btn svg { color: var(--tanim); }
+  .prof-id-btn:active { transform: scale(.97); background: #E8F3EC; transition-duration: 90ms; }
+  .prof-id-btn:focus-visible { outline: 3px solid #F2B32C; outline-offset: 3px; }
   @media (prefers-reduced-motion: reduce) { .prof-id-btn:active { transform: none; } }
 
   /* Profile avatar, when the member has added a photo. */
@@ -5292,66 +5296,86 @@ export const appCss = `
   /* A card in the scroll, so it takes the same corner as everything around it
      rather than running square to the screen edge. */
   /* ── Profile member card ─────────────────────────────────────────────────
-     Three layers under the content, back to front: a deep ink-to-forest
-     gradient, rings of fine contour lines rising from the bottom-left corner
-     like rice terraces seen from above, and a soft green light top-right.
-     Every line is 5% white, so it's texture, never pattern-noise behind the
-     name. */
+     AniSense green, as the premium cards on Home: back to front, the green
+     from deep forest to near black, rings of fine contour lines rising from
+     the bottom-left like rice terraces seen from above, and a warm gold
+     light off the top-right corner. Every line is 5% white, so it is
+     texture, never noise behind the name. Gold marks what is the member's:
+     the brand's leaf, the role, the disc their initials sit on. */
   .prof-hero {
     position: relative; isolation: isolate; overflow: hidden;
     border-radius: var(--radius-lg);
-    padding: 64px 20px 24px; display: flex; flex-direction: column; align-items: center;
+    padding: 16px 18px 20px; display: flex; flex-direction: column; align-items: center;
     color: #fff; flex-shrink: 0; text-align: center;
     background:
-      radial-gradient(120% 90% at 100% 0%, rgba(126,196,120,.22), transparent 55%),
-      repeating-radial-gradient(circle at 0% 118%, rgba(255,255,255,.055) 0 1px, transparent 1.5px 17px),
-      linear-gradient(155deg, #1D2E25 0%, var(--ink) 55%, #0D1511 100%);
-    box-shadow: 0 16px 34px -18px rgba(22,33,27,.6), inset 0 1px 0 rgba(255,255,255,.08);
+      radial-gradient(90% 70% at 100% 0%, rgba(242,179,44,.2), transparent 60%),
+      repeating-radial-gradient(circle at 0% 118%, rgba(255,255,255,.05) 0 1px, transparent 1.5px 17px),
+      linear-gradient(160deg, #145E3F 0%, #0E4630 50%, #0A3525 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.1), inset 0 0 0 1px rgba(255,255,255,.05), 0 18px 34px -20px rgba(8,42,29,.8);
   }
-  /* Brand on the card's top edge, like the issuer's mark on a member card. */
-  .prof-brand {
-    position: absolute; top: 16px; left: 16px;
-    display: flex; align-items: center; gap: 8px;
-  }
+  /* Brand and role along the top edge, like the issuer's mark and the tier
+     on a member card. In the flow, so a long role never runs into the name. */
+  .prof-top { align-self: stretch; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+  .prof-brand { display: flex; align-items: center; gap: 8px; min-width: 0; }
   .prof-brand-mark {
-    width: 28px; height: 28px; border-radius: 8px; background: #fff;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 2px 6px rgba(0,0,0,.25);
+    flex-shrink: 0; width: 24px; height: 24px;
+    background: linear-gradient(145deg, #FFF1C4 0%, #F7CC5B 35%, #D99A1E 70%, #F3C24E 100%);
+    -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+    -webkit-mask-position: center; mask-position: center;
+    filter: drop-shadow(0 1px 1px rgba(0,0,0,.3));
   }
-  .prof-brand-name { font-family: var(--font-display); font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+  .prof-brand-name { font-family: var(--font-display); font-size: 16px; font-weight: 700; letter-spacing: -.01em; }
   .prof-role-pill {
-    position: absolute; top: 16px; right: 16px;
-    padding: 5px 12px; border-radius: 99px;
-    background: rgba(242,179,44,.16); color: var(--palay); box-shadow: inset 0 0 0 1px rgba(242,179,44,.35);
-    font-family: var(--font-display); font-size: 13px; font-weight: 700; letter-spacing: .02em;
+    flex-shrink: 0; padding: 5px 12px; border-radius: 99px; color: #3A2A05;
+    background: linear-gradient(180deg, #FFDB7A 0%, #F2B32C 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.55), 0 2px 6px -2px rgba(0,0,0,.4);
+    font-family: var(--font-display); font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
   }
   /* The leaf, huge and faint, bleeding off the bottom-right corner. A white
      cut-out of the mark (the logo file itself has a white square behind it),
-     so it tints the dark instead of adding colour. */
+     so it tints the green instead of adding colour. */
   .prof-watermark {
     position: absolute; right: -40px; bottom: -46px; z-index: -1; width: 190px; height: auto;
     opacity: .08; transform: rotate(-14deg); pointer-events: none; user-select: none;
   }
-  .prof-ava-wrap { position: relative; margin-bottom: 13px; }
-  /* A thin light ring and a soft drop lift the avatar off the texture. */
+  .prof-ava-wrap { position: relative; margin-bottom: 14px; }
+  /* The initials on a gold-plated disc, as the AI badge's robot and the
+     alerts' bell sit: light on its top half, a fine gold ring, then a faint
+     halo and a soft drop to lift it off the texture. A photo covers it. */
   .prof-ava {
-    width: 84px; height: 84px; border-radius: 50%;
-    background: var(--lime); border: none;
+    position: relative; width: 88px; height: 88px; border-radius: 50%; border: none;
     display: flex; align-items: center; justify-content: center;
-    font-size: var(--fs-display); font-weight: 800; color: var(--ink);
-    box-shadow: 0 0 0 4px rgba(255,255,255,.10), 0 8px 18px -8px rgba(0,0,0,.6);
+    font-family: var(--font-display); font-size: 32px; font-weight: 700; letter-spacing: -.01em; color: var(--tanim-deep);
+    background: linear-gradient(145deg, #FFF1C4 0%, #F7CC5B 28%, #D99A1E 56%, #F3C24E 78%, #B07A16 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.7), inset 0 -2px 2px rgba(110,70,0,.35),
+      0 0 0 2px rgba(255,214,107,.55), 0 0 0 7px rgba(255,255,255,.07),
+      0 10px 22px -8px rgba(0,0,0,.6);
   }
   .prof-edit-btn {
-    position: absolute; bottom: 0; right: 0; width: 27px; height: 27px;
+    position: absolute; bottom: 0; right: 0; width: 30px; height: 30px;
     border-radius: 50%; background: #fff; border: none; cursor: pointer;
     display: flex; align-items: center; justify-content: center; font-size: var(--fs-label);
+    box-shadow: 0 2px 6px rgba(0,0,0,.35);
   }
-  .prof-name  { font-family: var(--font-display); font-size: var(--fs-lead); font-weight: 700; margin-bottom: 3px; }
+  .prof-name  { font-family: var(--font-display); font-size: 22px; font-weight: 700; letter-spacing: -.015em; line-height: 1.2; margin-bottom: 4px; }
   .prof-loc {
-    font-size: var(--fs-label); opacity: .72; line-height: 1.4;
-    margin-bottom: 13px; max-width: 270px;
+    font-size: var(--fs-label); color: rgba(255,255,255,.86); line-height: 1.4;
+    margin-bottom: 14px; max-width: 280px;
   }
-  .prof-crops { display: flex; gap: 7px; flex-wrap: wrap; justify-content: center; }
+  /* Their crops: each picture on a small white disc, so it is seen whole on
+     the green, then the name, in a glass chip. */
+  .prof-crops { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+  .prof-crop {
+    display: inline-flex; align-items: center; gap: 7px; padding: 4px 13px 4px 4px; border-radius: 99px;
+    background: rgba(255,255,255,.1); box-shadow: inset 0 0 0 1px rgba(255,255,255,.2);
+    font-size: 15px; font-weight: 600; line-height: 1.3; color: #fff;
+  }
+  .prof-crop-art {
+    flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; overflow: hidden;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: radial-gradient(circle at 50% 30%, #fff 0%, #E8F3EC 100%);
+  }
   .crop-tag   { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); border-radius: 99px; padding: 4px 11px; font-size: var(--fs-label); font-weight: 600; color: #fff; }
 
   /* Scrollable sheets. A phone scrolls by dragging, so the bar is only clutter

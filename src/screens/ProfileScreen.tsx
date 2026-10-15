@@ -4,7 +4,6 @@ import { useLang, LanguageToggle } from "../i18n";
 import { Screen, UserRole, FarmerProfile } from "../types";
 import { CropEmoji } from "../components/icons/CropEmoji";
 import { formatName } from "../lib/names";
-import { AniSenseLogo } from "../components/brand/AniSenseLogo";
 import leafMask from "../assets/anisense-leaf-mask.png";
 import { Achievements } from "../components/profile/Achievements";
 import { Sale } from "../lib/sales";
@@ -138,16 +137,24 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
 
       <div className="scroll screen-enter">
         {/* Avatar + name hero */}
-        {/* A member card: brand on the top edge, the person in the middle,
-            their crops at the foot. The ground is terrace contour lines and a
-            faint leaf watermark, so it reads as AniSense's without a word. */}
+        {/* A member card in AniSense green: the brand and the member's role
+            along the top edge, the person in the middle on a gold-plated
+            disc, their crops under the name, the ID at the foot. The ground
+            is terrace contour lines and a faint leaf, so it reads as
+            AniSense's without a word. */}
         <div className="prof-hero">
-          <div className="prof-brand">
-            <span className="prof-brand-mark"><AniSenseLogo size={18} /></span>
-            <span className="prof-brand-name">AniSense</span>
-          </div>
-          <span className="prof-role-pill">{userRole === "buyer" ? t("role_buyer") : t("role_farmer")}</span>
           <img className="prof-watermark" src={leafMask} alt="" aria-hidden="true" />
+          <div className="prof-top">
+            <div className="prof-brand">
+              {/* The leaf in gold: the white cut-out of the mark used as a
+                  stencil, so it reads on the green where the full-colour
+                  logo, drawn on white, showed as a blank tile. */}
+              <span className="prof-brand-mark" aria-hidden="true"
+                style={{ WebkitMaskImage: `url(${leafMask})`, maskImage: `url(${leafMask})` }} />
+              <span className="prof-brand-name">AniSense</span>
+            </div>
+            <span className="prof-role-pill">{userRole === "buyer" ? t("role_buyer") : t("role_farmer")}</span>
+          </div>
 
           <div className="prof-ava-wrap">
             <div className="prof-ava">{userPhoto ? <img src={userPhoto} alt="" className="prof-ava-img" /> : userInitials}</div>
@@ -173,8 +180,9 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
           {userRole !== "buyer" && (
           <div className="prof-crops">
             {(editing ? draft : profile).crops.map(c => (
-              <span key={c} className="crop-tag" style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                <CropEmoji crop={c} size={14} /> {tn(c)}
+              <span key={c} className="prof-crop">
+                <span className="prof-crop-art" aria-hidden="true"><CropEmoji crop={c} size={17} /></span>
+                {tn(c)}
               </span>
             ))}
           </div>
@@ -183,7 +191,7 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
               natural place to reach for it when a buyer asks who you are. */}
           {onShowId && !editing && (
             <button className="prof-id-btn" onClick={onShowId}>
-              <IdCard size={19} strokeWidth={2.2} /> {t("id_show")}
+              <IdCard size={20} strokeWidth={2.3} aria-hidden="true" /> {t("id_show")}
             </button>
           )}
         </div>
