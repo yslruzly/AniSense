@@ -7,8 +7,8 @@ import { supabase } from "../lib/supabase";
 import { Listing, SellerDetail } from "../types";
 import { cachedFetch, requireOnline, FetchResult } from "../lib/cache";
 import { cropIdOf } from "../data/crops";
+import { storedPhoto } from "./photos";
 
-const PHOTO_BUCKET = "listing-photos";
 
 export const initialsOf = (name: string) =>
   name.split(" ").filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase() || "?";
@@ -120,26 +120,6 @@ export interface ListingInput {
   pricePerKg: number; kg: number; location: string;
   /** A new photo arrives as a data URL, a kept one as its https URL, none as null. */
   photo: string | null;
-}
-
-/** A name for the upload that won't collide, without relying on crypto.randomUUID. */
-const fileId = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
-
-/**
- * Puts a photo taken on the phone into Storage, in the farmer's own folder,
- * and gives back the address the listing will show it from. A photo already
- * in Storage (an edit that kept it) passes straight through.
- */
-async function storedPhoto(uid: string, photo: string | null): Promise<string | null> {
-  if (!photo) return null;
-  if (!photo.startsWith("data:")) return photo;
-  const blob = await (await fetch(photo)).blob();
-  const type = blob.type || "image/jpeg";
-  const ext = type === "image/png" ? "png" : type === "image/webp" ? "webp" : "jpg";
-  const path = `${uid}/${fileId()}.${ext}`;
-  const { error } = await supabase.storage.from(PHOTO_BUCKET).upload(path, blob, { contentType: type, upsert: false });
-  if (error) throw error;
-  return supabase.storage.from(PHOTO_BUCKET).getPublicUrl(path).data.publicUrl;
 }
 
 /** The catalog id for the crop the form picked, or a clear error. */

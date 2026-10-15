@@ -33,7 +33,7 @@ import { ViewerContext } from "./store/viewer";
 import { isSupabaseConfigured } from "./lib/supabase";
 import {
   restoreSession, onAuthChange, signOut, deleteMyAccount, getMyProfile, updateMyProfile,
-  toFarmerProfile, accountFromSession, rememberedMemberNo, rememberMemberNo, toE164Phone,
+  toFarmerProfile, accountFromSession, rememberedMemberNo, rememberMemberNo, toE164Phone, setMyPhoto,
 } from "./services/auth";
 import { FarmerProfile } from "./types";
 import { Sale } from "./lib/sales";
@@ -410,6 +410,7 @@ export default function App() {
         setUserName(row.full_name);
         setUserRole(row.role);
         setFarmerProfile(toFarmerProfile(row, session.user.email ?? ""));
+        setUserPhoto(row.avatar_url ?? null);
         if (row.member_no) {
           const memberNo = row.member_no;
           setWelcome(w => (w ? { id: memberNo, since: row.created_at ? new Date(row.created_at) : since } : w));
@@ -447,6 +448,18 @@ export default function App() {
       ...(p.phone.replace(/\D/g, "") ? { phone: toE164Phone(p.phone) } : {}),
       ...(Number.isFinite(years) ? { years_farming: years } : {}),
     }).catch(() => { /* kept on this phone; saved again with the next edit */ });
+  };
+
+  // A new photo, from the Profile or the ID card: shown at once, then saved to
+  // the account so it is there on the next start and on another phone. If it
+  // can't be saved, the one before comes back and the caller says so. The
+  // demo has no account, so there it stays on this phone for the visit.
+  const changePhoto = async (dataUrl: string) => {
+    const before = userPhoto;
+    setUserPhoto(dataUrl);
+    if (!isSupabaseConfigured) return;
+    try { await setMyPhoto(dataUrl); }
+    catch (e) { setUserPhoto(before); throw e; }
   };
 
   const handleSignOut = () => {
@@ -571,7 +584,7 @@ export default function App() {
       case "guide": return <GuideScreen onBack={goHome} onReplay={replayTour} />;
       case "privacy": return <PrivacyScreen onBack={openProfile} />;
       case "weather": return <WeatherScreen onProfile={openProfile} onBack={goHome} userInitials={initials} userRole={userRole} />;
-      case "profile": return <ProfileScreen onNavigate={navigate} onBack={goBack} profile={farmerProfile} setProfile={saveProfile} onSignOut={handleSignOut} onDeleteAccount={handleDeleteAccount} userInitials={initials} userRole={userRole} userPhoto={userPhoto} onShowId={() => { setIdMode("view"); setShowWelcome(true); }} onReplayTour={replayTour} onReplayExpensesTour={userRole === "farmer" ? replayExpensesTour : undefined} sales={allSales} memberSince={welcome?.since} />;
+      case "profile": return <ProfileScreen onNavigate={navigate} onBack={goBack} profile={farmerProfile} setProfile={saveProfile} onSignOut={handleSignOut} onDeleteAccount={handleDeleteAccount} userInitials={initials} userRole={userRole} userPhoto={userPhoto} onPhoto={changePhoto} onShowId={() => { setIdMode("view"); setShowWelcome(true); }} onReplayTour={replayTour} onReplayExpensesTour={userRole === "farmer" ? replayExpensesTour : undefined} sales={allSales} memberSince={welcome?.since} />;
     }
   };
 
@@ -599,7 +612,7 @@ export default function App() {
             location={farmerProfile.location}
             info={welcome}
             photo={userPhoto}
-            onPhoto={setUserPhoto}
+            onPhoto={changePhoto}
           />
           {/* Last inside the shell, so it covers the tab bar and the ID. */}
           <AchievementUnlocked

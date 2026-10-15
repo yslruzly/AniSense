@@ -143,6 +143,11 @@ create unique index if not exists profiles_member_no_key on public.profiles (mem
 alter table public.profiles drop constraint if exists profiles_member_no_format;
 alter table public.profiles add constraint profiles_member_no_format check (member_no ~ '^[0-9]{4}-[0-9]{5,}$');
 
+-- The person's own photo, for their Profile and their ID card: the address
+-- of a file in their own folder of the photos bucket (section 8). Set by the
+-- app when they pick one; empty until then, and their initials stand in.
+alter table public.profiles add column if not exists avatar_url text;
+
 -- How far each year's count has got. Read and written only by the database
 -- itself, when it numbers a new profile.
 create table if not exists public.member_counters (
@@ -381,7 +386,7 @@ create policy "profiles: update own" on public.profiles for update to authentica
 -- Only the details a person may change about themselves. Rating, sales count,
 -- role and verification are the database's to set.
 revoke update on public.profiles from authenticated, anon;
-grant update (full_name, phone, location, years_farming, bio) on public.profiles to authenticated;
+grant update (full_name, phone, location, years_farming, bio, avatar_url) on public.profiles to authenticated;
 
 drop policy if exists "profile crops: read" on public.profile_crops;
 create policy "profile crops: read" on public.profile_crops for select to authenticated using (true);
@@ -826,8 +831,9 @@ grant execute on function public.delete_my_account()             to authenticate
 
 -- ═══ 8. STORAGE: listing photos ══════════════════════════════════════════════
 -- A public bucket, so a photo loads from its address like any image. Each
--- farmer can only write inside their own folder ("<their user id>/..."). Photos
--- are shrunk on the phone first; the 3 MB cap is a guard, not a target.
+-- member can only write inside their own folder ("<their user id>/..."): their
+-- listings' photos, and their own profile photo ("avatar-..."). Photos are
+-- shrunk on the phone first; the 3 MB cap is a guard, not a target.
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('listing-photos', 'listing-photos', true, 3145728, array['image/jpeg', 'image/png', 'image/webp'])
 on conflict (id) do update

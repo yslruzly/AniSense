@@ -7,6 +7,7 @@ import { Session, isAuthRetryableFetchError } from "@supabase/supabase-js";
 import { Preferences } from "@capacitor/preferences";
 import { supabase, SESSION_KEY } from "../lib/supabase";
 import { kvGet, kvSet } from "../lib/localdb";
+import { PHOTO_BUCKET, storedPhoto, photoPath } from "./photos";
 import { UserRole, FarmerProfile } from "../types";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -260,7 +261,7 @@ export async function deleteMyAccount(): Promise<void> {
   if (!u.user) throw new Error("NOT_SIGNED_IN");
   const uid = u.user.id;
   try {
-    const bucket = supabase.storage.from("listing-photos");
+    const bucket = supabase.storage.from(PHOTO_BUCKET);
     const { data: files } = await bucket.list(uid, { limit: 1000 });
     if (files?.length) await bucket.remove(files.map(f => `${uid}/${f.name}`));
   } catch { /* the account goes regardless */ }
@@ -286,6 +287,8 @@ export interface ProfileRow {
   total_sales: number;
   /** "2026-00001": given by the database when the account is made (schema.sql, Member numbers). */
   member_no?: string | null;
+  /** Their own photo, for the Profile and the ID card (setMyPhoto). */
+  avatar_url?: string | null;
   created_at?: string;
 }
 
@@ -322,6 +325,32 @@ export async function updateMyProfile(changes: Partial<{
     const { error } = await supabase.rpc("set_my_crops", { crop_names: crops });
     if (error) throw error;
   }
+}
+
+/**
+ * The member's own photo, for their Profile and their ID card: put in their
+ * own folder in Storage (so deleting the account clears it with everything
+ * else of theirs), its address kept on their profile so it is there on the
+ * next start and on another phone, and the one it replaces removed. Gives
+ * back the address.
+ */
+export async function setMyPhoto(dataUrl: string): Promise<string> {
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) throw new Error("NOT_SIGNED_IN");
+  const uid = userData.user.id;
+  const { data: before } = await supabase.from("profiles").select("avatar_url").eq("id", uid).maybeSingle();
+  const url = (await storedPhoto(uid, dataUrl, "avatar-"))!;
+  const { error } = await supabase.from("profiles").update({ avatar_url: url }).eq("id", uid);
+  if (error) {
+    // Not recorded, so not kept: the file it would have pointed at goes too.
+    const orphan = photoPath(uid, url);
+    if (orphan) void supabase.storage.from(PHOTO_BUCKET).remove([orphan]).then(() => {}, () => {});
+    throw error;
+  }
+  // The photo it replaces. If that fails, a stray file is all that is left.
+  const old = photoPath(uid, (before as { avatar_url?: string | null } | null)?.avatar_url);
+  if (old) void supabase.storage.from(PHOTO_BUCKET).remove([old]).then(() => {}, () => {});
+  return url;
 }
 
 /** "+639171234567" → "+63 917 123 4567", the way the Profile screen shows it. */

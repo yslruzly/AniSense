@@ -48,7 +48,8 @@ export function WelcomeID({ open, onClose, mode = "welcome", name, initials, rol
   role: UserRole;
   info: WelcomeInfo | null;
   photo: string | null;
-  onPhoto: (dataUrl: string) => void;
+  /** Shows the photo and saves it to the account; rejects if it couldn't. */
+  onPhoto: (dataUrl: string) => void | Promise<void>;
 }) {
   const { t } = useLang();
   const place = location ? shortPlace(location) : undefined;
@@ -57,10 +58,14 @@ export function WelcomeID({ open, onClose, mode = "welcome", name, initials, rol
   // idle → busy → done (or failed), then back to idle after a moment. The
   // button says each step in place, so nothing else on screen has to.
   const [dl, setDl] = useState<"idle" | "busy" | "done" | "failed">("idle");
+  // A photo that could not be saved comes off the card again; this says why.
+  const [photoFailed, setPhotoFailed] = useState(false);
 
   const pickPhoto = async (file: File | undefined) => {
     if (!file) return;
-    try { onPhoto(await downscaleImage(file, 800)); haptic.select(); } catch { haptic.warn(); }
+    setPhotoFailed(false);
+    try { await onPhoto(await downscaleImage(file, 800)); haptic.select(); }
+    catch { haptic.warn(); setPhotoFailed(true); }
   };
 
   if (!info) return null;
@@ -144,6 +149,7 @@ export function WelcomeID({ open, onClose, mode = "welcome", name, initials, rol
         </div>
 
         <div className="wid-actions">
+          {photoFailed && <p className="wid-photo-err" role="alert"><AlertCircle size={17} strokeWidth={2.4} aria-hidden="true" /> {t("photo_save_failed")}</p>}
           {/* Viewing your ID is when you'd want a copy of it. */}
           {mode === "view" && (
             <button type="button" className={`wid-btn ghost ${dl === "done" ? "is-done" : ""} ${dl === "failed" ? "is-failed" : ""}`}

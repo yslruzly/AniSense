@@ -1,9 +1,11 @@
-import React, { useState } from "react";
-import { ArrowLeft, Camera, Bell, IdCard, Sprout, Wheat, SlidersHorizontal, Info, ChevronRight, Globe, ShieldCheck, UserCog, FileText, HelpCircle, PlayCircle, LogOut, Phone, Mail, MapPin, Calendar } from "lucide-react";
+import React, { useRef, useState } from "react";
+import { ArrowLeft, Camera, Bell, IdCard, Sprout, Wheat, SlidersHorizontal, Info, ChevronRight, Globe, ShieldCheck, UserCog, FileText, HelpCircle, PlayCircle, LogOut, Phone, Mail, MapPin, Calendar, Check, AlertCircle } from "lucide-react";
 import { useLang, LanguageToggle } from "../i18n";
 import { Screen, UserRole, FarmerProfile } from "../types";
 import { CropEmoji } from "../components/icons/CropEmoji";
 import { formatName } from "../lib/names";
+import { downscaleImage } from "../lib/image";
+import { haptic } from "../lib/platform";
 import leafMask from "../assets/anisense-leaf-mask.png";
 import { Achievements } from "../components/profile/Achievements";
 import { Sale } from "../lib/sales";
@@ -14,7 +16,7 @@ import { LegalSheet } from "../components/legal/LegalSheet";
 import { FarmStats } from "../components/profile/FarmStats";
 
 // ─── Profile Screen ───────────────────────────────────────────────────────────
-export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignOut, onDeleteAccount, userInitials = "JD", userRole, userPhoto = null, onShowId, onReplayTour, onReplayExpensesTour, sales = [], memberSince }: {
+export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignOut, onDeleteAccount, userInitials = "JD", userRole, userPhoto = null, onPhoto, onShowId, onReplayTour, onReplayExpensesTour, sales = [], memberSince }: {
   onNavigate: (s: Screen) => void;
   onBack: () => void;
   profile: FarmerProfile;
@@ -25,6 +27,8 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
   userInitials?: string;
   userRole?: UserRole;
   userPhoto?: string | null;
+  /** Shows a new photo and saves it to the account; rejects if it couldn't. */
+  onPhoto?: (dataUrl: string) => Promise<void> | void;
   onShowId?: () => void;
   /** Runs the guided walkthrough again, from wherever the farmer asked. */
   onReplayTour?: () => void;
@@ -112,6 +116,25 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
     </div>
   );
 
+  // A new profile photo: made small on the phone (a camera photo is several
+  // megabytes), then shown and saved. "Saved" stays a moment, then the
+  // button goes back to offering a change.
+  const photoInput = useRef<HTMLInputElement>(null);
+  const [photoState, setPhotoState] = useState<"idle" | "saving" | "saved" | "failed">("idle");
+  const pickPhoto = async (file: File | undefined) => {
+    if (!file || !onPhoto) return;
+    setPhotoState("saving");
+    try {
+      await onPhoto(await downscaleImage(file, 800));
+      haptic.success();
+      setPhotoState("saved");
+      window.setTimeout(() => setPhotoState(s => (s === "saved" ? "idle" : s)), 2400);
+    } catch {
+      haptic.warn();
+      setPhotoState("failed");
+    }
+  };
+
   return (
     <div className="screen">
       {/* Header */}
@@ -156,14 +179,35 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
             <span className="prof-role-pill">{userRole === "buyer" ? t("role_buyer") : t("role_farmer")}</span>
           </div>
 
+          {/* While editing, the picture is the button for a new photo (the
+              camera or the gallery, as the phone offers), with the same
+              action spelled out under it, which also says how the save went. */}
           <div className="prof-ava-wrap">
-            <div className="prof-ava">{userPhoto ? <img src={userPhoto} alt="" className="prof-ava-img" /> : userInitials}</div>
-            {editing && (
-              <button className="prof-edit-btn">
-                <Camera size={14} color="var(--text-soft)" />
+            {editing && onPhoto ? (
+              <button type="button" className="prof-ava is-btn" onClick={() => photoInput.current?.click()} disabled={photoState === "saving"}
+                aria-label={userPhoto ? t("welcome_change_photo") : t("welcome_add_photo")} aria-busy={photoState === "saving"}>
+                {userPhoto ? <img src={userPhoto} alt="" className="prof-ava-img" /> : userInitials}
+                {photoState === "saving" && <span className="prof-ava-busy" aria-hidden="true"><span className="wid-spin" /></span>}
               </button>
+            ) : (
+              <div className="prof-ava">{userPhoto ? <img src={userPhoto} alt="" className="prof-ava-img" /> : userInitials}</div>
             )}
+            {editing && onPhoto && (
+              <span className="prof-edit-btn" aria-hidden="true"><Camera size={15} strokeWidth={2.4} color="var(--tanim-deep)" /></span>
+            )}
+            <input ref={photoInput} type="file" accept="image/*" hidden
+              onChange={e => { void pickPhoto(e.target.files?.[0]); e.target.value = ""; }} />
           </div>
+          {editing && onPhoto && (
+            <button type="button" className={`prof-photo-btn is-${photoState}`} onClick={() => photoInput.current?.click()} disabled={photoState === "saving"}>
+              {photoState === "saving" ? <><span className="wid-spin" aria-hidden="true" /> {t("photo_saving")}</>
+                : photoState === "saved" ? <><Check size={17} strokeWidth={2.6} aria-hidden="true" /> {t("photo_saved")}</>
+                : <><Camera size={17} strokeWidth={2.4} aria-hidden="true" /> {userPhoto ? t("welcome_change_photo") : t("welcome_add_photo")}</>}
+            </button>
+          )}
+          {editing && photoState === "failed" && (
+            <p className="prof-photo-err" role="alert"><AlertCircle size={17} strokeWidth={2.4} aria-hidden="true" /> {t("photo_save_failed")}</p>
+          )}
           {editing
             ? <input value={draft.name} onChange={e => setDraft(d => ({ ...d, name: e.target.value }))}
                 onBlur={() => setDraft(d => ({ ...d, name: formatName(d.name) }))}

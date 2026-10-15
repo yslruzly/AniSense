@@ -25,6 +25,10 @@ const FONT = "Lexend, system-ui, sans-serif";
 
 const loadImage = (src: string) => new Promise<HTMLImageElement>((res, rej) => {
   const img = new Image();
+  // A photo kept in Storage comes from another address. Asked for with CORS
+  // (Storage allows it), it can be drawn onto the card and the card still
+  // saved; without, the canvas is locked and the download fails.
+  if (/^https?:/.test(src)) img.crossOrigin = "anonymous";
   img.onload = () => res(img);
   img.onerror = rej;
   img.src = src;

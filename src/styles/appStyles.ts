@@ -5352,12 +5352,44 @@ export const appCss = `
       0 0 0 2px rgba(255,214,107,.55), 0 0 0 7px rgba(255,255,255,.07),
       0 10px 22px -8px rgba(0,0,0,.6);
   }
+  /* While editing: the picture is a button, with a white camera badge at
+     its foot that says so, and a dim with a spinner while it saves. */
+  .prof-ava.is-btn { padding: 0; cursor: pointer; font: inherit; font-family: var(--font-display); font-size: 32px; font-weight: 700;
+    transition: transform 160ms var(--ease-out); -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+  .prof-ava.is-btn:active { transform: scale(.96); transition-duration: 90ms; }
+  .prof-ava.is-btn:focus-visible { outline: 3px solid #F2B32C; outline-offset: 4px; }
+  .prof-ava-busy { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(8,30,20,.55); }
+  .prof-ava-busy .wid-spin { width: 26px; height: 26px; border-width: 3px; }
   .prof-edit-btn {
-    position: absolute; bottom: 0; right: 0; width: 30px; height: 30px;
-    border-radius: 50%; background: #fff; border: none; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; font-size: var(--fs-label);
-    box-shadow: 0 2px 6px rgba(0,0,0,.35);
+    position: absolute; bottom: 0; right: -2px; width: 32px; height: 32px; pointer-events: none;
+    border-radius: 50%; background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 0 2px #0E4630, 0 2px 6px rgba(0,0,0,.35);
   }
+  /* The same action in words, under the picture: glass on the green, and
+     where the save got to - saving, saved (green), or why it did not. */
+  .prof-photo-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 44px; margin: -2px 0 12px; padding: 0 16px;
+    border: none; border-radius: 99px; cursor: pointer; color: #fff;
+    background: rgba(255,255,255,.12); box-shadow: inset 0 0 0 1px rgba(255,255,255,.28);
+    font-family: var(--font-display); font-size: 15px; font-weight: 700;
+    transition: transform 160ms var(--ease-out), background-color 160ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .prof-photo-btn:active { transform: scale(.97); background: rgba(255,255,255,.2); transition-duration: 90ms; }
+  .prof-photo-btn:disabled { cursor: default; }
+  .prof-photo-btn.is-saved { color: #CDEBD5; box-shadow: inset 0 0 0 1.5px rgba(126,196,120,.75); }
+  .prof-photo-err {
+    display: flex; align-items: flex-start; gap: 7px; max-width: 290px; margin: -4px 0 12px; padding: 8px 12px; border-radius: 12px; text-align: left;
+    background: #FBEAE8; color: var(--error); font-size: 14px; font-weight: 600; line-height: 1.4;
+  }
+  .prof-photo-err svg { flex-shrink: 0; margin-top: 1px; }
+  .wid-photo-err {
+    display: flex; align-items: flex-start; gap: 7px; margin: 0; padding: 9px 12px; border-radius: 12px;
+    background: #FBEAE8; color: var(--error); font-size: 14px; font-weight: 600; line-height: 1.4;
+  }
+  .wid-photo-err svg { flex-shrink: 0; margin-top: 1px; }
+  @media (prefers-reduced-motion: reduce) { .prof-ava.is-btn:active, .prof-photo-btn:active { transform: none; } }
   .prof-name  { font-family: var(--font-display); font-size: 22px; font-weight: 700; letter-spacing: -.015em; line-height: 1.2; margin-bottom: 4px; }
   .prof-loc {
     font-size: var(--fs-label); color: rgba(255,255,255,.86); line-height: 1.4;
