@@ -5598,6 +5598,16 @@ export const appCss = `
   .info-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
   .info-lbl { font-size: var(--fs-label); line-height: 1.3; color: var(--text-muted); }
   .info-val { font-size: var(--fs-body); font-weight: 500; line-height: 1.35; color: var(--text); overflow-wrap: anywhere; }
+  /* A row whose value runs to more than a line (the crops a farmer grows):
+     the icon stays level with the label at the top. */
+  .info-row.is-top { align-items: flex-start; }
+  .info-row.is-top .info-ico { margin-top: 1px; }
+  .prof-crop-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+  .prof-crop-chip {
+    display: inline-flex; align-items: center; gap: 5px; padding: 6px 14px; border-radius: 99px;
+    background: var(--tanim-sk); color: var(--tanim); font-size: var(--fs-label); font-weight: 600;
+  }
+  .prof-crop-list .crop-toggle { min-height: 40px; }
   @media (prefers-reduced-motion: reduce) { .setting-row.as-btn:active .setting-chev { transform: none; } }
 
   .signout-btn { width: 100%; padding: 16px; background: var(--error-sk); color: var(--red); border: none; border-radius: var(--radius); font-family: inherit; font-size: var(--fs-label); font-weight: 700; cursor: pointer; }

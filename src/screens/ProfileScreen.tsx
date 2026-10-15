@@ -248,28 +248,31 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
 
         {group("contact", "tint-blue", <Phone {...C} />, t("prof_contact"), contactFields.map(infoRow), { list: true })}
 
-        {/* Farm Details, farmer only */}
-        {userRole !== "buyer" && group("farm", "tint-green", <Sprout {...C} />, t("prof_farm_details"), farmFields.map(infoRow), { list: true })}
-
-        {/* Crop Specialization, farmer only */}
-        {userRole !== "buyer" && group("crops", "tint-green", <Wheat {...C} />, t("prof_crop_spec"), editing
-          ? <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            {ALL_CROPS.map(c => (
-              <button key={c} onClick={() => toggleCrop(c)}
-                aria-pressed={draft.crops.includes(c)}
-                className={`crop-toggle ${draft.crops.includes(c) ? "on" : ""}`}>
-                <CropEmoji crop={c} size={16} /> {tn(c)}
-              </button>
-            ))}
+        {/* Farm Details, farmer only: one card for the farm - how long they
+            have farmed, and under it the crops they grow, as two rows of the
+            same list. The crops turn into toggles while editing. */}
+        {userRole !== "buyer" && group("farm", "tint-green", <Sprout {...C} />, t("prof_farm_details"), <>
+          {farmFields.map(infoRow)}
+          <div className="info-row is-top">
+            <span className="info-ico" aria-hidden="true"><Wheat {...I} /></span>
+            <div className="info-body">
+              <div className="info-lbl" id="pg-crops">{t("prof_crop_spec")}</div>
+              <div className="prof-crop-list" role={editing ? "group" : undefined} aria-labelledby={editing ? "pg-crops" : undefined}>
+                {editing
+                  ? ALL_CROPS.map(c => (
+                    <button key={c} type="button" onClick={() => toggleCrop(c)}
+                      aria-pressed={draft.crops.includes(c)}
+                      className={`crop-toggle ${draft.crops.includes(c) ? "on" : ""}`}>
+                      <CropEmoji crop={c} size={16} /> {tn(c)}
+                    </button>
+                  ))
+                  : profile.crops.map(c => (
+                    <span key={c} className="prof-crop-chip"><CropEmoji crop={c} size={16} /> {tn(c)}</span>
+                  ))}
+              </div>
+            </div>
           </div>
-          : <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            {profile.crops.map(c => (
-              <span key={c} style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 14px", borderRadius: 99, background: "var(--tanim-sk)", border: "1px solid var(--tanim-sk)", color: "var(--tanim)", fontSize: "var(--fs-label)", fontWeight: 600 }}>
-                <CropEmoji crop={c} size={16} /> {tn(c)}
-              </span>
-            ))}
-          </div>
-        )}
+        </>, { list: true })}
 
         {/* Settings */}
         {!editing && (
