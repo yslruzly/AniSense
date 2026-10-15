@@ -12,6 +12,7 @@ import { peso } from "../../lib/money";
 import { isNetworkError } from "../../lib/cache";
 import { PesoField, pesoText, pesoValue } from "../ui/PesoField";
 import { StarsShown } from "../ui/StarRating";
+import leafMask from "../../assets/anisense-leaf-mask.png";
 
 // ─── An order from a buyer ────────────────────────────────────────────────────
 // The one alert that asks the farmer to do something, so it is the one alert
@@ -263,11 +264,15 @@ export function Hdr({ icon, title, sub, onBack, extra, center }: { icon?: React.
         className="alerts-sheet modal-sheet"
         label={t("alerts_title")}
       >
-        {/* The head: the bell in a glass tile, the title, what this sheet
-            is for, and how many there are today - the one number that says
-            whether it is worth reading now. */}
+        {/* The head, in AniSense green with the leaf faint across its corner,
+            as the farmer's own cards on Home: a handle to say it is a sheet,
+            the bell on a gold-plated disc, the title, what this is for, and
+            how many there are today - the one number that says whether it is
+            worth reading now. */}
         <div className="alerts-head">
-          <span className="alerts-head-ico" aria-hidden="true"><Bell size={22} strokeWidth={2.4} /></span>
+          <img className="alerts-mark" src={leafMask} alt="" aria-hidden="true" />
+          <span className="alerts-grab" aria-hidden="true" />
+          <span className="alerts-head-ico" aria-hidden="true"><Bell size={21} strokeWidth={2.4} /></span>
           <div className="alerts-head-txt">
             <div className="alerts-head-t">
               {t("alerts_title")}
@@ -284,28 +289,53 @@ export function Hdr({ icon, title, sub, onBack, extra, center }: { icon?: React.
             once are two events competing for the same moment. Letting the
             rows follow the panel in gives the eye an order to read them in.
             Rare enough to earn it: this opens a handful of times a day. */}
-        <div className="alerts-body stagger-list">
+        {/* Two groups, each named: the orders first, since they wait on an
+            answer, each its own card with Call and Confirm; then everything
+            else as one white list, a row each, a hairline between. */}
+        <div className="alerts-body">
           {alerts.length === 0 ? (
             <div className="alerts-empty">
               <span className="alerts-empty-ico" aria-hidden="true"><BellOff size={26} strokeWidth={2.2} /></span>
               <div className="alerts-empty-t">{t("alerts_none")}</div>
               <div className="alerts-empty-s">{t(isBuyer ? "alerts_none_sub_buyer" : "alerts_none_sub")}</div>
             </div>
-          ) : alerts.map(a => {
-            if (a.order) return <OrderAlert key={a.id} order={a.order} onConfirm={confirmOrder} />;
-            const r = row(a);
+          ) : (() => {
+            const orders = alerts.filter(a => a.order);
+            const news = alerts.filter(a => !a.order);
             return (
-              <div key={a.id} className={`alert-row ${r.tone}`}>
-                <span className="alert-ico" aria-hidden="true">{r.ico}</span>
-                <span className="alert-txt">
-                  <span className="alert-kind">{r.kind}</span>
-                  <span className="alert-t">{r.title}</span>
-                  <span className="alert-b">{r.body}</span>
-                </span>
-                {r.chip && <span className="alert-chip">{r.chip}</span>}
-              </div>
+              <>
+                {orders.length > 0 && (
+                  <section className="alerts-sec" aria-labelledby="al-orders">
+                    <h3 className="alerts-sec-t" id="al-orders">{t("alerts_sec_orders")}</h3>
+                    <div className="alerts-cards stagger-list">
+                      {orders.map(a => <OrderAlert key={a.id} order={a.order!} onConfirm={confirmOrder} />)}
+                    </div>
+                  </section>
+                )}
+                {news.length > 0 && (
+                  <section className="alerts-sec" aria-labelledby="al-news">
+                    <h3 className="alerts-sec-t" id="al-news">{t("alerts_sec_updates")}</h3>
+                    <div className="alerts-list stagger-list">
+                      {news.map(a => {
+                        const r = row(a);
+                        return (
+                          <div key={a.id} className={`alert-row ${r.tone}`}>
+                            <span className="alert-ico" aria-hidden="true">{r.ico}</span>
+                            <span className="alert-txt">
+                              <span className="alert-kind">{r.kind}</span>
+                              <span className="alert-t">{r.title}</span>
+                              <span className="alert-b">{r.body}</span>
+                            </span>
+                            {r.chip && <span className="alert-chip">{r.chip}</span>}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </section>
+                )}
+              </>
             );
-          })}
+          })()}
         </div>
       </Sheet>
     </>

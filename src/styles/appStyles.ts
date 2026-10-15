@@ -180,34 +180,49 @@ export const appCss = `
   .alerts-sheet {
     width: 100%; max-height: 84%; background: var(--paper);
     border-radius: 26px 26px 0 0; padding-bottom: calc(22px + var(--safe-bottom));
-    overflow-y: auto; scrollbar-width: none;
+    overflow-y: auto; scrollbar-width: none; overscroll-behavior: contain;
   }
   .alerts-sheet::-webkit-scrollbar { display: none; }
+  /* The head: AniSense green, as the farmer's Your harvest and In the
+     ground, a warm gold light off its corner and the AniSense leaf faint
+     behind; a light handle; the bell on a gold-plated disc, as the AI
+     badge's robot sits on; the title in white with the gold count; a glass
+     close. It stays put while the list scrolls under it. */
   .alerts-head {
-    position: sticky; top: 0; z-index: 2;
-    border-radius: 26px 26px 0 0; padding: 20px 18px 18px;
-    display: flex; align-items: center; gap: 13px;
+    position: sticky; top: 0; z-index: 2; overflow: hidden; isolation: isolate;
+    display: grid; grid-template-columns: 46px minmax(0, 1fr) 40px; align-items: center; column-gap: 12px;
+    padding: 24px 16px 18px; border-radius: 26px 26px 0 0; color: #fff;
     background:
-      radial-gradient(120% 140% at 100% 0%, rgba(126,196,120,.32), transparent 58%),
-      linear-gradient(160deg, #13744A 0%, var(--tanim-deep) 100%);
-    box-shadow: 0 10px 22px -18px rgba(4,20,12,.9);
+      radial-gradient(90% 120% at 100% 0%, rgba(242,179,44,.22), transparent 60%),
+      linear-gradient(160deg, #145E3F 0%, #0E4630 55%, #0A3525 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 14px 26px -20px rgba(4,20,12,.9);
   }
+  .alerts-mark {
+    position: absolute; right: -28px; top: -34px; z-index: -1; width: 150px; height: auto;
+    opacity: .1; transform: rotate(-14deg); pointer-events: none; user-select: none;
+  }
+  .alerts-grab { position: absolute; top: 8px; left: 50%; width: 40px; height: 5px; margin-left: -20px; border-radius: 99px; background: rgba(255,255,255,.32); }
   .alerts-head-ico {
-    width: 46px; height: 46px; flex-shrink: 0; border-radius: 14px; color: #fff;
-    display: flex; align-items: center; justify-content: center;
-    background: linear-gradient(180deg, rgba(255,255,255,.24), rgba(255,255,255,.1));
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.3), inset 0 0 0 1px rgba(255,255,255,.22);
+    position: relative; width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    color: var(--tanim-deep);
+    background: linear-gradient(145deg, #FFF1C4 0%, #F7CC5B 28%, #D99A1E 52%, #F3C24E 74%, #B07A16 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.75), inset 0 -1.5px 1px rgba(110,70,0,.45), 0 0 0 1.5px rgba(255,214,107,.6), 0 4px 10px rgba(0,0,0,.3);
   }
-  .alerts-head-txt { flex: 1; min-width: 0; }
+  .alerts-head-ico::after {
+    content: ""; position: absolute; inset: 3px 9px auto 6px; height: 44%; border-radius: 50% 50% 40% 40%; pointer-events: none;
+    background: linear-gradient(180deg, rgba(255,255,255,.55) 0%, rgba(255,255,255,0) 100%);
+  }
+  .alerts-head-ico svg { position: relative; z-index: 1; }
+  .alerts-head-txt { min-width: 0; }
   .alerts-head-t {
-    display: flex; align-items: center; gap: 8px;
-    font-family: var(--font-display); font-size: 21px; font-weight: 700; letter-spacing: -.015em; color: #fff;
+    display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px;
+    font-family: var(--font-display); font-size: 22px; font-weight: 700; letter-spacing: -.015em; color: #fff;
   }
   .alerts-count {
-    padding: 3px 9px; border-radius: 99px; font-family: var(--font-body); font-size: 12px; font-weight: 800;
+    padding: 3px 9px; border-radius: 99px; font-family: var(--font-body); font-size: 12.5px; font-weight: 800;
     background: #F2B32C; color: #3A2A05; letter-spacing: .01em; font-variant-numeric: tabular-nums;
   }
-  .alerts-head-s { font-size: 13.5px; color: rgba(255,255,255,.8); margin-top: 3px; line-height: 1.35; }
+  .alerts-head-s { font-size: 14px; color: rgba(255,255,255,.8); margin-top: 2px; line-height: 1.4; }
   .alerts-close {
     background: rgba(255,255,255,.16); border: none; border-radius: 50%;
     box-shadow: inset 0 0 0 1px rgba(255,255,255,.22);
@@ -216,29 +231,46 @@ export const appCss = `
     transition: transform 190ms var(--ease-out), background-color 160ms ease;
   }
   .alerts-close:active { transition-duration: 100ms; transform: scale(0.94); background: rgba(255,255,255,.3); }
-  .alerts-body { padding: 16px 14px 0; display: flex; flex-direction: column; gap: 10px; }
+  .alerts-head .alerts-close { align-self: start; }
+  .alerts-body { padding: 4px 14px 0; display: flex; flex-direction: column; gap: 6px; }
+  /* A group: its name small and quiet, then its alerts. */
+  .alerts-sec-t {
+    display: flex; align-items: center; gap: 10px; margin: 16px 4px 10px;
+    font-size: 12.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--text-faint);
+  }
+  .alerts-sec-t::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, var(--line-strong), rgba(194,197,201,0)); }
+  .alerts-cards { display: flex; flex-direction: column; gap: 10px; }
+  /* Everything that is not an order: one white list, a hairline between rows
+     starting where the words do. */
+  .alerts-list {
+    border-radius: 20px; background: var(--card); overflow: hidden;
+    box-shadow: 0 0 0 1px rgba(22,33,27,.07), 0 1px 2px rgba(22,33,27,.05), 0 14px 28px -20px rgba(22,33,27,.45);
+  }
+  .alerts-list > .alert-row { position: relative; border-radius: 0; box-shadow: none; background: none; padding: 13px 14px; }
+  .alerts-list > .alert-row + .alert-row::before { content: ""; position: absolute; top: 0; left: 70px; right: 0; height: 1px; background: var(--line); }
   .alert-row {
-    display: flex; align-items: center; gap: 12px; padding: 12px 12px 12px 12px;
+    display: flex; align-items: center; gap: 12px; padding: 12px;
     background: var(--card); border-radius: 18px;
-    box-shadow: inset 0 0 0 1px var(--line), 0 10px 18px -16px rgba(22,33,27,.45);
+    box-shadow: 0 0 0 1px rgba(22,33,27,.07), 0 10px 22px -18px rgba(22,33,27,.4);
   }
+  /* The kind, as a soft tinted circle with its picture in the kind's colour:
+     green good news, gold a warning, red a loss, blue the weather. */
   .alert-ico {
-    width: 44px; height: 44px; border-radius: 13px; flex-shrink: 0; color: #fff;
+    width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.24), inset 0 -1px 0 rgba(0,0,0,.18), 0 1px 2px rgba(0,0,0,.18);
   }
-  .alert-row.green .alert-ico { background: linear-gradient(180deg, #16895B 0%, var(--tanim) 55%, #07522F 100%); }
-  .alert-row.gold  .alert-ico { background: linear-gradient(180deg, #D39B2E 0%, #B07A16 55%, #8A5D0C 100%); }
-  .alert-row.red   .alert-ico { background: linear-gradient(180deg, #D0564A 0%, #B3342A 55%, #86190F 100%); }
-  .alert-row.blue  .alert-ico { background: linear-gradient(180deg, #4A8FCC 0%, #2F6FA8 55%, #235887 100%); }
+  .alert-row.green .alert-ico { background: linear-gradient(180deg, #F1F8F3 0%, var(--tanim-sk) 100%); color: var(--tanim); box-shadow: inset 0 0 0 1px rgba(11,107,65,.14), inset 0 1px 0 #fff; }
+  .alert-row.gold  .alert-ico { background: linear-gradient(180deg, #FFF9EC 0%, #FBEBC4 100%); color: var(--gold-text); box-shadow: inset 0 0 0 1px rgba(138,93,12,.18), inset 0 1px 0 #fff; }
+  .alert-row.red   .alert-ico { background: linear-gradient(180deg, #FFF5F4 0%, var(--error-sk) 100%); color: var(--error); box-shadow: inset 0 0 0 1px rgba(165,35,27,.14), inset 0 1px 0 #fff; }
+  .alert-row.blue  .alert-ico { background: linear-gradient(180deg, #F2F7FD 0%, #DCEAF8 100%); color: #2F6FA8; box-shadow: inset 0 0 0 1px rgba(47,111,168,.16), inset 0 1px 0 #fff; }
   .alert-txt { flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-  .alert-kind { font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+  .alert-kind { font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
   .alert-row.green .alert-kind { color: var(--tanim); }
   .alert-row.gold  .alert-kind { color: var(--gold-text); }
   .alert-row.red   .alert-kind { color: var(--error); }
   .alert-row.blue  .alert-kind { color: #2F6FA8; }
-  .alert-t { font-family: var(--font-display); font-size: 15.5px; font-weight: 700; letter-spacing: -.005em; color: var(--text); line-height: 1.25; }
-  .alert-b { font-size: 13.5px; color: var(--text-muted); line-height: 1.4; }
+  .alert-t { font-family: var(--font-display); font-size: 16px; font-weight: 700; letter-spacing: -.005em; color: var(--text); line-height: 1.25; }
+  .alert-b { font-size: 14px; color: var(--text-muted); line-height: 1.4; }
   .alert-chip {
     flex-shrink: 0; align-self: center; padding: 5px 10px; border-radius: 99px;
     font-family: var(--font-display); font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap;
@@ -254,7 +286,11 @@ export const appCss = `
      a thumb cannot miss: Call, filled, because it comes first; Confirm,
      outlined, under it. Text here is 16px and up: these are words a farmer
      reads to act on, not a headline to glance at. */
-  .alert-row.alert-order { flex-direction: column; align-items: stretch; gap: 12px; padding: 14px; }
+  .alert-row.alert-order {
+    flex-direction: column; align-items: stretch; gap: 12px; padding: 14px; border-radius: 20px;
+    background: linear-gradient(180deg, #F1F8F3 0%, #FFFFFF 46%);
+    box-shadow: 0 0 0 1px rgba(11,107,65,.14), 0 1px 2px rgba(22,33,27,.05), 0 14px 28px -20px rgba(22,33,27,.45);
+  }
   .ord-top { display: flex; align-items: center; gap: 12px; }
   .ord-name { font-family: var(--font-display); font-size: 18px; font-weight: 700; letter-spacing: -.01em; color: var(--text); line-height: 1.25; }
   .ord-what { font-size: var(--fs-label); color: var(--text-soft); line-height: 1.35; }

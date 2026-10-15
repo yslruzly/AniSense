@@ -938,6 +938,8 @@ export const translations: Dict = {
   // ── Extra: home ───────────────────────────────────────────────────────────
   home_offline_cached: { en: "Offline: cached data", tl: "Offline: naka-save na datos" },
   // ── Alerts (header bell) ──────────────────────────────────────────────────
+  alerts_sec_orders: { en: "Orders", tl: "Mga order" },
+  alerts_sec_updates: { en: "Updates", tl: "Mga update" },
   alerts_title: { en: "Alerts", tl: "Mga Abiso" },
   alerts_count: { en: "{n} today", tl: "{n} ngayon" },
   alert_kind_price: { en: "Price", tl: "Presyo" },
