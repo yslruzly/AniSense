@@ -847,6 +847,98 @@ export const appCss = `
   .ph-row.is-tap.no-tile { grid-template-columns: minmax(0, 1fr) auto 18px; }
   .ph-row.is-tap.no-tile + .ph-row.is-tap.no-tile::before { left: 10px; }
 
+  /* ── Expenses overview: the three charts ───────────────────────────────
+     Each card a header (the title, a line under it), then its chart. Words
+     and numbers in ink; colour only on the marks. Hairline grid, rounded
+     data-ends, a white gap between neighbours. */
+  .card.xc { padding: 16px; border-radius: 20px; box-shadow: 0 0 0 1px rgba(22,33,27,.07), 0 1px 2px rgba(22,33,27,.05), 0 12px 24px -18px rgba(22,33,27,.35); border: none; }
+  .xc-head { display: flex; flex-direction: column; gap: 2px; margin-bottom: 14px; }
+  .xc-t { margin: 0; font-family: var(--font-display); font-size: 17px; font-weight: 700; letter-spacing: -.01em; color: var(--text); }
+  .xc-s { font-size: 13.5px; line-height: 1.4; color: var(--text-muted); }
+  .xd-empty { margin: 0; padding: 18px 8px; border-radius: 14px; background: var(--paper); text-align: center; font-size: 14.5px; line-height: 1.45; color: var(--text-muted); }
+
+  /* The ring: the month's total in its middle. */
+  .xd-ring { position: relative; width: 184px; margin: 0 auto; }
+  .xd-ring svg { display: block; width: 100%; height: auto; }
+  .xd-track { fill: none; stroke: var(--paper-alt); stroke-width: 24; }
+  .xd-arc { cursor: pointer; transition: opacity 200ms ease; }
+  .xd-arc.dim { opacity: .22; }
+  .xd-mid { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; pointer-events: none; text-align: center; }
+  .xd-mid-k { max-width: 110px; font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: capitalize; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .xd-mid-v { font-family: var(--font-display); font-size: 22px; font-weight: 800; letter-spacing: -.02em; color: var(--text); }
+  .xd-mid-p { font-size: 12.5px; color: var(--text-faint); }
+  /* The kinds, ranked: colour key, picture, name, pesos, share. */
+  .xd-list { list-style: none; margin: 14px 0 0; padding: 0; }
+  .xd-list > li + li { border-top: 1px solid var(--line); }
+  .xd-row {
+    width: 100%; min-height: 48px; display: grid; grid-template-columns: 12px 32px minmax(0, 1fr) auto 44px; align-items: center; column-gap: 10px;
+    padding: 6px 4px; border: none; border-radius: 12px; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer;
+    transition: background-color 160ms ease, opacity 200ms ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .xd-row:active { background: var(--paper); transition-duration: 0ms; }
+  .xd-row.on { background: var(--paper); }
+  .xd-row.dim { opacity: .5; }
+  .xd-row:focus-visible { outline: 3px solid var(--tanim); outline-offset: -3px; }
+  .xd-key { width: 12px; height: 12px; border-radius: 4px; }
+  .xd-ico { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: var(--paper); box-shadow: inset 0 0 0 1px var(--line); }
+  .xd-name { min-width: 0; font-family: var(--font-display); font-size: 15.5px; font-weight: 700; color: var(--text); overflow-wrap: break-word; }
+  .xd-amt { font-family: var(--font-display); font-size: 15.5px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .xd-pct { font-size: 13.5px; font-weight: 700; color: var(--text-faint); text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* By crop this month: drawing, name and pesos, one green bar, the share. */
+  .xs-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+  .xs-row { display: grid; grid-template-columns: 44px minmax(0, 1fr); align-items: center; column-gap: 12px; }
+  .xs-art {
+    width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--tanim);
+    background: radial-gradient(circle at 50% 30%, #F4FAF6 0%, var(--tanim-sk) 100%); box-shadow: inset 0 0 0 1px rgba(11,107,65,.1);
+  }
+  .xs-art img { width: 82%; height: 82%; object-fit: contain; display: block; }
+  .xs-mid { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+  .xs-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .xs-name { font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--text); }
+  .xs-amt { font-family: var(--font-display); font-size: 16px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .xs-bar { display: block; height: 8px; border-radius: 99px; background: var(--paper-alt); overflow: hidden; }
+  .xs-fill { display: block; width: 100%; height: 100%; border-radius: 99px; background: var(--tanim); transform-origin: left center; animation: mo-grow 600ms var(--ease-out) both; }
+  .xs-pct { font-size: 13px; color: var(--text-muted); }
+  .xs-row.none .xs-name, .xs-row.none .xs-amt { color: var(--text-faint); }
+  .xs-row.none .xs-art { opacity: .6; }
+  .xs-total { display: flex; align-items: baseline; justify-content: space-between; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .xs-total span { font-size: 14.5px; font-weight: 700; color: var(--text-muted); }
+  .xs-total b { font-family: var(--font-display); font-size: 18px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
+
+  /* Month by month: one green, the picked month solid, the rest a paler
+     step of it; the months as buttons under their bars; the picked month's
+     total and its crops in a panel below. */
+  .xm-svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .xm-grid { stroke: var(--line); stroke-width: 1; }
+  .xm-axis { font-size: 12.5px; font-weight: 600; fill: var(--text-faint); font-variant-numeric: tabular-nums; }
+  .xm-col { cursor: pointer; }
+  .xm-bar { fill: #A9CFB6; transition: fill 200ms ease; }
+  .xm-bar.on { fill: var(--tanim); }
+  .xm-val { font-size: 13px; font-weight: 800; fill: var(--text); font-variant-numeric: tabular-nums; }
+  .xm-months { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); margin-top: 4px; }
+  .xm-m {
+    min-height: 40px; border: none; border-radius: 10px; background: none; cursor: pointer;
+    font-family: var(--font-display); font-size: 13.5px; font-weight: 600; color: var(--text-faint); text-transform: capitalize;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .xm-m.on { color: var(--text); font-weight: 800; background: var(--tanim-sk); }
+  .xm-m:focus-visible { outline: 3px solid var(--tanim); outline-offset: -3px; }
+  .xm-read { margin-top: 10px; padding: 12px 14px; border-radius: 14px; background: var(--paper); }
+  .xm-read-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .xm-read-m { font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--text); text-transform: capitalize; }
+  .xm-read-v { font-family: var(--font-display); font-size: 19px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
+  .xm-crops { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+  .xm-crops li { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; color: var(--text-muted); }
+  .xm-crops b { font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+  .xm-none { margin: 6px 0 0; font-size: 14px; color: var(--text-faint); }
+  @media (prefers-reduced-motion: reduce) {
+    .xs-fill { animation: none; }
+    .xd-arc, .xd-row, .xm-bar { transition: none; }
+  }
+  .shell[data-revisit] .scroll .xs-fill { animation: none; }
+
   /* ── Expenses by crop and by month ──────────────────────────────────────
      A card per crop or month. The head on one grid: a badge (the crop's
      drawing, or a calendar leaf for a month), then the name, the count and a

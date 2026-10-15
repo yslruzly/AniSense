@@ -1,89 +1,115 @@
+import { useState } from "react";
 import { useLang } from "../../i18n";
 import { Expense } from "../../types";
-import { CROP_BAR_COLORS, DATA_NEUTRAL } from "../../constants/colors";
-import { CropIcon } from "../icons";
 
-// ─── Monthly Trends Bar Chart (live from transactions) ────────────────────────
-// ─── Monthly Breakdown Per Crop ───────────────────────────────────────────────
+// ─── Spending, month by month ─────────────────────────────────────────────────
+// The last six months up to this one, in order, a month with nothing spent
+// kept in its place so the gaps show too. One bar a month in one colour (the
+// pesos are the story; the crops are told underneath), the picked month solid
+// green and the others a paler step of the same green, its amount over it.
+// Round numbers on a few hairlines up the side.
+//
+// The months are buttons under the bars: tap one (or its bar) and the panel
+// under the chart says what it came to and what each crop took. It opens on
+// this month, or the latest month with any spending.
+//
+// Grouped by year and month (2026-10), never by the month's name alone, which
+// put October 2025 and October 2026 in one bar, and not in date order.
+
+const W = 320, H = 170, P = { t: 24, r: 6, b: 6, l: 46 };
+
+/** 1, 2 or 5 × a power of ten: steps that read as round numbers. */
+function niceStep(raw: number) {
+  const p = Math.pow(10, Math.floor(Math.log10(raw)));
+  const f = raw / p;
+  return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * p;
+}
+const short = (n: number) => (n >= 1000 ? `₱${(n / 1000).toLocaleString("en-PH", { maximumFractionDigits: 1 })}k` : `₱${n}`);
+
 export function MonthlyTrendsChart({ transactions, farmerCrops }: { transactions: Expense[]; farmerCrops: string[] }) {
-  const { t, tn } = useLang();
-  const W = 280, H = 130, P = { t: 10, r: 8, b: 24, l: 44 };
-
-  // Group by month then by crop
-  const monthCropMap: Record<string, Record<string, number>> = {};
+  const { t, tn, lang } = useLang();
+  const locale = lang === "tl" ? "fil-PH" : "en-PH";
+  const now = new Date();
+  const months = Array.from({ length: 6 }, (_, k) => new Date(now.getFullYear(), now.getMonth() - 5 + k, 1));
+  const keyOf = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+  const data = months.map(d => ({ d, key: keyOf(d), total: 0, crops: {} as Record<string, number> }));
+  const byKey = Object.fromEntries(data.map(m => [m.key, m]));
   transactions.forEach(e => {
-    let mon = "Other";
-    if (e.date && e.date.includes("-")) {
-      const d = new Date(e.date);
-      mon = d.toLocaleDateString("en-PH", { month: "short" });
-    } else {
-      mon = (e.date.split(" ")[0]) || "Other";
-    }
-    if (!monthCropMap[mon]) monthCropMap[mon] = {};
-    const crop = e.crop || "Other";
-    monthCropMap[mon][crop] = (monthCropMap[mon][crop] || 0) + e.amount;
+    const m = byKey[keyOf(new Date(e.date))];
+    if (!m) return;
+    m.total += e.amount;
+    m.crops[e.crop] = (m.crops[e.crop] || 0) + e.amount;
   });
+  const latest = data.map(m => m.total > 0).lastIndexOf(true);
+  const [sel, setSel] = useState(() => (data[5].total > 0 || latest < 0 ? 5 : latest));
+  if (latest < 0) return <p className="xd-empty">{t("exp_no_data")}</p>;
 
-  const months = Object.keys(monthCropMap).slice(-4);
-  if (months.length === 0) {
-    return <div style={{ textAlign: "center", fontSize: "var(--fs-label)", color: "var(--text-faint)", padding: "16px 0" }}>{t("exp_no_data")}</div>;
-  }
-
-  const maxVal = Math.max(...months.map(m => Object.values(monthCropMap[m]).reduce((s, v) => s + v, 0)), 1);
-  const chartW = W - P.l - P.r;
-  const chartH = H - P.t - P.b;
-  const groupW = chartW / months.length;
-  const barW = Math.min(36, groupW - 10);
-  const ticks = [0, Math.round(maxVal * 0.5), maxVal];
+  const max = Math.max(...data.map(m => m.total));
+  const step = niceStep(max / 3);
+  const top = Math.ceil(max / step) * step;
+  const ticks = Array.from({ length: Math.round(top / step) + 1 }, (_, i) => i * step);
+  const plotW = W - P.l - P.r, plotH = H - P.t - P.b;
+  const slot = plotW / data.length;
+  const barW = 24, r = 4;
+  const y = (v: number) => P.t + plotH - (v / top) * plotH;
+  // A bar rounded at its top, square on the baseline.
+  const bar = (cx: number, v: number) => {
+    const x0 = cx - barW / 2, x1 = cx + barW / 2, y0 = y(v), yb = P.t + plotH;
+    const rr = Math.min(r, (yb - y0) / 2);
+    return `M${x0} ${yb} L${x0} ${y0 + rr} Q${x0} ${y0} ${x0 + rr} ${y0} L${x1 - rr} ${y0} Q${x1} ${y0} ${x1} ${y0 + rr} L${x1} ${yb} Z`;
+  };
+  const m = data[sel];
+  const crops = Object.entries(m.crops).sort((a, b) => b[1] - a[1] || farmerCrops.indexOf(a[0]) - farmerCrops.indexOf(b[0]));
 
   return (
-    <div>
-      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto" }}>
-        {ticks.map(t => {
-          const yy = P.t + chartH - (t / maxVal) * chartH;
+    <div className="xm">
+      <svg viewBox={`0 0 ${W} ${H}`} className="xm-svg" role="img"
+        aria-label={data.map(x => `${x.d.toLocaleDateString(locale, { month: "long", year: "numeric" })} ₱${x.total.toLocaleString()}`).join(", ")}>
+        {ticks.map(v => (
+          <g key={v}>
+            <line x1={P.l} x2={W - P.r} y1={y(v)} y2={y(v)} className="xm-grid" />
+            <text x={P.l - 8} y={y(v) + 4.5} className="xm-axis" textAnchor="end">{short(v)}</text>
+          </g>
+        ))}
+        {data.map((x, i) => {
+          const cx = P.l + slot * (i + 0.5);
           return (
-            <g key={t}>
-              <line x1={P.l} y1={yy} x2={W - P.r} y2={yy} stroke="var(--line)" strokeWidth="1" strokeDasharray="3 3" />
-              <text x={P.l - 4} y={yy + 3} fontSize="9" fill="var(--text-faint)" textAnchor="end">{t >= 1000 ? `${(t / 1000).toFixed(0)}k` : t}</text>
-            </g>
-          );
-        })}
-        {months.map((mon, mi) => {
-          const cx = P.l + mi * groupW + groupW / 2;
-          const cropData = monthCropMap[mon];
-          let stackY = P.t + chartH;
-          const total = Object.values(cropData).reduce((s, v) => s + v, 0);
-
-          return (
-            <g key={mon}>
-              {farmerCrops.map(crop => {
-                const val = cropData[crop] || 0;
-                if (!val) return null;
-                const bh = Math.max((val / maxVal) * chartH, 1);
-                stackY -= bh;
-                const color = CROP_BAR_COLORS[crop] || DATA_NEUTRAL;
-                return (
-                  <rect key={crop} x={cx - barW / 2} y={stackY} width={barW} height={bh}
-                    rx={val === total ? 4 : 0} fill={color} opacity="0.88" />
-                );
-              })}
-              <text x={cx} y={H - P.b + 12} fontSize="10" fill={DATA_NEUTRAL} textAnchor="middle">{mon}</text>
-              <text x={cx} y={P.t + chartH - (total / maxVal) * chartH - 4} fontSize="9" fill="var(--text-soft)" textAnchor="middle">
-                {total >= 1000 ? `${(total / 1000).toFixed(1)}k` : total}
-              </text>
+            <g key={x.key} onClick={() => setSel(i)} className="xm-col">
+              {/* The whole column is the target, not just the painted bar. */}
+              <rect x={cx - slot / 2} y={0} width={slot} height={H} fill="transparent" />
+              {x.total > 0 && <path d={bar(cx, x.total)} className={`xm-bar${i === sel ? " on" : ""}`} />}
+              {i === sel && x.total > 0 && (
+                <text x={Math.min(Math.max(cx, P.l + 24), W - 24)} y={y(x.total) - 8} className="xm-val" textAnchor="middle">{short(x.total)}</text>
+              )}
             </g>
           );
         })}
       </svg>
-
-      {/* Legend */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 12px", marginTop: 8 }}>
-        {farmerCrops.map(crop => (
-          <div key={crop} style={{ display: "flex", alignItems: "center", gap: 5 }}>
-            <span style={{ width: 10, height: 10, borderRadius: 3, background: CROP_BAR_COLORS[crop] || DATA_NEUTRAL, flexShrink: 0 }} />
-            <span style={{ fontSize: "var(--fs-label)", color: "var(--text-soft)", fontWeight: 600 }}>{tn(crop)}</span>
-          </div>
+      {/* The months, as buttons, each under its bar. */}
+      <div className="xm-months" style={{ marginLeft: `${(P.l / W) * 100}%`, marginRight: `${(P.r / W) * 100}%` }}>
+        {data.map((x, i) => (
+          <button key={x.key} type="button" className={`xm-m${i === sel ? " on" : ""}`} aria-pressed={i === sel} onClick={() => setSel(i)}
+            aria-label={x.d.toLocaleDateString(locale, { month: "long", year: "numeric" })}>
+            {x.d.toLocaleDateString(locale, { month: "short" }).replace(".", "")}
+          </button>
         ))}
+      </div>
+
+      {/* The picked month: what it came to, and what each crop took. */}
+      <div className="xm-read" aria-live="polite">
+        <div className="xm-read-head">
+          <span className="xm-read-m">{m.d.toLocaleDateString(locale, { month: "long", year: "numeric" })}</span>
+          <span className="xm-read-v">₱{m.total.toLocaleString()}</span>
+        </div>
+        {crops.length > 0 ? (
+          <ul className="xm-crops">
+            {crops.map(([crop, amt]) => (
+              <li key={crop}><span>{tn(crop)}</span><b>₱{amt.toLocaleString()}</b></li>
+            ))}
+          </ul>
+        ) : (
+          <p className="xm-none">{t("exp_nothing")}</p>
+        )}
       </div>
     </div>
   );

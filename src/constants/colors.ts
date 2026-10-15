@@ -35,30 +35,21 @@ export const dataColor = (i: number) => DATA_RAMP[i % DATA_RAMP.length];
 /** Fallback for anything unmapped: a neutral, never a random hue. */
 export const DATA_NEUTRAL = "#454F49";
 
-// Expense categories. Order is fixed so a category keeps its colour between
-// sessions and between screens; a category that changes colour on reload is
-// worse than no colour at all.
+// Expense categories, for the ring on Expenses: the dataviz reference
+// palette, each kind on a hue that suits it (seeds green, fertilizer yellow,
+// irrigation aqua, labour orange, equipment blue, other magenta). Validated
+// with the dataviz checker as neighbours in the ring's own order, CAT_ORDER,
+// last beside first: worst colour-blind ΔE 9.1, normal-vision 19.6. The ring's
+// earlier colours had two near-identical reds side by side. Aqua, yellow and
+// magenta are under 3:1 on white, so every slice is named, with its pesos, in
+// the list beside it. Fixed per kind, so a kind keeps its colour everywhere.
+export const CAT_ORDER = ["Equipment", "Labor", "Irrigation", "Fertilizer", "Other", "Seeds"];
 export const CAT_COLORS: Record<string, string> = {
-  Seeds: DATA_RAMP[0],
-  Fertilizer: DATA_RAMP[4],
-  Labor: DATA_RAMP[3],
-  Equipment: DATA_RAMP[1],
-  Irrigation: DATA_RAMP[5],
-  Other: DATA_RAMP[2],
+  Equipment: "#2a78d6",
+  Labor: "#eb6834",
+  Irrigation: "#1baf7a",
+  Fertilizer: "#eda100",
+  Other: "#e87ba4",
+  Seeds: "#008300",
 };
 
-// Crops only need distinct colours where several series share one chart. In a
-// single-series bar chart the label already identifies the bar, so those render
-// in one colour; see .bar-fill in appStyles.
-export const CROP_BAR_COLORS: Record<string, string> = {
-  Rice: DATA_RAMP[0],
-  Corn: DATA_RAMP[4],
-  Onions: DATA_RAMP[1],
-  Tomatoes: DATA_RAMP[2],
-  Calamansi: DATA_RAMP[5],
-  Mango: DATA_RAMP[3],
-  Garlic: DATA_RAMP[2],
-  Squash: DATA_RAMP[4],
-  Eggplant: DATA_RAMP[1],
-  Mongo: DATA_RAMP[3],
-};

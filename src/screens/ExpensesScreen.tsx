@@ -515,26 +515,31 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
             {/* ═══ OVERVIEW TAB ═══ */}
             {viewMode === "all" && (
               <>
-                {/* Pie chart */}
-                <div className="card" data-tour="exp-chart">
-                  <div style={{ fontSize: "var(--fs-label)", fontWeight: 800, color: "var(--text)", marginBottom: 12 }}>{t("exp_breakdown")}</div>
+                {/* This month by kind: a ring and the kinds ranked under it. */}
+                <section className="card xc" data-tour="exp-chart" aria-labelledby="xc-kind">
+                  <div className="xc-head">
+                    <h3 className="xc-t" id="xc-kind">{t("exp_breakdown")}</h3>
+                    <span className="xc-s">{t("exp_breakdown_s")}</span>
+                  </div>
                   <PieChart transactions={transactions} />
-                </div>
+                </section>
 
-                {/* Crop specialization summary */}
-                <div className="card">
-                  <div style={{ fontSize: "var(--fs-label)", fontWeight: 800, color: "var(--text)", marginBottom: 12 }}>{t("exp_by_specialization")}</div>
+                {/* This month by crop. */}
+                <section className="card xc" aria-labelledby="xc-crop">
+                  <div className="xc-head">
+                    <h3 className="xc-t" id="xc-crop">{t("exp_by_specialization")}</h3>
+                  </div>
                   <CropExpenseSummary transactions={transactions} farmerCrops={farmerCrops} />
-                </div>
+                </section>
 
-                {/* Monthly stacked chart */}
-                <div className="card">
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                    <div style={{ fontSize: "var(--fs-label)", fontWeight: 800, color: "var(--text)" }}>{t("exp_monthly_breakdown")}</div>
-                    <span style={{ fontSize: "var(--fs-label)", color: "var(--text-muted)" }}>{t("exp_per_crop_stacked")}</span>
+                {/* The last six months, a bar each. */}
+                <section className="card xc" aria-labelledby="xc-month">
+                  <div className="xc-head">
+                    <h3 className="xc-t" id="xc-month">{t("exp_monthly_breakdown")}</h3>
+                    <span className="xc-s">{t("exp_last6_hint")}</span>
                   </div>
                   <MonthlyTrendsChart transactions={transactions} farmerCrops={farmerCrops} />
-                </div>
+                </section>
 
                 {/* Recent transactions */}
                 <div className="card" data-tour="exp-list">

@@ -572,6 +572,10 @@ export const translations: Dict = {
   exp_by_crop: { en: "By Crop", tl: "Pananim" },
   exp_by_month: { en: "By Month", tl: "Buwan" },
   exp_breakdown: { en: "Expense Breakdown", tl: "Hati-hati ng Gastos" },
+  exp_breakdown_s: { en: "This month, by kind. Tap one to see it.", tl: "Ngayong buwan, ayon sa uri. Pindutin ang isa para makita." },
+  exp_this_month: { en: "this month", tl: "ngayong buwan" },
+  exp_nothing: { en: "Nothing spent", tl: "Walang nagastos" },
+  exp_last6_hint: { en: "Last 6 months. Tap a month to see it.", tl: "Huling 6 na buwan. Pindutin ang isang buwan para makita." },
   exp_none_yet: {
     en: "No expenses this month yet. Add an expense to see the breakdown.",
     tl: "Wala pang gastos ngayong buwan. Magdagdag ng gastos para makita ang buod.",
@@ -1100,7 +1104,6 @@ export const translations: Dict = {
   exp_expense_one: { en: "expense", tl: "gastos" },
   exp_expenses_many: { en: "expenses", tl: "gastos" },
   exp_share: { en: "{pct}% of all", tl: "{pct}% ng lahat" },
-  exp_per_crop_stacked: { en: "per crop · stacked", tl: "kada pananim · nakasalansan" },
   exp_no_data: {
     en: "No data yet. Add expenses to see monthly breakdown.",
     tl: "Wala pang datos. Magdagdag ng gastos para makita ang buwanang buod.",
