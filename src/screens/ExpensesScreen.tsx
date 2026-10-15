@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { EmptyState, Skeleton, SkeletonMediaRows } from "../components/states";
-import { PhilippinePeso, PieChart as PieIcon, CalendarDays, MapPin, Pencil, Trash2, X, ChevronRight, ChevronDown, Calendar, Calculator, Receipt, Plus, CheckCircle, AlertTriangle, Sprout, ShoppingCart, Filter, Store, Clock, Check, HandCoins } from "lucide-react";
+import { PhilippinePeso, PieChart as PieIcon, CalendarDays, MapPin, Pencil, Trash2, X, ChevronRight, ChevronDown, Calendar, Calculator, Receipt, Plus, CheckCircle, AlertTriangle, Sprout, ShoppingCart, Filter, Store, Clock, Check, HandCoins, ArrowUp, ArrowDown, Minus } from "lucide-react";
 import { useLang } from "../i18n";
 import { Expense, BuyerTransaction } from "../types";
 import { useMarket } from "../store/market";
@@ -478,14 +478,24 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
             {/* Hero */}
             <div className="exp-hero" data-tour="exp-month" style={{ textAlign: "left", padding: "20px 18px" }}>
               <div className="exp-total-lbl">{t("exp_total_month")}</div>
-              <div className="exp-total" style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+              <div className="exp-total">
                 {busy ? (showSkeleton && <Skeleton className="on-ink" w={170} h={36} />) : <>₱{thisMonthTotal.toLocaleString()}</>}
-                {!busy && momChangePct !== null && (
-                  <span style={{ fontSize: "var(--fs-label)", fontWeight: 700, padding: "3px 9px", borderRadius: 99, background: momChangePct <= 0 ? "rgba(255,255,255,0.22)" : "rgba(197,90,58,0.35)" }}>
-                    {momChangePct <= 0 ? "▼" : "▲"} {Math.abs(momChangePct)}% {t("exp_vs_last_month")}
-                  </span>
-                )}
               </div>
+              {/* Against last month, on its own line under the total so it never
+                  has to squeeze in beside a big number: the change in a solid
+                  chip, red when more was spent, green when less, and what it is
+                  against in plain words after it. */}
+              {!busy && momChangePct !== null && (
+                <div className="exp-mom-row">
+                  <span className={`exp-mom ${momChangePct > 0 ? "up" : momChangePct < 0 ? "down" : "flat"}`}>
+                    {momChangePct > 0 ? <ArrowUp size={16} strokeWidth={2.8} aria-hidden="true" />
+                      : momChangePct < 0 ? <ArrowDown size={16} strokeWidth={2.8} aria-hidden="true" />
+                      : <Minus size={16} strokeWidth={2.8} aria-hidden="true" />}
+                    {Math.abs(momChangePct)}%
+                  </span>
+                  <span className="exp-mom-vs">{t("exp_vs_last_month")}</span>
+                </div>
+              )}
               {!busy && expSamples && <span className="ph-sample on-ink">{t("mp_sample")}</span>}
             </div>
 

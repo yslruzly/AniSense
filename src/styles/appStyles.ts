@@ -673,6 +673,23 @@ export const appCss = `
   }
   .exp-total-lbl { font-size: var(--fs-label); opacity:.94; margin-bottom:6px; font-weight:500; text-shadow: 0 1px 3px rgba(11,15,12,.6); }
   .exp-total { font-family: var(--font-display); font-size: var(--fs-display); font-weight:700; text-shadow: 0 1px 4px rgba(11,15,12,.55); }
+  /* This month against last, its own line under the total: the change in a
+     solid light chip so it reads on any part of the photo - red when more
+     was spent (the one to notice), green when less, plain when the same -
+     then what it is against in plain words, which may wrap; the chip never
+     does. */
+  .exp-mom-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin-top: 10px; }
+  .exp-mom {
+    display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; white-space: nowrap;
+    padding: 4px 11px 4px 8px; border-radius: 99px;
+    font-size: 15px; font-weight: 800; line-height: 1.3; font-variant-numeric: tabular-nums;
+    box-shadow: 0 2px 8px -2px rgba(0,0,0,.4);
+  }
+  .exp-mom svg { flex-shrink: 0; }
+  .exp-mom.up { background: #FBEAE8; color: var(--error); }
+  .exp-mom.down { background: #E3F1E8; color: var(--tanim-deep); }
+  .exp-mom.flat { background: #F2F3F4; color: var(--text-soft); }
+  .exp-mom-vs { font-size: 14px; font-weight: 600; line-height: 1.3; color: #fff; text-shadow: 0 1px 3px rgba(11,15,12,.6); }
 
 
   .exp-row { display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--border); }
