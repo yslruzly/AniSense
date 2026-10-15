@@ -6,12 +6,15 @@ import { renderMemberId } from "../../lib/memberIdImage";
 import { downscaleImage } from "../../lib/image";
 import { UserRole } from "../../types";
 import { Sheet } from "../ui/Sheet";
-import { AniSenseLogo } from "../brand/AniSenseLogo";
+import leafMask from "../../assets/anisense-leaf-mask.png";
 
 // ─── Welcome ID ───────────────────────────────────────────────────────────────
 // Shown once, right after an account is created: the new member's AniSense
-// ID, like a real one: issuer on the top band, photo in the middle, name at
-// the foot, an ID number and a barcode along the bottom edge.
+// ID, like a real one, in the colours of their Profile card: the issuer on a
+// green band across the top with a gold foil edge, the photo in a gold-plated
+// frame on white security paper, the name, the role on gold, the place and a
+// barcode, and the ID number and the date they joined on a green band along
+// the bottom.
 //
 // Seen once per account, at the end of sign-up, so it's the one place in the
 // app that earns a real entrance: the card drops in on its lanyard, settles
@@ -109,7 +112,9 @@ export function WelcomeID({ open, onClose, mode = "welcome", name, initials, rol
           aria-label={`Member ID: ${name}, ${roleLabel}, ID No. ${info.id || "not yet"}`}>
           <span className="wid-slot" aria-hidden="true" />
           <div className="wid-band">
-            <span className="wid-mark"><AniSenseLogo size={20} /></span>
+            {/* The leaf in gold, as on the Profile card: the white cut-out of
+                the mark used as a stencil. */}
+            <span className="wid-mark" style={{ WebkitMaskImage: `url(${leafMask})`, maskImage: `url(${leafMask})` }} />
             <span className="wid-brand">AniSense</span>
             <span className="wid-kind">Member ID</span>
           </div>
@@ -132,6 +137,7 @@ export function WelcomeID({ open, onClose, mode = "welcome", name, initials, rol
             {place && (
               <div className="wid-loc"><MapPin size={13} strokeWidth={2.4} aria-hidden="true" />{place}</div>
             )}
+            <span className="wid-barcode" aria-hidden="true" />
           </div>
 
           <div className="wid-foot">
@@ -143,7 +149,6 @@ export function WelcomeID({ open, onClose, mode = "welcome", name, initials, rol
               <span className="wid-lbl">Member since</span>
               <span className="wid-val">{info.since.toLocaleDateString("en-PH", { month: "short", year: "numeric" })}</span>
             </div>
-            <span className="wid-barcode" aria-hidden="true" />
           </div>
           <span className="wid-shine" aria-hidden="true" />
         </div>

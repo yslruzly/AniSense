@@ -1339,9 +1339,12 @@ export const appCss = `
   }
 
   /* ── Welcome ID ────────────────────────────────────────────────────────────
-     A portrait member card, like a real ID on a lanyard: issuer band on top
-     with the punch slot, photo in the middle, name at the foot, ID number
-     and barcode along the bottom edge. */
+     A portrait member card, like a real ID on a lanyard, in the colours of
+     the Profile card: the issuer on a green band with the punch slot and a
+     gold foil edge, the photo in a gold-plated frame on white security
+     paper, the name, the role on gold, the place and a barcode, then the ID
+     number and the date they joined on a green band along the bottom. The
+     saved copy (src/lib/memberIdImage.ts) is drawn to the same plan. */
   .shm-scrim:has(> .wid-panel) { background: rgba(8,12,10,.84); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
   .wid-panel { width: 100%; max-width: 330px; background: transparent; }
   .wid { display: flex; flex-direction: column; align-items: center; text-align: center; color: #fff; }
@@ -1357,8 +1360,8 @@ export const appCss = `
        against copying. Kept to a whisper so the name stays the loudest
        thing on the card. */
     background:
-      repeating-radial-gradient(circle at 50% 42%, rgba(11,107,65,.07) 0 1px, transparent 1.5px 8px),
-      linear-gradient(180deg, #FFFFFF 0%, #F4F6F3 100%);
+      repeating-radial-gradient(circle at 50% 40%, rgba(11,107,65,.065) 0 1px, transparent 1.5px 8px),
+      linear-gradient(180deg, #FFFFFF 0%, #F5F8F5 100%);
     box-shadow: 0 34px 60px -22px rgba(0,0,0,.8), 0 0 0 1px rgba(255,255,255,.08);
     transform-origin: 50% -40px;
     /* It drops in on its lanyard and settles with a small swing. The only
@@ -1374,66 +1377,97 @@ export const appCss = `
   /* The punch slot for the lanyard clip. */
   .wid-slot {
     position: absolute; top: 9px; left: 50%; z-index: 2; width: 46px; height: 9px; margin-left: -23px;
-    border-radius: 99px; background: rgba(8,12,10,.8); box-shadow: inset 0 1px 2px rgba(0,0,0,.6), 0 1px 0 rgba(255,255,255,.12);
+    border-radius: 99px; background: rgba(4,20,12,.85); box-shadow: inset 0 1px 2px rgba(0,0,0,.6), 0 1px 0 rgba(255,255,255,.12);
   }
+  /* The issuer: AniSense green, a gold light off its corner and the
+     terraces faint across it, as on the Profile card; the gold leaf, the
+     name, "Member ID" in gold; a strip of gold foil along its foot. */
   .wid-band {
-    display: flex; align-items: center; gap: 8px; padding: 28px 14px 12px;
-    background: radial-gradient(120% 140% at 100% 0%, rgba(126,196,120,.28), transparent 60%), linear-gradient(135deg, #1D2E25, var(--ink));
-    color: #fff;
+    position: relative; height: 70px; display: flex; align-items: center; gap: 8px; padding: 28px 14px 12px; color: #fff;
+    background:
+      radial-gradient(90% 140% at 100% 0%, rgba(242,179,44,.24), transparent 60%),
+      repeating-radial-gradient(circle at 0% 160%, rgba(255,255,255,.05) 0 1px, transparent 1.5px 14px),
+      linear-gradient(160deg, #145E3F 0%, #0E4630 55%, #0A3525 100%);
   }
-  .wid-mark { width: 30px; height: 30px; border-radius: 8px; background: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .wid-band::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px;
+    background: linear-gradient(90deg, #B07A16 0%, #F7CC5B 30%, #FFF1C4 50%, #F7CC5B 70%, #B07A16 100%);
+  }
+  .wid-mark {
+    flex-shrink: 0; width: 26px; height: 26px;
+    background: linear-gradient(145deg, #FFF1C4 0%, #F7CC5B 35%, #D99A1E 70%, #F3C24E 100%);
+    -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+    -webkit-mask-position: center; mask-position: center;
+    filter: drop-shadow(0 1px 1px rgba(0,0,0,.3));
+  }
   .wid-brand { font-family: var(--font-display); font-size: 16px; font-weight: 700; letter-spacing: -.01em; }
-  .wid-kind { margin-left: auto; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--palay); }
+  .wid-kind { margin-left: auto; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #F7CC5B; }
 
-  .wid-body { display: flex; flex-direction: column; align-items: center; padding: 20px 18px 14px; }
-  /* Portrait, like a real ID photo, with a white mat and a hairline frame. */
+  .wid-body { display: flex; flex-direction: column; align-items: center; padding: 20px 18px 16px; }
+  /* Portrait, like a real ID photo, in a gold-plated frame. */
   .wid-photo {
-    position: relative; width: 112px; height: 134px; padding: 0; border: none; border-radius: 14px; cursor: pointer;
-    background: var(--tanim-sk); display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 0 0 4px #fff, 0 0 0 5px var(--line), 0 12px 22px -12px rgba(0,0,0,.45);
+    position: relative; width: 112px; height: 134px; padding: 0; border: 3px solid transparent; border-radius: 14px; cursor: pointer;
+    background:
+      linear-gradient(180deg, #EEF6F1 0%, #D7EADD 100%) padding-box,
+      linear-gradient(145deg, #FFF1C4 0%, #F7CC5B 28%, #D99A1E 56%, #F3C24E 78%, #B07A16 100%) border-box;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 0 1px rgba(110,70,0,.25), 0 12px 22px -12px rgba(0,0,0,.45);
     transition: transform 160ms var(--ease-out);
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
   .wid-photo:active { transform: scale(.97); transition-duration: 90ms; }
+  .wid-photo:focus-visible { outline: 3px solid var(--tanim); outline-offset: 3px; }
   .wid-photo-img {
-    width: 100%; height: 100%; object-fit: cover; border-radius: 14px; display: block;
+    width: 100%; height: 100%; object-fit: cover; border-radius: 11px; display: block;
     animation: wid-photo-in 320ms var(--ease-out);
   }
   @keyframes wid-photo-in { from { opacity: 0; filter: blur(6px); transform: scale(1.04); } to { opacity: 1; filter: none; transform: none; } }
-  .wid-initials { font-family: var(--font-display); font-size: 40px; font-weight: 800; color: var(--tanim); letter-spacing: -.02em; }
+  .wid-initials { font-family: var(--font-display); font-size: 40px; font-weight: 800; color: var(--tanim-deep); letter-spacing: -.02em; }
   .wid-cam {
-    position: absolute; right: -8px; bottom: -8px; width: 32px; height: 32px; border-radius: 50%;
+    position: absolute; right: -11px; bottom: -11px; width: 32px; height: 32px; border-radius: 50%;
     background: var(--tanim); color: #fff; display: flex; align-items: center; justify-content: center;
     box-shadow: 0 0 0 3px #fff, 0 4px 10px -4px rgba(0,0,0,.4);
   }
   .wid-name {
-    margin-top: 18px; font-family: var(--font-display); font-size: 21px; font-weight: 800; line-height: 1.15;
+    margin-top: 16px; font-family: var(--font-display); font-size: 21px; font-weight: 800; line-height: 1.15;
     color: var(--ink); letter-spacing: -.015em; text-wrap: balance; overflow-wrap: anywhere;
   }
-  .wid-role { margin-top: 5px; font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--tanim); }
+  /* The role on gold, as on the Profile card. */
+  .wid-role {
+    margin-top: 8px; padding: 4px 11px; border-radius: 99px;
+    font-size: 11.5px; font-weight: 800; line-height: 14px; letter-spacing: .12em; text-transform: uppercase; color: #3A2A05;
+    background: linear-gradient(180deg, #FFDB7A 0%, #F2B32C 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.55), 0 2px 5px -2px rgba(138,93,12,.5);
+  }
   /* Inline, not flex: when a long barangay does wrap, the lines stay centred
      and even, and the pin sits with the first word instead of floating beside
      a two-line block. */
   .wid-loc {
-    margin-top: 6px; padding: 0 14px; text-align: center; text-wrap: balance;
+    margin-top: 8px; padding: 0 14px; text-align: center; text-wrap: balance;
     font-size: 13.5px; line-height: 1.35; color: var(--text-faint);
   }
   .wid-loc svg { display: inline-block; vertical-align: -2px; margin-right: 4px; color: var(--tanim); }
-
-  .wid-foot {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; margin: 0 16px; padding: 12px 0 14px;
-    border-top: 1.5px dashed var(--line-strong); text-align: left;
-  }
-  .wid-field { display: flex; flex-direction: column; gap: 1px; }
-  .wid-field.end { text-align: right; }
-  .wid-lbl { font-size: 10.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--text-faint); }
-  .wid-val { font-family: var(--font-display); font-size: 14px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
   .wid-barcode {
-    grid-column: 1 / -1; height: 26px; border-radius: 2px; opacity: .85;
+    width: 200px; height: 26px; margin-top: 14px; border-radius: 2px; opacity: .85;
     background: repeating-linear-gradient(90deg,
       var(--ink) 0 2px, transparent 2px 4px, var(--ink) 4px 5px, transparent 5px 8px,
       var(--ink) 8px 11px, transparent 11px 12px, var(--ink) 12px 13px, transparent 13px 17px);
   }
+
+  /* The bottom band: the same green with a gold edge on top, the labels
+     small and quiet, the number in gold and the date in white. */
+  .wid-foot {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 12px 16px 14px; text-align: left; color: #fff;
+    background:
+      radial-gradient(80% 160% at 0% 100%, rgba(242,179,44,.14), transparent 60%),
+      linear-gradient(160deg, #145E3F 0%, #0E4630 55%, #0A3525 100%);
+    box-shadow: inset 0 2px 0 rgba(242,179,44,.6);
+  }
+  .wid-field { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .wid-field.end { text-align: right; }
+  .wid-lbl { font-size: 10.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.74); }
+  .wid-val { font-family: var(--font-display); font-size: 15px; font-weight: 700; color: #fff; font-variant-numeric: tabular-nums; }
+  .wid-field:first-child .wid-val { color: #F7CC5B; }
   /* One pass of light across the laminate once the card has landed. */
   .wid-shine {
     position: absolute; inset: 0; pointer-events: none;
