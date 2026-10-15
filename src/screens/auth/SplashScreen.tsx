@@ -1,7 +1,4 @@
-import { useState } from "react";
 import { useLang } from "../../i18n";
-import { LegalSheet } from "../../components/legal/LegalSheet";
-import { PRIVACY } from "../../data/privacyPolicy";
 
 // ─── Welcome ──────────────────────────────────────────────────────────────────
 // The AniSense poster, full screen: the name, its promise ("Real farmers. Real
@@ -10,15 +7,12 @@ import { PRIVACY } from "../../data/privacyPolicy";
 // under the thumb. The picture carries no text a screen reader can see, so
 // the heading says it for them.
 //
-// Under the two buttons, what tapping either one means: the privacy policy,
-// one tap away, before anything at all has been asked for. It opens in a
-// sheet over the poster and closes back to it. The policy's name stays in
-// English in both languages, like the policy itself.
+// Nothing under the two buttons: the Terms of Service and the Privacy Policy
+// are asked for where an account is made (sign-up's first page, with Accept
+// and Decline), and stay on Profile to read again.
 
 export function SplashScreen({ onSignIn, onSignUp }: { onSignIn: () => void; onSignUp: () => void }) {
   const { t } = useLang();
-  const [showPolicy, setShowPolicy] = useState(false);
-  const [before, after] = t("splash_consent").split("{link}");
   return (
     <div className="a-screen a-welcome-shell">
       <div className="a-welcome a-stagger">
@@ -30,16 +24,7 @@ export function SplashScreen({ onSignIn, onSignUp }: { onSignIn: () => void; onS
           <button className="a-btn a-btn-gold" onClick={onSignUp}>{t("splash_create_account")}</button>
           <button className="a-btn a-btn-ghost-ink" onClick={onSignIn}>{t("splash_have_account")}</button>
         </div>
-        <p className="a-legal">
-          {t("splash_free")}
-          <span className="a-legal-consent">
-            {before}
-            <button type="button" className="a-legal-link" onClick={() => setShowPolicy(true)}>{PRIVACY.title}</button>
-            {after}
-          </span>
-        </p>
       </div>
-      <LegalSheet doc={showPolicy ? PRIVACY : null} onClose={() => setShowPolicy(false)} />
     </div>
   );
 }

@@ -359,18 +359,6 @@ export const authCss = `
       background-color: #1E3A2A; background-image: none;
     }
   }
-  .a-legal { text-align: center; font-size: var(--fs-label); line-height: 1.5; color: rgba(255,255,255,.78); margin-top: 14px; text-shadow: 0 1px 6px rgba(0,0,0,.35); }
-  /* What tapping either button means, on its own line under "Free": the
-     policy as a link, in full white and bold so it stands out from the
-     dimmer line around it, with a 44px target that adds no height to it. */
-  .a-legal-consent { display: block; margin-top: 2px; }
-  .a-legal-link {
-    display: inline-flex; align-items: center; min-height: 44px; margin: -11px 0; padding: 0 3px;
-    border: none; background: none; cursor: pointer; font: inherit; font-weight: 600; color: #fff;
-    text-decoration: none; text-shadow: inherit;
-    transition: opacity 140ms ease; -webkit-tap-highlight-color: transparent;
-  }
-  .a-legal-link:active { opacity: .6; transition-duration: 0ms; }
   /* For screen readers only: the poster's words are in the picture. */
   .a-sr {
     position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;

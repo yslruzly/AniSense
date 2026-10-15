@@ -1214,8 +1214,6 @@ export const translations: Dict = {
     tl: "Presyo, bentahan, gastos, at panahon:\nnasa isang lugar na lang.",
   },
   splash_have_account: { en: "I already have an account", tl: "Mayroon na akong account" },
-  splash_free: { en: "Free. No paid account.", tl: "Libre. Walang bayad na account." },
-  splash_consent: { en: "By continuing, you agree to our {link}.", tl: "Sa pagpapatuloy, sumasang-ayon ka sa aming {link}." },
   splash_sr: {
     en: "AniSense. Real farmers, real produce, a stronger tomorrow. Prices, marketplace, expenses and weather in one place.",
     tl: "AniSense. Totoong magsasaka, totoong ani, mas matibay na bukas. Presyo, bentahan, gastos at panahon sa iisang lugar.",
