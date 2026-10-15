@@ -2452,10 +2452,10 @@ export const appCss = `
      the magnifier at one end and a green key at the other: the same shape
      people press in every other app they own.
 
-     One rule, three pages. Prices and the Marketplace use this same bar with
-     a real input where Home has its label, so search never changes shape as
-     you move around the app. */
-  .hm-search, .search-box {
+     One rule, three pages: Home, Prices and the Marketplace use this same
+     bar, each with a real field, so search never changes shape as you move
+     around the app. */
+  .search-box {
     position: relative; min-height: 56px; padding: 6px 6px 6px 16px;
     display: flex; align-items: center; gap: 10px; border: none; border-radius: 16px; cursor: pointer;
     /* No outline: a pale green field, the colour of the leaves in the mark,
@@ -2466,11 +2466,9 @@ export const appCss = `
     transition: transform 190ms var(--ease-out), background-color 160ms ease;
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
-  .hm-search > svg, .search-box > svg { color: var(--tanim); flex-shrink: 0; }
-  .hm-search > span:first-of-type { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .search-box > svg { color: var(--tanim); flex-shrink: 0; }
 
-  /* The two bars that hold a real input: a caret rather than a finger, and
-     the same deepened green while you type that Home shows while you press. */
+  /* A caret rather than a finger, and a deepened green while you type. */
   .search-box { cursor: text; }
   .search-box input {
     flex: 1; min-width: 0; border: none; outline: none; background: transparent;
@@ -2482,18 +2480,86 @@ export const appCss = `
      margins that hung it off the old bordered field's edge. */
   .search-box .pr-clear { margin: 0; }
 
-  .hm-search-go, .search-go {
+  .search-go {
     flex-shrink: 0; width: 44px; height: 44px; border-radius: 12px; border: none; padding: 0; cursor: pointer;
     display: inline-flex; align-items: center; justify-content: center; color: #fff;
     background-image: linear-gradient(180deg, #14875A 0%, var(--tanim) 54%, #075232 100%);
     box-shadow: inset 0 1px 0 rgba(255,255,255,.26), inset 0 -1px 0 rgba(0,0,0,.24), 0 1px 2px rgba(6,38,23,.3);
     transition: transform 190ms var(--ease-out);
   }
-  .hm-search:active { transform: scale(.985); background: #E3EFE5; transition-duration: var(--dur-press); }
-  .hm-search:active .hm-search-go, .search-go:active { transform: scale(.94); transition-duration: var(--dur-press); }
+  .search-go:active { transform: scale(.94); transition-duration: var(--dur-press); }
   @media (prefers-reduced-motion: reduce) {
-    .hm-search:active, .hm-search:active .hm-search-go, .search-go:active { transform: none; }
+    .search-go:active { transform: none; }
   }
+
+  /* ── Search on Home ─────────────────────────────────────────────────────
+     The results take the page's place while there are words in the bar: a
+     group each for harvests and prices, a name with its count, then one
+     white card of rows, a hairline between them. */
+  .hm-search-box input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+  .hs { display: flex; flex-direction: column; gap: 18px; animation: hs-in 200ms var(--ease-out); }
+  @keyframes hs-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .hs-t {
+    display: flex; align-items: center; gap: 8px; margin: 0 4px 10px;
+    font-family: var(--font-display); font-size: 18px; font-weight: 700; letter-spacing: -.01em; color: var(--text);
+  }
+  .hs-n {
+    padding: 2px 9px; border-radius: 99px; background: var(--tanim-sk); color: var(--tanim-deep);
+    font-family: var(--font-body); font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums;
+  }
+  .hs-list {
+    list-style: none; margin: 0; padding: 0; border-radius: 18px; background: var(--card); overflow: hidden;
+    box-shadow: 0 0 0 1px rgba(22,33,27,.07), 0 10px 22px -18px rgba(22,33,27,.4);
+  }
+  .hs-list > li { position: relative; }
+  .hs-list > li + li::before { content: ""; position: absolute; top: 0; left: 76px; right: 0; height: 1px; background: var(--line); }
+  .hs-row {
+    width: 100%; min-height: 72px; padding: 12px 12px 12px 14px; border: none; background: none; cursor: pointer;
+    display: flex; align-items: center; gap: 12px; text-align: left; font: inherit; color: inherit;
+    transition: background-color var(--dur-fast) ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .hs-row:active { background: var(--paper-alt); transition-duration: var(--dur-press); }
+  .hs-row:focus-visible { outline: 3px solid var(--tanim); outline-offset: -3px; }
+  .hs-art {
+    flex-shrink: 0; width: 50px; height: 50px; border-radius: 14px; overflow: hidden;
+    display: flex; align-items: center; justify-content: center; color: var(--tanim);
+    background: radial-gradient(circle at 50% 30%, #fff 0%, #E8F3EC 100%); box-shadow: inset 0 0 0 1px rgba(11,107,65,.1);
+  }
+  .hs-art img { width: 84%; height: 84%; object-fit: contain; display: block; }
+  .hs-art.is-photo img { width: 100%; height: 100%; object-fit: cover; }
+  .hs-art.is-price img { width: 100%; height: 100%; object-fit: cover; }
+  .hs-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .hs-name { display: flex; align-items: center; gap: 6px; font-family: var(--font-display); font-size: 16px; font-weight: 700; line-height: 1.25; color: var(--text); }
+  .hs-sample { padding: 1px 7px; border-radius: 99px; background: #F2B32C; color: var(--ink); font-family: var(--font-body); font-size: 12px; font-weight: 800; }
+  .hs-meta { font-size: 15px; line-height: 1.35; color: var(--text-soft); font-variant-numeric: tabular-nums; }
+  .hs-meta b { color: var(--tanim-deep); font-weight: 800; }
+  .hs-sub { font-size: 14px; line-height: 1.35; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hs-chev { flex-shrink: 0; color: var(--line-strong); }
+  .hs-price { flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+  .hs-price b { font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+  .hs-price small { font-size: 12px; font-weight: 600; color: var(--text-faint); margin-left: 1px; }
+  .hs-more {
+    width: 100%; min-height: 48px; margin-top: 8px; border: none; border-radius: 14px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    background: var(--tanim-sk); color: var(--tanim-deep); font-family: var(--font-display); font-size: 15px; font-weight: 700;
+    transition: transform 160ms var(--ease-out);
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .hs-more:active { transform: scale(.98); transition-duration: 90ms; }
+  .hs-empty { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 28px 18px 8px; }
+  .hs-empty-ico {
+    width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    background: var(--paper-alt); color: var(--text-muted); margin-bottom: 12px;
+  }
+  .hs-empty-t { margin: 0; font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--text); overflow-wrap: anywhere; }
+  .hs-empty-s { margin: 6px 0 16px; max-width: 290px; font-size: 15px; line-height: 1.45; color: var(--text-muted); }
+  .hs-empty-btn {
+    min-height: 48px; padding: 0 22px; border: none; border-radius: 14px; cursor: pointer;
+    background: var(--card); color: var(--tanim-deep); box-shadow: inset 0 0 0 1.5px rgba(11,107,65,.35);
+    font-family: var(--font-display); font-size: 16px; font-weight: 700;
+  }
+  @media (prefers-reduced-motion: reduce) { .hs { animation: none; } .hs-more:active { transform: none; } }
 
   /* ── Featured products ──────────────────────────────────────────────────
      Two to a row, photo on top: a product card, not a list row, so the page
@@ -3755,10 +3821,6 @@ export const appCss = `
     .yp-bar { animation: none; }
   }
   .shell[data-revisit] .scroll .yp-bar { animation: none; }
-
-  @media (prefers-reduced-motion: reduce) {
-    .hm-search:active { transform: none; }
-  }
 
   /* ── Buyer price moves ─────────────────────────────────────────────────
      The AniSense green, as on the Prices card: deep and quiet, lit warm from

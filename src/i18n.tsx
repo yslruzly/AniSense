@@ -355,6 +355,11 @@ export const translations: Dict = {
     tl: "AniSense: sariwang ani, mas magandang presyo, mas matibay na komunidad. Tumingin ng sariwang ani, kunin ang pinakamagandang presyo, at bumili nang direkta sa lokal na magsasaka. Isang nakangiting magsasaka na may hawak na telepono.",
   },
   home_search_ph: { en: "Search rice, onions, or a farmer", tl: "Maghanap ng bigas, sibuyas, o magsasaka" },
+  hs_harvests: { en: "Harvests for sale", tl: "Mga aning binebenta" },
+  hs_prices: { en: "Prices", tl: "Mga presyo" },
+  hs_see_all: { en: "See all {n} in the Market", tl: "Tingnan ang lahat ng {n} sa Merkado" },
+  hs_none: { en: "Nothing matches \u201c{q}\u201d", tl: "Walang tumugma sa \u201c{q}\u201d" },
+  hs_none_sub: { en: "Try a crop such as rice or onions, a farmer's name, or a town.", tl: "Subukan ang pananim gaya ng bigas o sibuyas, pangalan ng magsasaka, o bayan." },
   home_shop_by_crop: { en: "Browse marketplace", tl: "Tumingin sa merkado" },
   ff_title: { en: "Featured farmers", tl: "Mga tampok na magsasaka" },
   ff_sub: { en: "Top-rated growers selling on AniSense", tl: "Mga pinakamataas ang rating na nagbebenta sa AniSense" },
@@ -1789,6 +1794,13 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 export function useLang() {
   return useContext(LangContext);
 }
+
+/** A data name in both languages ("Onions" → "Onions Sibuyas"), for search:
+ *  a word typed in either finds it, whichever language the app is set to. */
+export const bothNames = (name: string) => {
+  const key = NAME_KEYS[name];
+  return key ? `${translations[key].en} ${translations[key].tl}` : name;
+};
 
 // ── Ready-made toggle (drop into the Profile > Language row) ─────────────────
 

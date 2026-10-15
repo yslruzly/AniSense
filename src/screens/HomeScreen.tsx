@@ -1,11 +1,13 @@
 import { CloudSun, CloudMoon, BarChart2, BookOpen, PlayCircle, ChevronRight, Wallet, Store, Search } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useLang } from "../i18n";
 import { haptic } from "../lib/platform";
 import { Screen, UserRole, TradeIntent } from "../types";
 import { ShopByCrop, FeaturedProducts, CheapestToday, FeaturedFarmers, YourPurchases, PriceMoves } from "../components/home/BuyerHome";
 import { YourHarvest, YourCropPrices } from "../components/home/FarmerHome";
 import { TodaysAdvisory } from "../components/home/TodaysAdvisory";
+import { HomeSearchBar, HomeSearchResults } from "../components/home/HomeSearch";
+import { useHardwareBack } from "../hooks/useHardwareBack";
 import { PriceAlerts } from "../components/home/PriceAlerts";
 import { CropTracker } from "../components/home/CropTracker";
 import { ProfitSnapshot } from "../components/home/ProfitSnapshot";
@@ -90,6 +92,21 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
   const { location: buyerLocation } = useViewer();
   const shop = (intent: TradeIntent) => (onShop ? onShop(intent) : onNavigate("trade"));
 
+  // ── Search, on Home ────────────────────────────────────────────────────
+  // While there are words in the bar, Home shows what matches in place of
+  // the rest of the page; clearing it (or the phone's Back) brings it back.
+  const [query, setQuery] = useState("");
+  const searching = query.trim().length > 0;
+  const searchRef = useRef<HTMLInputElement>(null);
+  const goSearch = () => {
+    haptic.select();
+    const field = searchRef.current;
+    if (!field) return;
+    if (!searching) { field.focus(); return; }
+    field.blur();
+  };
+  useHardwareBack(() => { setQuery(""); return true; }, searching);
+
   // This month's spend, last month's, and six months of trend for the line.
   const monthTotal = (offset: number) => {
     const d = new Date(now.getFullYear(), now.getMonth() - offset, 1);
@@ -111,17 +128,20 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
         {/* Search sits at the very top, under the brand and above the
             banner — the first thing on the page, because it is the one
             control that serves any errand: a buyer's shopping, a farmer
-            seeing who else sells their crop and at what price. It opens the
-            marketplace with the keyboard up rather than pretending to be a
-            field itself. The same bar for both. */}
-        <button className="hm-search" data-tour={isBuyer ? "b-search" : undefined} onClick={() => shop({ focusSearch: true })}>
-          <Search size={21} strokeWidth={2.4} aria-hidden="true" />
-          <span>{t("home_search_ph")}</span>
-          {/* The green key at the end: the shape people press to search. */}
-          <span className="hm-search-go" aria-hidden="true">
-            <Search size={20} strokeWidth={2.8} />
-          </span>
-        </button>
+            seeing who else sells their crop and at what price. It searches
+            here, on Home: what matches takes the place of the rest of the
+            page while there are words in the bar. The same bar for both. */}
+        <HomeSearchBar ref={searchRef} value={query} onChange={setQuery} onGo={goSearch} tour={isBuyer ? "b-search" : undefined} />
+
+        {searching ? (
+          <HomeSearchResults
+            query={query}
+            onOpenListing={id => { haptic.select(); shop({ listing: id }); }}
+            onSeeAll={q => { haptic.select(); shop({ search: q }); }}
+            onOpenPrice={c => { haptic.select(); searchRef.current?.blur(); setOpenCrop(c); }}
+            onClear={() => { setQuery(""); searchRef.current?.focus(); }}
+          />
+        ) : (<>
 
         {/* Buyers: the brand banner follows it, two posters taking turns:
             "Fresh local produce" first, then "Fresh produce, better prices,
@@ -303,9 +323,10 @@ export function HomeScreen({ onNavigate, onShop, onProfile, onReplayTour, isOffl
         </section>
 
         <div className="version-txt">AniSense v1.0.0 · Ani mo, alam mo.</div>
+        </>)}
       </div>
 
-      {/* A farmer's own crop, opened from "Your crops' prices". */}
+      {/* A crop's prices, opened from "Your crops' prices" or from a search. */}
       <PriceSheet item={openCrop} onClose={() => setOpenCrop(null)} />
     </div>
   );

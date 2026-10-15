@@ -30,7 +30,7 @@ const groupOf = (l: { crop: string }) => CROP_GROUP_BY_ID[CROPS.find(c => c.name
 
 // A harvest by name. "Red" under Onions reads as "Red Onions"; "Yellow Corn"
 // already says it, so it is said once.
-const harvestName = (l: Listing, tn: (name: string) => string) =>
+export const harvestName = (l: Listing, tn: (name: string) => string) =>
   !l.variety || l.variety === l.crop
     ? tn(l.crop)
     : l.variety.toLowerCase().includes(l.crop.toLowerCase())
