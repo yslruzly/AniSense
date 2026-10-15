@@ -3823,26 +3823,40 @@ export const appCss = `
   .scroll.has-dock { padding-bottom: 10px; }
 
   .add-btn  { width:100%; padding:15px; background:var(--green); color:#fff; border:none; border-radius:var(--radius); font-family:inherit; font-size: var(--fs-label); font-weight:700; cursor:pointer; }
-  /* Expenses: Add expense and the calculator on one row, two equal halves,
-     like Sell and Your listings in the Market: the one to do solid green,
-     its helper outlined. A long Filipino label wraps to a second line
-     inside its half rather than pushing the other button smaller. */
-  .screen-dock.exp-dock { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .exp-dock-btn {
-    min-width: 0; min-height: 54px; display: flex; align-items: center; justify-content: center; gap: 7px;
-    padding: 6px 10px; border-radius: 16px; cursor: pointer;
-    font-family: var(--font-display); font-size: 15px; font-weight: 700; line-height: 1.2; text-align: center;
+  /* Expenses: Add expense and the calculator, two equal halves of a frosted
+     tray that floats over the page: white glass, a hairline and a soft lift.
+     Add expense is the AniSense green, lit along its top edge, the plus in a
+     white disc; the calculator white, its picture in a pale green disc. Both
+     give a little under the finger. A long Filipino label wraps inside its
+     own half rather than pushing the other button smaller. Where the phone
+     asks for less transparency, the tray is solid white. */
+  .exp-tray {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 6px; border-radius: 22px;
+    background: rgba(255,255,255,.78); -webkit-backdrop-filter: blur(14px) saturate(160%); backdrop-filter: blur(14px) saturate(160%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 0 0 1px rgba(22,33,27,.07), 0 14px 30px -18px rgba(22,33,27,.45);
   }
-  .exp-dock-btn svg { flex-shrink: 0; }
-  .add-btn.exp-dock-btn { width: auto; padding: 6px 10px; background: var(--tanim); box-shadow: 0 10px 20px -12px rgba(11,107,65,.8); }
-  .exp-calc-btn {
-    border: none; background: var(--card); color: var(--tanim-deep);
-    box-shadow: inset 0 0 0 1.5px rgba(11,107,65,.4), 0 8px 18px -14px rgba(22,33,27,.45);
-    transition: transform 180ms var(--ease-out), background-color 160ms ease;
+  .exp-dock-btn {
+    min-width: 0; min-height: 56px; display: flex; align-items: center; justify-content: center; gap: 9px;
+    padding: 6px 12px; border: none; border-radius: 16px; cursor: pointer;
+    font-family: var(--font-display); font-size: 15px; font-weight: 700; line-height: 1.2; text-align: left;
+    transition: transform 160ms var(--ease-out), background-color 160ms ease, box-shadow 160ms ease;
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
-  .exp-calc-btn:active { transform: scale(.97); background: var(--tanim-sk); transition-duration: var(--dur-press); }
+  .exp-dock-btn:focus-visible { outline: 3px solid var(--tanim); outline-offset: 2px; }
+  .exp-dock-ico {
+    width: 28px; height: 28px; flex: 0 0 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  }
+  .add-btn.exp-dock-btn {
+    width: auto; padding: 6px 12px; color: #fff;
+    background: linear-gradient(180deg, #16895B 0%, var(--tanim) 55%, #07522F 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.24), inset 0 -1px 0 rgba(0,0,0,.16), 0 8px 16px -10px rgba(11,107,65,.9);
+  }
+  .add-btn.exp-dock-btn .exp-dock-ico { background: rgba(255,255,255,.2); box-shadow: inset 0 0 0 1px rgba(255,255,255,.3); }
+  .exp-calc-btn { background: var(--card); color: var(--tanim-deep); box-shadow: inset 0 0 0 1px rgba(22,33,27,.09), 0 2px 6px -3px rgba(22,33,27,.2); }
+  .exp-calc-btn .exp-dock-ico { background: var(--tanim-sk); color: var(--tanim); }
+  .exp-calc-btn:active { transform: scale(.97); background: #F1F8F3; transition-duration: var(--dur-press); }
   @media (prefers-reduced-motion: reduce) { .exp-calc-btn:active { transform: none; } }
+  @media (prefers-reduced-transparency: reduce) { .exp-tray { background: var(--card); -webkit-backdrop-filter: none; backdrop-filter: none; } }
 
   /* ── Analytics ── */
   .bar-row { display:flex; align-items:center; gap:9px; margin-bottom:11px; }

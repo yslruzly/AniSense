@@ -769,15 +769,20 @@ export function ExpensesScreen({ onProfile, onBack, farmerCrops, userInitials = 
 
       {/* ── Sticky bottom bar (farmer only) ── */}
       {!isBuyer && (
-        // The two actions side by side, one size: adding an expense, solid,
-        // the thing this page is for; the calculator, outlined, its helper.
-        <div className="screen-dock exp-dock" data-tour="exp-add">
-          <button className="add-btn exp-dock-btn" onClick={openAdd}>
-            <Plus size={19} strokeWidth={2.8} aria-hidden="true" /> <span>{t("exp_add")}</span>
-          </button>
-          <button className="exp-dock-btn exp-calc-btn" onClick={() => { setCalc({ display: "0", prev: null, op: null, fresh: false }); setShowCalc(true); }}>
-            <Calculator size={18} strokeWidth={2.4} aria-hidden="true" /> <span>{t("exp_calculator")}</span>
-          </button>
+        // The two actions side by side, one size, on a frosted tray: adding
+        // an expense, green, the thing this page is for; the calculator,
+        // white, its helper. Each says what it is with a picture in a disc.
+        <div className="screen-dock exp-dock">
+          <div className="exp-tray" data-tour="exp-add">
+            <button className="add-btn exp-dock-btn" onClick={openAdd}>
+              <span className="exp-dock-ico" aria-hidden="true"><Plus size={17} strokeWidth={3} /></span>
+              <span>{t("exp_add")}</span>
+            </button>
+            <button className="exp-dock-btn exp-calc-btn" onClick={() => { setCalc({ display: "0", prev: null, op: null, fresh: false }); setShowCalc(true); }}>
+              <span className="exp-dock-ico" aria-hidden="true"><Calculator size={16} strokeWidth={2.4} /></span>
+              <span>{t("exp_calculator")}</span>
+            </button>
+          </div>
         </div>
       )}
 
