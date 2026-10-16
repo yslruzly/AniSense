@@ -5611,6 +5611,98 @@ export const appCss = `
   @media (prefers-reduced-motion: reduce) { .setting-row.as-btn:active .setting-chev { transform: none; } }
 
   .signout-btn { width: 100%; padding: 16px; background: var(--error-sk); color: var(--red); border: none; border-radius: var(--radius); font-family: inherit; font-size: var(--fs-label); font-weight: 700; cursor: pointer; }
+  /* ── Change password (Profile) ──────────────────────────────────────────
+     A sheet from the foot, so the keyboard has room: the key on a soft
+     green disc beside what this step is, the fields, then the buttons. Each
+     field has its own Show, its own error under it in words, and the new
+     password lists what it needs - ticking off as it is met - with "not one
+     you have used before" always there, since only the server can tell. */
+  .pw-sheet {
+    width: 100%; max-height: 92%; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none;
+    background: var(--card); border-radius: 24px 24px 0 0; padding: 18px 18px calc(16px + var(--safe-bottom));
+  }
+  .pw-sheet::-webkit-scrollbar { display: none; }
+  .pw-head { display: flex; align-items: flex-start; gap: 12px; }
+  .pw-ico {
+    flex: none; width: 46px; height: 46px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; color: var(--tanim);
+    background: radial-gradient(circle at 50% 35%, #F1F8F3 0%, var(--tanim-sk) 100%); box-shadow: inset 0 0 0 1px rgba(11,107,65,.16);
+    transition: background-color 200ms ease;
+  }
+  .pw-ico.ok { color: #fff; background: linear-gradient(180deg, #16895B 0%, var(--tanim) 55%, #07522F 100%); box-shadow: 0 6px 14px -8px rgba(11,107,65,.7); }
+  .pw-head-txt { flex: 1; min-width: 0; padding-top: 2px; }
+  .pw-title { margin: 0; font-family: var(--font-display); font-size: 21px; font-weight: 700; letter-spacing: -.015em; line-height: 1.2; color: var(--text); }
+  .pw-sub { margin: 4px 0 0; font-size: 15px; line-height: 1.45; color: var(--text-muted); }
+  .pw-x {
+    flex: none; width: 44px; height: 44px; margin: -4px -6px 0 0; border: none; border-radius: 50%; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; background: var(--paper); color: var(--text-soft);
+    -webkit-tap-highlight-color: transparent; transition: transform 160ms var(--ease-out);
+  }
+  .pw-x:active { transform: scale(.92); transition-duration: 90ms; }
+  .pw-body { display: flex; flex-direction: column; gap: 4px; margin-top: 16px; animation: pw-in 220ms var(--ease-out); }
+  @keyframes pw-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .pw-field { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+  .pw-lbl { font-size: 15px; font-weight: 700; color: var(--text); }
+  .pw-box {
+    display: flex; align-items: center; min-height: 54px; padding: 0 6px 0 14px; border-radius: 14px;
+    background: var(--fill-soft); box-shadow: inset 0 0 0 1.5px var(--line);
+    transition: box-shadow 160ms ease, background-color 160ms ease;
+  }
+  .pw-box:focus-within { background: #fff; box-shadow: inset 0 0 0 2px var(--tanim); }
+  .pw-box.bad { background: #FFF8F7; box-shadow: inset 0 0 0 2px var(--error); }
+  .pw-inp { flex: 1; min-width: 0; height: 52px; border: none; outline: none; background: transparent; font: inherit; font-size: 17px; color: var(--text); }
+  .pw-inp.pw-code { font-family: var(--font-display); font-size: 24px; font-weight: 700; letter-spacing: .3em; font-variant-numeric: tabular-nums; }
+  .pw-eye {
+    flex: none; min-width: 64px; min-height: 44px; padding: 0 10px; border: none; border-radius: 10px; cursor: pointer; background: none;
+    font-family: var(--font-display); font-size: 14px; font-weight: 700; color: var(--tanim); -webkit-tap-highlight-color: transparent;
+  }
+  .pw-eye:active { background: rgba(11,107,65,.08); }
+  .pw-err {
+    display: flex; align-items: flex-start; gap: 7px; margin: 2px 0 0; padding: 8px 10px; border-radius: 10px;
+    background: #FBEAE8; color: var(--error); font-size: 14px; font-weight: 600; line-height: 1.4;
+  }
+  .pw-err svg { flex-shrink: 0; margin-top: 1px; }
+  .pw-link {
+    align-self: flex-start; min-height: 44px; padding: 0 2px; border: none; background: none; cursor: pointer;
+    font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--tanim); text-decoration: underline; text-underline-offset: 3px;
+  }
+  .pw-link:disabled { color: var(--text-faint); text-decoration: none; cursor: default; }
+  .pw-rules { list-style: none; margin: 6px 0 2px; padding: 10px 12px; border-radius: 12px; background: var(--paper); display: flex; flex-direction: column; gap: 6px; }
+  .pw-rules li { display: flex; align-items: center; gap: 8px; font-size: 14px; line-height: 1.35; color: var(--text-muted); }
+  .pw-tick {
+    flex: none; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    background: #fff; color: transparent; box-shadow: inset 0 0 0 1.5px var(--line-strong); transition: background-color 160ms ease, color 160ms ease;
+  }
+  .pw-rules li.ok { color: var(--tanim-deep); font-weight: 600; }
+  .pw-rules li.ok .pw-tick { background: var(--tanim); color: #fff; box-shadow: none; }
+  .pw-rules li.pw-rule-old .pw-tick { color: var(--gold-text); background: var(--gold-sk); box-shadow: inset 0 0 0 1px var(--gold-line); }
+  .pw-via {
+    display: flex; align-items: center; gap: 12px; margin-top: 4px; padding: 14px; border-radius: 14px;
+    background: var(--paper); box-shadow: inset 0 0 0 1px var(--line);
+  }
+  .pw-via-ico { flex: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #fff; color: var(--tanim); box-shadow: inset 0 0 0 1px rgba(11,107,65,.16); }
+  .pw-via-txt { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .pw-via-lbl { font-size: 14px; color: var(--text-muted); }
+  .pw-via-val { font-size: 17px; font-weight: 700; color: var(--text); overflow-wrap: anywhere; }
+  .pw-demo { margin: 6px 0 0; padding: 8px 10px; border-radius: 10px; background: var(--gold-sk); color: var(--gold-text); font-size: 14px; font-weight: 600; }
+  .pw-foot { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 18px; }
+  .pw-foot.one, .pw-foot:has(> .pw-btn.wide) { grid-template-columns: 1fr; }
+  .pw-btn {
+    min-width: 0; min-height: 54px; padding: 0 10px; border: none; border-radius: 16px; cursor: pointer;
+    font-family: var(--font-display); font-size: 16px; font-weight: 700; color: #fff;
+    background-image: linear-gradient(180deg, #14875A 0%, var(--tanim) 54%, #075232 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.24), inset 0 -1px 0 rgba(0,0,0,.2), 0 8px 18px -12px rgba(6,38,23,.7);
+    transition: transform 160ms var(--ease-out); -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .pw-btn.ghost { background: var(--paper-alt); background-image: none; color: var(--text-soft); box-shadow: none; }
+  .pw-btn:disabled { opacity: .55; cursor: default; }
+  .pw-btn:not(:disabled):active { transform: scale(.97); transition-duration: 90ms; }
+  .pw-btn:focus-visible, .pw-eye:focus-visible, .pw-link:focus-visible, .pw-x:focus-visible { outline: 3px solid var(--tanim); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) {
+    .pw-body { animation: none; }
+    .pw-btn:not(:disabled):active, .pw-x:active { transform: none; }
+  }
+
   /* ── Delete account ─────────────────────────────────────────────────────
      The door is the last row of Manage account: a settings row like the
      others, with its icon and label in red so it is never taken for one of

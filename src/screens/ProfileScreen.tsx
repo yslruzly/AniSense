@@ -10,6 +10,7 @@ import leafMask from "../assets/anisense-leaf-mask.png";
 import { Achievements } from "../components/profile/Achievements";
 import { Sale } from "../lib/sales";
 import { DeleteAccount } from "../components/profile/DeleteAccount";
+import { ChangePassword } from "../components/profile/ChangePassword";
 import { PRIVACY, LegalDocData } from "../data/privacyPolicy";
 import { TERMS } from "../data/termsOfService";
 import { LegalSheet } from "../components/legal/LegalSheet";
@@ -313,7 +314,12 @@ export function ProfileScreen({ onNavigate, onBack, profile, setProfile, onSignO
                 terms, and the way to take it all back (deleting the account),
                 which is the last row and only opens a sheet that asks again. */}
             {group("manage", "tint-slate", <UserCog {...C} />, t("prof_manage"), <>
-              {/* A real button: it opens the Privacy screen. The policy's
+              {/* The account's password first: change it, or make a new one
+                  with a code if it is forgotten. In a build without a
+                  database, the code goes to the profile's Gmail or number. */}
+              <ChangePassword fallback={profile.email ? { mode: "gmail", contact: profile.email }
+                : profile.phone ? { mode: "phone", contact: profile.phone.replace(/\D/g, "") } : null} />
+              {/* A real button: it opens the policy in its sheet. The policy's
                   name is in English in both languages, like the policy. */}
               <button className="setting-row as-btn" onClick={() => setLegal(PRIVACY)}>
                 {ico(<ShieldCheck {...I} />)}

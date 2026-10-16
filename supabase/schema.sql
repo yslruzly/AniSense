@@ -24,6 +24,7 @@
 --    7. Functions      sign-up, checkout, farm-record sync, badges
 --    8. Storage        listing photos
 --    9. Codes          6-digit codes, kept for the verify-code function
+--   10. Passwords      each account's old passwords, so none is used twice
 -- ═══════════════════════════════════════════════════════════════════════════
 
 
@@ -893,3 +894,85 @@ returns uuid language sql stable security definer set search_path = '' as $$
 $$;
 revoke all on function public.auth_user_id_by_email(text) from public, anon, authenticated;
 grant execute on function public.auth_user_id_by_email(text) to service_role;
+
+
+-- ═══ 10. PASSWORDS: no password used twice ═══════════════════════════════════
+-- A new password, whether made on Profile (Change password) or after a
+-- forgotten one (the reset code), may not be the account's current password
+-- or any of its last ten. To tell, the database keeps each account's old
+-- passwords - never the passwords, only their hashes: bcrypt, salted, exactly
+-- as Supabase Auth keeps the current one - and compares a new one against
+-- them the way signing in does.
+--
+-- The history fills itself: whenever an account's password changes, however
+-- it changed (Profile, a reset, the dashboard), the one it replaces is added
+-- here by the trigger below. Only the last ten are kept. Nobody can read the
+-- table, not even its owner signed in: row level security is on and there are
+-- no policies. Only password_was_used() looks into it, and only the
+-- verify-code Edge Function (which has the new password in hand while it
+-- sets it) may call that. Deleting an account takes its history with it.
+
+-- bcrypt in SQL, the same that Supabase Auth's hashes are made with. On by
+-- default in a Supabase project; this only makes sure.
+create extension if not exists pgcrypto with schema extensions;
+
+create table if not exists public.password_history (
+  id             bigint generated always as identity primary key,
+  user_id        uuid not null references auth.users(id) on delete cascade,
+  password_hash  text not null,                           -- bcrypt, as in auth.users
+  replaced_at    timestamptz not null default now()       -- when it stopped being the password
+);
+create index if not exists password_history_user_idx on public.password_history (user_id, replaced_at desc);
+alter table public.password_history enable row level security;
+revoke all on public.password_history from anon, authenticated;
+
+-- When a password changes, the old one goes into the history, and anything
+-- older than the last ten comes out.
+create or replace function public.remember_old_password()
+returns trigger language plpgsql security definer set search_path = '' as $$
+begin
+  if coalesce(old.encrypted_password, '') <> '' then
+    insert into public.password_history (user_id, password_hash) values (old.id, old.encrypted_password);
+    delete from public.password_history h
+     where h.user_id = old.id
+       and h.id not in (select x.id from public.password_history x
+                         where x.user_id = old.id order by x.replaced_at desc, x.id desc limit 10);
+  end if;
+  return new;
+end;
+$$;
+revoke all on function public.remember_old_password() from public, anon, authenticated;
+drop trigger if exists on_auth_password_changed on auth.users;
+create trigger on_auth_password_changed after update on auth.users
+  for each row when (old.encrypted_password is distinct from new.encrypted_password)
+  execute function public.remember_old_password();
+
+-- Whether a password is this account's current one, or one of its last ten.
+-- Compared the way signing in compares: the candidate hashed with each
+-- stored hash's own salt.
+create or replace function public.password_was_used(p_user uuid, p_password text)
+returns boolean language sql stable security definer set search_path = '' as $$
+  select exists (
+           select 1 from auth.users u
+            where u.id = p_user and coalesce(u.encrypted_password, '') <> ''
+              and extensions.crypt(p_password, u.encrypted_password) = u.encrypted_password)
+      or exists (
+           select 1 from public.password_history h
+            where h.user_id = p_user
+              and extensions.crypt(p_password, h.password_hash) = h.password_hash);
+$$;
+revoke all on function public.password_was_used(uuid, text) from public, anon, authenticated;
+grant execute on function public.password_was_used(uuid, text) to service_role;
+
+-- Whether a password is this account's current one: for Change password on
+-- Profile, which asks for it first. The Edge Function counts the wrong tries.
+create or replace function public.password_is_current(p_user uuid, p_password text)
+returns boolean language sql stable security definer set search_path = '' as $$
+  select exists (
+    select 1 from auth.users u
+     where u.id = p_user and coalesce(u.encrypted_password, '') <> ''
+       and extensions.crypt(p_password, u.encrypted_password) = u.encrypted_password);
+$$;
+revoke all on function public.password_is_current(uuid, text) from public, anon, authenticated;
+grant execute on function public.password_is_current(uuid, text) to service_role;
+grant select, insert, delete on public.password_history to service_role;

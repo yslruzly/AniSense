@@ -14,6 +14,7 @@
 -- ═══════════════════════════════════════════════════════════════════════════
 
 drop trigger if exists on_auth_user_created on auth.users;
+drop trigger if exists on_auth_password_changed on auth.users;
 
 drop view if exists public.crop_prices_latest;
 
@@ -36,6 +37,7 @@ drop table if exists
   public.crops,
   public.crop_groups,
   public.verification_codes,
+  public.password_history,
   public.member_counters
 cascade;
 
@@ -63,7 +65,10 @@ drop function if exists
   public.catalog_status(),
   public.auth_user_id_by_email(text),
   public.next_member_no(timestamptz),
-  public.set_member_no()
+  public.set_member_no(),
+  public.remember_old_password(),
+  public.password_was_used(uuid, text),
+  public.password_is_current(uuid, text)
 cascade;
 
 drop type if exists

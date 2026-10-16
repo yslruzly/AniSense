@@ -29,7 +29,10 @@ export type CodePurpose = "signup" | "reset";
 
 /** Why a code could not be sent or a password saved, for the screen to say.
  *  ACCOUNT_EXISTS · NO_ACCOUNT · WAIT · TOO_MANY_SENDS · SMS_NOT_READY ·
- *  RESET_NOT_READY · OFFLINE · WEAK_PASSWORD · SEND_FAILED */
+ *  RESET_NOT_READY · OFFLINE · WEAK_PASSWORD · SEND_FAILED · USED_BEFORE (a
+ *  password the account has had before) · and for Change password:
+ *  WRONG_PASSWORD · SAME_AS_CURRENT · TOO_MANY_TRIES (wait = minutes) ·
+ *  NOT_SIGNED_IN · NOT_DEPLOYED */
 export class CodeError extends Error {
   constructor(public code: string, public wait?: number) { super(code); this.name = "CodeError"; }
 }
@@ -140,7 +143,63 @@ export async function saveNewPassword(mode: ContactMode, contact: string, passwo
     throw new CodeError(String(r.error ?? "SEND_FAILED"));
   }
   const until = resetPassed.get(key);
-  resetPassed.delete(key);
   await new Promise(r => setTimeout(r, 600));
-  return until && Date.now() <= until ? "ok" : "expired";
+  if (!until || Date.now() > until) { resetPassed.delete(key); return "expired"; }
+  // One had before is turned away, and the code stays good for another try.
+  if (await demoUsedBefore(password)) throw new CodeError("USED_BEFORE");
+  resetPassed.delete(key);
+  await demoRemember(password);
+  return "ok";
+}
+
+/**
+ * Profile's Change password: the current password and a new one. On the
+ * database, the server checks the current one (counting wrong tries), turns
+ * away one the account has had before, and sets it. Throws a CodeError for
+ * anything that stops it (see CodeError for the codes).
+ */
+export async function changePassword(current: string, next: string): Promise<void> {
+  if (onServer()) {
+    const r = await callServer({ action: "change-password", current, password: next });
+    if (r.ok) return;
+    throw new CodeError(String(r.error ?? "SEND_FAILED"), typeof r.wait === "number" ? r.wait : undefined);
+  }
+  await new Promise(r => setTimeout(r, 600));
+  const d = readDemoPasswords();
+  // The demo knows its current password once it has set one; until then it
+  // takes whatever was typed as the current one.
+  if (d.current && (await hashDemo(current)) !== d.current) throw new CodeError("WRONG_PASSWORD");
+  if (current === next) throw new CodeError("SAME_AS_CURRENT");
+  if (await demoUsedBefore(next)) throw new CodeError("USED_BEFORE");
+  if (!d.current) { d.current = await hashDemo(current); writeDemoPasswords(d); }
+  await demoRemember(next);
+}
+
+// ── Passwords had before, in the demo ──
+// On the database each account's old passwords are kept as hashes and a
+// used one is turned away (schema.sql, section 10). A build without a
+// database does the same on the phone for its demo account: hashes only,
+// the last ten, in the phone's own storage.
+const DEMO_PW_KEY = "anisense-demo-passwords";
+type DemoPasswords = { current?: string; past: string[] };
+const hex = (buf: ArrayBuffer) => [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
+const hashDemo = async (pw: string) => hex(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`anisense-demo:${pw}`)));
+function readDemoPasswords(): DemoPasswords {
+  try {
+    const d = JSON.parse(localStorage.getItem(DEMO_PW_KEY) ?? "null") as DemoPasswords | null;
+    return d && Array.isArray(d.past) ? d : { past: [] };
+  } catch { return { past: [] }; }
+}
+function writeDemoPasswords(d: DemoPasswords) {
+  try { localStorage.setItem(DEMO_PW_KEY, JSON.stringify(d)); } catch { /* storage unavailable: the demo forgets */ }
+}
+async function demoUsedBefore(pw: string): Promise<boolean> {
+  const d = readDemoPasswords(), h = await hashDemo(pw);
+  return d.current === h || d.past.includes(h);
+}
+async function demoRemember(next: string) {
+  const d = readDemoPasswords();
+  if (d.current) d.past = [d.current, ...d.past].slice(0, 10);
+  d.current = await hashDemo(next);
+  writeDemoPasswords(d);
 }

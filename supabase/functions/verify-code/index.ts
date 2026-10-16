@@ -2,7 +2,10 @@
 // A Supabase Edge Function. It sends the code that proves a Gmail or a CP
 // number is the person's own, when they create an account ("signup") or when
 // they forgot their password ("reset"), checks it, and, after a reset code
-// passes, sets the new password. The app calls it from
+// passes, sets the new password. It also changes the password of someone
+// signed in, from Profile, once they have given their current one. Either
+// way a new password may not be one the account has had before (the current
+// one or any of its last ten: schema.sql, section 10). The app calls it from
 // src/services/verification.ts.
 //
 // The code lives only here, on the server, as a hash; the phone never sees
@@ -10,7 +13,8 @@
 // CP numbers through Semaphore.
 //
 // SETUP (docs/database-setup.md, Steps 7 and 8):
-//   · run supabase/schema.sql again (it adds the verification_codes table)
+//   · run supabase/schema.sql again (it adds the verification_codes table,
+//     and the password history: section 10)
 //   · Edge Functions → Secrets:
 //       Gmail:  BREVO_API_KEY, BREVO_SENDER_EMAIL, BREVO_SENDER_NAME (optional, "AniSense")
 //       Texts:  SEMAPHORE_API_KEY, SEMAPHORE_SENDER_NAME (the name Semaphore
@@ -35,6 +39,10 @@
 //   { action: "send",  purpose, mode, contact, lang }    → { ok } | { ok: false, error, wait? }
 //   { action: "check", purpose, mode, contact, code }    → { ok, result, token? }
 //   { action: "reset-password", mode, contact, token, password } → { ok } | { ok: false, error }
+//   { action: "change-password", current, password }    → { ok } | { ok: false, error, wait? }
+//     (signed in: the app's own session token comes in the Authorization
+//     header, and is checked here, since the function as a whole takes calls
+//     from people not yet signed in)
 // mode is "gmail" or "phone". Expected outcomes come back as 200 with
 // ok: false and a code the app turns into words; only a broken request is an
 // HTTP error.
@@ -46,6 +54,8 @@ const MAX_TRIES = 5;           // wrong tries before a new code is needed
 const RESEND_WAIT_S = 30;      // between two codes to the same address or number
 const MAX_SENDS_PER_HOUR = 5;  // codes to one address or number in an hour
 const TOKEN_LIFE_MIN = 10;     // after a reset code passes, to save the password
+const CHANGE_TRIES = 5;        // wrong current passwords on Profile before a wait
+const CHANGE_LOCK_MIN = 15;    // ... and how long that wait is
 // Every text costs credits, so all numbers together get a ceiling too: it
 // caps what anyone could cost by asking for codes to number after number.
 const smsPerHour = () => Number(Deno.env.get("SMS_MAX_PER_HOUR")) || 100;
@@ -264,6 +274,14 @@ async function check(key: string, purpose: Purpose, code: string) {
 // calling the function without the app.
 const strongEnough = (pw: string) => pw.length >= 8 && /\p{L}/u.test(pw) && /[^\p{L}\s]/u.test(pw);
 
+/** Whether this account has had this password before: its current one, or
+ *  one of its last ten (password_was_used, schema.sql section 10). */
+async function usedBefore(userId: string, password: string): Promise<boolean> {
+  const { data, error } = await db.rpc("password_was_used", { p_user: userId, p_password: password });
+  if (error) throw error;
+  return data === true;
+}
+
 async function resetPassword(key: string, loginEmail: string, token: string, password: string) {
   if (!strongEnough(password)) return reply({ ok: false, error: "WEAK_PASSWORD" });
   const row = await rowFor(key);
@@ -271,9 +289,56 @@ async function resetPassword(key: string, loginEmail: string, token: string, pas
       || (await sha256(token)) !== row.token_hash) return reply({ ok: false, error: "EXPIRED" });
   const userId = await userIdByEmail(loginEmail);
   if (!userId) return reply({ ok: false, error: "NO_ACCOUNT" });
+  // One they have had before is turned away, and the token stays good, so
+  // they can try another straight away.
+  if (await usedBefore(userId, password)) return reply({ ok: false, error: "USED_BEFORE" });
   const { error } = await db.auth.admin.updateUserById(userId, { password });
   if (error) return reply({ ok: false, error: /password/i.test(error.message) ? "WEAK_PASSWORD" : "FAILED" });
   // The token is spent: another change needs another code.
+  await db.from("verification_codes").delete().eq("key", key);
+  return reply({ ok: true });
+}
+
+/**
+ * Profile's Change password: the person is signed in (their session token
+ * says who), gives their current password and a new one. Wrong current
+ * passwords are counted per account, in the codes table under its own key:
+ * five and it waits fifteen minutes, so a phone left signed in cannot be
+ * used to guess the password. The new one must meet the rule, differ from
+ * the current one, and not be one the account has had before.
+ */
+async function changePassword(jwt: string, current: string, password: string) {
+  const { data, error } = await db.auth.getUser(jwt);
+  const user = data?.user;
+  if (error || !user) return reply({ ok: false, error: "NOT_SIGNED_IN" });
+
+  const key = `change:${user.id}`, now = Date.now();
+  const row = await rowFor(key);
+  const live = !!row && Date.parse(row.expires_at) > now;
+  if (live && row!.tries >= CHANGE_TRIES) {
+    return reply({ ok: false, error: "TOO_MANY_TRIES", wait: Math.ceil((Date.parse(row!.expires_at) - now) / 60_000) });
+  }
+  const { data: isCurrent, error: currentErr } = await db.rpc("password_is_current", { p_user: user.id, p_password: current });
+  if (currentErr) throw currentErr;
+  if (isCurrent !== true) {
+    const tries = (live ? row!.tries : 0) + 1;
+    const locked = tries >= CHANGE_TRIES;
+    // The window runs from the first wrong try; reaching the limit starts the wait afresh.
+    const until = locked ? now + CHANGE_LOCK_MIN * 60_000 : live ? Date.parse(row!.expires_at) : now + CHANGE_LOCK_MIN * 60_000;
+    const { error: countErr } = await db.from("verification_codes").upsert({
+      key, code_hash: "change", expires_at: iso(until), tries,
+      sent_at: iso(now), hour_started: iso(now), sends_this_hour: 0, token_hash: null, token_expires_at: null,
+    });
+    if (countErr) throw countErr;
+    return reply(locked ? { ok: false, error: "TOO_MANY_TRIES", wait: CHANGE_LOCK_MIN } : { ok: false, error: "WRONG_PASSWORD" });
+  }
+
+  if (!strongEnough(password)) return reply({ ok: false, error: "WEAK_PASSWORD" });
+  if (password === current) return reply({ ok: false, error: "SAME_AS_CURRENT" });
+  if (await usedBefore(user.id, password)) return reply({ ok: false, error: "USED_BEFORE" });
+  const { error: updateErr } = await db.auth.admin.updateUserById(user.id, { password });
+  if (updateErr) return reply({ ok: false, error: /password/i.test(updateErr.message) ? "WEAK_PASSWORD" : "FAILED" });
+  // The old one is now in the history (the database's own trigger), and the count starts again.
   await db.from("verification_codes").delete().eq("key", key);
   return reply({ ok: true });
 }
@@ -289,6 +354,13 @@ Deno.serve(async (req) => {
     const { error } = await db.from("verification_codes").select("key").limit(1);
     return reply({ ok: true, email: !!Deno.env.get("BREVO_API_KEY") && !!Deno.env.get("BREVO_SENDER_EMAIL"),
       sms: !!Deno.env.get("SEMAPHORE_API_KEY"), table: !error });
+  }
+
+  // Signed in, from Profile: no address or number involved.
+  if (b.action === "change-password") {
+    const jwt = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
+    try { return await changePassword(jwt, String(b.current ?? ""), String(b.password ?? "")); }
+    catch (err) { console.error("verify-code change-password failed:", err); return reply({ ok: false, error: "FAILED" }, 500); }
   }
 
   const purpose = b.purpose === "signup" || b.purpose === "reset" ? b.purpose : null;

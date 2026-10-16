@@ -353,6 +353,17 @@ export async function setMyPhoto(dataUrl: string): Promise<string> {
   return url;
 }
 
+/** What this account signs in with, for a "forgot your password" code from
+ *  Profile: its Gmail, or the CP number behind a CP-number account's
+ *  stand-in address. Read from the session on the phone, so it works without
+ *  signal. Null when nobody is signed in. */
+export async function mySignInContact(): Promise<{ mode: ContactMode; contact: string } | null> {
+  const { data } = await supabase.auth.getSession();
+  const email = data.session?.user.email;
+  if (!email) return null;
+  return isPhoneLoginEmail(email) ? { mode: "phone", contact: email.split("@")[0] } : { mode: "gmail", contact: email };
+}
+
 /** "+639171234567" → "+63 917 123 4567", the way the Profile screen shows it. */
 function displayPhone(e164: string | null | undefined): string {
   if (!e164) return "";

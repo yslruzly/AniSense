@@ -336,6 +336,8 @@ export function AuthFormScreen({
       .catch(err => {
         setLoading(false);
         if (err instanceof CodeError && err.code === "WEAK_PASSWORD") { fail("password", t("err_password_short")); return; }
+        // One this account has had before: the same words as on Profile.
+        if (err instanceof CodeError && err.code === "USED_BEFORE") { fail("password", t("err_pw_used")); return; }
         setError(t(err instanceof CodeError ? (err.code === "OFFLINE" ? "err_auth_offline" : "err_auth_generic") : authErrorKey(err)));
         setErrField(null);
       });
