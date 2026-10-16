@@ -1,6 +1,6 @@
 // ─── Types ────────────────────────────────────────────────────────────────────
 export type Screen = "home" | "market" | "expenses" | "analytics" | "trade" | "weather" | "profile" | "guide";
-export type AuthScreen = "lang" | "splash" | "role" | "signin" | "signup";
+export type AuthScreen = "lang" | "splash" | "role" | "signin" | "signup" | "guest";
 export type UserRole = "farmer" | "buyer" | null;
 /** Collected at signup. A buyer answers location only, so the other two are
  *  optional rather than a second near-identical type. */

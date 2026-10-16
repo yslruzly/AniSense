@@ -1210,6 +1210,12 @@ export const translations: Dict = {
 
   // ── Welcome ───────────────────────────────────────────────────────────────
   splash_have_account: { en: "I already have an account", tl: "Mayroon na akong account" },
+  // ── Guest mode: prices only ──
+  guest_q: { en: "Just looking?", tl: "Titingin lang?" },
+  guest_go: { en: "See prices", tl: "Tingnan ang presyo" },
+  guest_pill: { en: "Guest", tl: "Bisita" },
+  guest_cta_t: { en: "Do more with an account", tl: "Mas marami pa kapag may account" },
+  guest_cta_s: { en: "Sell your harvest, buy from farmers and keep your farm's records.", tl: "Ibenta ang ani mo, bumili sa mga magsasaka, at itala ang bukid mo." },
   wel_title_a: { en: "Welcome to", tl: "Maligayang pagdating sa" },
   wel_f1_t: { en: "Prices you can trust", tl: "Presyong mapagkakatiwalaan" },
   wel_f1_s: { en: "This year's prices, and where they may go next.", tl: "Ang presyo ngayong taon, at kung saan ito papunta." },

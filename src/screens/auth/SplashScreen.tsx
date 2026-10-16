@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { TrendingUp, Store, ReceiptText, CloudSun } from "lucide-react";
+import { TrendingUp, Store, ReceiptText, CloudSun, ChevronRight } from "lucide-react";
 import { useLang } from "../../i18n";
 import { AniSenseLogo } from "../../components/brand/AniSenseLogo";
 
@@ -24,7 +24,9 @@ const FEATURES: { tone: string; ico: ReactNode; title: string; line: string }[] 
   { tone: "sky",   ico: <CloudSun size={24} strokeWidth={2.4} />,   title: "wel_f4_t", line: "wel_f4_s" },
 ];
 
-export function SplashScreen({ onSignIn, onSignUp }: { onSignIn: () => void; onSignUp: () => void }) {
+export function SplashScreen({ onSignIn, onSignUp, onGuest }: { onSignIn: () => void; onSignUp: () => void;
+  /** Guest mode: the prices, without an account. */
+  onGuest?: () => void }) {
   const { t } = useLang();
   return (
     <div className="a-screen wl">
@@ -62,6 +64,12 @@ export function SplashScreen({ onSignIn, onSignUp }: { onSignIn: () => void; onS
       <div className="wl-dock">
         <button type="button" className="wl-primary" onClick={onSignUp}>{t("splash_create_account")}</button>
         <button type="button" className="wl-secondary" onClick={onSignIn}>{t("splash_have_account")}</button>
+        {/* For someone who only wants to look first: the prices, as a guest. */}
+        {onGuest && (
+          <button type="button" className="wl-guest" onClick={onGuest}>
+            {t("guest_q")} <b>{t("guest_go")}</b><ChevronRight size={16} strokeWidth={2.6} aria-hidden="true" />
+          </button>
+        )}
       </div>
     </div>
   );

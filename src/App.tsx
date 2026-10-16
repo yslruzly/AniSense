@@ -24,6 +24,7 @@ import { AnalyticsScreen } from "./screens/AnalyticsScreen";
 import { TradeScreen } from "./screens/TradeScreen";
 import { WeatherScreen } from "./screens/WeatherScreen";
 import { GuideScreen } from "./screens/GuideScreen";
+import { GuestScreen } from "./screens/GuestScreen";
 import { ProfileScreen } from "./screens/ProfileScreen";
 import { WelcomeID, WelcomeInfo, makeMemberId } from "./components/profile/WelcomeID";
 import { Tour } from "./components/tour/Tour";
@@ -318,6 +319,7 @@ export default function App() {
     if (authScreen === "signin") { setAuthScreen(authFlow === "signin" ? "splash" : "role"); return true; }
     if (authScreen === "role")   { setAuthScreen("lang"); return true; }
     if (authScreen === "lang")   { setAuthScreen("splash"); return true; }
+    if (authScreen === "guest")  { setAuthScreen("splash"); return true; }
     return false; // splash is the root, so back exits
   }, !isAuthed);
 
@@ -529,6 +531,8 @@ export default function App() {
         <style>{sheetCss}</style>
         <style>{pickerCss}</style>
         <style>{buttonCss}</style>
+        {/* The guest's Prices page is an app page, so it needs the app's styles. */}
+        {authScreen === "guest" && <style>{appCss}</style>}
         <div className="auth-outer">
           <div className="auth-shell">
             {authScreen === "lang" && (
@@ -541,6 +545,17 @@ export default function App() {
               <SplashScreen
                 onSignIn={() => { setAuthFlow("signin"); setSelectedRole(lastRole()); setAuthScreen("signin"); }}
                 onSignUp={() => { setAuthFlow("signup"); setAuthScreen("lang"); }}
+                onGuest={() => setAuthScreen("guest")}
+              />
+            )}
+            {/* Guest mode: the prices only, and the way to an account. */}
+            {authScreen === "guest" && (
+              <GuestScreen
+                onExit={() => setAuthScreen("splash")}
+                onSignUp={() => { setAuthFlow("signup"); setAuthScreen("lang"); }}
+                onSignIn={() => { setAuthFlow("signin"); setSelectedRole(lastRole()); setAuthScreen("signin"); }}
+                isOffline={isOffline}
+                lastUpdated={lastUpdated}
               />
             )}
             {authScreen === "role" && (

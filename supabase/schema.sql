@@ -326,7 +326,11 @@ create index if not exists price_alerts_farmer_idx    on public.price_alerts (fa
 
 -- ═══ 6. SECURITY ═════════════════════════════════════════════════════════════
 -- Enforced by the database, so even a tampered app can only do what these
--- allow. Nothing at all is open to someone who is not signed in.
+-- allow. Nothing is open to someone who is not signed in but the price
+-- catalog - the crops, their prices and the forecasts - which a guest may
+-- look at (the app's guest mode, "See prices"): public market figures, with
+-- nothing of anyone's in them. Accounts, listings, orders, farm records and
+-- badges stay closed to them.
 
 alter table public.crop_groups        enable row level security;
 alter table public.crops              enable row level security;
@@ -363,15 +367,16 @@ returns boolean language sql stable security definer set search_path = public as
   );
 $$;
 
--- Catalog and badge list: read by everyone signed in; changed by the admin.
+-- The catalog: read by anyone, signed in or a guest; the badge list by
+-- everyone signed in. Both changed by the admin only.
 drop policy if exists "catalog: read" on public.crop_groups;
-create policy "catalog: read" on public.crop_groups for select to authenticated using (true);
+create policy "catalog: read" on public.crop_groups for select to anon, authenticated using (true);
 drop policy if exists "catalog: read" on public.crops;
-create policy "catalog: read" on public.crops for select to authenticated using (true);
+create policy "catalog: read" on public.crops for select to anon, authenticated using (true);
 drop policy if exists "catalog: read" on public.crop_prices;
-create policy "catalog: read" on public.crop_prices for select to authenticated using (true);
+create policy "catalog: read" on public.crop_prices for select to anon, authenticated using (true);
 drop policy if exists "catalog: read" on public.crop_forecasts;
-create policy "catalog: read" on public.crop_forecasts for select to authenticated using (true);
+create policy "catalog: read" on public.crop_forecasts for select to anon, authenticated using (true);
 drop policy if exists "rewards: read" on public.achievements;
 create policy "rewards: read" on public.achievements for select to authenticated using (true);
 

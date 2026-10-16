@@ -5611,6 +5611,40 @@ export const appCss = `
   @media (prefers-reduced-motion: reduce) { .setting-row.as-btn:active .setting-chev { transform: none; } }
 
   .signout-btn { width: 100%; padding: 16px; background: var(--error-sk); color: var(--red); border: none; border-radius: var(--radius); font-family: inherit; font-size: var(--fs-label); font-weight: 700; cursor: pointer; }
+  /* ── Guest mode: prices only (GuestScreen) ──────────────────────────────
+     The Prices page as it is, with "Guest" beside its name, no tab bar
+     under it, and at the foot a card of what an account adds with one
+     solid way to one. */
+  .gs { background: var(--paper); }
+  .gs > .screen { flex: 1; min-height: 0; }
+  .gs .scroll { padding-bottom: 20px; }
+  .gs-pill {
+    flex-shrink: 0; padding: 3px 10px; border-radius: 99px; background: var(--gold-sk); color: var(--gold-text);
+    box-shadow: inset 0 0 0 1px var(--gold-line); font-size: 13px; font-weight: 800; letter-spacing: .02em;
+  }
+  .gs-dock {
+    flex: none; display: flex; flex-direction: column; gap: 10px; padding: 12px 16px calc(14px + var(--safe-bottom));
+    background: var(--card); box-shadow: 0 -1px 0 var(--line), 0 -12px 24px -18px rgba(22,33,27,.35);
+  }
+  .gs-cta { display: flex; align-items: center; gap: 12px; }
+  .gs-cta-ico {
+    flex: none; width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #fff;
+    background: linear-gradient(180deg, #16895B 0%, var(--tanim) 55%, #07522F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,.24);
+  }
+  .gs-cta-txt { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .gs-cta-t { font-family: var(--font-display); font-size: 16px; font-weight: 700; line-height: 1.25; color: var(--text); }
+  .gs-cta-s { font-size: 14px; line-height: 1.4; color: var(--text-muted); }
+  .gs-join {
+    width: 100%; min-height: 54px; border: none; border-radius: 16px; cursor: pointer;
+    font-family: var(--font-display); font-size: 17px; font-weight: 600; color: #fff;
+    background-image: linear-gradient(180deg, #14875A 0%, var(--tanim) 54%, #075232 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.24), inset 0 -1px 0 rgba(0,0,0,.2), 0 8px 18px -12px rgba(6,38,23,.7);
+    transition: transform 160ms var(--ease-out); -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .gs-join:active { transform: scale(.97); transition-duration: 90ms; }
+  .gs-join:focus-visible { outline: 3px solid var(--tanim); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { .gs-join:active { transform: none; } }
+
   /* ── Change password (Profile) ──────────────────────────────────────────
      A sheet from the foot, so the keyboard has room: the key on a soft
      green disc beside what this step is, the fields, then the buttons. Each

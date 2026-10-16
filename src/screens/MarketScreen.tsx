@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { EmptyState, ErrorState, SkeletonList } from "../components/states";
 import { useResource } from "../hooks/useResource";
 import { fetchPrices, PriceItem } from "../services/prices";
-import { Search, ChevronRight, X, Star, ArrowUp, ArrowDown, Minus } from "lucide-react";
+import { Search, ChevronRight, X, Star, ArrowUp, ArrowDown, Minus, ArrowLeft } from "lucide-react";
 import { haptic } from "../lib/platform";
 import { useLang } from "../i18n";
 import { UserRole } from "../types";
@@ -33,7 +33,10 @@ import basketBlink from "../assets/mascot-basket-blink.webp";
 // and the card at the top names the month the prices are for.
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
-export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userInitials = "JD", userRole }: { onProfile: () => void; isOffline: boolean; lastUpdated: string; onBack: () => void; userInitials?: string; userRole?: UserRole }) {
+export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userInitials = "JD", userRole, guest }: { onProfile: () => void; isOffline: boolean; lastUpdated: string; onBack: () => void; userInitials?: string; userRole?: UserRole;
+  /** Guest mode (GuestScreen): a header of its own - back to the welcome
+   *  screen, "Guest", and Sign in - instead of the one with the bell. */
+  guest?: { onSignIn: () => void } }) {
   const { t, tn, lang } = useLang();
   // The month the records run to, named on the card at the top.
   const priceMonth = latestMonth();
@@ -132,7 +135,20 @@ export function MarketScreen({ onProfile, isOffline, lastUpdated, onBack, userIn
 
   return (
     <div className="screen">
-      <Hdr title={t("market_title")} onBack={onBack} />
+      {guest ? (
+        <div className="hdr">
+          <div className="hdr-brand">
+            <button onClick={onBack} className="hdr-back" aria-label={t("back")}><ArrowLeft size={16} color="var(--tanim)" /></button>
+            <div className="hdr-title">{t("market_title")}</div>
+            <span className="gs-pill">{t("guest_pill")}</span>
+          </div>
+          <div className="hdr-right">
+            <button type="button" className="chip-btn" onClick={guest.onSignIn}>{t("splash_sign_in")}</button>
+          </div>
+        </div>
+      ) : (
+        <Hdr title={t("market_title")} onBack={onBack} />
+      )}
       <div className="scroll screen-enter">
 
         {/* 1 ── The market, and the month its prices are for ──

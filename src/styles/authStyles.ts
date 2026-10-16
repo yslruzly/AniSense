@@ -377,18 +377,30 @@ export const authCss = `
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
   .wl-secondary:active { background: rgba(11,107,65,.08); transform: scale(.98); transition-duration: 90ms; }
-  .wl-primary:focus-visible, .wl-secondary:focus-visible { outline: 3px solid var(--tanim); outline-offset: 3px; }
+  .wl-primary:focus-visible, .wl-secondary:focus-visible, .wl-guest:focus-visible { outline: 3px solid var(--tanim); outline-offset: 3px; }
+  /* The third way, quieter than the two: a line of words for someone who
+     only wants to look first. */
+  .wl-guest {
+    display: inline-flex; align-items: center; justify-content: center; gap: 4px; align-self: center;
+    min-height: 44px; padding: 0 12px; border: none; border-radius: 12px; cursor: pointer; background: none;
+    font-family: var(--font-body); font-size: 15px; font-weight: 500; color: #5B6660;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .wl-guest b { font-family: var(--font-display); font-weight: 700; color: var(--tanim); }
+  .wl-guest svg { color: var(--tanim); }
+  .wl-guest:active { background: rgba(11,107,65,.08); }
 
   /* On a phone up to 820px tall (most of them), a little less air, so the
      whole welcome still shows at once in either language; taller phones
      keep the roomier page. */
   @media (max-height: 820px) {
-    .wl-page { padding-top: calc(36px + var(--safe-top)); }
-    .wl-icon { width: 88px; height: 88px; border-radius: 22px; }
-    .wl-title { margin-top: 20px; font-size: 32px; }
-    .wl-slogan { margin-top: 8px; }
-    .wl-list { margin-top: 26px; gap: 18px; }
-    .wl-dock { padding-top: 12px; }
+    .wl-page { padding-top: calc(28px + var(--safe-top)); padding-bottom: 8px; }
+    .wl-icon { width: 80px; height: 80px; border-radius: 20px; }
+    .wl-title { margin-top: 16px; font-size: 30px; }
+    .wl-slogan { margin-top: 6px; }
+    .wl-list { margin-top: 22px; gap: 14px; }
+    .wl-dock { padding-top: 10px; gap: 2px; }
+    .wl-secondary { min-height: 46px; }
   }
 
   /* The one entrance. The icon settles from a little small, never from

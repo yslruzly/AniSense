@@ -15,9 +15,10 @@ export interface PriceItem {
 // no point at which loading could fail, and therefore no loading or error
 // state could exist. This is the seam.
 //
-// Signed in to a real account, today's prices come from the database
-// (crop_prices_latest) and are written into the catalog every screen reads;
-// otherwise the bundled prices stand. Either way cachedFetch handles the
+// On the database, today's prices come from it (crop_prices_latest) and are
+// written into the catalog every screen reads - for a guest too, since the
+// catalog is open to them (schema.sql, section 6); a build without one keeps
+// the bundled prices. Either way cachedFetch handles the
 // offline fallback, useResource the status, and the screen the skeleton,
 // error and empty states.
 
@@ -31,12 +32,9 @@ function fromBundle(): PriceItem[] {
 export function fetchPrices(): Promise<FetchResult<PriceItem[]>> {
   return cachedFetch<PriceItem[]>("market_prices", async () => {
     if (isSupabaseConfigured) {
-      const { data: s } = await supabase.auth.getSession();
-      if (s.session) {
-        const { data, error } = await supabase.from("crop_prices_latest").select("crop_id, price_per_kg, change_pct");
-        if (error) throw error;
-        applyPrices(data ?? []);
-      }
+      const { data, error } = await supabase.from("crop_prices_latest").select("crop_id, price_per_kg, change_pct");
+      if (error) throw error;
+      applyPrices(data ?? []);
     }
     return fromBundle();
   });
