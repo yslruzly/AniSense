@@ -83,7 +83,10 @@ else bad("Confirm email is ON: CP-number accounts can't finish signing up",
 if (settings.body?.disable_signup) bad("New sign-ups are disabled", "Authentication → Sign In / Providers: allow new users to sign up.");
 
 // 2. Tables, section by section. With no one signed in, row security returns
-//    an empty list: that still proves the table is there.
+//    an empty list: that still proves the table is there. crop_prices is
+//    asked only for the columns anyone may read (which admin put a price in
+//    is closed), including where a price came from, which the admin
+//    website's Prices page added.
 const SECTIONS = {
   Catalog: ["crop_groups", "crops", "crop_prices", "crop_prices_latest", "crop_forecasts"],
   Accounts: ["profiles", "profile_crops"],
@@ -91,11 +94,12 @@ const SECTIONS = {
   "Farm records": ["expenses", "sales", "plantings", "price_alerts", "harvest_plans"],
   Rewards: ["achievements", "user_achievements"],
 };
+const COLUMNS = { crop_prices: "crop_id,price_date,price_per_kg,change_pct,source,entered_at" };
 const missing = [];
 for (const [section, tables] of Object.entries(SECTIONS)) {
   const gone = [];
   for (const t of tables) {
-    const r = await get(`/rest/v1/${t}?select=*&limit=1`);
+    const r = await get(`/rest/v1/${t}?select=${COLUMNS[t] ?? "*"}&limit=1`);
     if (r.status !== 200) gone.push(t);
   }
   if (gone.length) missing.push(...gone);
@@ -128,6 +132,24 @@ for (const [fn, args] of Object.entries(FUNCTIONS)) {
 }
 if (noFn.length) bad(`Missing functions: ${noFn.join(", ")}`, "Run the latest supabase/schema.sql again (safe to re-run).");
 else ok("Functions: checkout, crop list, farm-record sync, and account deletion");
+
+// 3b. The admin website (schema.sql section 11): its functions are there,
+//     closed to anyone signed out, and which admin put a price in can't be read.
+const ADMIN_FUNCTIONS = {
+  is_admin: {}, admin_overview: {}, admin_users: {}, admin_price_board: {},
+  admin_set_prices: { p_month: "2000-01-01", p_prices: {} }, admin_set_award: { p_user: "00000000-0000-0000-0000-000000000000", p_badge: "x", p_on: false },
+};
+const noAdmin = [], openAdmin = [];
+for (const [fn, args] of Object.entries(ADMIN_FUNCTIONS)) {
+  const r = await get(`/rest/v1/rpc/${fn}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(args) });
+  if (r.body?.code === "PGRST202" || r.status === 404) noAdmin.push(fn);
+  else if (r.status === 200 || r.status === 204) openAdmin.push(fn);
+}
+const enteredBy = await get("/rest/v1/crop_prices?select=entered_by&limit=1");
+if (noAdmin.length) bad(`Admin website: missing ${noAdmin.join(", ")}`, "Run the latest supabase/schema.sql again (safe to re-run).");
+else if (openAdmin.length) bad(`Admin website: ${openAdmin.join(", ")} answered someone signed out`, "Run the latest supabase/schema.sql again: it closes them.");
+else if (enteredBy.status === 200) bad("Admin website: anyone can read which admin put a price in", "Run the latest supabase/schema.sql again: it closes that column.");
+else ok("Admin website: its functions are there, closed to anyone signed out (Prices, Members, Badges)");
 
 // 3a. Member numbers (2026-00001) on the profiles. Signed out, no row comes
 //     back, but asking for the column proves it is there.
