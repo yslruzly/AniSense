@@ -9,8 +9,8 @@ import leafMaskSrc from "../assets/anisense-leaf-mask.png";
 // The geometry mirrors .wid-card in appStyles (268px wide, same paddings), so
 // the file matches what's on screen: the green issuer band with its gold foil
 // edge, the photo in a gold-plated frame on security paper, the name, the
-// role on gold, the place, the barcode, and the green band with the ID
-// number and the date joined. Always English, like the card.
+// role on gold, the place, and the green band with the ID number and the
+// date joined. Always English, like the card.
 
 export type MemberIdData = {
   name: string;
@@ -128,8 +128,8 @@ export async function renderMemberId(d: MemberIdData): Promise<Blob> {
   const roleY = nameY + nameLines.length * 24 + 8;
   const ROLE_H = 22;
   const locY = roleY + ROLE_H + 8;
-  const barY = (locLines.length ? locY + locLines.length * 18 : roleY + ROLE_H) + 14;
-  const footY = barY + 26 + 16;
+  // The white ends 20px under the last line, as .wid-body's padding does.
+  const footY = (locLines.length ? locY + locLines.length * 18 : roleY + ROLE_H) + 20;
   const H = footY + FOOT;
 
   const canvas = document.createElement("canvas");
@@ -263,16 +263,6 @@ export async function renderMemberId(d: MemberIdData): Promise<Blob> {
   ctx.font = `400 13.5px ${FONT}`;
   ctx.fillStyle = FAINT;
   locLines.forEach((l, i) => ctx.fillText(l, W / 2, locY + i * 18));
-
-  // Barcode: the same 17px bar pattern as the card's CSS, 200px wide.
-  const bx = (W - 200) / 2, bars: [number, number][] = [[0, 2], [4, 5], [8, 11], [12, 13]];
-  ctx.fillStyle = "rgba(22,33,27,.85)";
-  for (let x = 0; x < 200; x += 17) {
-    for (const [a, b] of bars) {
-      const x0 = x + a, x1 = Math.min(x + b, 200);
-      if (x0 < 200) ctx.fillRect(bx + x0, barY, x1 - x0, 26);
-    }
-  }
 
   // The bottom band: green, the gold light off its bottom-left, a gold edge
   // on top; the labels quiet, the number in gold, the date in white.

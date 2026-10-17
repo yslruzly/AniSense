@@ -1342,9 +1342,9 @@ export const appCss = `
      A portrait member card, like a real ID on a lanyard, in the colours of
      the Profile card: the issuer on a green band with the punch slot and a
      gold foil edge, the photo in a gold-plated frame on white security
-     paper, the name, the role on gold, the place and a barcode, then the ID
-     number and the date they joined on a green band along the bottom. The
-     saved copy (src/lib/memberIdImage.ts) is drawn to the same plan. */
+     paper, the name, the role on gold and the place, then the ID number and
+     the date they joined on a green band along the bottom. The saved copy
+     (src/lib/memberIdImage.ts) is drawn to the same plan. */
   .shm-scrim:has(> .wid-panel) { background: rgba(8,12,10,.84); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
   .wid-panel { width: 100%; max-width: 330px; background: transparent; }
   .wid { display: flex; flex-direction: column; align-items: center; text-align: center; color: #fff; }
@@ -1403,7 +1403,9 @@ export const appCss = `
   .wid-brand { font-family: var(--font-display); font-size: 16px; font-weight: 700; letter-spacing: -.01em; }
   .wid-kind { margin-left: auto; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #F7CC5B; }
 
-  .wid-body { display: flex; flex-direction: column; align-items: center; padding: 20px 18px 16px; }
+  /* As much room under the last line as over the photo, so the white sits
+     evenly between the two green bands. */
+  .wid-body { display: flex; flex-direction: column; align-items: center; padding: 20px 18px 20px; }
   /* Portrait, like a real ID photo, in a gold-plated frame. */
   .wid-photo {
     position: relative; width: 112px; height: 134px; padding: 0; border: 3px solid transparent; border-radius: 14px; cursor: pointer;
@@ -1447,12 +1449,6 @@ export const appCss = `
     font-size: 13.5px; line-height: 1.35; color: var(--text-faint);
   }
   .wid-loc svg { display: inline-block; vertical-align: -2px; margin-right: 4px; color: var(--tanim); }
-  .wid-barcode {
-    width: 200px; height: 26px; margin-top: 14px; border-radius: 2px; opacity: .85;
-    background: repeating-linear-gradient(90deg,
-      var(--ink) 0 2px, transparent 2px 4px, var(--ink) 4px 5px, transparent 5px 8px,
-      var(--ink) 8px 11px, transparent 11px 12px, var(--ink) 12px 13px, transparent 13px 17px);
-  }
 
   /* The bottom band: the same green with a gold edge on top, the labels
      small and quiet, the number in gold and the date in white. */
