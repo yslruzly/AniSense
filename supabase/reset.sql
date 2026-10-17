@@ -38,6 +38,7 @@ drop table if exists
   public.crop_groups,
   public.verification_codes,
   public.password_history,
+  public.admins,
   public.member_counters
 cascade;
 
@@ -68,7 +69,18 @@ drop function if exists
   public.set_member_no(),
   public.remember_old_password(),
   public.password_was_used(uuid, text),
-  public.password_is_current(uuid, text)
+  public.password_is_current(uuid, text),
+  public.is_admin(),
+  public.admin_guard(),
+  public.make_admin(text),
+  public.town_of(text),
+  public.admin_overview(),
+  public.admin_users(text, text, int, int),
+  public.admin_user(uuid),
+  public.admin_listings(text, text, int, int),
+  public.admin_orders(text, int, int),
+  public.admin_awards(),
+  public.admin_set_award(uuid, text, boolean)
 cascade;
 
 drop type if exists

@@ -25,6 +25,7 @@
 --    8. Storage        listing photos
 --    9. Codes          6-digit codes, kept for the verify-code function
 --   10. Passwords      each account's old passwords, so none is used twice
+--   11. Admin          the admin website's accounts and what it may read
 -- ═══════════════════════════════════════════════════════════════════════════
 
 
@@ -981,3 +982,362 @@ $$;
 revoke all on function public.password_is_current(uuid, text) from public, anon, authenticated;
 grant execute on function public.password_is_current(uuid, text) to service_role;
 grant select, insert, delete on public.password_history to service_role;
+
+
+-- ═══ 11. ADMIN: the web dashboard ═════════════════════════════════════════════
+-- The AniSense admin website (site/admin.html), never the app. An admin is an
+-- account listed in public.admins. It signs in on the website with its email
+-- and password like anyone, and every admin function below checks that list
+-- first: anyone else gets NOT_ADMIN. They only read, but for one thing: the
+-- badges the admin gives (Farmer of the Month, Farmer of the Year).
+--
+-- To make an admin (once, by the project's owner, here in the SQL Editor):
+--   1. Authentication → Users → Add user → Create new user: the email and a
+--      password, with Auto Confirm User ticked.
+--   2. Run:  select public.make_admin('the.same@email.com');
+-- make_admin takes away the app profile the sign-up trigger gave the new
+-- account, so an admin is never one of the app's users: not in the Market,
+-- not in any count, and the app will not sign it in. It refuses an account
+-- that is already in use in the app, so a farmer's or buyer's account can
+-- never be turned into one by mistake.
+
+create table if not exists public.admins (
+  user_id   uuid primary key references auth.users(id) on delete cascade,
+  added_at  timestamptz not null default now()
+);
+alter table public.admins enable row level security;
+revoke all on public.admins from anon, authenticated;
+
+-- Whether the person signed in is an admin: for the website, and for the
+-- app, which turns an admin account away.
+create or replace function public.is_admin()
+returns boolean language sql stable security definer set search_path = '' as $$
+  select exists (select 1 from public.admins where user_id = auth.uid());
+$$;
+revoke all on function public.is_admin() from public, anon;
+grant execute on function public.is_admin() to authenticated;
+
+-- The first line of every admin function.
+create or replace function public.admin_guard()
+returns void language plpgsql stable security definer set search_path = '' as $$
+begin
+  if not exists (select 1 from public.admins where user_id = auth.uid()) then
+    raise exception 'NOT_ADMIN' using errcode = '42501';
+  end if;
+end;
+$$;
+revoke all on function public.admin_guard() from public, anon, authenticated;
+
+create or replace function public.make_admin(p_email text)
+returns text language plpgsql security definer set search_path = '' as $$
+declare
+  uid uuid;
+  prof public.profiles;
+begin
+  select u.id into uid from auth.users u where lower(u.email) = lower(trim(p_email));
+  if uid is null then
+    return 'No account has that email yet. Add it under Authentication → Users first, then run this again.';
+  end if;
+  if exists (select 1 from public.admins where user_id = uid) then
+    return trim(p_email) || ' is already an admin.';
+  end if;
+  select * into prof from public.profiles where id = uid;
+  -- Made in the app: it has the name the sign-up form asked, or something in it.
+  if coalesce(prof.full_name, '') <> ''
+     or exists (select 1 from public.listings where seller_id = uid)
+     or exists (select 1 from public.orders where buyer_id = uid)
+     or exists (select 1 from public.expenses where farmer_id = uid)
+     or exists (select 1 from public.sales where farmer_id = uid)
+     or exists (select 1 from public.plantings where farmer_id = uid) then
+    return 'That account is in use in the app. Make the admin a new account with an email of its own.';
+  end if;
+  insert into public.admins (user_id) values (uid);
+  delete from public.profiles where id = uid;
+  -- Its member number goes back if nobody has joined since, so the members
+  -- still count 00001, 00002, … with no gap.
+  if prof.member_no is not null then
+    update public.member_counters c set last = c.last - 1
+     where c.year = split_part(prof.member_no, '-', 1)::int
+       and c.last = split_part(prof.member_no, '-', 2)::int;
+  end if;
+  return 'Done: ' || trim(p_email) || ' is an admin. Sign in on the admin website with it.';
+end;
+$$;
+revoke all on function public.make_admin(text) from public, anon, authenticated;
+
+-- The town in a written location: "Bantug, Talavera, Nueva Ecija" →
+-- "Talavera" (the part before the province), "Talavera" → "Talavera".
+create or replace function public.town_of(p_location text)
+returns text language sql immutable set search_path = '' as $$
+  select case
+    when p_location is null or trim(p_location) = '' then null
+    else (select nullif(trim(parts[greatest(array_length(parts, 1) - 1, 1)]), '')
+            from (select regexp_split_to_array(p_location, ',') as parts) x)
+  end;
+$$;
+revoke all on function public.town_of(text) from public, anon, authenticated;
+
+-- The dashboard's numbers, in one call: users, listings, orders and the
+-- farm records, the last twelve months of sign-ups and of orders (Philippine
+-- time), what is for sale by crop, and where the users are.
+create or replace function public.admin_overview()
+returns json language plpgsql stable security definer set search_path = '' as $$
+declare
+  r json;
+  this_month timestamp := date_trunc('month', now() at time zone 'Asia/Manila');
+begin
+  perform public.admin_guard();
+  select json_build_object(
+    'generated_at', now(),
+    'users', (select json_build_object(
+        'total', count(*),
+        'farmers', count(*) filter (where p.role = 'farmer'),
+        'buyers', count(*) filter (where p.role = 'buyer'),
+        'new_7d', count(*) filter (where p.created_at >= now() - interval '7 days'),
+        'new_30d', count(*) filter (where p.created_at >= now() - interval '30 days'))
+      from public.profiles p),
+    'active_7d', (select count(*) from auth.users u join public.profiles p on p.id = u.id
+                   where u.last_sign_in_at >= now() - interval '7 days'),
+    'listings', (select json_build_object(
+        'active', count(*) filter (where l.status = 'active'),
+        'sold', count(*) filter (where l.status = 'sold'),
+        'removed', count(*) filter (where l.status = 'removed'),
+        'active_kg', coalesce(sum(l.quantity_kg) filter (where l.status = 'active'), 0))
+      from public.listings l),
+    'orders', (select json_build_object(
+        'orders', (select count(*) from public.orders),
+        'items', count(*),
+        'placed', count(*) filter (where i.status = 'placed'),
+        'confirmed', count(*) filter (where i.status = 'confirmed'),
+        'completed', count(*) filter (where i.status = 'completed'),
+        'cancelled', count(*) filter (where i.status = 'cancelled'),
+        'value', coalesce(sum(i.amount) filter (where i.status <> 'cancelled'), 0),
+        'sold_value', coalesce(sum(i.sold_amount) filter (where i.status <> 'cancelled'), 0))
+      from public.order_items i),
+    'ratings', (select json_build_object(
+        'rated_farmers', count(*) filter (where p.rating_count > 0),
+        'average', round(avg(p.rating) filter (where p.rating_count > 0), 2))
+      from public.profiles p where p.role = 'farmer'),
+    'records', json_build_object(
+        'expenses', (select count(*) from public.expenses),
+        'expenses_total', (select coalesce(sum(e.amount), 0) from public.expenses e),
+        'sales', (select count(*) from public.sales),
+        'sales_total', (select coalesce(sum(s.amount), 0) from public.sales s),
+        'plantings', (select count(*) from public.plantings)),
+    'signups_by_month', (select coalesce(json_agg(json_build_object('month', to_char(t.m, 'YYYY-MM'), 'farmers', t.f, 'buyers', t.b) order by t.m), '[]'::json)
+       from (select g.m,
+                    count(p.id) filter (where p.role = 'farmer') as f,
+                    count(p.id) filter (where p.role = 'buyer') as b
+               from generate_series(this_month - interval '11 months', this_month, interval '1 month') as g(m)
+               left join public.profiles p on date_trunc('month', p.created_at at time zone 'Asia/Manila') = g.m
+              group by g.m) t),
+    'orders_by_month', (select coalesce(json_agg(json_build_object('month', to_char(t.m, 'YYYY-MM'), 'items', t.n, 'value', t.v) order by t.m), '[]'::json)
+       from (select g.m,
+                    count(i.id) as n,
+                    coalesce(sum(i.amount), 0) as v
+               from generate_series(this_month - interval '11 months', this_month, interval '1 month') as g(m)
+               left join public.order_items i on i.status <> 'cancelled'
+                     and date_trunc('month', i.created_at at time zone 'Asia/Manila') = g.m
+              group by g.m) t),
+    'listings_by_crop', (select coalesce(json_agg(json_build_object('crop', cg.name, 'listings', t.n, 'kg', t.kg) order by t.n desc, cg.name), '[]'::json)
+       from (select c.group_id, count(*) as n, sum(l.quantity_kg) as kg
+               from public.listings l join public.crops c on c.id = l.crop_id
+              where l.status = 'active' group by c.group_id) t
+       join public.crop_groups cg on cg.id = t.group_id),
+    'users_by_town', (select coalesce(json_agg(json_build_object('town', t.town, 'users', t.n) order by t.n desc, t.town), '[]'::json)
+       from (select public.town_of(p.location) as town, count(*) as n
+               from public.profiles p where public.town_of(p.location) is not null
+              group by 1 order by 2 desc, 1 limit 8) t)
+  ) into r;
+  return r;
+end;
+$$;
+
+-- The users, newest first, a page at a time, found by name, member number,
+-- phone (typed as 0917…, or +63 917…), email or town. A CP-number account's
+-- stand-in address is never shown: its number is.
+create or replace function public.admin_users(p_search text default '', p_role text default null, p_limit int default 50, p_offset int default 0)
+returns table (
+  id uuid, full_name text, role text, member_no text, location text, phone text, email text, avatar_url text,
+  created_at timestamptz, last_sign_in_at timestamptz,
+  listings bigint, purchases bigint, sales bigint, rating numeric, rating_count int, crops text[], total bigint)
+language plpgsql stable security definer set search_path = '' as $$
+#variable_conflict use_column
+declare
+  q text := coalesce(trim(p_search), '');
+  digits text := regexp_replace(regexp_replace(coalesce(trim(p_search), ''), '^0', '63'), '\D', '', 'g');
+begin
+  perform public.admin_guard();
+  return query
+  select p.id, p.full_name, p.role::text, p.member_no, p.location, p.phone,
+         (case when u.email like '%@phone.anisense.app' then null else u.email end)::text, p.avatar_url,
+         p.created_at, u.last_sign_in_at,
+         (select count(*) from public.listings l where l.seller_id = p.id),
+         (select count(*) from public.orders o where o.buyer_id = p.id),
+         (select count(*) from public.order_items i where i.seller_id = p.id and i.status <> 'cancelled'),
+         p.rating, p.rating_count,
+         coalesce((select array_agg(cg.name order by cg.sort_order) from public.profile_crops pc
+                     join public.crop_groups cg on cg.id = pc.crop_group_id where pc.profile_id = p.id), '{}'::text[]),
+         count(*) over ()
+    from public.profiles p
+    left join auth.users u on u.id = p.id
+   where (p_role is null or p.role::text = p_role)
+     and (q = ''
+          or p.full_name ilike '%' || q || '%'
+          or p.member_no ilike '%' || q || '%'
+          or coalesce(p.location, '') ilike '%' || q || '%'
+          or (u.email not like '%@phone.anisense.app' and coalesce(u.email, '') ilike '%' || q || '%')
+          or (length(digits) >= 3 and regexp_replace(coalesce(p.phone, ''), '\D', '', 'g') like '%' || digits || '%'))
+   order by p.created_at desc
+   limit greatest(1, least(coalesce(p_limit, 50), 200)) offset greatest(0, coalesce(p_offset, 0));
+end;
+$$;
+
+-- One user, all of it: the profile, crops, badges, their latest listings,
+-- purchases and sales, and how much they keep in their farm records.
+create or replace function public.admin_user(p_id uuid)
+returns json language plpgsql stable security definer set search_path = '' as $$
+declare
+  r json;
+begin
+  perform public.admin_guard();
+  select json_build_object(
+    'id', p.id, 'full_name', p.full_name, 'role', p.role, 'member_no', p.member_no,
+    'location', p.location, 'phone', p.phone,
+    'email', case when u.email like '%@phone.anisense.app' then null else u.email end,
+    'years_farming', p.years_farming, 'rating', p.rating, 'rating_count', p.rating_count,
+    'avatar_url', p.avatar_url, 'created_at', p.created_at, 'last_sign_in_at', u.last_sign_in_at,
+    'crops', coalesce((select json_agg(cg.name order by cg.sort_order) from public.profile_crops pc
+                         join public.crop_groups cg on cg.id = pc.crop_group_id where pc.profile_id = p.id), '[]'::json),
+    'badges', coalesce((select json_agg(json_build_object('id', a.id, 'name', a.name, 'earned_at', ua.earned_at) order by a.sort_order)
+                          from public.user_achievements ua join public.achievements a on a.id = ua.achievement_id
+                         where ua.profile_id = p.id), '[]'::json),
+    'listings', coalesce((select json_agg(x order by x.created_at desc) from (
+        select l.id, c.name as crop, l.price_per_kg, l.quantity_kg, l.status, l.location, l.created_at
+          from public.listings l join public.crops c on c.id = l.crop_id
+         where l.seller_id = p.id order by l.created_at desc limit 20) x), '[]'::json),
+    'purchases', coalesce((select json_agg(x order by x.created_at desc) from (
+        select i.created_at, c.name as crop, i.quantity_kg, i.amount, i.paid_amount, i.status, s.full_name as seller
+          from public.order_items i join public.orders o on o.id = i.order_id
+          join public.crops c on c.id = i.crop_id left join public.profiles s on s.id = i.seller_id
+         where o.buyer_id = p.id order by i.created_at desc limit 20) x), '[]'::json),
+    'sales', coalesce((select json_agg(x order by x.created_at desc) from (
+        select i.created_at, c.name as crop, i.quantity_kg, i.amount, i.sold_amount, i.status, i.rating, b.full_name as buyer
+          from public.order_items i join public.orders o on o.id = i.order_id
+          join public.crops c on c.id = i.crop_id left join public.profiles b on b.id = o.buyer_id
+         where i.seller_id = p.id order by i.created_at desc limit 20) x), '[]'::json),
+    'records', json_build_object(
+        'expenses', (select count(*) from public.expenses e where e.farmer_id = p.id),
+        'expenses_total', (select coalesce(sum(e.amount), 0) from public.expenses e where e.farmer_id = p.id),
+        'sales', (select count(*) from public.sales s where s.farmer_id = p.id),
+        'sales_total', (select coalesce(sum(s.amount), 0) from public.sales s where s.farmer_id = p.id),
+        'plantings', (select count(*) from public.plantings pl where pl.farmer_id = p.id))
+  ) into r
+  from public.profiles p left join auth.users u on u.id = p.id
+  where p.id = p_id;
+  if r is null then raise exception 'NOT_FOUND'; end if;
+  return r;
+end;
+$$;
+
+-- What is for sale, newest first, by status, found by crop, seller or town.
+create or replace function public.admin_listings(p_status text default null, p_search text default '', p_limit int default 50, p_offset int default 0)
+returns table (
+  id uuid, crop text, crop_group text, seller_id uuid, seller text, member_no text,
+  price_per_kg numeric, quantity_kg numeric, location text, status text, photo_url text, created_at timestamptz, total bigint)
+language plpgsql stable security definer set search_path = '' as $$
+#variable_conflict use_column
+declare
+  q text := coalesce(trim(p_search), '');
+begin
+  perform public.admin_guard();
+  return query
+  select l.id, c.name, cg.name, l.seller_id, p.full_name, p.member_no,
+         l.price_per_kg, l.quantity_kg, l.location, l.status::text, l.photo_url, l.created_at,
+         count(*) over ()
+    from public.listings l
+    join public.crops c on c.id = l.crop_id
+    join public.crop_groups cg on cg.id = c.group_id
+    left join public.profiles p on p.id = l.seller_id
+   where (p_status is null or l.status::text = p_status)
+     and (q = '' or c.name ilike '%' || q || '%' or cg.name ilike '%' || q || '%'
+          or coalesce(p.full_name, '') ilike '%' || q || '%' or l.location ilike '%' || q || '%')
+   order by l.created_at desc
+   limit greatest(1, least(coalesce(p_limit, 50), 200)) offset greatest(0, coalesce(p_offset, 0));
+end;
+$$;
+
+-- What has been ordered, a line each, newest first, by status.
+create or replace function public.admin_orders(p_status text default null, p_limit int default 50, p_offset int default 0)
+returns table (
+  id uuid, order_id uuid, created_at timestamptz, buyer_id uuid, buyer text, seller_id uuid, seller text, crop text,
+  quantity_kg numeric, price_per_kg numeric, amount numeric, sold_amount numeric, paid_amount numeric,
+  status text, rating smallint, total bigint)
+language plpgsql stable security definer set search_path = '' as $$
+#variable_conflict use_column
+begin
+  perform public.admin_guard();
+  return query
+  select i.id, i.order_id, i.created_at, o.buyer_id, b.full_name, i.seller_id, s.full_name, c.name,
+         i.quantity_kg, i.price_per_kg, i.amount, i.sold_amount, i.paid_amount,
+         i.status::text, i.rating, count(*) over ()
+    from public.order_items i
+    join public.orders o on o.id = i.order_id
+    join public.crops c on c.id = i.crop_id
+    left join public.profiles b on b.id = o.buyer_id
+    left join public.profiles s on s.id = i.seller_id
+   where (p_status is null or i.status::text = p_status)
+   order by i.created_at desc
+   limit greatest(1, least(coalesce(p_limit, 50), 200)) offset greatest(0, coalesce(p_offset, 0));
+end;
+$$;
+
+-- The badges the admin gives, and who holds them.
+create or replace function public.admin_awards()
+returns table (profile_id uuid, full_name text, member_no text, location text, achievement_id text, achievement text, earned_at timestamptz)
+language plpgsql stable security definer set search_path = '' as $$
+#variable_conflict use_column
+begin
+  perform public.admin_guard();
+  return query
+  select ua.profile_id, p.full_name, p.member_no, p.location, a.id, a.name, ua.earned_at
+    from public.user_achievements ua
+    join public.achievements a on a.id = ua.achievement_id and a.awarded_by = 'admin'
+    join public.profiles p on p.id = ua.profile_id
+   order by ua.earned_at desc;
+end;
+$$;
+
+-- Gives or takes back one of the admin's badges, to a farmer only.
+create or replace function public.admin_set_award(p_user uuid, p_badge text, p_on boolean)
+returns void language plpgsql security definer set search_path = '' as $$
+begin
+  perform public.admin_guard();
+  if not exists (select 1 from public.achievements a where a.id = p_badge and a.awarded_by = 'admin') then
+    raise exception 'NOT_AN_ADMIN_BADGE';
+  end if;
+  if not exists (select 1 from public.profiles p where p.id = p_user and p.role = 'farmer') then
+    raise exception 'NOT_A_FARMER';
+  end if;
+  if p_on then
+    insert into public.user_achievements (profile_id, achievement_id) values (p_user, p_badge) on conflict do nothing;
+  else
+    delete from public.user_achievements where profile_id = p_user and achievement_id = p_badge;
+  end if;
+end;
+$$;
+
+revoke all on function public.admin_overview()                       from public, anon;
+revoke all on function public.admin_users(text, text, int, int)      from public, anon;
+revoke all on function public.admin_user(uuid)                       from public, anon;
+revoke all on function public.admin_listings(text, text, int, int)   from public, anon;
+revoke all on function public.admin_orders(text, int, int)           from public, anon;
+revoke all on function public.admin_awards()                         from public, anon;
+revoke all on function public.admin_set_award(uuid, text, boolean)   from public, anon;
+grant execute on function public.admin_overview()                     to authenticated;
+grant execute on function public.admin_users(text, text, int, int)    to authenticated;
+grant execute on function public.admin_user(uuid)                     to authenticated;
+grant execute on function public.admin_listings(text, text, int, int) to authenticated;
+grant execute on function public.admin_orders(text, int, int)         to authenticated;
+grant execute on function public.admin_awards()                       to authenticated;
+grant execute on function public.admin_set_award(uuid, text, boolean) to authenticated;

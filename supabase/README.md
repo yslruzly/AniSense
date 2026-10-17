@@ -203,6 +203,9 @@ erDiagram
 - `achievements`: the 6 badges.
 - `user_achievements`: who earned which, and when.
 
+**11. Admin.** Not part of the app's data.
+- `admins`: the accounts that may use the admin website (`site/admin.html`). Row level security with no policies, and closed to the app. An admin has no profile, so it is never one of the app's members, and the app will not sign it in.
+
 **9. Codes.** Not part of the app's data.
 - `verification_codes`: the 6-digit codes for creating an account and resetting a password, as hashes, with their expiry and tries. Row level security with no policies: only the `verify-code` Edge Function (with the server's service key) reads or writes it. See `supabase/functions/verify-code/` and database-setup.md, Steps 7 (Gmail, Brevo) and 8 (CP numbers, Semaphore).
 
@@ -218,12 +221,17 @@ erDiagram
 | `award…` triggers | Awards Newbie on sign-up, First harvest on a first listing, First sale on a first sale |
 | `delete_my_account()` | Deletes the caller's own account and everything that is theirs alone. Orders stay in the other party's history, with the name removed |
 | `catalog_status()` | Counts only, for `npm run check:db` |
+| `make_admin(email)` | Makes an account added under Authentication → Users an admin, and takes away the app profile it was given. Refuses an account already used in the app. Run only by the owner, in the SQL Editor |
+| `is_admin()` | Whether the person signed in is an admin: the admin website checks it at sign-in, and the app turns an admin away with it |
+| `admin_overview()`, `admin_users(…)`, `admin_user(id)`, `admin_listings(…)`, `admin_orders(…)`, `admin_awards()` | What the admin website reads: the dashboard's numbers, the members, one member, the listings, the orders, who holds the admin's badges. Each says `NOT_ADMIN` to anyone else |
+| `admin_set_award(user, badge, on)` | Gives or takes back Farmer of the Month or Farmer of the Year, to a farmer only. The admin website's one change |
 | `auth_user_id_by_email(email)` | Which account a login address belongs to, if any (a Gmail, or a CP number's `639…@phone.anisense.app`). Closed to the app; only the verify-code function may call it |
 
 ## Security
 
 Row Level Security is on for every table; the database enforces it, not the app.
-- Nobody signed out can read anything.
+- Nobody signed out can read anything but the price catalog (for guest mode).
+- Only an account in `admins` can call the admin functions, and they only read, but for giving and taking back the two admin badges.
 - Farmers manage only their own listings and records.
 - A buyer's phone number is visible only to farmers they have ordered from.
 - Orders can only be made through `place_order()`.
@@ -253,7 +261,7 @@ on conflict (crop_id, price_date) do update set price_per_kg = excluded.price_pe
 ```
 The forecasts are not retrained by this; run the steps above when you can.
 
-**Name a Farmer of the Month or Year.** Copy the farmer's id from Table Editor → `profiles`.
+**Name a Farmer of the Month or Year.** On the admin website, **Badges** → find the farmer → **Give** (or open the farmer under **Members**). Without the website, copy the farmer's id from Table Editor → `profiles` and run:
 ```sql
 insert into user_achievements (profile_id, achievement_id)
 values ('<farmer id>', 'farmer-of-the-month');

@@ -182,6 +182,7 @@ Key design decisions:
 | Home | `site/index.html` | What AniSense does, in English and Tagalog, with screenshots of the app (`site/assets/screens/`, in both languages). |
 | Privacy policy | `site/privacy-policy.html` | Generated from `src/data/privacyPolicy.ts` by `node scripts/build-privacy.mjs`. Never edit it by hand. |
 | Delete account | `site/delete-account.html` | Signs a person in and deletes their account without the app, as Google Play requires. Reads `site/config.js`. |
+| Admin | `site/admin.html` | For AniSense staff, at `/admin`, not linked from anywhere: the dashboard, members, listings, orders, and the Farmer of the Month / Year badges. Admin accounts are made in Supabase (docs/database-setup.md, "The admin website") and cannot sign in to the app. Reads `site/config.js`. |
 
 `site/config.js` holds the Supabase URL, the publishable key, the support email address and the app's Google Play address. The home page's "Get it on Google Play" badge (Google's own, in `site/assets/google-play-badge.png`) is not a link until `playStoreUrl` is filled in.
 

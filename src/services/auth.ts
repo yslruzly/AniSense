@@ -101,7 +101,24 @@ export async function createAccount(a: NewAccount): Promise<{ session: Session |
 export async function signIn(mode: ContactMode, contact: string, password: string): Promise<Session> {
   const { data, error } = await supabase.auth.signInWithPassword({ email: loginEmail(mode, contact), password });
   if (error) throw error;
+  await turnAwayAdmin();
   return data.session;
+}
+
+// ─── Admin accounts: the website only ─────────────────────────────────────────
+// An admin account (schema.sql section 11) is for the AniSense admin website,
+// site/admin.html, and has no profile in the app. It is signed straight out
+// again here, quietly, so App stays on the sign-in form with the reason
+// (ADMIN_ACCOUNT → err_admin_account) instead of going back to the welcome.
+// If the check can't be made (no signal, or a database without section 11
+// yet), the sign-in goes ahead: a farmer is never kept out by it.
+let turningAway = false;
+async function turnAwayAdmin() {
+  const { data, error } = await supabase.rpc("is_admin");
+  if (error || data !== true) return;
+  turningAway = true;
+  try { await supabase.auth.signOut({ scope: "local" }); } finally { turningAway = false; }
+  throw new Error("ADMIN_ACCOUNT");
 }
 
 /**
@@ -111,6 +128,7 @@ export async function signIn(mode: ContactMode, contact: string, password: strin
 export function authErrorKey(err: unknown): string {
   const msg = (err as { message?: string })?.message?.toLowerCase() ?? "";
   const status = (err as { status?: number })?.status;
+  if (msg === "admin_account") return "err_admin_account";
   if (msg.includes("invalid login")) return "err_login_wrong";
   if (msg.includes("already registered") || msg.includes("already been registered")) return "err_account_exists";
   if (msg.includes("email not confirmed")) return "err_email_unconfirmed";
@@ -162,6 +180,7 @@ export async function resendEmailCode(email: string) {
 export async function signInWithEmail(email: string, password: string) {
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) throw error;
+  await turnAwayAdmin();
   return data.session;
 }
 
@@ -238,7 +257,10 @@ export async function restoreSession(): Promise<{ session: Session | null; offli
 }
 
 export function onAuthChange(cb: (session: Session | null, event: string) => void) {
-  const { data } = supabase.auth.onAuthStateChange((event, session) => cb(session, event));
+  const { data } = supabase.auth.onAuthStateChange((event, session) => {
+    if (turningAway) return; // an admin account being turned away at sign-in
+    cb(session, event);
+  });
   return () => data.subscription.unsubscribe(); // call in useEffect cleanup
 }
 

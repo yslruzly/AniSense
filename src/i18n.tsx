@@ -846,6 +846,10 @@ export const translations: Dict = {
     en: "That number, email or password is wrong. Check them and try again.",
     tl: "Mali ang numero, email o password. Tingnan at subukan ulit.",
   },
+  err_admin_account: {
+    en: "This is an admin account. Use it on the AniSense admin website, not in the app.",
+    tl: "Pang-admin ang account na ito. Gamitin ito sa AniSense admin website, hindi sa app.",
+  },
   err_account_exists: {
     en: "There is already an account with this. Sign in instead.",
     tl: "May account na gamit ito. Mag-sign in na lang.",

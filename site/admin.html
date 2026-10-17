@@ -1,0 +1,1097 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>AniSense Admin</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <!-- Only AniSense's own files, the Supabase project and the supabase-js
+       library may load here. If the project ever moves to a custom domain,
+       add it to img-src and connect-src. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://*.supabase.co; connect-src https://*.supabase.co wss://*.supabase.co; base-uri 'none'; object-src 'none'">
+  <link rel="icon" href="assets/favicon.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* The AniSense admin website. The app's colours and type; the chart
+       colours are the validated pair (farmers green, buyers gold), always with
+       a legend and a table of the numbers. Body text 16px and up. */
+    :root {
+      --ink: #16211B; --muted: #474B4F; --faint: #5F6461;
+      --paper: #F3F4F2; --card: #FFFFFF; --line: #E2E5E1; --line-2: #EEF0ED; --hover: #F7F8F6;
+      --tanim: #0B6B41; --tanim-2: #14875A; --tanim-sk: #DDEFE3; --tanim-mist: #EEF6F1;
+      --farm: #1f8a5b; --buy: #d99a1e; --gold-text: #8A5D0C; --gold-sk: #FBF0D6; --star: #B07A16;
+      --error: #A5231B; --error-sk: #FBEAE8; --grey-sk: #ECEEEB;
+      --deep-1: #145E3F; --deep-2: #0E4630; --deep-3: #0A3525;
+      --on-deep: #F4F7F5; --on-deep-2: rgba(244, 247, 245, .78);
+      --ease-out: cubic-bezier(.23, 1, .32, 1); --ease-drawer: cubic-bezier(.32, .72, 0, 1);
+      --font-display: "Lexend", system-ui, sans-serif; --font-body: "Source Sans 3", system-ui, sans-serif;
+      --shadow: 0 0 0 1px rgba(22, 33, 27, .05), 0 1px 2px rgba(22, 33, 27, .05), 0 14px 30px -20px rgba(22, 33, 27, .3);
+      --side-w: 248px;
+    }
+    * { box-sizing: border-box; margin: 0; }
+    html { -webkit-text-size-adjust: 100%; }
+    body { min-height: 100dvh; background: var(--paper); color: var(--ink); font: 16px/1.5 var(--font-body); -webkit-font-smoothing: antialiased; }
+    button, input { font: inherit; color: inherit; }
+    button { cursor: pointer; }
+    a { color: var(--tanim); }
+    :focus-visible { outline: 3px solid rgba(11, 107, 65, .45); outline-offset: 2px; }
+    [hidden] { display: none !important; }
+    .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    svg.i { width: 20px; height: 20px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* ─── Brand ─── */
+    .brand { display: flex; align-items: center; gap: 10px; font: 700 19px/1 var(--font-display); letter-spacing: -.02em; }
+    .brand-mark { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; background: #fff; box-shadow: 0 1px 2px rgba(0, 0, 0, .12); flex-shrink: 0; }
+    .brand-mark img { width: 23px; height: 23px; }
+    .tag { font: 600 13px/1 var(--font-display); letter-spacing: .05em; text-transform: uppercase; padding: 5px 8px; border-radius: 999px; background: rgba(242, 179, 44, .2); color: #F7D88A; }
+
+    /* ─── Buttons ─── */
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; padding: 0 22px; border: 0; border-radius: 999px;
+           font: 600 17px var(--font-display); transition: transform 160ms var(--ease-out), background-color 150ms ease, opacity 150ms ease; }
+    .btn:active:not(:disabled) { transform: scale(.97); }
+    .btn.go { background: var(--tanim); color: #fff; }
+    .btn.go:hover:not(:disabled) { background: #095A37; }
+    .btn:disabled { opacity: .6; cursor: default; }
+    .btn-ghost { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border: 0; border-radius: 999px; background: var(--card);
+                 box-shadow: 0 0 0 1px var(--line); font: 600 15px var(--font-display); transition: transform 160ms var(--ease-out), background-color 150ms ease; }
+    .btn-ghost:hover { background: var(--hover); }
+    .btn-ghost:active { transform: scale(.97); }
+    .btn-ghost .i { width: 18px; height: 18px; }
+    .btn-ghost.spin .i { animation: spin 700ms linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .btn-sm { min-height: 40px; padding: 0 14px; border: 0; border-radius: 999px; font: 600 15px var(--font-display); transition: transform 160ms var(--ease-out), background-color 150ms ease; white-space: nowrap; }
+    .btn-sm:active:not(:disabled) { transform: scale(.97); }
+    .btn-sm.give { background: var(--tanim); color: #fff; }
+    .btn-sm.take { background: var(--grey-sk); color: var(--ink); }
+    .btn-sm:disabled { opacity: .55; cursor: default; }
+    .link { border: 0; background: none; padding: 0; font: 600 15px var(--font-display); color: var(--tanim); min-height: 40px; }
+    .link:hover { text-decoration: underline; }
+
+    /* ─── Signed out ─── */
+    .login { min-height: 100dvh; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); }
+    .login-art { position: relative; overflow: hidden; isolation: isolate; color: var(--on-deep); padding: 40px 48px; display: flex; flex-direction: column; justify-content: space-between; gap: 40px;
+                 background: radial-gradient(90% 60% at 92% 0%, rgba(242, 179, 44, .28), transparent 60%), linear-gradient(160deg, var(--deep-1) 0%, var(--deep-2) 55%, var(--deep-3) 100%); }
+    .login-art::after { content: ""; position: absolute; z-index: -1; left: -30%; right: -30%; bottom: -45%; height: 85%; border-radius: 50%; pointer-events: none;
+                        background: repeating-radial-gradient(ellipse at 50% 100%, transparent 0 26px, rgba(255, 255, 255, .055) 26px 27.5px); }
+    .art-title { font: 700 clamp(30px, 3.6vw, 44px)/1.08 var(--font-display); letter-spacing: -.025em; max-width: 13ch; }
+    .art-lead { margin-top: 14px; max-width: 34ch; font-size: 18px; color: var(--on-deep-2); }
+    .art-foot { font-size: 15px; color: var(--on-deep-2); }
+    .login-side { display: grid; place-items: center; padding: 40px 24px; }
+    .login-card { width: 100%; max-width: 400px; }
+    .login-card h1 { font: 700 30px/1.15 var(--font-display); letter-spacing: -.02em; }
+    .login-card .lead { margin-top: 8px; color: var(--muted); font-size: 17px; }
+    label { display: block; font: 600 16px var(--font-display); margin: 18px 0 8px; }
+    .field { width: 100%; min-height: 54px; padding: 0 16px; border: 0; border-radius: 14px; font-size: 17px; background: var(--card); box-shadow: 0 0 0 1px rgba(22, 33, 27, .2); }
+    .field:focus { outline: none; box-shadow: 0 0 0 2px var(--tanim), 0 0 0 6px rgba(11, 107, 65, .14); }
+    .pw { position: relative; }
+    .pw .field { padding-right: 84px; }
+    .pw-eye { position: absolute; right: 6px; top: 50%; translate: 0 -50%; min-height: 42px; min-width: 64px; padding: 0 12px; border: 0; border-radius: 10px; background: none; font: 600 15px var(--font-display); color: var(--tanim); }
+    .pw-eye:hover { background: var(--tanim-mist); }
+    .login-card .btn { width: 100%; margin-top: 22px; }
+    .msg { margin-top: 18px; padding: 12px 14px; border-radius: 14px; font-weight: 600; }
+    .msg.bad { background: var(--error-sk); color: var(--error); }
+    .msg.info { background: var(--tanim-mist); color: var(--tanim); }
+    .note { margin-top: 16px; color: var(--faint); font-size: 15px; }
+
+    /* ─── Signed in ─── */
+    .shell { display: grid; grid-template-columns: var(--side-w) minmax(0, 1fr); min-height: 100dvh; }
+    .side { position: sticky; top: 0; height: 100dvh; display: flex; flex-direction: column; padding: 22px 14px 18px; color: var(--on-deep);
+            background: radial-gradient(120% 40% at 100% 0%, rgba(242, 179, 44, .16), transparent 60%), linear-gradient(170deg, var(--deep-1), var(--deep-2) 60%, var(--deep-3)); }
+    .side .brand { padding: 2px 8px 26px; }
+    .nav { display: flex; flex-direction: column; gap: 4px; }
+    .nav-btn { position: relative; display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 14px; border-radius: 12px; color: var(--on-deep-2);
+               font: 600 16px var(--font-display); text-decoration: none; transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--ease-out); }
+    .nav-btn:hover { background: rgba(255, 255, 255, .07); color: #fff; }
+    .nav-btn:active { transform: scale(.98); }
+    .nav-btn[aria-current="page"] { background: rgba(255, 255, 255, .13); color: #fff; }
+    .nav-btn[aria-current="page"]::before { content: ""; position: absolute; left: -14px; top: 12px; bottom: 12px; width: 4px; border-radius: 0 4px 4px 0; background: #F2B32C; }
+    .side-foot { margin-top: auto; padding: 16px 8px 0; border-top: 1px solid rgba(255, 255, 255, .12); }
+    .who-l { font-size: 14px; color: var(--on-deep-2); }
+    .who { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .out-btn { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 46px; margin-top: 12px; padding: 0 14px; border: 0; border-radius: 12px;
+               background: rgba(255, 255, 255, .1); color: #fff; font: 600 15px var(--font-display); transition: background-color 150ms ease, transform 160ms var(--ease-out); }
+    .out-btn:hover { background: rgba(255, 255, 255, .16); }
+    .out-btn:active { transform: scale(.98); }
+    .mtop { display: none; }
+
+    .main { min-width: 0; padding: 30px 36px 56px; max-width: 1320px; width: 100%; }
+    .top { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
+    .top h1 { font: 700 30px/1.15 var(--font-display); letter-spacing: -.02em; }
+    .top-sub { margin-top: 4px; color: var(--muted); font-size: 17px; }
+    .top-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+    .updated { color: var(--faint); font-size: 15px; }
+    .view { animation: in 220ms var(--ease-out); }
+    @keyframes in { from { opacity: 0; transform: translateY(4px); } }
+
+    .card { background: var(--card); border-radius: 20px; box-shadow: var(--shadow); padding: 22px; min-width: 0; }
+    .card h2 { font: 700 18px/1.3 var(--font-display); letter-spacing: -.01em; }
+    .card .sub { color: var(--muted); font-size: 15px; margin-top: 2px; }
+
+    /* Overview: the headline numbers */
+    .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+    .kpi { padding: 18px 20px 20px; }
+    .kpi-l { display: flex; align-items: center; gap: 8px; color: var(--muted); font: 600 15px var(--font-display); }
+    .kpi-l .i { width: 18px; height: 18px; color: var(--tanim); }
+    .kpi-v { margin-top: 10px; font: 700 32px/1.05 var(--font-display); letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+    .kpi-v .star { color: var(--star); font-size: .8em; margin-right: 2px; }
+    .kpi-s { margin-top: 6px; color: var(--faint); font-size: 15px; }
+    .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 14px; }
+
+    /* Charts */
+    .ch-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+    .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 15px; color: var(--ink); }
+    .legend span { display: inline-flex; align-items: center; gap: 7px; }
+    .legend i, .tip i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; flex-shrink: 0; }
+    .chart { position: relative; height: 240px; margin-top: 16px; touch-action: pan-y; }
+    .chart svg { display: block; overflow: visible; }
+    .chart .grid { stroke: var(--line-2); stroke-width: 1; }
+    .chart .base { stroke: #C9CDC8; stroke-width: 1; }
+    .chart .ax { fill: var(--faint); font: 13px var(--font-body); font-variant-numeric: tabular-nums; }
+    .chart .dl { fill: var(--ink); font: 600 13px var(--font-display); font-variant-numeric: tabular-nums; }
+    .chart .empty { fill: var(--faint); font: 15px var(--font-body); }
+    .chart .band { fill: rgba(22, 33, 27, .05); }
+    .tip { position: absolute; z-index: 5; left: 0; top: 0; pointer-events: none; padding: 9px 12px; border-radius: 12px; background: var(--ink); color: #fff;
+           font-size: 14px; line-height: 1.45; white-space: nowrap; box-shadow: 0 10px 24px -10px rgba(0, 0, 0, .45); transform: translate(-50%, calc(-100% - 10px));
+           opacity: 0; transition: opacity 100ms ease; }
+    .tip.on { opacity: 1; }
+    .tip b { font-weight: 700; }
+    .tip .row { display: flex; align-items: center; gap: 7px; }
+    .tip .row b { margin-left: auto; padding-left: 14px; font-variant-numeric: tabular-nums; }
+    .tip .t { font: 600 14px var(--font-display); margin-bottom: 3px; }
+    .hbars { list-style: none; padding: 0; margin-top: 14px; display: grid; gap: 4px; position: relative; }
+    .hbars li { display: grid; grid-template-columns: minmax(84px, 32%) minmax(0, 1fr) auto; align-items: center; gap: 12px; min-height: 38px; padding: 0 6px; border-radius: 10px; }
+    .hbars li:hover { background: var(--hover); }
+    .hb-l { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .hb-track { height: 12px; }
+    .hb-bar { display: block; height: 100%; border-radius: 0 4px 4px 0; background: var(--farm); min-width: 3px; }
+    .hb-bar.grey { background: #9AA19B; }
+    .hb-v { font: 600 15px var(--font-display); font-variant-numeric: tabular-nums; text-align: right; min-width: 3ch; }
+    .see { margin-top: 12px; }
+    .see-t { margin-top: 8px; }
+    .none { padding: 28px 8px; text-align: center; color: var(--faint); }
+
+    .facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+    .fact { padding: 14px; border-radius: 14px; background: var(--paper); }
+    .fact-v { font: 700 22px/1.1 var(--font-display); font-variant-numeric: tabular-nums; }
+    .fact-l { margin-top: 4px; color: var(--muted); font-size: 15px; }
+    .fact-s { color: var(--faint); font-size: 14px; }
+
+    /* Lists: search and filters in one row above the table */
+    .bar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .search { position: relative; flex: 1 1 280px; max-width: 460px; }
+    .search .i { position: absolute; left: 14px; top: 50%; translate: 0 -50%; color: var(--faint); pointer-events: none; }
+    .search .field { min-height: 48px; padding-left: 44px; font-size: 16px; }
+    .seg { display: inline-flex; padding: 3px; border-radius: 14px; background: rgba(118, 118, 128, .13); max-width: 100%; overflow-x: auto; }
+    .seg button { min-height: 42px; padding: 0 14px; border: 0; border-radius: 11px; background: none; font: 600 15px var(--font-display); color: var(--muted); white-space: nowrap;
+                  transition: background-color 150ms ease, color 150ms ease; }
+    .seg button[aria-pressed="true"] { background: var(--card); color: var(--ink); box-shadow: 0 2px 6px rgba(0, 0, 0, .12); }
+    .count { margin-left: auto; color: var(--faint); font-size: 15px; }
+    .tbl-wrap { overflow-x: auto; border-radius: 18px; background: var(--card); box-shadow: var(--shadow); }
+    .tbl { width: 100%; border-collapse: collapse; font-size: 15px; }
+    .tbl th { text-align: left; font: 600 14px var(--font-display); color: var(--muted); padding: 13px 14px; border-bottom: 1px solid var(--line); white-space: nowrap; background: #FAFBF9; }
+    .tbl td { padding: 12px 14px; border-bottom: 1px solid var(--line-2); vertical-align: middle; }
+    .tbl tr:last-child td { border-bottom: 0; }
+    .tbl tbody tr[data-user] { cursor: pointer; transition: background-color 120ms ease; }
+    .tbl tbody tr[data-user]:hover { background: var(--hover); }
+    .tbl .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .tbl th.num { text-align: right; }
+    .tbl .nowrap { white-space: nowrap; }
+    .tbl .s { color: var(--faint); font-size: 14px; }
+    .tbl.mini { font-size: 15px; }
+    .tbl.mini th, .tbl.mini td { padding: 9px 10px; }
+    .person { display: flex; align-items: center; gap: 12px; min-width: 180px; }
+    .name-btn { border: 0; background: none; padding: 0; font: 600 16px var(--font-display); text-align: left; color: var(--ink); }
+    .name-btn:hover { color: var(--tanim); text-decoration: underline; }
+    .av { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; overflow: hidden; background: var(--tanim-mist); color: var(--tanim); font: 700 14px var(--font-display); }
+    .av img { width: 100%; height: 100%; object-fit: cover; }
+    .thumb { width: 48px; height: 48px; border-radius: 10px; object-fit: cover; display: block; background: var(--grey-sk); }
+    .chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font: 600 13px/1.5 var(--font-display); white-space: nowrap; }
+    .chip.farmer, .chip.active, .chip.completed { background: var(--tanim-sk); color: var(--tanim); }
+    .chip.buyer, .chip.placed { background: var(--gold-sk); color: var(--gold-text); }
+    .chip.confirmed { background: #E2ECF8; color: #1D4F86; }
+    .chip.sold, .chip.removed { background: var(--grey-sk); color: var(--muted); }
+    .chip.cancelled { background: var(--error-sk); color: var(--error); }
+    .pager { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-top: 14px; color: var(--faint); font-size: 15px; }
+    .pager .btn-ghost { min-height: 42px; padding: 0 14px; }
+    .pager .btn-ghost:disabled { opacity: .45; cursor: default; }
+
+    /* Badges */
+    .medal { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; color: #6B4508;
+             background: linear-gradient(145deg, #FFF1C4, #F7CC5B 28%, #D99A1E 54%, #F3C24E 76%, #B07A16); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .6), 0 6px 14px -6px rgba(176, 122, 22, .7); }
+    .medal .i { width: 26px; height: 26px; }
+    .b-head { display: flex; gap: 16px; align-items: center; }
+    .holders { list-style: none; padding: 0; margin-top: 16px; display: grid; gap: 8px; }
+    .holder { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; background: var(--paper); }
+    .holder .meta { min-width: 0; flex: 1; }
+    .holder .meta .s { color: var(--faint); font-size: 14px; }
+    .give { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line-2); }
+    .give h3 { font: 600 16px var(--font-display); margin-bottom: 10px; }
+    .give .search { max-width: none; }
+
+    /* The member drawer */
+    .scrim { position: fixed; inset: 0; z-index: 40; background: rgba(10, 25, 18, .34); opacity: 0; pointer-events: none; transition: opacity 240ms ease; }
+    .scrim.open { opacity: 1; pointer-events: auto; }
+    .drawer { position: fixed; z-index: 41; top: 0; right: 0; bottom: 0; width: min(500px, 100%); overflow-y: auto; overscroll-behavior: contain; background: var(--paper);
+              box-shadow: -24px 0 60px -30px rgba(0, 0, 0, .45); transform: translateX(100%); transition: transform 300ms var(--ease-drawer); visibility: hidden; }
+    .drawer.open { transform: none; visibility: visible; }
+    .drawer.closing { visibility: visible; }
+    .d-head { position: sticky; top: 0; z-index: 2; padding: 18px 20px 18px; background: rgba(243, 244, 242, .88); backdrop-filter: blur(16px) saturate(160%); -webkit-backdrop-filter: blur(16px) saturate(160%);
+              border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 14px; }
+    .d-head .av { width: 56px; height: 56px; font-size: 19px; }
+    .d-head h2 { font: 700 21px/1.2 var(--font-display); letter-spacing: -.01em; }
+    .d-head .s { color: var(--faint); font-size: 15px; margin-top: 3px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .d-close { margin-left: auto; width: 44px; height: 44px; border-radius: 50%; border: 0; background: var(--card); box-shadow: 0 0 0 1px var(--line); display: grid; place-items: center; flex-shrink: 0;
+               transition: transform 160ms var(--ease-out); }
+    .d-close:active { transform: scale(.94); }
+    .d-body { padding: 18px 20px 40px; display: grid; gap: 14px; }
+    .d-sec h3 { font: 700 16px var(--font-display); margin-bottom: 10px; }
+    .dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px 16px; }
+    .dl dt { color: var(--muted); }
+    .dl dd { font-weight: 600; overflow-wrap: anywhere; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chips .chip { font-size: 14px; padding: 5px 12px; background: var(--paper); color: var(--ink); }
+    .award-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line-2); }
+    .award-row:first-of-type { border-top: 0; }
+    .award-row .meta { flex: 1; min-width: 0; }
+    .award-row .s { color: var(--faint); font-size: 14px; }
+    .sk { border-radius: 10px; background: linear-gradient(90deg, #ECEEEB 0%, #F6F7F5 50%, #ECEEEB 100%); background-size: 200% 100%; animation: sk 1.2s linear infinite; }
+    @keyframes sk { to { background-position: -200% 0; } }
+
+    .fail { text-align: center; padding: 36px 20px; }
+    .fail p { color: var(--muted); max-width: 46ch; margin: 0 auto 16px; }
+
+    .toast { position: fixed; z-index: 60; left: 50%; bottom: 24px; display: flex; align-items: center; gap: 16px; max-width: calc(100% - 32px); padding: 12px 12px 12px 18px; border-radius: 16px;
+             background: var(--ink); color: #fff; box-shadow: 0 16px 36px -14px rgba(0, 0, 0, .5); transform: translate(-50%, 12px); opacity: 0; transition: transform 220ms var(--ease-out), opacity 220ms ease; }
+    .toast.show { transform: translate(-50%, 0); opacity: 1; }
+    .toast button { min-height: 40px; padding: 0 14px; border: 0; border-radius: 10px; background: rgba(255, 255, 255, .12); color: #F7D88A; font: 600 15px var(--font-display); }
+
+    @media (max-width: 1100px) { .grid2 { grid-template-columns: minmax(0, 1fr); } }
+    @media (max-width: 900px) {
+      .login { grid-template-columns: minmax(0, 1fr); }
+      .login-art { padding: 24px 20px 30px; gap: 22px; }
+      .art-title { font-size: 28px; }
+      .art-lead { font-size: 17px; margin-top: 8px; }
+      .art-foot { display: none; }
+      .login-side { place-items: start center; padding: 28px 20px 40px; }
+
+      html { scroll-padding-top: 72px; scroll-padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+      .shell { grid-template-columns: minmax(0, 1fr); }
+      .mtop { display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 30; padding: 10px 12px 10px 16px; padding-top: calc(10px + env(safe-area-inset-top));
+              color: var(--on-deep); background: linear-gradient(170deg, var(--deep-1), var(--deep-2)); }
+      .mtop .brand { font-size: 18px; }
+      .mtop .out-btn { width: auto; margin: 0 0 0 auto; min-height: 44px; }
+      .side { position: fixed; z-index: 30; top: auto; left: 0; right: 0; bottom: 0; height: auto; padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
+              background: rgba(255, 255, 255, .9); backdrop-filter: blur(18px) saturate(180%); -webkit-backdrop-filter: blur(18px) saturate(180%); border-top: 1px solid var(--line); color: var(--ink); }
+      .side > .brand, .side-foot { display: none; }
+      .nav { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 2px; }
+      .nav-btn { flex-direction: column; justify-content: center; gap: 3px; min-height: 58px; padding: 4px 2px; font-size: 13px; color: var(--muted); border-radius: 12px; }
+      .nav-btn:hover { background: none; color: var(--ink); }
+      .nav-btn[aria-current="page"] { background: var(--tanim-mist); color: var(--tanim); }
+      .nav-btn[aria-current="page"]::before { display: none; }
+      .main { padding: 20px 16px calc(100px + env(safe-area-inset-bottom)); }
+      .top { align-items: flex-start; margin-bottom: 18px; }
+      .top h1 { font-size: 26px; }
+      .top-sub { font-size: 16px; }
+      .updated { display: none; }
+      .toast { bottom: calc(84px + env(safe-area-inset-bottom)); }
+    }
+    @media (max-width: 560px) {
+      .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+      .kpi { padding: 14px 14px 16px; }
+      .kpi-v { font-size: 25px; }
+      .kpi-s { font-size: 14px; }
+      .card { padding: 18px 16px; border-radius: 18px; }
+      .facts { grid-template-columns: minmax(0, 1fr); }
+      .top-right .btn-ghost span { display: none; }
+      .top-right .btn-ghost { width: 44px; padding: 0; justify-content: center; }
+      .count { margin-left: 0; width: 100%; }
+      .search { flex-basis: 100%; max-width: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .view, .sk, .btn-ghost.spin .i { animation: none; }
+      .drawer { transition: opacity 200ms ease, visibility 0s linear 200ms; transform: none; opacity: 0; }
+      .drawer.open { opacity: 1; transition: opacity 200ms ease; }
+      .toast { transition: opacity 200ms ease; transform: translate(-50%, 0); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Signed out: the sign-in -->
+<div class="login" id="login">
+  <div class="login-art">
+    <div class="brand"><span class="brand-mark"><img src="assets/logo.webp" alt="" width="23" height="23"></span>AniSense <span class="tag">Admin</span></div>
+    <div>
+      <p class="art-title">The whole market, at a glance.</p>
+      <p class="art-lead">Members, listings, orders and badges across Nueva Ecija, in one place.</p>
+    </div>
+    <p class="art-foot">For AniSense staff only. Every page here only reads, but for the badges you give.</p>
+  </div>
+  <div class="login-side">
+    <form class="login-card" id="loginForm" novalidate>
+      <h1>Sign in</h1>
+      <p class="lead">With your admin account. It is separate from the app, and works only here.</p>
+      <label for="email">Email</label>
+      <input class="field" id="email" type="email" autocomplete="username" inputmode="email" spellcheck="false" required>
+      <label for="password">Password</label>
+      <div class="pw">
+        <input class="field" id="password" type="password" autocomplete="current-password" required>
+        <button class="pw-eye" id="pwEye" type="button" aria-pressed="false" aria-controls="password">Show</button>
+      </div>
+      <div class="msg bad" id="loginMsg" role="alert" hidden></div>
+      <button class="btn go" id="loginBtn" type="submit">Sign in</button>
+      <p class="note">Forgot the password? The project owner sets a new one in Supabase, under Authentication → Users.</p>
+    </form>
+  </div>
+</div>
+
+<!-- Signed in -->
+<div class="shell" id="shell" hidden>
+  <header class="mtop">
+    <div class="brand"><span class="brand-mark"><img src="assets/logo.webp" alt="" width="23" height="23"></span>AniSense <span class="tag">Admin</span></div>
+    <button class="out-btn" type="button" data-signout><svg class="i" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>Sign out</button>
+  </header>
+  <aside class="side">
+    <div class="brand"><span class="brand-mark"><img src="assets/logo.webp" alt="" width="23" height="23"></span>AniSense <span class="tag">Admin</span></div>
+    <nav class="nav" aria-label="Admin">
+      <a class="nav-btn" href="#overview" data-view="overview"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg><span>Overview</span></a>
+      <a class="nav-btn" href="#members" data-view="members"><svg class="i" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Members</span></a>
+      <a class="nav-btn" href="#listings" data-view="listings"><svg class="i" viewBox="0 0 24 24"><path d="M12.6 2.6A2 2 0 0 0 11.2 2H4a2 2 0 0 0-2 2v7.2a2 2 0 0 0 .6 1.4l8.7 8.7a2.4 2.4 0 0 0 3.4 0l6.6-6.6a2.4 2.4 0 0 0 0-3.4z"/><circle cx="7.5" cy="7.5" r="1.2"/></svg><span>Listings</span></a>
+      <a class="nav-btn" href="#orders" data-view="orders"><svg class="i" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span>Orders</span></a>
+      <a class="nav-btn" href="#badges" data-view="badges"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M15.5 12.9 17 22l-5-3-5 3 1.5-9.1"/></svg><span>Badges</span></a>
+    </nav>
+    <div class="side-foot">
+      <p class="who-l">Signed in as</p>
+      <p class="who" id="who"></p>
+      <button class="out-btn" type="button" data-signout><svg class="i" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>Sign out</button>
+    </div>
+  </aside>
+  <main class="main" id="main">
+    <div class="top">
+      <div><h1 id="viewTitle">Overview</h1><p class="top-sub" id="viewSub"></p></div>
+      <div class="top-right">
+        <span class="updated" id="updated" aria-live="polite"></span>
+        <button class="btn-ghost" id="refresh" type="button" aria-label="Refresh"><svg class="i" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.64-6.36L21 8"/><path d="M21 3v5h-5"/></svg><span>Refresh</span></button>
+      </div>
+    </div>
+
+    <section class="view" id="v-overview" hidden></section>
+
+    <section class="view" id="v-members" hidden>
+      <div class="bar">
+        <div class="search"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input class="field" id="mSearch" type="search" placeholder="Name, member no., mobile, email or town" aria-label="Find a member"></div>
+        <div class="seg" id="mRole" role="group" aria-label="Show">
+          <button type="button" data-v="" aria-pressed="true">Everyone</button><button type="button" data-v="farmer" aria-pressed="false">Farmers</button><button type="button" data-v="buyer" aria-pressed="false">Buyers</button>
+        </div>
+        <span class="count" id="mCount" aria-live="polite"></span>
+      </div>
+      <div id="mBody"></div>
+      <div class="pager" id="mPager"></div>
+    </section>
+
+    <section class="view" id="v-listings" hidden>
+      <div class="bar">
+        <div class="search"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input class="field" id="lSearch" type="search" placeholder="Crop, farmer or town" aria-label="Find a listing"></div>
+        <div class="seg" id="lStatus" role="group" aria-label="Show">
+          <button type="button" data-v="active" aria-pressed="true">For sale</button><button type="button" data-v="sold" aria-pressed="false">Sold out</button><button type="button" data-v="removed" aria-pressed="false">Removed</button><button type="button" data-v="" aria-pressed="false">All</button>
+        </div>
+        <span class="count" id="lCount" aria-live="polite"></span>
+      </div>
+      <div id="lBody"></div>
+      <div class="pager" id="lPager"></div>
+    </section>
+
+    <section class="view" id="v-orders" hidden>
+      <div class="bar">
+        <div class="seg" id="oStatus" role="group" aria-label="Show">
+          <button type="button" data-v="" aria-pressed="true">All</button><button type="button" data-v="placed" aria-pressed="false">Placed</button><button type="button" data-v="confirmed" aria-pressed="false">Confirmed</button><button type="button" data-v="completed" aria-pressed="false">Completed</button><button type="button" data-v="cancelled" aria-pressed="false">Cancelled</button>
+        </div>
+        <span class="count" id="oCount" aria-live="polite"></span>
+      </div>
+      <div id="oBody"></div>
+      <div class="pager" id="oPager"></div>
+    </section>
+
+    <section class="view" id="v-badges" hidden></section>
+  </main>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="dTitle" inert></aside>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<noscript><p style="padding:24px">The admin website needs JavaScript turned on.</p></noscript>
+
+<script src="config.js"></script>
+<script type="module">
+  const SUPABASE_JS = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.2/+esm";
+  const IDLE_MINUTES = 30;          // signed out after this long without use: members' details stay private
+  const PAGE = 50;                  // rows a page
+  const BADGES = [
+    { id: "farmer-of-the-month", name: "Farmer of the Month", about: "Top ratings and the most sales in a month." },
+    { id: "farmer-of-the-year", name: "Farmer of the Year", about: "AniSense's top farmer of the whole year." },
+  ];
+  const cfg = window.ANISENSE || {};
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+
+  // ─── Formats: Philippine pesos, dates in Philippine time ───
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const nf = new Intl.NumberFormat("en-PH");
+  const num = v => nf.format(Math.round(+v || 0));
+  const pesoF = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP", maximumFractionDigits: 0 });
+  const peso2F = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP", minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const compactF = new Intl.NumberFormat("en-PH", { notation: "compact", maximumFractionDigits: 1 });
+  const peso = v => pesoF.format(+v || 0);
+  const peso2 = v => peso2F.format(+v || 0);
+  const pesoShort = v => (+v || 0) >= 1e6 ? "₱" + compactF.format(+v) : peso(v);
+  const pesoAxis = v => v === 0 ? "₱0" : "₱" + compactF.format(v);
+  const kg = v => nf.format(Math.round((+v || 0) * 10) / 10) + " kg";
+  const dateF = new Intl.DateTimeFormat("en-PH", { month: "short", day: "numeric", year: "numeric", timeZone: "Asia/Manila" });
+  const timeF = new Intl.DateTimeFormat("en-PH", { hour: "numeric", minute: "2-digit", timeZone: "Asia/Manila" });
+  const todayF = new Intl.DateTimeFormat("en-PH", { weekday: "long", month: "long", day: "numeric", year: "numeric", timeZone: "Asia/Manila" });
+  const date = ts => ts ? dateF.format(new Date(ts)) : "—";
+  const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
+  function ago(ts) {
+    if (!ts) return "Never";
+    const s = (Date.now() - new Date(ts)) / 1000;
+    if (s < 60) return "Just now";
+    if (s < 3600) return rtf.format(-Math.floor(s / 60), "minute");
+    if (s < 86400) return rtf.format(-Math.floor(s / 3600), "hour");
+    if (s < 86400 * 30) return rtf.format(-Math.floor(s / 86400), "day");
+    return date(ts);
+  }
+  const monthName = (ym, style = "short") => { const [y, m] = ym.split("-").map(Number); return new Date(Date.UTC(y, m - 1, 1)).toLocaleString("en-PH", { month: style, timeZone: "UTC" }); };
+  const monthLong = ym => monthName(ym, "long") + " " + ym.slice(0, 4);
+  // "+639171234567" → "0917 123 4567", as the app writes it
+  const mobile = p => { const d = String(p || "").replace(/\D/g, ""); return d.length === 12 && d.startsWith("63") ? `0${d.slice(2, 5)} ${d.slice(5, 8)} ${d.slice(8)}` : (p || ""); };
+  // "Bantug, Talavera, Nueva Ecija" → "Talavera": the part before the province
+  const town = loc => { const p = String(loc || "").split(",").map(s => s.trim()).filter(Boolean); return p.length >= 2 ? p[p.length - 2] : (p[0] || ""); };
+  const initials = name => (String(name || "").trim().split(/\s+/).slice(0, 2).map(w => w[0]).join("") || "?").toUpperCase();
+  const safeUrl = u => typeof u === "string" && /^https:\/\//.test(u) ? u : "";
+  const dash = '<span class="s" aria-label="none">—</span>';
+  const roleChip = r => `<span class="chip ${r === "buyer" ? "buyer" : "farmer"}">${r === "buyer" ? "Buyer" : "Farmer"}</span>`;
+  const LISTING = { active: "For sale", sold: "Sold out", removed: "Removed" };
+  const ORDER = { placed: "Placed", confirmed: "Confirmed", completed: "Completed", cancelled: "Cancelled" };
+  const statusChip = (s, map) => `<span class="chip ${esc(s)}">${esc(map[s] || s)}</span>`;
+  const avatar = (name, url) => `<span class="av" aria-hidden="true">${safeUrl(url) ? `<img src="${esc(safeUrl(url))}" alt="" loading="lazy">` : esc(initials(name))}</span>`;
+  const I = {
+    users: '<svg class="i" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+    plus: '<svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 9-5.2"/><path d="M19 15v6M16 18h6"/></svg>',
+    pulse: '<svg class="i" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',
+    tag: '<svg class="i" viewBox="0 0 24 24"><path d="M12.6 2.6A2 2 0 0 0 11.2 2H4a2 2 0 0 0-2 2v7.2a2 2 0 0 0 .6 1.4l8.7 8.7a2.4 2.4 0 0 0 3.4 0l6.6-6.6a2.4 2.4 0 0 0 0-3.4z"/><circle cx="7.5" cy="7.5" r="1.2"/></svg>',
+    bag: '<svg class="i" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>',
+    star: '<svg class="i" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/></svg>',
+    award: '<svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M15.5 12.9 17 22l-5-3-5 3 1.5-9.1"/></svg>',
+    close: '<svg class="i" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+    left: '<svg class="i" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>',
+    right: '<svg class="i" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>',
+    search: '<svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
+  };
+
+  // ─── Connection ───
+  let db = null, signedIn = false;
+  const seqs = {};
+  const next = k => (seqs[k] = (seqs[k] || 0) + 1);
+
+  /** One admin function. A NOT_ADMIN answer ends the session here and now. */
+  async function call(fn, args) {
+    const { data, error } = await db.rpc(fn, args);
+    if (error) {
+      if (/NOT_ADMIN/.test(error.message || "")) { await signOutNow("This account is no longer an admin.", "bad"); throw Object.assign(new Error("NOT_ADMIN"), { quiet: true }); }
+      if (error.code === "PGRST202" || /could not find the function/i.test(error.message || "")) throw new Error("SETUP");
+      throw error;
+    }
+    return data;
+  }
+  function problem(err) {
+    const m = String(err?.message || err || "");
+    if (m === "SETUP") return "The admin part of the database isn't set up yet. Run supabase/schema.sql in the Supabase SQL Editor, then try again.";
+    if (/fetch|network|load failed/i.test(m)) return "No connection to the database. Check the internet, then try again.";
+    return "Something went wrong reading this. Try again in a moment.";
+  }
+  function showFail(host, err, retry) {
+    if (err?.quiet) return;
+    host.innerHTML = `<div class="card fail"><p>${esc(problem(err))}</p><button class="btn-ghost" type="button">Try again</button></div>`;
+    $("button", host).onclick = retry;
+  }
+
+  // ─── Signing in and out ───
+  const form = $("#loginForm"), msg = $("#loginMsg"), loginBtn = $("#loginBtn");
+  function say(text, kind = "bad") { msg.textContent = text; msg.className = "msg " + kind; msg.hidden = !text; }
+  function showLogin(text = "", kind = "bad") {
+    signedIn = false;
+    clearTimeout(idleTimer);
+    closeDrawer(true);
+    // Nothing a previous session read stays on the page.
+    for (const v of ["overview", "badges"]) { $("#v-" + v).innerHTML = ""; }
+    for (const id of ["mBody", "lBody", "oBody", "mPager", "lPager", "oPager", "mCount", "lCount", "oCount"]) $("#" + id).innerHTML = "";
+    $("#shell").hidden = true; $("#login").hidden = false;
+    $("#password").value = "";
+    loginBtn.disabled = false; loginBtn.textContent = "Sign in";
+    say(text, kind);
+    document.title = "AniSense Admin";
+  }
+  async function isAdmin() {
+    const { data, error } = await db.rpc("is_admin");
+    if (error) {
+      if (error.code === "PGRST202" || /could not find the function/i.test(error.message || "")) throw new Error("SETUP");
+      throw error;
+    }
+    return data === true;
+  }
+  function enter(session) {
+    signedIn = true;
+    $("#who").textContent = session.user.email || "";
+    $("#who").title = session.user.email || "";
+    $("#login").hidden = true; $("#shell").hidden = false;
+    bumpIdle();
+    route();
+  }
+  async function signOutNow(text = "", kind = "info") {
+    signedIn = false;
+    try { await db.auth.signOut(); } catch { try { await db.auth.signOut({ scope: "local" }); } catch {} }
+    showLogin(text, kind);
+  }
+
+  $("#pwEye").onclick = () => {
+    const pw = $("#password"), show = pw.type === "password";
+    pw.type = show ? "text" : "password";
+    $("#pwEye").textContent = show ? "Hide" : "Show";
+    $("#pwEye").setAttribute("aria-pressed", String(show));
+  };
+  form.addEventListener("submit", async e => {
+    e.preventDefault();
+    const email = $("#email").value.trim(), password = $("#password").value;
+    if (!db) return;
+    if (!email || !/^\S+@\S+\.\S+$/.test(email)) { say("Type the email of your admin account."); $("#email").focus(); return; }
+    if (!password) { say("Type your password."); $("#password").focus(); return; }
+    say("");
+    loginBtn.disabled = true; loginBtn.textContent = "Signing in…";
+    const { data, error } = await db.auth.signInWithPassword({ email, password });
+    if (error) {
+      loginBtn.disabled = false; loginBtn.textContent = "Sign in";
+      const m = (error.message || "").toLowerCase();
+      say(m.includes("invalid login") ? "That email or password is wrong. Check them and try again."
+        : error.status === 429 || m.includes("rate limit") ? "Too many tries. Wait a few minutes, then try again."
+        : m.includes("email not confirmed") ? "This account's email isn't confirmed. In Supabase, open Authentication → Users and confirm it."
+        : /fetch|network|load failed/.test(m) ? "No connection. Check the internet, then try again."
+        : "Couldn't sign in. Try again in a moment.");
+      $("#password").select();
+      return;
+    }
+    let ok = false;
+    try { ok = await isAdmin(); } catch (err) {
+      await db.auth.signOut({ scope: "local" });
+      loginBtn.disabled = false; loginBtn.textContent = "Sign in";
+      say(problem(err));
+      return;
+    }
+    if (!ok) {
+      await db.auth.signOut({ scope: "local" });
+      loginBtn.disabled = false; loginBtn.textContent = "Sign in";
+      say("This account isn't an admin. Admin accounts are made by the project owner in Supabase; an app account can't be used here.");
+      return;
+    }
+    $("#password").value = "";
+    enter(data.session);
+  });
+  $$("[data-signout]").forEach(b => b.onclick = () => signOutNow("You're signed out.", "info"));
+
+  // Left open on a shared computer, the page signs itself out.
+  let idleTimer;
+  function bumpIdle() {
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => { if (signedIn) signOutNow(`Signed out after ${IDLE_MINUTES} minutes without use, to keep members' details private.`, "info"); }, IDLE_MINUTES * 60000);
+  }
+  for (const ev of ["pointerdown", "keydown", "wheel", "touchstart"]) addEventListener(ev, () => { if (signedIn) bumpIdle(); }, { passive: true });
+
+  // ─── Pages ───
+  const VIEWS = {
+    overview: { title: "Overview", sub: () => todayF.format(new Date()), load: loadOverview },
+    members: { title: "Members", sub: () => "Everyone with an account in the app", load: () => loadMembers() },
+    listings: { title: "Listings", sub: () => "What farmers put up for sale on the Market", load: () => loadListings() },
+    orders: { title: "Orders", sub: () => "Each crop bought, one line each, newest first", load: () => loadOrders() },
+    badges: { title: "Badges", sub: () => "The two badges only an admin gives", load: loadBadges },
+  };
+  let current = "";
+  function route() {
+    if (!signedIn) return;
+    const name = VIEWS[location.hash.slice(1)] ? location.hash.slice(1) : "overview";
+    const v = VIEWS[name];
+    $$(".nav-btn").forEach(a => a.dataset.view === name ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
+    $$(".view").forEach(s => s.hidden = s.id !== "v-" + name);
+    $("#viewTitle").textContent = v.title;
+    $("#viewSub").textContent = v.sub();
+    document.title = v.title + " · AniSense Admin";
+    if (current !== name) { current = name; window.scrollTo({ top: 0 }); }
+    v.load();
+  }
+  addEventListener("hashchange", () => { current = ""; route(); });
+  $("#refresh").onclick = () => {
+    const b = $("#refresh"); b.classList.add("spin");
+    Promise.resolve(VIEWS[current]?.load()).finally(() => setTimeout(() => b.classList.remove("spin"), 300));
+  };
+  const stamp = () => { $("#updated").textContent = "Updated " + timeF.format(new Date()); };
+
+  // ─── Charts ───
+  // Columns by month (one or more series stacked: thin bars, 2px gaps, 4px
+  // rounded tops on the baseline), one axis, the latest month labelled, a
+  // tooltip per month, and the numbers in a table beside.
+  function niceScale(v, integer) {
+    if (!(v > 0)) return integer ? { max: 4, step: 1 } : { max: 1000, step: 250 };
+    const raw = v / 4, mag = 10 ** Math.floor(Math.log10(raw));
+    let step = (integer ? [1, 2, 5, 10] : [1, 2, 2.5, 5, 10]).map(f => f * mag).find(s => s >= raw);
+    if (integer) step = Math.max(1, Math.round(step));
+    return { max: Math.ceil(v / step - 1e-9) * step, step };
+  }
+  const roundTop = (x, y, w, h, r) => { r = Math.max(0, Math.min(r, w / 2, h)); return `M${x},${y + h}V${y + r}A${r},${r} 0 0 1 ${x + r},${y}H${x + w - r}A${r},${r} 0 0 1 ${x + w},${y + r}V${y + h}Z`; };
+  function columns(host, c) {
+    host._c = c;
+    draw(host);
+    if (!host._ro) {
+      host._ro = new ResizeObserver(() => draw(host));
+      host._ro.observe(host);
+      const move = e => hover(host, e);
+      host.addEventListener("pointermove", move);
+      host.addEventListener("pointerdown", move);
+      host.addEventListener("pointerleave", () => unhover(host));
+    }
+  }
+  function draw(host) {
+    const c = host._c, W = Math.floor(host.clientWidth), H = host.clientHeight || 240;
+    if (!W || !c) return;
+    const n = c.rows.length;
+    const totals = c.rows.map(r => c.series.reduce((s, x) => s + (+r[x.key] || 0), 0));
+    const { max, step } = niceScale(Math.max(0, ...totals), c.integer);
+    const ticks = []; for (let t = 0; t <= max + 1e-9; t += step) ticks.push(t);
+    const m = { t: 26, r: 4, b: 30, l: Math.ceil(Math.max(...ticks.map(t => c.axis(t).length)) * 7.4) + 12 };
+    const pw = W - m.l - m.r, ph = H - m.t - m.b, band = pw / n, bw = Math.max(6, Math.min(24, band * .5));
+    const y = v => m.t + ph - (v / max) * ph;
+    let g = `<rect class="band" x="${m.l}" y="${m.t - 8}" width="${band}" height="${ph + 8}" rx="8" opacity="0"/>`;
+    for (const t of ticks) g += `<line class="${t === 0 ? "base" : "grid"}" x1="${m.l}" x2="${W - m.r}" y1="${y(t)}" y2="${y(t)}"/><text class="ax" x="${m.l - 10}" y="${y(t) + 4}" text-anchor="end">${esc(c.axis(t))}</text>`;
+    const every = band < 40 ? 2 : 1;
+    c.rows.forEach((r, i) => {
+      const cx = m.l + band * i + band / 2, x = cx - bw / 2;
+      const segs = c.series.map(s => ({ s, v: +r[s.key] || 0 })).filter(z => z.v > 0);
+      let base = y(0);
+      segs.forEach((z, k) => {
+        const bottom = base - (k ? 2 : 0);                // the 2px gap between the stacked parts
+        let top = base - (z.v / max) * ph;
+        if (bottom - top < 1.5) top = bottom - 1.5;
+        g += k === segs.length - 1
+          ? `<path d="${roundTop(x, top, bw, bottom - top, 4)}" fill="${z.s.color}"/>`
+          : `<rect x="${x}" y="${top}" width="${bw}" height="${bottom - top}" fill="${z.s.color}"/>`;
+        base = top;
+      });
+      if ((n - 1 - i) % every === 0) g += `<text class="ax" x="${cx}" y="${H - 9}" text-anchor="middle">${esc(monthName(r.month))}</text>`;
+    });
+    const last = n - 1;
+    if (totals[last] > 0) g += `<text class="dl" x="${m.l + band * last + band / 2}" y="${y(totals[last]) - 8}" text-anchor="middle">${esc(c.label(totals[last]))}</text>`;
+    if (totals.every(t => !t)) g += `<text class="empty" x="${m.l + pw / 2}" y="${m.t + ph / 2}" text-anchor="middle">${esc(c.empty)}</text>`;
+    host.innerHTML = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(c.title)}. The numbers are in the table below.">${g}</svg><div class="tip"></div>`;
+    host._g = { m, band, n, y, totals, W };
+  }
+  function hover(host, e) {
+    const G = host._g, c = host._c; if (!G) return;
+    const px = e.clientX - host.getBoundingClientRect().left;
+    const i = Math.floor((px - G.m.l) / G.band);
+    if (i < 0 || i >= G.n) return unhover(host);
+    const bandEl = $(".band", host); bandEl.setAttribute("x", G.m.l + G.band * i); bandEl.setAttribute("opacity", "1");
+    const tip = $(".tip", host); tip.innerHTML = c.tip(c.rows[i]); tip.classList.add("on");
+    const cx = G.m.l + G.band * i + G.band / 2, tw = tip.offsetWidth;
+    tip.style.left = Math.min(Math.max(cx, tw / 2 + 2), G.W - tw / 2 - 2) + "px";
+    tip.style.top = Math.max(G.y(G.totals[i]) - 4, 30) + "px";
+  }
+  function unhover(host) { $(".tip", host)?.classList.remove("on"); $(".band", host)?.setAttribute("opacity", "0"); }
+
+  // Bars across, for a ranking: the value written at each bar's end.
+  function bars(rows, { label, value, show, tip, grey }) {
+    if (!rows.length) return "";
+    const max = Math.max(1, ...rows.map(value));
+    return `<ul class="hbars">${rows.map((r, i) => `<li data-i="${i}" data-tip="${esc(tip(r))}"><span class="hb-l" title="${esc(label(r))}">${esc(label(r))}</span><span class="hb-track"><span class="hb-bar${grey?.(r) ? " grey" : ""}" style="width:${(value(r) / max * 100).toFixed(1)}%"></span></span><span class="hb-v">${esc(show(r))}</span></li>`).join("")}</ul><div class="tip"></div>`;
+  }
+  function barTips(card) {
+    for (const list of $$(".hbars", card)) {
+      const tip = list.nextElementSibling;
+      const show = li => { tip.textContent = li.dataset.tip; tip.classList.add("on"); const bar = $(".hb-bar", li), lr = list.parentElement.getBoundingClientRect(), br = bar.getBoundingClientRect();
+        tip.style.left = Math.min(br.right - lr.left, lr.width - tip.offsetWidth / 2 - 2) + "px"; tip.style.top = (br.top - lr.top) + "px"; };
+      list.addEventListener("pointerover", e => { const li = e.target.closest("li"); if (li) show(li); });
+      list.addEventListener("pointerdown", e => { const li = e.target.closest("li"); if (li) show(li); });
+      list.addEventListener("pointerleave", () => tip.classList.remove("on"));
+      list.parentElement.style.position = "relative";
+    }
+  }
+  // "See the numbers": every chart's values as a plain table.
+  function numbers(id, head, rows) {
+    return `<button class="link see" type="button" aria-expanded="false" aria-controls="${id}">See the numbers</button>
+      <div class="see-t" id="${id}" hidden><table class="tbl mini"><thead><tr>${head.map((h, i) => `<th${i ? ' class="num"' : ""}>${esc(h)}</th>`).join("")}</tr></thead>
+      <tbody>${rows.map(r => `<tr>${r.map((v, i) => `<td${i ? ' class="num"' : ""}>${esc(v)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+  }
+  document.addEventListener("click", e => {
+    const b = e.target.closest(".see"); if (!b) return;
+    const open = b.getAttribute("aria-expanded") !== "true";
+    b.setAttribute("aria-expanded", String(open));
+    b.textContent = open ? "Hide the numbers" : "See the numbers";
+    $("#" + b.getAttribute("aria-controls")).hidden = !open;
+  });
+
+  // ─── Overview ───
+  const sk = (h, w = "100%") => `<div class="sk" style="height:${h}px;width:${w}"></div>`;
+  async function loadOverview() {
+    const host = $("#v-overview");
+    if (!host.dataset.ready) host.innerHTML = `<div class="kpis">${Array(6).fill(`<div class="card kpi">${sk(16, "50%")}<div style="height:12px"></div>${sk(32, "60%")}<div style="height:10px"></div>${sk(14, "70%")}</div>`).join("")}</div>
+      <div class="grid2">${Array(2).fill(`<div class="card">${sk(18, "40%")}<div style="height:18px"></div>${sk(220)}</div>`).join("")}</div>`;
+    const seq = next("overview");
+    let o;
+    try { o = await call("admin_overview"); } catch (e) { if (seq === seqs.overview) showFail(host, e, loadOverview); return; }
+    if (seq !== seqs.overview || !signedIn) return;
+    host.dataset.ready = "1"; stamp();
+    const u = o.users, L = o.listings, O = o.orders, R = o.ratings || {}, rec = o.records || {};
+    const kpi = (icon, label, value, sub, title = "") => `<div class="card kpi"><div class="kpi-l">${icon}${esc(label)}</div><div class="kpi-v"${title ? ` title="${esc(title)}"` : ""}>${value}</div><div class="kpi-s">${esc(sub)}</div></div>`;
+    const pct = (a, b) => b ? Math.round(a / b * 100) + "%" : "0%";
+    const series = [{ key: "farmers", label: "Farmers", color: "#1f8a5b" }, { key: "buyers", label: "Buyers", color: "#d99a1e" }];
+    const lines = [
+      ["placed", "Placed, waiting for the farmer"], ["confirmed", "Confirmed by the farmer"], ["completed", "Completed"], ["cancelled", "Cancelled"],
+    ].map(([k, label]) => ({ k, label, n: +O[k] || 0 }));
+    host.innerHTML = `
+      <div class="kpis">
+        ${kpi(I.users, "Members", num(u.total), `${num(u.farmers)} farmers · ${num(u.buyers)} buyers`)}
+        ${kpi(I.plus, "New this week", num(u.new_7d), `${num(u.new_30d)} in the last 30 days`)}
+        ${kpi(I.pulse, "Signed in this week", num(o.active_7d), u.total ? `${pct(o.active_7d, u.total)} of members` : "No members yet")}
+        ${kpi(I.tag, "For sale now", num(L.active), `${kg(L.active_kg)} on the Market`)}
+        ${kpi(I.bag, "Orders value", esc(pesoShort(O.value)), `${num(O.items)} order lines in ${num(O.orders)} orders`, peso2(O.value))}
+        ${kpi(I.star, "Farmer rating", R.average ? `<span class="star" aria-hidden="true">★</span>${(+R.average).toFixed(1)}` : "—", R.rated_farmers ? `${num(R.rated_farmers)} farmers rated by buyers` : "No ratings yet")}
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <div class="ch-head"><div><h2>Sign-ups by month</h2><p class="sub">New members, the last 12 months</p></div>
+            <div class="legend">${series.map(s => `<span><i style="background:${s.color}"></i>${s.label}</span>`).join("")}</div></div>
+          <div class="chart" id="c-signups"></div>
+          ${numbers("t-signups", ["Month", "Farmers", "Buyers", "Total"], o.signups_by_month.map(r => [monthLong(r.month), num(r.farmers), num(r.buyers), num(r.farmers + r.buyers)]))}
+        </div>
+        <div class="card">
+          <div class="ch-head"><div><h2>Orders by month</h2><p class="sub">The value of what buyers ordered, cancelled lines left out</p></div></div>
+          <div class="chart" id="c-orders"></div>
+          ${numbers("t-orders", ["Month", "Order lines", "Value"], o.orders_by_month.map(r => [monthLong(r.month), num(r.items), peso2(r.value)]))}
+        </div>
+        <div class="card">
+          <h2>For sale by crop</h2><p class="sub">Listings on the Market now</p>
+          ${o.listings_by_crop.length ? bars(o.listings_by_crop, { label: r => r.crop, value: r => +r.listings, show: r => num(r.listings), tip: r => `${r.crop}: ${num(r.listings)} listing${r.listings == 1 ? "" : "s"}, ${kg(r.kg)} for sale` })
+            : `<p class="none">Nothing is for sale right now.</p>`}
+          ${o.listings_by_crop.length ? numbers("t-crops", ["Crop", "Listings", "For sale"], o.listings_by_crop.map(r => [r.crop, num(r.listings), kg(r.kg)])) : ""}
+        </div>
+        <div class="card">
+          <h2>Where members are</h2><p class="sub">Members by town, the eight with the most</p>
+          ${o.users_by_town.length ? bars(o.users_by_town, { label: r => r.town, value: r => +r.users, show: r => num(r.users), tip: r => `${r.town}: ${num(r.users)} member${r.users == 1 ? "" : "s"}, ${pct(r.users, u.total)} of all` })
+            : `<p class="none">No member has a town yet.</p>`}
+          ${o.users_by_town.length ? numbers("t-towns", ["Town", "Members"], o.users_by_town.map(r => [r.town, num(r.users)])) : ""}
+        </div>
+        <div class="card">
+          <h2>Order lines by status</h2><p class="sub">Every crop bought, where it stands</p>
+          ${O.items ? bars(lines, { label: r => r.label, value: r => r.n, show: r => num(r.n), tip: r => `${r.label}: ${num(r.n)} (${pct(r.n, O.items)})`, grey: r => r.k === "cancelled" })
+            : `<p class="none">No orders yet.</p>`}
+          <div class="facts">
+            <div class="fact"><div class="fact-v">${num(L.active)}</div><div class="fact-l">Listings for sale</div></div>
+            <div class="fact"><div class="fact-v">${num(L.sold)}</div><div class="fact-l">Sold out</div></div>
+            <div class="fact"><div class="fact-v">${num(L.removed)}</div><div class="fact-l">Taken down</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Farm records kept</h2><p class="sub">What farmers write down in the app for themselves</p>
+          <div class="facts">
+            <div class="fact"><div class="fact-v">${num(rec.expenses)}</div><div class="fact-l">Expenses</div><div class="fact-s">${esc(pesoShort(rec.expenses_total))} in all</div></div>
+            <div class="fact"><div class="fact-v">${num(rec.sales)}</div><div class="fact-l">Sales</div><div class="fact-s">${esc(pesoShort(rec.sales_total))} in all</div></div>
+            <div class="fact"><div class="fact-v">${num(rec.plantings)}</div><div class="fact-l">Plantings</div><div class="fact-s">with a harvest date</div></div>
+          </div>
+        </div>
+      </div>`;
+    columns($("#c-signups"), {
+      title: "Sign-ups by month", rows: o.signups_by_month, series, integer: true, axis: v => num(v), label: v => num(v), empty: "No sign-ups in the last 12 months",
+      tip: r => `<div class="t">${esc(monthLong(r.month))}</div>${series.map(s => `<div class="row"><i style="background:${s.color}"></i>${s.label}<b>${num(r[s.key])}</b></div>`).join("")}<div class="row">Total<b>${num(r.farmers + r.buyers)}</b></div>`,
+    });
+    columns($("#c-orders"), {
+      title: "Orders by month", rows: o.orders_by_month, series: [{ key: "value", label: "Value", color: "#1f8a5b" }], integer: false, axis: pesoAxis, label: v => pesoShort(v), empty: "No orders in the last 12 months",
+      tip: r => `<div class="t">${esc(monthLong(r.month))}</div><div class="row">Value<b>${esc(peso(r.value))}</b></div><div class="row">Order lines<b>${num(r.items)}</b></div>`,
+    });
+    barTips(host);
+  }
+
+  // ─── Lists: one shape for members, listings and orders ───
+  function list(key, { body, count, pager, state, fetch, empty, head, row, noun }) {
+    const load = async () => {
+      const b = $(body);
+      if (!b.dataset.ready) b.innerHTML = `<div class="tbl-wrap" style="padding:16px">${Array(6).fill(sk(40)).join('<div style="height:10px"></div>')}</div>`;
+      const seq = next(key);
+      let rows;
+      try { rows = await fetch(); } catch (e) { if (seq === seqs[key]) showFail(b, e, load); return; }
+      if (seq !== seqs[key] || !signedIn) return;
+      b.dataset.ready = "1"; stamp();
+      const total = rows.length ? Number(rows[0].total) : 0;
+      const from = state.page * PAGE;
+      $(count).textContent = total ? `${num(total)} ${noun(total)}` : "";
+      b.innerHTML = rows.length
+        ? `<div class="tbl-wrap"><table class="tbl"><thead><tr>${head}</tr></thead><tbody>${rows.map(row).join("")}</tbody></table></div>`
+        : `<div class="card none">${empty()}</div>`;
+      const p = $(pager);
+      p.innerHTML = total > PAGE ? `<span>${num(from + 1)}–${num(Math.min(from + PAGE, total))} of ${num(total)}</span>
+        <button class="btn-ghost" type="button" data-p="-1" ${state.page ? "" : "disabled"}>${I.left}<span>Back</span></button>
+        <button class="btn-ghost" type="button" data-p="1" ${from + PAGE < total ? "" : "disabled"}><span>Next</span>${I.right}</button>` : "";
+      $$("[data-p]", p).forEach(btn => btn.onclick = () => { state.page += +btn.dataset.p; load(); window.scrollTo({ top: 0, behavior: "smooth" }); });
+    };
+    return load;
+  }
+  function filters(seg, state, field, load) {
+    $$("button", $(seg)).forEach(b => b.onclick = () => {
+      $$("button", $(seg)).forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+      state[field] = b.dataset.v; state.page = 0; load();
+    });
+  }
+  function searchBox(input, state, load) {
+    let t;
+    $(input).addEventListener("input", e => { clearTimeout(t); t = setTimeout(() => { state.q = e.target.value.trim(); state.page = 0; load(); }, 280); });
+  }
+
+  const M = { q: "", role: "", page: 0 };
+  const loadMembers = list("members", {
+    body: "#mBody", count: "#mCount", pager: "#mPager", state: M, noun: n => n === 1 ? "member" : "members",
+    fetch: () => call("admin_users", { p_search: M.q, p_role: M.role || null, p_limit: PAGE, p_offset: M.page * PAGE }),
+    empty: () => M.q ? `No member matches “${esc(M.q)}”.` : M.role ? `No ${M.role}s yet.` : "No members yet. They show here as they sign up in the app.",
+    head: `<th>Member</th><th>Role</th><th>Town</th><th>Mobile or email</th><th>Joined</th><th>Last signed in</th><th class="num">Listings</th><th class="num">Orders</th><th class="num">Rating</th>`,
+    row: r => `<tr data-user="${esc(r.id)}">
+      <td><div class="person">${avatar(r.full_name, r.avatar_url)}<div><button class="name-btn" type="button" data-user="${esc(r.id)}">${esc(r.full_name || "No name yet")}</button><div class="s">${esc(r.member_no)}</div></div></div></td>
+      <td>${roleChip(r.role)}</td>
+      <td>${esc(town(r.location)) || dash}</td>
+      <td class="nowrap">${r.phone ? esc(mobile(r.phone)) : ""}${r.email ? `<div class="${r.phone ? "s" : ""}">${esc(r.email)}</div>` : ""}${!r.phone && !r.email ? dash : ""}</td>
+      <td class="nowrap">${date(r.created_at)}</td>
+      <td class="nowrap">${esc(ago(r.last_sign_in_at))}</td>
+      <td class="num">${r.role === "farmer" ? num(r.listings) : dash}</td>
+      <td class="num" title="${r.role === "farmer" ? "Order lines sold" : "Orders placed"}">${num(r.role === "farmer" ? r.sales : r.purchases)}</td>
+      <td class="num">${r.role === "farmer" && r.rating_count ? `★ ${(+r.rating).toFixed(1)} <span class="s">(${num(r.rating_count)})</span>` : dash}</td></tr>`,
+  });
+  filters("#mRole", M, "role", loadMembers); searchBox("#mSearch", M, loadMembers);
+
+  const LS = { q: "", status: "active", page: 0 };
+  const loadListings = list("listings", {
+    body: "#lBody", count: "#lCount", pager: "#lPager", state: LS, noun: n => n === 1 ? "listing" : "listings",
+    fetch: () => call("admin_listings", { p_status: LS.status || null, p_search: LS.q, p_limit: PAGE, p_offset: LS.page * PAGE }),
+    empty: () => LS.q ? `No listing matches “${esc(LS.q)}”.` : "No listings here yet.",
+    head: `<th>Crop</th><th>Farmer</th><th class="num">Price</th><th class="num">Left</th><th>Town</th><th>Listed</th><th>Status</th>`,
+    row: r => `<tr data-user="${esc(r.seller_id)}">
+      <td><div class="person">${safeUrl(r.photo_url) ? `<img class="thumb" src="${esc(safeUrl(r.photo_url))}" alt="" loading="lazy">` : `<span class="thumb" aria-hidden="true"></span>`}<div><b>${esc(r.crop)}</b><div class="s">${esc(r.crop_group)}</div></div></div></td>
+      <td><button class="name-btn" type="button" data-user="${esc(r.seller_id)}">${esc(r.seller || "Deleted account")}</button><div class="s">${esc(r.member_no || "")}</div></td>
+      <td class="num">${peso2(r.price_per_kg)}<div class="s">a kilo</div></td>
+      <td class="num">${kg(r.quantity_kg)}</td>
+      <td>${esc(town(r.location) || r.location) || dash}</td>
+      <td class="nowrap">${date(r.created_at)}</td>
+      <td>${statusChip(r.status, LISTING)}</td></tr>`,
+  });
+  filters("#lStatus", LS, "status", loadListings); searchBox("#lSearch", LS, loadListings);
+
+  const OS = { status: "", page: 0 };
+  const person = (id, name) => id ? `<button class="name-btn" type="button" data-user="${esc(id)}">${esc(name || "No name yet")}</button>` : `<span class="s">Deleted account</span>`;
+  const loadOrders = list("orders", {
+    body: "#oBody", count: "#oCount", pager: "#oPager", state: OS, noun: n => n === 1 ? "order line" : "order lines",
+    fetch: () => call("admin_orders", { p_status: OS.status || null, p_limit: PAGE, p_offset: OS.page * PAGE }),
+    empty: () => OS.status ? `No ${ORDER[OS.status].toLowerCase()} orders.` : "No orders yet. They show here once buyers check out.",
+    head: `<th>Ordered</th><th>Crop</th><th class="num">Amount</th><th>Buyer</th><th>Farmer</th><th>Status</th><th class="num">Sold for</th><th class="num">Paid</th><th class="num">Stars</th>`,
+    row: r => `<tr>
+      <td class="nowrap">${date(r.created_at)}<div class="s">${esc(timeF.format(new Date(r.created_at)))}</div></td>
+      <td><b>${esc(r.crop)}</b><div class="s">${kg(r.quantity_kg)} at ${peso2(r.price_per_kg)}</div></td>
+      <td class="num">${peso2(r.amount)}</td>
+      <td>${person(r.buyer_id, r.buyer)}</td>
+      <td>${person(r.seller_id, r.seller)}</td>
+      <td>${statusChip(r.status, ORDER)}</td>
+      <td class="num">${r.sold_amount != null ? peso2(r.sold_amount) : dash}</td>
+      <td class="num">${r.paid_amount != null ? peso2(r.paid_amount) : dash}</td>
+      <td class="num">${r.rating ? "★ " + r.rating : dash}</td></tr>`,
+  });
+  filters("#oStatus", OS, "status", loadOrders);
+
+  // ─── Badges ───
+  let undoing = null;
+  async function setAward(user, name, badge, on, { quiet = false } = {}) {
+    await call("admin_set_award", { p_user: user, p_badge: badge.id, p_on: on });
+    if (!quiet) toast(on ? `${name} is now ${badge.name}.` : `${badge.name} taken back from ${name}.`, async () => {
+      await call("admin_set_award", { p_user: user, p_badge: badge.id, p_on: !on });
+      afterAward(user);
+    });
+    afterAward(user);
+  }
+  function afterAward(user) {
+    if (current === "badges") loadBadges();
+    if (drawerUser === user) openUser(user, null, true);
+  }
+  async function loadBadges() {
+    const host = $("#v-badges");
+    if (!host.dataset.ready) host.innerHTML = `<div class="grid2" style="margin-top:0">${Array(2).fill(`<div class="card">${sk(56, "56px")}<div style="height:16px"></div>${sk(60)}</div>`).join("")}</div>`;
+    const seq = next("badges");
+    let awards;
+    try { awards = await call("admin_awards"); } catch (e) { if (seq === seqs.badges) showFail(host, e, loadBadges); return; }
+    if (seq !== seqs.badges || !signedIn) return;
+    host.dataset.ready = "1"; stamp();
+    host.innerHTML = `<div class="grid2" style="margin-top:0">${BADGES.map(b => {
+      const holders = awards.filter(a => a.achievement_id === b.id);
+      return `<div class="card" data-badge="${b.id}">
+        <div class="b-head"><span class="medal" aria-hidden="true">${I.award}</span><div><h2>${esc(b.name)}</h2><p class="sub">${esc(b.about)}</p></div></div>
+        ${holders.length ? `<ul class="holders">${holders.map(h => `<li class="holder">${avatar(h.full_name)}<div class="meta">
+            <button class="name-btn" type="button" data-user="${esc(h.profile_id)}">${esc(h.full_name || "No name yet")}</button>
+            <div class="s">${esc(h.member_no)} · ${esc(town(h.location) || "No town")} · given ${date(h.earned_at)}</div></div>
+            <button class="btn-sm take" type="button" data-take="${esc(h.profile_id)}" data-name="${esc(h.full_name)}">Take back</button></li>`).join("")}</ul>`
+          : `<p class="none" style="padding:22px 8px 6px">Nobody holds it yet.</p>`}
+        <div class="give"><h3>Give it to a farmer</h3>
+          <div class="search">${I.search}<input class="field" type="search" placeholder="Farmer's name, member no. or town" aria-label="Find a farmer for ${esc(b.name)}"></div>
+          <ul class="holders" data-results></ul></div>
+      </div>`;
+    }).join("")}</div>`;
+    for (const card of $$("[data-badge]", host)) {
+      const badge = BADGES.find(b => b.id === card.dataset.badge);
+      const has = new Set(awards.filter(a => a.achievement_id === badge.id).map(a => a.profile_id));
+      $$("[data-take]", card).forEach(btn => btn.onclick = async () => { btn.disabled = true; try { await setAward(btn.dataset.take, btn.dataset.name, badge, false); } catch (e) { btn.disabled = false; toast(problem(e)); } });
+      const input = $("input", card), out = $("[data-results]", card);
+      let t, k = "give-" + badge.id;
+      input.addEventListener("input", () => {
+        clearTimeout(t);
+        const q = input.value.trim();
+        if (!q) { out.innerHTML = ""; return; }
+        t = setTimeout(async () => {
+          const seq = next(k);
+          let rows; try { rows = await call("admin_users", { p_search: q, p_role: "farmer", p_limit: 6, p_offset: 0 }); } catch (e) { out.innerHTML = `<li class="none">${esc(problem(e))}</li>`; return; }
+          if (seq !== seqs[k]) return;
+          out.innerHTML = rows.length ? rows.map(r => `<li class="holder">${avatar(r.full_name, r.avatar_url)}<div class="meta"><b>${esc(r.full_name || "No name yet")}</b><div class="s">${esc(r.member_no)} · ${esc(town(r.location) || "No town")}</div></div>
+            ${has.has(r.id) ? `<button class="btn-sm take" type="button" disabled>Has it</button>` : `<button class="btn-sm give" type="button" data-give="${esc(r.id)}" data-name="${esc(r.full_name)}">Give</button>`}</li>`).join("")
+            : `<li class="none" style="padding:14px">No farmer matches “${esc(q)}”.</li>`;
+          $$("[data-give]", out).forEach(btn => btn.onclick = async () => { btn.disabled = true; try { await setAward(btn.dataset.give, btn.dataset.name, badge, true); } catch (e) { btn.disabled = false; toast(problem(e)); } });
+        }, 250);
+      });
+    }
+  }
+
+  // ─── One member: the drawer ───
+  const drawer = $("#drawer"), scrim = $("#scrim");
+  let drawerUser = null, opener = null;
+  document.addEventListener("click", e => {
+    const t = e.target.closest("[data-user]");
+    if (!t || !signedIn || t.closest(".drawer")) return;
+    if (t.tagName === "TR" && e.target.closest("button, a")) return;
+    if (!t.dataset.user || t.dataset.user === "null") return;
+    openUser(t.dataset.user, t.tagName === "TR" ? $("[data-user]", t) || t : t);
+  });
+  async function openUser(id, from, refresh = false) {
+    if (!refresh) opener = from || document.activeElement;
+    drawerUser = id;
+    if (!refresh) {
+      drawer.innerHTML = `<div class="d-head"><span class="av sk"></span><div style="flex:1">${sk(20, "60%")}<div style="height:8px"></div>${sk(14, "40%")}</div><button class="d-close" type="button" aria-label="Close">${I.close}</button></div>
+        <div class="d-body">${Array(3).fill(`<div class="card">${sk(16, "30%")}<div style="height:12px"></div>${sk(60)}</div>`).join("")}</div>`;
+      drawer.removeAttribute("inert"); drawer.classList.remove("closing");
+      requestAnimationFrame(() => { drawer.classList.add("open"); scrim.classList.add("open"); });
+      document.body.style.overflow = "hidden";
+      $(".d-close", drawer).focus({ preventScroll: true });
+    }
+    const seq = next("drawer");
+    let u;
+    try { u = await call("admin_user", { p_id: id }); } catch (e) {
+      if (seq !== seqs.drawer || e?.quiet) return;
+      $(".d-body", drawer).innerHTML = `<div class="card fail"><p>${esc(String(e.message).includes("NOT_FOUND") ? "This account isn't there any more. It may have been deleted." : problem(e))}</p></div>`;
+      return;
+    }
+    if (seq !== seqs.drawer || drawerUser !== id) return;
+    const farmer = u.role === "farmer";
+    const rows = (items, cols) => items.length ? `<div class="tbl-wrap" style="box-shadow:none;border-radius:12px;background:var(--paper)"><table class="tbl mini"><tbody>${items.map(cols).join("")}</tbody></table></div>` : `<p class="s" style="color:var(--faint)">None yet.</p>`;
+    const held = new Set(u.badges.map(b => b.id));
+    drawer.innerHTML = `
+      <div class="d-head">${avatar(u.full_name, u.avatar_url)}<div style="min-width:0"><h2 id="dTitle">${esc(u.full_name || "No name yet")}</h2><div class="s">${roleChip(u.role)}<span>${esc(u.member_no)}</span></div></div>
+        <button class="d-close" type="button" aria-label="Close">${I.close}</button></div>
+      <div class="d-body">
+        <div class="card d-sec"><h3>Contact</h3><dl class="dl">
+          <dt>Mobile</dt><dd>${u.phone ? esc(mobile(u.phone)) : dash}</dd>
+          <dt>Email</dt><dd>${u.email ? esc(u.email) : dash}</dd>
+          <dt>Location</dt><dd>${esc(u.location) || dash}</dd></dl></div>
+        <div class="card d-sec"><h3>Account</h3><dl class="dl">
+          <dt>Joined</dt><dd>${date(u.created_at)}</dd>
+          <dt>Last signed in</dt><dd>${esc(ago(u.last_sign_in_at))}</dd>
+          ${farmer ? `<dt>Farming for</dt><dd>${u.years_farming != null ? `${num(u.years_farming)} year${u.years_farming == 1 ? "" : "s"}` : dash}</dd>
+          <dt>Rating</dt><dd>${u.rating_count ? `★ ${(+u.rating).toFixed(1)} from ${num(u.rating_count)} buyer${u.rating_count == 1 ? "" : "s"}` : "Not rated yet"}</dd>` : ""}</dl></div>
+        ${farmer ? `<div class="card d-sec"><h3>Crops grown</h3>${u.crops.length ? `<div class="chips">${u.crops.map(c => `<span class="chip">${esc(c)}</span>`).join("")}</div>` : `<p class="s" style="color:var(--faint)">None chosen.</p>`}</div>` : ""}
+        <div class="card d-sec"><h3>Badges</h3>
+          ${u.badges.filter(b => !BADGES.some(x => x.id === b.id)).length ? `<div class="chips">${u.badges.filter(b => !BADGES.some(x => x.id === b.id)).map(b => `<span class="chip" title="Earned ${esc(date(b.earned_at))}">${esc(b.name.replace(/^AniSense /, ""))}</span>`).join("")}</div>` : `<p class="s" style="color:var(--faint)">None earned yet.</p>`}
+          ${farmer ? BADGES.map(b => `<div class="award-row"><span class="medal" style="width:40px;height:40px" aria-hidden="true">${I.award}</span><div class="meta"><b>${esc(b.name)}</b><div class="s">${held.has(b.id) ? "Given " + date(u.badges.find(x => x.id === b.id).earned_at) : "Not given"}</div></div>
+            <button class="btn-sm ${held.has(b.id) ? "take" : "give"}" type="button" data-award="${b.id}" data-on="${held.has(b.id) ? "0" : "1"}">${held.has(b.id) ? "Take back" : "Give"}</button></div>`).join("") : ""}
+        </div>
+        ${farmer ? `<div class="card d-sec"><h3>Farm records</h3><div class="facts" style="margin-top:0">
+          <div class="fact"><div class="fact-v">${num(u.records.expenses)}</div><div class="fact-l">Expenses</div><div class="fact-s">${esc(pesoShort(u.records.expenses_total))}</div></div>
+          <div class="fact"><div class="fact-v">${num(u.records.sales)}</div><div class="fact-l">Sales</div><div class="fact-s">${esc(pesoShort(u.records.sales_total))}</div></div>
+          <div class="fact"><div class="fact-v">${num(u.records.plantings)}</div><div class="fact-l">Plantings</div></div></div></div>
+        <div class="card d-sec"><h3>Listings</h3>${rows(u.listings, l => `<tr><td><b>${esc(l.crop)}</b><div class="s">${date(l.created_at)}</div></td><td class="num">${peso2(l.price_per_kg)}<div class="s">${kg(l.quantity_kg)} left</div></td><td>${statusChip(l.status, LISTING)}</td></tr>`)}</div>
+        <div class="card d-sec"><h3>Sold through the Market</h3>${rows(u.sales, s => `<tr><td><b>${esc(s.crop)}</b><div class="s">to ${esc(s.buyer || "a deleted account")} · ${date(s.created_at)}</div></td><td class="num">${peso2(s.amount)}<div class="s">${kg(s.quantity_kg)}</div></td><td>${statusChip(s.status, ORDER)}</td></tr>`)}</div>`
+        : `<div class="card d-sec"><h3>Bought through the Market</h3>${rows(u.purchases, p => `<tr><td><b>${esc(p.crop)}</b><div class="s">from ${esc(p.seller || "a deleted account")} · ${date(p.created_at)}</div></td><td class="num">${peso2(p.amount)}<div class="s">${kg(p.quantity_kg)}</div></td><td>${statusChip(p.status, ORDER)}</td></tr>`)}</div>`}
+      </div>`;
+    $$("[data-award]", drawer).forEach(btn => btn.onclick = async () => {
+      btn.disabled = true;
+      try { await setAward(u.id, u.full_name, BADGES.find(b => b.id === btn.dataset.award), btn.dataset.on === "1"); } catch (e) { btn.disabled = false; toast(problem(e)); }
+    });
+    if (!refresh) $(".d-close", drawer).focus({ preventScroll: true });
+  }
+  function closeDrawer(instant = false) {
+    if (!drawer.classList.contains("open")) return;
+    drawerUser = null; next("drawer");
+    drawer.classList.remove("open"); scrim.classList.remove("open");
+    drawer.setAttribute("inert", "");
+    document.body.style.overflow = "";
+    if (!instant) { drawer.classList.add("closing"); setTimeout(() => drawer.classList.remove("closing"), 320); opener?.focus?.({ preventScroll: true }); }
+  }
+  drawer.addEventListener("click", e => { if (e.target.closest(".d-close")) closeDrawer(); });
+  scrim.onclick = () => closeDrawer();
+  document.addEventListener("keydown", e => {
+    if (!drawer.classList.contains("open")) return;
+    if (e.key === "Escape") { e.preventDefault(); closeDrawer(); return; }
+    if (e.key === "Tab") {             // keep the keyboard inside the drawer while it is open
+      const f = $$("button:not(:disabled), a[href], input", drawer);
+      if (!f.length) return;
+      if (e.shiftKey && document.activeElement === f[0]) { e.preventDefault(); f[f.length - 1].focus(); }
+      else if (!e.shiftKey && document.activeElement === f[f.length - 1]) { e.preventDefault(); f[0].focus(); }
+    }
+  });
+
+  // ─── Toast, with Undo ───
+  let toastTimer;
+  function toast(text, undo) {
+    const t = $("#toast");
+    t.innerHTML = `<span>${esc(text)}</span>${undo ? '<button type="button">Undo</button>' : ""}`;
+    t.hidden = false;
+    requestAnimationFrame(() => t.classList.add("show"));
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(hide, undo ? 6000 : 4000);
+    if (undo) $("button", t).onclick = async () => { hide(); try { await undo(); } catch (e) { toast(problem(e)); } };
+    function hide() { t.classList.remove("show"); setTimeout(() => { if (!t.classList.contains("show")) t.hidden = true; }, 240); }
+  }
+
+  // ─── Start ───
+  async function start() {
+    if (!cfg.supabaseUrl || !cfg.supabaseKey) {
+      say("This page isn't connected yet. Fill in supabaseUrl and supabaseKey in site/config.js, then publish the site again.", "info");
+      $$("#loginForm input, #loginForm button").forEach(x => x.disabled = true);
+      return;
+    }
+    let createClient;
+    try { ({ createClient } = await import(SUPABASE_JS)); }
+    catch { say("Couldn't load the page's parts. Check the internet, then reload."); return; }
+    // Kept for this browser tab only: closing it signs the admin out.
+    db = createClient(cfg.supabaseUrl, cfg.supabaseKey, { auth: { storage: window.sessionStorage, storageKey: "anisense-admin", persistSession: true, autoRefreshToken: true, detectSessionInUrl: false } });
+    db.auth.onAuthStateChange(event => {
+      if (event === "SIGNED_OUT" && signedIn) setTimeout(() => showLogin("Your session ended. Sign in again.", "info"));
+    });
+    const { data } = await db.auth.getSession();
+    if (data.session) {
+      try { if (await isAdmin()) { enter(data.session); return; } } catch (e) { say(problem(e)); }
+      await db.auth.signOut({ scope: "local" });
+    }
+    $("#email").focus();
+  }
+  start();
+</script>
+</body>
+</html>

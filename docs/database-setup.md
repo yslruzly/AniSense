@@ -328,6 +328,37 @@ Both are in `site/`:
 The policy is a draft. Have a lawyer or a data protection officer read it
 before the release.
 
+## The admin website
+
+`site/admin.html` (at `https://<your-domain>/admin`) is where AniSense staff
+see the dashboard: how many members there are, sign-ups and orders month by
+month, what is for sale, every member, listing and order, and the two badges
+only an admin gives (Farmer of the Month, Farmer of the Year). It is not in
+the app, and an admin account cannot sign in to the app.
+
+To make an admin account (once for each person):
+
+1. Run `supabase/schema.sql` again if you haven't since the admin part was
+   added (section 11).
+2. Dashboard → **Authentication → Users → Add user → Create new user**. Use
+   an email that is not used in the app, a strong password, and tick
+   **Auto Confirm User**.
+3. **SQL Editor → New query**, with the same email:
+   ```sql
+   select public.make_admin('office@example.com');
+   ```
+   It answers `Done: … is an admin`. It refuses an account that is already
+   used in the app, so a farmer's or buyer's account never becomes one.
+4. `site/config.js` must be filled in (Step 1 of "Before the Play Store"),
+   and the site published. Then open `https://<your-domain>/admin` and sign
+   in.
+
+The page keeps the sign-in for that browser tab only, and signs itself out
+after 30 minutes without use. To take an admin away:
+`delete from public.admins where user_id = (select id from auth.users where email = 'office@example.com');`
+or delete the account under Authentication → Users. A forgotten password is
+set again under Authentication → Users → the account → **Reset password**.
+
 ## Good to know
 
 - Free projects **pause after 7 days with no activity**. If sign-in suddenly
