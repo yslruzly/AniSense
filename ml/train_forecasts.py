@@ -46,6 +46,7 @@ REPORT = ROOT / "ml" / "REPORT.md"
 
 HORIZON = 3        # months ahead
 TEST_MONTHS = 12   # held back for testing
+MIN_MONTHS = TEST_MONTHS + 24   # fewer on record (a variety just given prices on the admin website): no forecast yet
 WINDOW = 6         # months the LSTM reads
 HIDDEN = 16
 EPOCHS = 400
@@ -178,10 +179,17 @@ def main() -> None:
     df = pd.read_csv(CSV, dtype={"month": str}).set_index("month")
     result = {"generated": date.today().isoformat(), "horizon": HORIZON, "testMonths": TEST_MONTHS, "crops": {}}
     report = []
+    skipped = []
 
     for crop in df.columns:
         s = df[crop]
+        if s.first_valid_index() is None:
+            continue
         s = s.loc[s.first_valid_index():s.last_valid_index()]
+        if len(s) < MIN_MONTHS:
+            skipped.append((crop, len(s)))
+            print(f"{crop:18} {len(s)} month{'' if len(s) == 1 else 's'}  skipped: a forecast needs {MIN_MONTHS} months on record")
+            continue
         filled = [m for m, v in s.items() if pd.isna(v)]
         # A month with no record inside the series is bridged with a straight
         # line between its neighbours, for training only. The app never shows
@@ -221,6 +229,8 @@ def main() -> None:
         report.append((crop, n, s.index[0], last, filled, order, a, l, nv, best, arima_points, lstm_points))
         print(f"{crop:18} {n} months  ARIMA{order} MAPE {a['mape']}%  LSTM MAPE {l['mape']}%  same-as-last-month MAPE {nv['mape']}%")
 
+    if not report:
+        raise SystemExit(f"No variety has {MIN_MONTHS} months of prices on record, so there is nothing to forecast.")
     OUT.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
 
     lines = [
@@ -257,6 +267,8 @@ def main() -> None:
     short = [(NAMES.get(c, c), n, start) for c, n, start, *_ in report if n < 60]
     for name, n, start in short:
         lines.append(f"- {name} has records only from {start} ({n} months), so its models learned from less and its results are less certain.")
+    for crop, n in skipped:
+        lines.append(f"- {NAMES.get(crop, crop)} has {n} month{'' if n == 1 else 's'} of prices on record, not yet the {MIN_MONTHS} a forecast needs, so it has none.")
     lines.append(f"- Settings: ARIMA order chosen by AIC over p, q = 0 to 3 and d = 0 or 1, on log prices. LSTM: 1 layer, {HIDDEN} units, window {WINDOW}, {EPOCHS} epochs, Adam (learning rate 0.01), seed {SEED}, on standardised log prices.")
     REPORT.write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(f"wrote {OUT.relative_to(ROOT)} and {REPORT.relative_to(ROOT)}")

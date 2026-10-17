@@ -80,7 +80,9 @@ drop function if exists
   public.admin_listings(text, text, int, int),
   public.admin_orders(text, int, int),
   public.admin_awards(),
-  public.admin_set_award(uuid, text, boolean)
+  public.admin_set_award(uuid, text, boolean),
+  public.admin_price_board(date),
+  public.admin_set_prices(date, jsonb, text)
 cascade;
 
 drop type if exists

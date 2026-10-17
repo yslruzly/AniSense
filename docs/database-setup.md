@@ -281,7 +281,7 @@ If no text arrives:
 - [ ] Farmer records a sale, adds a planting and a price alert: rows appear in **sales**, **plantings** and **price_alerts**; they are still there after reinstalling the app
 - [ ] Prices shows the same numbers as the newest rows in **crop_prices** (Special Rice ₱57.20 for September 2026), and a crop's chart shows its forecast from **crop_forecasts**
 - [ ] Change the newest price of a variety in **crop_prices**, reopen Prices: the app shows the new price
-- [ ] Add next month's row for Special Rice (dated the 1st), reopen Prices: the new month is the price shown, and the chart gains it
+- [ ] On the admin website, Prices: put in this month's price for Special Rice and save; reopen Prices on the phone: the new month is the price shown, and the chart gains it
 - [ ] Airplane mode, posting a listing or checking out: a clear "No internet" message, and the cart is kept
 - [ ] Profile → Manage account → Delete my account, as a buyer who has ordered: the buyer disappears from **Authentication → Users** and **profiles**; the order stays in **orders** with an empty `buyer_id`, and the farmer still sees the sale
 - [ ] Delete my account, as a farmer with a listing photo: their rows are gone from **listings**, **expenses**, **sales**, and their folder is gone from **Storage → listing-photos**
@@ -352,6 +352,8 @@ To make an admin account (once for each person):
 4. `site/config.js` must be filled in (Step 1 of "Before the Play Store"),
    and the site published. Then open `https://<your-domain>/admin` and sign
    in.
+
+Its **Prices** page is where each month's retail prices go in, from the government's list; see "Everyday admin" in `supabase/README.md`.
 
 The page keeps the sign-in for that browser tab only, and signs itself out
 after 30 minutes without use. To take an admin away:

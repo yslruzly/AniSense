@@ -4,7 +4,8 @@
 // (named by the app's crop id), an empty cell where nothing was recorded.
 //
 // The app bundles the result, so the prices and their history show without a
-// signal. Run it again after adding a month to the CSV, then:
+// signal. The CSV is written from the database by npm run prices:pull (the
+// prices go in on the admin website); run this after it, then:
 //
 //   ml/.venv/Scripts/python ml/train_forecasts.py   the forecasts
 //   node scripts/build-seed.mjs                     the database's copy

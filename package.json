@@ -11,6 +11,8 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "check:db": "node scripts/check-supabase.mjs",
+    "prices:pull": "node scripts/pull-prices.mjs",
+    "refresh": "npm run prices:pull && npm run prices && npm run forecasts && npm run seed",
     "prices": "node scripts/build-prices.mjs",
     "forecasts": "ml\\.venv\\Scripts\\python ml/train_forecasts.py",
     "seed": "node scripts/build-seed.mjs"

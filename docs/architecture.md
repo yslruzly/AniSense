@@ -444,8 +444,8 @@ The same function is called by the web page in `site/`, for someone who no longe
 
 ### 5.8 A new month of prices
 
-1. A row is added to `data/historical-prices.csv` (or a newer PDF is imported with `ml/import_pdf.py`).
-2. `npm run prices` rebuilds the bundled history.
+1. The admin puts the month's prices in on the admin website (`site/admin.html`, Prices), which saves them with `admin_set_prices`. Phones get them from the database the next time they are online.
+2. On the computer, `npm run prices:pull` copies every price on record into `data/historical-prices.csv`, and `npm run prices` rebuilds the bundled history (`npm run refresh` runs steps 2 to 4).
 3. `npm run forecasts` trains and tests both models again and rewrites the forecasts and the report.
 4. `npm run seed` rewrites the database's copy, which is then run in the SQL Editor.
 5. A new APK carries the update to phones. A phone signed in to a real account also picks it up from the database the next time it is online.

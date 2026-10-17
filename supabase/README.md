@@ -224,6 +224,8 @@ erDiagram
 | `make_admin(email)` | Makes an account added under Authentication → Users an admin, and takes away the app profile it was given. Refuses an account already used in the app. Run only by the owner, in the SQL Editor |
 | `is_admin()` | Whether the person signed in is an admin: the admin website checks it at sign-in, and the app turns an admin away with it |
 | `admin_overview()`, `admin_users(…)`, `admin_user(id)`, `admin_listings(…)`, `admin_orders(…)`, `admin_awards()` | What the admin website reads: the dashboard's numbers, the members, one member, the listings, the orders, who holds the admin's badges. Each says `NOT_ADMIN` to anyone else |
+| `admin_price_board(month)` | The Prices page: every variety with its price for the month, the record before it, its last 12 records, and when the forecasts were made |
+| `admin_set_prices(month, prices, source)` | Saves a month's prices from the Prices page, all or none: puts in, puts right or takes away, then works out each record's move from the one before again. Not a month still to come |
 | `admin_set_award(user, badge, on)` | Gives or takes back Farmer of the Month or Farmer of the Year, to a farmer only. The admin website's one change |
 | `auth_user_id_by_email(email)` | Which account a login address belongs to, if any (a Gmail, or a CP number's `639…@phone.anisense.app`). Closed to the app; only the verify-code function may call it |
 
@@ -231,7 +233,8 @@ erDiagram
 
 Row Level Security is on for every table; the database enforces it, not the app.
 - Nobody signed out can read anything but the price catalog (for guest mode).
-- Only an account in `admins` can call the admin functions, and they only read, but for giving and taking back the two admin badges.
+- Only an account in `admins` can call the admin functions, and they only read, but for the month's prices and the two admin badges.
+- Prices are read by everyone (guests too) and written only through `admin_set_prices`. Which admin put a price in (`crop_prices.entered_by`) is never readable from the app or the web; where it came from (`source`) and when (`entered_at`) are.
 - Farmers manage only their own listings and records.
 - A buyer's phone number is visible only to farmers they have ordered from.
 - Orders can only be made through `place_order()`.
@@ -243,23 +246,14 @@ Row Level Security is on for every table; the database enforces it, not the app.
 
 ## Everyday admin
 
-**Add a new month's prices.** The records live in `data/historical-prices.csv`, one row per month. Add the row, then rebuild what is made from it:
-```
-2026-10,57.80,47.50,350.00,95.00,60.00        ← the new row in the CSV
+**Put in this month's prices.** On the admin website, **Prices**: pick the month, type each variety's retail price per kilo from the government's list (optionally where it came from, e.g. DA Bantay Presyo), and **Save prices**. It goes into `crop_prices` at once, dated the 1st of the month, with its move from the month before worked out again. Phones get it the next time they are online, guests too. A month can be put right the same way, and an empty box takes that month's price away. A variety with no price yet (₱0 in the app) gets one the same way.
 
-npm run prices        the app's bundled history
-npm run forecasts     trains ARIMA and LSTM again (see ml/README.md)
-npm run seed          writes supabase/seed.sql
+**Bring the forecasts up to date.** The models are trained on the computer, not on the website, so new prices don't change the forecasts by themselves; the Prices page says when they are behind. Then, on the computer:
 ```
-Then run `seed.sql` in the SQL Editor. Phones signed in to a real account pick up the new month and forecasts the next time they are online; build a new APK as well so first-time and offline users get it too.
-
-To correct one price quickly, without the steps above (dated the 1st of its month; `change_pct` is the move from the month before, in percent):
-```sql
-insert into crop_prices (crop_id, price_date, price_per_kg, change_pct) values
-  ('rice-special', '2026-10-01', 57.80, 1.0)
-on conflict (crop_id, price_date) do update set price_per_kg = excluded.price_per_kg, change_pct = excluded.change_pct;
+npm run refresh       data/historical-prices.csv from the database (prices:pull),
+                      then the bundled history, the forecasts and seed.sql
 ```
-The forecasts are not retrained by this; run the steps above when you can.
+and run `seed.sql` in the SQL Editor. Build a new APK as well, so first-time and offline phones carry the new months too. Always run `npm run refresh`, never an old `seed.sql`: it starts by copying the database's prices into the CSV, so the seed puts back exactly what is on the website. (`npm run prices:pull -- --check` shows what would change without writing anything.) A variety needs 36 months of prices before it gets a forecast.
 
 **Name a Farmer of the Month or Year.** On the admin website, **Badges** → find the farmer → **Give** (or open the farmer under **Members**). Without the website, copy the farmer's id from Table Editor → `profiles` and run:
 ```sql

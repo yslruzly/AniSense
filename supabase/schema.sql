@@ -83,6 +83,12 @@ create table if not exists public.crop_prices (
 );
 -- For a database built before price records were kept.
 alter table public.crop_prices add column if not exists is_sample boolean not null default false;
+-- A price put in on the admin website (Prices): where it came from ("DA
+-- Bantay Presyo"), which admin put it in, and when. Empty for the records
+-- seed.sql loads. Who put it in stays private (section 6).
+alter table public.crop_prices add column if not exists source     text;
+alter table public.crop_prices add column if not exists entered_by uuid references auth.users(id) on delete set null;
+alter table public.crop_prices add column if not exists entered_at timestamptz;
 
 -- What the models expect: one row per variety, model and month ahead, with
 -- the range the price will likely land in and how far off that model was
@@ -101,11 +107,12 @@ create table if not exists public.crop_forecasts (
   unique (crop_id, model, target_month)
 );
 
--- The board: the newest price for each variety.
+-- The board: the newest price for each variety. Never a sample price.
 create or replace view public.crop_prices_latest
   with (security_invoker = true) as
   select distinct on (crop_id) crop_id, price_date, price_per_kg, change_pct
   from public.crop_prices
+  where not is_sample
   order by crop_id, price_date desc;
 
 
@@ -376,6 +383,9 @@ drop policy if exists "catalog: read" on public.crops;
 create policy "catalog: read" on public.crops for select to anon, authenticated using (true);
 drop policy if exists "catalog: read" on public.crop_prices;
 create policy "catalog: read" on public.crop_prices for select to anon, authenticated using (true);
+-- Every column of a price but which admin put it in.
+revoke select on public.crop_prices from anon, authenticated;
+grant select (id, crop_id, price_date, price_per_kg, change_pct, is_sample, source, entered_at) on public.crop_prices to anon, authenticated;
 drop policy if exists "catalog: read" on public.crop_forecasts;
 create policy "catalog: read" on public.crop_forecasts for select to anon, authenticated using (true);
 drop policy if exists "rewards: read" on public.achievements;
@@ -988,8 +998,9 @@ grant select, insert, delete on public.password_history to service_role;
 -- The AniSense admin website (site/admin.html), never the app. An admin is an
 -- account listed in public.admins. It signs in on the website with its email
 -- and password like anyone, and every admin function below checks that list
--- first: anyone else gets NOT_ADMIN. They only read, but for one thing: the
--- badges the admin gives (Farmer of the Month, Farmer of the Year).
+-- first: anyone else gets NOT_ADMIN. They only read, but for two things: the
+-- month's crop prices (Prices), and the badges the admin gives (Farmer of
+-- the Month, Farmer of the Year).
 --
 -- To make an admin (once, by the project's owner, here in the SQL Editor):
 --   1. Authentication → Users → Add user → Create new user: the email and a
@@ -1327,6 +1338,106 @@ begin
 end;
 $$;
 
+-- ─── Prices: the month's retail prices, put in by the admin ────────────────
+-- What the Prices page shows for one month (this month, Philippine time,
+-- when none is given): every variety in the catalog, with its price for that
+-- month if it has one, the record before it, its last twelve records for the
+-- little trend line, and how many records it has in all; and when the
+-- forecasts were made, so the page can say when new prices have overtaken
+-- them.
+create or replace function public.admin_price_board(p_month date default null)
+returns json language plpgsql stable security definer set search_path = '' as $$
+declare
+  this_month date := date_trunc('month', now() at time zone 'Asia/Manila')::date;
+  m date := coalesce(date_trunc('month', p_month)::date, date_trunc('month', now() at time zone 'Asia/Manila')::date);
+  r json;
+begin
+  perform public.admin_guard();
+  select json_build_object(
+    'month', m,
+    'this_month', this_month,
+    'latest_month', (select max(p.price_date) from public.crop_prices p where not p.is_sample),
+    'forecasts', (select json_build_object('made_on', max(f.generated_on), 'first_month', min(f.target_month), 'last_month', max(f.target_month))
+                    from public.crop_forecasts f),
+    'crops', coalesce((select json_agg(x order by x.group_sort, x.sort, x.name) from (
+        select c.id, c.name, c.sort_order as sort, g.name as group_name, g.sort_order as group_sort,
+               cur.price_per_kg as price, cur.change_pct as change, cur.source, cur.entered_at, u.email as entered_by,
+               (select json_build_object('month', b.price_date, 'price', b.price_per_kg) from public.crop_prices b
+                 where b.crop_id = c.id and not b.is_sample and b.price_date < m order by b.price_date desc limit 1) as before,
+               coalesce((select json_agg(json_build_object('month', h.price_date, 'price', h.price_per_kg) order by h.price_date) from (
+                   select hh.price_date, hh.price_per_kg from public.crop_prices hh
+                    where hh.crop_id = c.id and not hh.is_sample and hh.price_date < m
+                    order by hh.price_date desc limit 12) h), '[]'::json) as history,
+               (select count(*) from public.crop_prices n where n.crop_id = c.id and not n.is_sample) as records,
+               exists (select 1 from public.crop_forecasts f where f.crop_id = c.id) as forecast
+          from public.crops c
+          join public.crop_groups g on g.id = c.group_id
+          left join public.crop_prices cur on cur.crop_id = c.id and cur.price_date = m and not cur.is_sample
+          left join auth.users u on u.id = cur.entered_by) x), '[]'::json)
+  ) into r;
+  return r;
+end;
+$$;
+
+-- Saves one month's prices from the Prices page, all or none.
+-- p_prices = {"rice-special": 57.80, "onion-red": null}: a number is that
+-- variety's price per kilo for the month (put in, or put right); null takes
+-- the month's price away. Dated the 1st of the month, like every record. Not
+-- a month still to come. Each record's move from the one before it
+-- (change_pct, in %) is worked out again for the varieties saved, so a month
+-- put in late or put right leaves the month after it right too.
+-- Errors the page turns into words: FUTURE_MONTH, BAD_MONTH, NO_PRICES,
+-- UNKNOWN_CROP, BAD_PRICE.
+create or replace function public.admin_set_prices(p_month date, p_prices jsonb, p_source text default null)
+returns json language plpgsql security definer set search_path = '' as $$
+declare
+  m date := date_trunc('month', p_month)::date;
+  k text;
+  v jsonb;
+  price numeric;
+  touched text[] := '{}';
+  n_saved int := 0;
+  n_removed int := 0;
+begin
+  perform public.admin_guard();
+  if m is null or m < date '2000-01-01' then raise exception 'BAD_MONTH'; end if;
+  if m > date_trunc('month', now() at time zone 'Asia/Manila')::date then raise exception 'FUTURE_MONTH'; end if;
+  if p_prices is null or jsonb_typeof(p_prices) <> 'object' or p_prices = '{}'::jsonb then raise exception 'NO_PRICES'; end if;
+  for k, v in select e.key, e.value from jsonb_each(p_prices) e loop
+    if not exists (select 1 from public.crops c where c.id = k) then raise exception 'UNKNOWN_CROP'; end if;
+    if jsonb_typeof(v) = 'null' then
+      delete from public.crop_prices where crop_id = k and price_date = m;
+      if found then n_removed := n_removed + 1; end if;
+    else
+      if jsonb_typeof(v) <> 'number' then raise exception 'BAD_PRICE'; end if;
+      price := round((v #>> '{}')::numeric, 2);
+      if price <= 0 or price > 100000 then raise exception 'BAD_PRICE'; end if;
+      insert into public.crop_prices (crop_id, price_date, price_per_kg, change_pct, is_sample, source, entered_by, entered_at)
+      values (k, m, price, 0, false, nullif(trim(p_source), ''), auth.uid(), now())
+      on conflict (crop_id, price_date) do update
+        set price_per_kg = excluded.price_per_kg, is_sample = false,
+            source = excluded.source, entered_by = excluded.entered_by, entered_at = excluded.entered_at;
+      n_saved := n_saved + 1;
+    end if;
+    touched := touched || k;
+  end loop;
+  -- Each record against the one before it, to one decimal, as seed.sql does.
+  update public.crop_prices p
+     set change_pct = x.change
+    from (select cp.id,
+                 greatest(-999.9, least(999.9, coalesce(round((cp.price_per_kg / lag(cp.price_per_kg) over w - 1) * 100, 1), 0))) as change
+            from public.crop_prices cp
+           where cp.crop_id = any(touched) and not cp.is_sample
+          window w as (partition by cp.crop_id order by cp.price_date)) x
+   where p.id = x.id and p.change_pct is distinct from x.change;
+  return json_build_object('saved', n_saved, 'removed', n_removed);
+end;
+$$;
+
+revoke all on function public.admin_price_board(date)                from public, anon;
+revoke all on function public.admin_set_prices(date, jsonb, text)    from public, anon;
+grant execute on function public.admin_price_board(date)              to authenticated;
+grant execute on function public.admin_set_prices(date, jsonb, text)  to authenticated;
 revoke all on function public.admin_overview()                       from public, anon;
 revoke all on function public.admin_users(text, text, int, int)      from public, anon;
 revoke all on function public.admin_user(uuid)                       from public, anon;

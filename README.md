@@ -169,6 +169,8 @@ Key design decisions:
 | `npm run dev` | Runs the app in a browser for development. |
 | `npm run build` | Type-checks and builds the web app into `dist/`. |
 | `npm run check:db` | Checks that the Supabase project in `.env` is set up correctly. |
+| `npm run prices:pull` | Copies every price on record in the database (put in on the admin website) into `data/historical-prices.csv`. `-- --check` only says what would change. |
+| `npm run refresh` | `prices:pull`, `prices`, `forecasts` and `seed`, in order: after a month's prices go in on the admin website. |
 | `npm run prices` | Rebuilds the bundled price history from `data/historical-prices.csv`. |
 | `npm run forecasts` | Trains and tests ARIMA and LSTM again and rewrites the forecasts. |
 | `npm run seed` | Rewrites `supabase/seed.sql` from the crop catalog, the price records and the forecasts. |
@@ -182,7 +184,7 @@ Key design decisions:
 | Home | `site/index.html` | What AniSense does, in English and Tagalog, with screenshots of the app (`site/assets/screens/`, in both languages). |
 | Privacy policy | `site/privacy-policy.html` | Generated from `src/data/privacyPolicy.ts` by `node scripts/build-privacy.mjs`. Never edit it by hand. |
 | Delete account | `site/delete-account.html` | Signs a person in and deletes their account without the app, as Google Play requires. Reads `site/config.js`. |
-| Admin | `site/admin.html` | For AniSense staff, at `/admin`, not linked from anywhere: the dashboard, members, listings, orders, and the Farmer of the Month / Year badges. Admin accounts are made in Supabase (docs/database-setup.md, "The admin website") and cannot sign in to the app. Reads `site/config.js`. |
+| Admin | `site/admin.html` | For AniSense staff, at `/admin`, not linked from anywhere: the dashboard, each month's crop prices, members, listings, orders, and the Farmer of the Month / Year badges. Admin accounts are made in Supabase (docs/database-setup.md, "The admin website") and cannot sign in to the app. Reads `site/config.js`. |
 
 `site/config.js` holds the Supabase URL, the publishable key, the support email address and the app's Google Play address. The home page's "Get it on Google Play" badge (Google's own, in `site/assets/google-play-badge.png`) is not a link until `playStoreUrl` is filled in.
 

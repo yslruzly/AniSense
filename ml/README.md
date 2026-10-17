@@ -22,16 +22,20 @@ The `ml/.venv` folder is large and is not committed to git.
 
 ## When a new month of prices comes in
 
-1. Add the month as a new row at the bottom of `data/historical-prices.csv`. Leave a cell empty if there is no record for that variety.
-2. Rebuild everything that is made from it:
+1. Put the month's prices in on the admin website (**Prices**). They reach phones from the database straight away; the forecasts wait for the next steps.
+2. On the computer, rebuild everything that is made from them:
 
 ```
-npm run prices        src/data/generated/priceHistory.ts   the history the app bundles
-npm run forecasts     src/data/generated/forecasts.json    and ml/REPORT.md
-npm run seed          supabase/seed.sql          the database's copy
+npm run refresh       all of the below, in order
+  npm run prices:pull   data/historical-prices.csv                from the database
+  npm run prices        src/data/generated/priceHistory.ts   the history the app bundles
+  npm run forecasts     src/data/generated/forecasts.json    and ml/REPORT.md
+  npm run seed          supabase/seed.sql                    the database's copy, with the new forecasts
 ```
 
 3. Run `supabase/seed.sql` in the Supabase SQL Editor, and build a new APK.
+
+`data/historical-prices.csv` is no longer typed into by hand: `prices:pull` writes it from the database. A variety needs 36 months of prices before it is trained; until then it is left out, and `ml/REPORT.md` says so.
 
 Training takes about a minute and gives the same numbers every time it is run on the same data.
 
