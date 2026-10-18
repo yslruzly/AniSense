@@ -41,13 +41,13 @@ export function Thumb({ item, className }: { item: PriceItem; className: string 
 }
 
 // ── Price story chart ─────────────────────────────────────────────────────────
-// The variety's own records for the year, solid, then the LSTM's forecast
-// for the months after, dashed. The chart starts at January of the year the
-// newest record is in, so with the forecast it reads as one calendar year:
-// January to September recorded, October to December expected. Early in a
-// year, before three of its months are on record, there is too little to
-// draw, so it shows the last 12 months instead. A variety with no records
-// says so and draws nothing: no line is better than an invented one.
+// The variety's own records for the year, solid, then the LSTM's long-term
+// forecast for the twelve months after, dashed. The chart starts at January
+// of the year the newest record is in: January to September recorded, then
+// October to next September expected. Early in a year, before three of its
+// months are on record, there is too little to draw, so it shows the last 12
+// months instead. A variety with no records says so and draws nothing: no
+// line is better than an invented one.
 function PriceStory({ item }: { item: PriceItem }) {
   const { t, lang } = useLang();
   const history = historyOf(item.id);
@@ -82,14 +82,17 @@ function PriceStory({ item }: { item: PriceItem }) {
   const dir = dirOf(end - past[ti]);
   const lastMonth = run ? run.next[run.next.length - 1].month : records[ti].month;
   // Every month drawn, recorded then forecast, and which of them get a label
-  // under the chart when it shows the year: the start of each quarter (Jan,
-  // Apr, Jul, Oct) and the last month. A quarter's label right beside the
-  // last one is dropped, so two never touch.
+  // under the chart when it shows the year. Up to about a year drawn: the
+  // start of each quarter (Jan, Apr, Jul, Oct) and the last month. With the
+  // year-long forecast: January, the newest record ("now"), half way to the
+  // end, and the last month. A label right beside the last one is dropped,
+  // so two never touch.
   const plotted = [...records.map(p => p.month), ...(run ? run.next.map(p => p.month) : [])];
   const lastPoint = plotted.length - 1;
-  const ticks = wholeYear
-    ? plotted.map((_, i) => i).filter(i => i === lastPoint || (Number(plotted[i].slice(5)) % 3 === 1 && lastPoint - i > 1))
-    : null;
+  const ticks = !wholeYear ? null
+    : plotted.length > 13
+      ? [0, ti, ti + Math.round((lastPoint - ti) / 2), lastPoint].filter((i, k, all) => all.indexOf(i) === k && (i === lastPoint || i === ti || lastPoint - i > 2))
+      : plotted.map((_, i) => i).filter(i => i === lastPoint || (Number(plotted[i].slice(5)) % 3 === 1 && lastPoint - i > 1));
 
   return (
     <div className="pr-story">
@@ -116,10 +119,11 @@ function PriceStory({ item }: { item: PriceItem }) {
       </svg>
       <div className="pr-axis" aria-hidden="true">
         {ticks ? (
-          // The year at a glance: Jan, Apr, Jul, Oct and the last month, each
-          // under its own point. No year on them: the title already says it.
+          // The year at a glance, each label under its own point. A month of
+          // the title's year has no year on it; one past it does.
           ticks.map(i => (
-            <span key={i} style={i === 0 ? { left: 0 } : i === lastPoint ? { right: 0 } : { left: `${(x(i) / W) * 100}%`, transform: "translateX(-50%)" }}>
+            <span key={i} className={run && i === ti && plotted.length > 13 ? "now" : undefined}
+              style={i === 0 ? { left: 0 } : i === lastPoint ? { right: 0 } : { left: `${(x(i) / W) * 100}%`, transform: "translateX(-50%)" }}>
               {monthLabel(plotted[i], lang, "short", !plotted[i].startsWith(year))}
             </span>
           ))
@@ -136,7 +140,7 @@ function PriceStory({ item }: { item: PriceItem }) {
       <div className="pr-facts">
         <div><span>{lowLabel}</span><strong>{peso(lo)}</strong></div>
         <div><span>{highLabel}</span><strong>{peso(hi)}</strong></div>
-        {run && <div><span>{monthLabel(lastMonth, lang, "long")}</span><strong className={run.reliable ? dir : ""}>{peso(end)}</strong></div>}
+        {run && <div><span>{monthLabel(lastMonth, lang, "long", !lastMonth.startsWith(year))}</span><strong className={run.reliable ? dir : ""}>{peso(end)}</strong></div>}
       </div>
       {/* Who made the forecast and how far off it has been, said plainly. */}
       {run && (

@@ -4,25 +4,31 @@ app shows.
     ml/.venv/Scripts/python ml/train_forecasts.py
 
 Reads   data/historical-prices.csv      monthly retail prices, one column per variety
-Writes  src/data/generated/forecasts.json       the next 3 months, per variety and model
+Writes  src/data/generated/forecasts.json       per variety: ARIMA's next 3 months, LSTM's next 12
         ml/REPORT.md                    how well each model did, for the study
 
-Two models per variety, the two the study names:
+Two models per variety, the two the study names, each for its own range:
 
-  ARIMA   statsmodels. The order (p, d, q) is picked by AIC on the training
+  ARIMA   short term, the next 3 months: the sell-or-wait advice.
+          statsmodels. The order (p, d, q) is picked by AIC on the training
           months; the likely range is the model's own 80% interval.
-  LSTM    PyTorch. One small LSTM layer that reads the last 6 months and
-          gives the next one; later months are forecast one step at a time.
-          The likely range comes from how far off it was on the test months.
+  LSTM    long term, the next 12 months: the year's price outlook.
+          PyTorch. One small LSTM layer that reads the last 6 months and
+          gives the next one; later months are forecast one step at a time,
+          each from the ones before. The likely range comes from how far off
+          it was on the test months, widening the further ahead it looks.
 
 Both work on the logarithm of the price, so a forecast can never go below
 zero and a 10% move counts the same at ₱50 as at ₱350.
 
 How they are tested: the last 12 months are held back. Each model is fitted
-on the months before them, then asked, month by month, for the next 3 using
-only what was known by then. Its answers are compared with what happened, and
-with the simplest forecast there is ("next month is the same as this one"),
-so the report says honestly whether a model beats doing nothing.
+on the months before them, then asked, month by month, for its own range
+ahead (ARIMA 3 months, LSTM 12) using only what was known by then. Its
+answers are compared with what happened, and with the simplest forecast there
+is ("the price stays where it is") over the same range, so the report says
+honestly whether a model beats doing nothing. The LSTM's 12 months are also
+scored in parts (1 to 3, 4 to 6, 7 to 12 months ahead), since a forecast
+gets less sure the further it looks.
 
 Everything here is free and runs on this computer. Nothing is sent anywhere.
 """
@@ -44,7 +50,8 @@ CSV = ROOT / "data" / "historical-prices.csv"
 OUT = ROOT / "src" / "data" / "generated" / "forecasts.json"
 REPORT = ROOT / "ml" / "REPORT.md"
 
-HORIZON = 3        # months ahead
+ARIMA_HORIZON = 3  # months ahead: short term, the sell-or-wait advice
+LSTM_HORIZON = 12  # months ahead: long term, the year's outlook
 TEST_MONTHS = 12   # held back for testing
 MIN_MONTHS = TEST_MONTHS + 24   # fewer on record (a variety just given prices on the admin website): no forecast yet
 WINDOW = 6         # months the LSTM reads
@@ -134,18 +141,33 @@ class Lstm:
 
 
 # ── Testing ───────────────────────────────────────────────────────────────────
-def rolling(y: np.ndarray, n_train: int, predict) -> np.ndarray:
+def rolling(y: np.ndarray, n_train: int, predict, horizon: int) -> np.ndarray:
     """For each month from the last training month on, forecast the next
-    HORIZON months from what was known then. Returns the log errors as rows of
-    (steps ahead, error), for the months that have happened."""
+    `horizon` months from what was known then. Returns rows of (steps ahead,
+    forecast, actual), as logs, for the months that have happened."""
     rows = []
     for origin in range(n_train - 1, len(y) - 1):
-        f = predict(y[:origin + 1], HORIZON)
-        for h in range(HORIZON):
+        f = predict(y[:origin + 1], horizon)
+        for h in range(horizon):
             target = origin + 1 + h
             if target < len(y):
                 rows.append((h + 1, f[h], y[target]))
     return np.array(rows)
+
+
+def within(rows: np.ndarray, first: int, last: int) -> np.ndarray:
+    """The test forecasts made `first` to `last` months ahead."""
+    return rows[(rows[:, 0] >= first) & (rows[:, 0] <= last)]
+
+
+def spread(rows: np.ndarray, horizon: int) -> np.ndarray:
+    """How far off, in logs, a forecast is likely to be at 1 to `horizon`
+    months ahead: the test misses, scaled by the square root of how far
+    ahead each was, as a price's uncertainty grows. Steady even where the
+    test had only one forecast that far ahead."""
+    h, miss = rows[:, 0], rows[:, 1] - rows[:, 2]
+    sigma = float(np.sqrt(np.mean(miss ** 2 / h)))
+    return sigma * np.sqrt(np.arange(1, horizon + 1))
 
 
 def scores(rows: np.ndarray) -> dict:
@@ -177,7 +199,7 @@ def points(months, mid, lo, hi) -> list[dict]:
 
 def main() -> None:
     df = pd.read_csv(CSV, dtype={"month": str}).set_index("month")
-    result = {"generated": date.today().isoformat(), "horizon": HORIZON, "testMonths": TEST_MONTHS, "crops": {}}
+    result = {"generated": date.today().isoformat(), "horizons": {"arima": ARIMA_HORIZON, "lstm": LSTM_HORIZON}, "testMonths": TEST_MONTHS, "crops": {}}
     report = []
     skipped = []
 
@@ -198,73 +220,91 @@ def main() -> None:
         y = np.log(price)
         n, n_train = len(y), len(y) - TEST_MONTHS
         last = s.index[-1]
-        ahead = next_months(last, HORIZON)
 
-        # Test: fitted on the training months only, never refitted.
+        # Test: fitted on the training months only, never refitted. Each model
+        # over its own range; "the price stays where it is" over both.
         order = arima_order(y[:n_train])
         arima_train = arima_fit(y[:n_train], order)
-        r_arima = rolling(y, n_train, lambda hist, k: arima_train.apply(hist, refit=False).forecast(k))
+        r_arima = rolling(y, n_train, lambda hist, k: arima_train.apply(hist, refit=False).forecast(k), ARIMA_HORIZON)
         lstm_train = Lstm(y[:n_train])
-        r_lstm = rolling(y, n_train, lstm_train.forecast)
-        r_naive = rolling(y, n_train, lambda hist, k: np.repeat(hist[-1], k))
+        r_lstm = rolling(y, n_train, lstm_train.forecast, LSTM_HORIZON)
+        r_naive = rolling(y, n_train, lambda hist, k: np.repeat(hist[-1], k), LSTM_HORIZON)
 
-        # The forecast the app shows: fitted again on every month on record.
-        fc = arima_fit(y, order).get_forecast(HORIZON)
+        # The forecasts the app shows: fitted again on every month on record.
+        fc = arima_fit(y, order).get_forecast(ARIMA_HORIZON)
         ci = fc.conf_int(alpha=0.2)
-        arima_points = points(ahead, fc.predicted_mean, ci[:, 0], ci[:, 1])
+        arima_points = points(next_months(last, ARIMA_HORIZON), fc.predicted_mean, ci[:, 0], ci[:, 1])
 
-        mid = Lstm(y).forecast(y, HORIZON)
-        # How far off the LSTM was on the test months, at 1, 2 and 3 months ahead.
-        sd = np.array([np.sqrt(np.mean((r_lstm[r_lstm[:, 0] == h, 1] - r_lstm[r_lstm[:, 0] == h, 2]) ** 2)) for h in range(1, HORIZON + 1)])
-        lstm_points = points(ahead, mid, mid - Z80 * sd, mid + Z80 * sd)
+        mid = Lstm(y).forecast(y, LSTM_HORIZON)
+        sd = spread(r_lstm, LSTM_HORIZON)
+        lstm_points = points(next_months(last, LSTM_HORIZON), mid, mid - Z80 * sd, mid + Z80 * sd)
 
-        a, l, nv = scores(r_arima), scores(r_lstm), scores(r_naive)
+        a, l = scores(r_arima), scores(r_lstm)
+        nv_short, nv_long = scores(within(r_naive, 1, ARIMA_HORIZON)), scores(r_naive)
+        # The LSTM over the near months too, to set it beside ARIMA, and in
+        # parts, since a year ahead is harder than next month.
+        bands = {f"{f}-{t}": scores(within(r_lstm, f, t)) for f, t in ((1, 3), (4, 6), (7, 12))}
         result["crops"][crop] = {
             "months": int(n), "from": s.index[0], "to": last, "filled": filled,
-            "arima": {"order": list(order), **a, "forecast": arima_points},
-            "lstm": {"window": WINDOW, **l, "forecast": lstm_points},
-            "naive": nv,
+            "arima": {"order": list(order), "horizon": ARIMA_HORIZON, **a, "forecast": arima_points},
+            "lstm": {"window": WINDOW, "horizon": LSTM_HORIZON, **l, "byHorizon": {k: v["mape"] for k, v in bands.items()}, "forecast": lstm_points},
+            "naive": {"short": nv_short, "long": nv_long},
         }
-        best = min((("ARIMA", a), ("LSTM", l), ("Same as last month", nv)), key=lambda kv: kv[1]["mape"])[0]
-        report.append((crop, n, s.index[0], last, filled, order, a, l, nv, best, arima_points, lstm_points))
-        print(f"{crop:18} {n} months  ARIMA{order} MAPE {a['mape']}%  LSTM MAPE {l['mape']}%  same-as-last-month MAPE {nv['mape']}%")
+        report.append(dict(crop=crop, n=n, start=s.index[0], last=last, filled=filled, order=order, a=a, l=l,
+                           nv_short=nv_short, nv_long=nv_long, bands=bands, ap=arima_points, lp=lstm_points))
+        print(f"{crop:18} {n} months  ARIMA{order} 1-{ARIMA_HORIZON} mo MAPE {a['mape']}% (same price {nv_short['mape']}%)  "
+              f"LSTM 1-{LSTM_HORIZON} mo MAPE {l['mape']}% (same price {nv_long['mape']}%)  by part {[v['mape'] for v in bands.values()]}")
 
     if not report:
         raise SystemExit(f"No variety has {MIN_MONTHS} months of prices on record, so there is nothing to forecast.")
     OUT.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
 
+    pct = lambda v: f"{v:.1f}%"
+    beats = lambda m, base: "✓" if m < base else ""
     lines = [
         "# Forecast models: test results",
         "",
         "Generated by `ml/train_forecasts.py` from `data/historical-prices.csv`. Do not edit by hand.",
         "",
+        f"- **Two models, two ranges.** ARIMA forecasts the short term, the next {ARIMA_HORIZON} months: the app's sell-or-wait advice. LSTM forecasts the long term, the next {LSTM_HORIZON} months: the app's price outlook.",
         f"- **Data:** monthly retail prices per kilo. The last {TEST_MONTHS} months of each variety were held back for testing.",
-        f"- **Test:** each model was fitted on the earlier months, then asked for the next {HORIZON} months at every step, using only what was known by then. The errors below are over all of those forecasts (1, 2 and {HORIZON} months ahead together).",
+        f"- **Test:** each model was fitted on the earlier months, then asked at every step for its own range ahead ({ARIMA_HORIZON} months for ARIMA, {LSTM_HORIZON} for LSTM), using only what was known by then. The errors are over all of those forecasts together.",
         "- **MAE:** the average miss, in pesos per kilo. **RMSE:** the same, with big misses counted more heavily. **MAPE:** the average miss as a percentage of the real price.",
-        "- **Same as last month** is the simplest forecast there is: next month's price equals this month's. A model is only useful where it beats that row.",
+        "- **Same price** is the simplest forecast there is: the price stays where it is. A model is only useful where it beats it over the same range (✓).",
         "",
-        "## Accuracy on the held-back months",
+        f"## Short term: ARIMA, 1 to {ARIMA_HORIZON} months ahead",
         "",
-        "| Variety | Months | Model | MAE (₱) | RMSE (₱) | MAPE | Best |",
+        "| Variety | Months on record | Model | MAE (₱) | RMSE (₱) | MAPE | Beats same price |",
         "|---|---|---|---|---|---|---|",
     ]
-    for crop, n, start, last, filled, order, a, l, nv, best, ap, lp in report:
-        name = NAMES.get(crop, crop)
-        lines.append(f"| {name} | {n} ({start} to {last}) | ARIMA{order} | {a['mae']:.2f} | {a['rmse']:.2f} | {a['mape']:.1f}% | {'✓' if best == 'ARIMA' else ''} |")
-        lines.append(f"| | | LSTM (reads {WINDOW} months) | {l['mae']:.2f} | {l['rmse']:.2f} | {l['mape']:.1f}% | {'✓' if best == 'LSTM' else ''} |")
-        lines.append(f"| | | Same as last month | {nv['mae']:.2f} | {nv['rmse']:.2f} | {nv['mape']:.1f}% | {'✓' if best == 'Same as last month' else ''} |")
-    lines += ["", f"## Forecast for the next {HORIZON} months", "", "Fitted on every month on record. The range is where the price is expected to land 8 times out of 10.", "",
-              "| Variety | Model | " + " | ".join(report[0][10][i]["month"] for i in range(HORIZON)) + " |", "|---|---|" + "---|" * HORIZON]
-    for crop, n, start, last, filled, order, a, l, nv, best, ap, lp in report:
-        name = NAMES.get(crop, crop)
-        cell = lambda p: f"₱{p['price']:.2f} (₱{p['lower']:.2f} to ₱{p['upper']:.2f})"
-        lines.append(f"| {name} | ARIMA | " + " | ".join(cell(p) for p in ap) + " |")
-        lines.append(f"| | LSTM | " + " | ".join(cell(p) for p in lp) + " |")
-    gaps = [(NAMES.get(c, c), f) for c, _, _, _, f, *_ in report if f]
+    for r in report:
+        name, a, nv, l3 = NAMES.get(r["crop"], r["crop"]), r["a"], r["nv_short"], r["bands"]["1-3"]
+        lines.append(f"| {name} | {r['n']} ({r['start']} to {r['last']}) | ARIMA{r['order']} | {a['mae']:.2f} | {a['rmse']:.2f} | {pct(a['mape'])} | {beats(a['mape'], nv['mape'])} |")
+        lines.append(f"| | | LSTM, the same {ARIMA_HORIZON} months | {l3['mae']:.2f} | {l3['rmse']:.2f} | {pct(l3['mape'])} | {beats(l3['mape'], nv['mape'])} |")
+        lines.append(f"| | | Same price | {nv['mae']:.2f} | {nv['rmse']:.2f} | {pct(nv['mape'])} | |")
+    lines += ["", f"## Long term: LSTM, 1 to {LSTM_HORIZON} months ahead", "",
+              f"| Variety | MAPE, all {LSTM_HORIZON} months | 1 to 3 ahead | 4 to 6 ahead | 7 to 12 ahead | Same price, all {LSTM_HORIZON} | Beats same price |",
+              "|---|---|---|---|---|---|---|"]
+    for r in report:
+        name, l, nv, b = NAMES.get(r["crop"], r["crop"]), r["l"], r["nv_long"], r["bands"]
+        lines.append(f"| {name} | {pct(l['mape'])} | {pct(b['1-3']['mape'])} | {pct(b['4-6']['mape'])} | {pct(b['7-12']['mape'])} | {pct(nv['mape'])} | {beats(l['mape'], nv['mape'])} |")
+    lines += ["", f"With {TEST_MONTHS} months held back, the test has {TEST_MONTHS} forecasts one month ahead but only one {LSTM_HORIZON} months ahead, so the far end of the LSTM's range is the least tested part of it."]
+
+    lines += ["", f"## ARIMA: the next {ARIMA_HORIZON} months", "", "Fitted on every month on record. The range is where the price is expected to land 8 times out of 10.", "",
+              "| Variety | " + " | ".join(p["month"] for p in report[0]["ap"]) + " |", "|---|" + "---|" * ARIMA_HORIZON]
+    cell = lambda p: f"₱{p['price']:.2f} (₱{p['lower']:.2f} to ₱{p['upper']:.2f})"
+    for r in report:
+        lines.append(f"| {NAMES.get(r['crop'], r['crop'])} | " + " | ".join(cell(p) for p in r["ap"]) + " |")
+    marks = [2, 5, 8, 11]   # 3, 6, 9 and 12 months ahead
+    lines += ["", f"## LSTM: the next {LSTM_HORIZON} months", "", "Every month is in the app; here every third. The range is where the price is expected to land 8 times out of 10.", "",
+              "| Variety | " + " | ".join(report[0]["lp"][k]["month"] for k in marks) + " |", "|---|" + "---|" * len(marks)]
+    for r in report:
+        lines.append(f"| {NAMES.get(r['crop'], r['crop'])} | " + " | ".join(cell(r["lp"][k]) for k in marks) + " |")
+    gaps = [(NAMES.get(r["crop"], r["crop"]), r["filled"]) for r in report if r["filled"]]
     lines += ["", "## Notes", ""]
     for name, f in gaps:
         lines.append(f"- {name} has no record for {', '.join(f)}. For training only, that month was bridged with a straight line between its neighbours.")
-    short = [(NAMES.get(c, c), n, start) for c, n, start, *_ in report if n < 60]
+    short = [(NAMES.get(r["crop"], r["crop"]), r["n"], r["start"]) for r in report if r["n"] < 60]
     for name, n, start in short:
         lines.append(f"- {name} has records only from {start} ({n} months), so its models learned from less and its results are less certain.")
     for crop, n in skipped:

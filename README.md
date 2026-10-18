@@ -44,7 +44,7 @@ The study behind the app focuses on four crops: rice, onion, garlic and calamans
 | Expenses and profit | Record costs by category and crop, record sales, and see estimated and final profit. |
 | Crop tracker | Log plantings and count down to harvest. |
 | Price alerts | Set a target price for a crop and get notified in the app when it is reached. |
-| Price outlook | A 3-month forecast chart (LSTM) and sell-now-or-wait advice (ARIMA) for the focus crops. Each forecast shows how far off the model was when tested; where that error is above 20%, the app says the forecast is too uncertain and gives no advice. |
+| Price outlook | A 12-month forecast chart (LSTM, long term) and sell-now-or-wait advice from a 3-month forecast (ARIMA, short term) for the focus crops. Each forecast shows how far off the model was when tested; where that error is above 20%, the app says the forecast is too uncertain and gives no advice. |
 | Weather | Current conditions, hourly and 5-day outlook, and the best window for fieldwork. See [Project status](#project-status). |
 | Achievements | Badges for joining, a first listing, a first sale, and Farmer of the Week, Month and Year. |
 
@@ -82,7 +82,7 @@ The app is feature-complete on the client. Some data sources are still sample da
 | Accounts, profiles, listings, orders, expenses, farm records, achievements | Live on Supabase once a project is configured. |
 | Demo mode | Without a `.env` file the app runs on built-in sample data, so a build without keys still works for demonstrations. |
 | Crop prices | **Real monthly retail prices** for the study's five varieties (`data/historical-prices.csv`, January 2021 to September 2026), bundled in the app and loaded into the database by the seed file. The other 18 varieties have **no price: they show ₱0**, and are left out of every comparison (up/down counts, Biggest moves, "below market", profit estimates, price alerts) until they have records. |
-| Price forecasts (ARIMA, LSTM) | Trained on the price records by `ml/train_forecasts.py` (statsmodels and PyTorch, run locally, free). Three months ahead for the five varieties. Tested on the last 12 months: rice is 3 to 9% off on average; onion and calamansi are 28 to 52% off. Results are in `ml/REPORT.md`, known limits in `ml/README.md`. The phone runs no model: it reads the finished forecasts. |
+| Price forecasts (ARIMA, LSTM) | Trained on the price records by `ml/train_forecasts.py` (statsmodels and PyTorch, run locally, free). ARIMA looks 3 months ahead (the advice), LSTM 12 months (the outlook), for the five varieties. Tested on the last 12 months: rice is 4 to 14% off on average; onion and calamansi are 28 to 53% off. Results are in `ml/REPORT.md`, known limits in `ml/README.md`. The phone runs no model: it reads the finished forecasts. |
 | Weather | **Live**, from [Open-Meteo](https://open-meteo.com/) (free, no key): now, the next hours and five days, for the farmer's own town (found by name, once) or, for a buyer, Nueva Ecija. Saved on the phone, so the last forecast shows offline, marked with when it was fetched. The rain warnings on Home and in the bell come from it. |
 | Order alerts for farmers | Live on Supabase: a buyer's order reaches the farmer's bell, and confirming it records what it sold for. Two invented orders stand in for the demo farmer. There are no push notifications yet. |
 | Orders, payments and ratings | Live on Supabase: the farmer confirms a line with what it sold for, the buyer records what they paid, and the buyer rates the farmer once both are done. |

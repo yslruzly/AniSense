@@ -3,11 +3,14 @@ import { CROP_GROUPS, RICE_VARIETIES } from "./crops";
 import { MonthPrice, historyOf } from "./priceRecords";
 
 // ─── Forecasts ────────────────────────────────────────────────────────────────
-// The next three months of each variety in the study, from the two models the
-// study names: ARIMA and LSTM. Both are trained on the price records by
-// ml/train_forecasts.py, which writes generated/forecasts.json; the app only reads
-// the result, so forecasts show with no signal. Signed in to a real account,
-// the database's forecasts replace the bundled ones (applyForecasts).
+// What each variety in the study is expected to do, from the two models the
+// study names, each for its own range: ARIMA the short term, the next 3
+// months (the sell-or-wait advice, lib/advice.ts), and LSTM the long term,
+// the next 12 months (the price outlook charts). Both are trained on the
+// price records by ml/train_forecasts.py, which writes
+// generated/forecasts.json; the app only reads the result, so forecasts show
+// with no signal. On the database, its forecasts replace the bundled ones
+// (applyForecasts), so retraining reaches phones without a new app.
 //
 // Each model also carries how it did when tested on the last 12 months
 // (`mape`: its average miss, as a percentage of the real price). Where that
@@ -21,6 +24,10 @@ interface ModelRun { mape: number; forecast: ForecastPoint[] }
 /** Above this average miss on the test months, a forecast is shown as
  *  uncertain and is not turned into advice. */
 export const RELIABLE_MAPE = 20;
+
+/** How far ahead each model looks, in months, as ml/train_forecasts.py
+ *  trained them: ARIMA the short term, LSTM the year ahead. */
+export const HORIZON = { arima: bundled.horizons.arima, lstm: bundled.horizons.lstm } as const;
 
 const runs: Record<string, Partial<Record<ModelName, ModelRun>>> = {};
 for (const [id, c] of Object.entries(bundled.crops as Record<string, Record<ModelName, ModelRun>>)) {

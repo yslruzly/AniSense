@@ -37,27 +37,48 @@ npm run refresh       all of the below, in order
 
 `data/historical-prices.csv` is no longer typed into by hand: `prices:pull` writes it from the database. A variety needs 36 months of prices before it is trained; until then it is left out, and `ml/REPORT.md` says so.
 
-Training takes about a minute and gives the same numbers every time it is run on the same data.
+Training takes about two minutes and gives the same numbers every time it is run on the same data.
+
+## Two models, two ranges
+
+| Model | Looks ahead | Used in the app for |
+|---|---|---|
+| ARIMA | 3 months (short term) | The sell-now-or-wait advice, on Home and Analytics |
+| LSTM | 12 months (long term) | The price outlook: the chart in each crop's price sheet and the Analytics forecast card |
+
+Set in `ml/train_forecasts.py` (`ARIMA_HORIZON`, `LSTM_HORIZON`). The app reads each model's range from the forecasts themselves, so changing them needs only a new training and `seed.sql`, not a new app.
 
 ## How the models are tested
 
-The last 12 months of each variety are held back. Each model is fitted on the months before them, then asked, month by month, for the next 3 months using only what was known by then. Its answers are compared with what really happened, and with the simplest forecast there is: "next month's price is the same as this month's".
+The last 12 months of each variety are held back. Each model is fitted on the months before them, then asked, month by month, for its own range ahead (ARIMA 3 months, LSTM 12) using only what was known by then. Its answers are compared with what really happened, and with the simplest forecast there is over the same range: "the price stays where it is". The LSTM's 12 months are also scored in parts (1 to 3, 4 to 6, 7 to 12 months ahead). With 12 months held back, there are 12 test forecasts one month ahead but only one 12 months ahead, so the far end is the least tested.
 
 The app uses that result. Each forecast is shown with how far off the model was on average, and where that is more than 20% (`RELIABLE_MAPE` in `src/data/forecast.ts`), the app says the forecast is too uncertain to call and gives no sell-or-wait advice from it.
 
 ## What the test showed
 
-Average miss as a percentage of the real price (MAPE), on the last 12 months. The full table is in `REPORT.md`.
+Average miss as a percentage of the real price (MAPE), on the last 12 months. The full tables are in `REPORT.md`.
 
-| Variety | ARIMA | LSTM | Same as last month |
-|---|---|---|---|
-| Special Rice | 4.5% | 3.1% | 4.1% |
-| Well Milled Rice | 7.4% | 8.8% | 8.5% |
-| Native Garlic | 4.8% | 10.7% | 3.1% |
-| Red Onion | 28.3% | 51.8% | 33.1% |
-| Calamansi | 48.9% | 36.9% | 31.2% |
+Short term, 1 to 3 months ahead:
 
-Rice is forecast well. For garlic and calamansi neither model beats "same as last month". Onion and calamansi are above the app's 20% line, so the app marks them as too uncertain to call.
+| Variety | ARIMA | Same price |
+|---|---|---|
+| Special Rice | 4.5% | 4.1% |
+| Well Milled Rice | 7.4% | 8.5% |
+| Native Garlic | 4.8% | 3.1% |
+| Red Onion | 28.3% | 33.1% |
+| Calamansi | 48.9% | 31.2% |
+
+Long term, 1 to 12 months ahead:
+
+| Variety | LSTM, all 12 | 1 to 3 ahead | 4 to 6 | 7 to 12 | Same price, all 12 |
+|---|---|---|---|---|---|
+| Special Rice | 4.7% | 3.1% | 5.8% | 5.9% | 7.5% |
+| Well Milled Rice | 14.3% | 8.8% | 17.9% | 18.9% | 12.6% |
+| Native Garlic | 12.6% | 10.7% | 13.7% | 14.3% | 7.7% |
+| Red Onion | 53.2% | 51.8% | 73.0% | 32.9% | 62.3% |
+| Calamansi | 34.1% | 36.9% | 34.1% | 29.5% | 43.9% |
+
+Special Rice is forecast well at both ranges, and its LSTM beats "same price" over the year. For Well Milled Rice and garlic, the LSTM's year ahead stays under the app's 20% line but does not beat "same price". Onion and calamansi are above 20% at both ranges, so the app marks them as too uncertain to call.
 
 ## Known limits
 

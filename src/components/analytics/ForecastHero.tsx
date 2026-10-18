@@ -3,13 +3,14 @@ import { ArrowUpRight, ArrowDownRight, ArrowRight, ShieldCheck, AlertTriangle } 
 import { growArtFor } from "../../data/growArt";
 import { CropIcon } from "../icons";
 import { translations } from "../../i18n";
-import { forecastForGroup } from "../../data/forecast";
+import { forecastForGroup, HORIZON } from "../../data/forecast";
 import { monthLabel } from "../../data/priceRecords";
 import { haptic } from "../../lib/platform";
 
 // ─── Price forecast ───────────────────────────────────────────────────────────
 // The page's centrepiece, answered in the order a farmer asks: which crop,
-// what is it now, what will it be in three months, and how sure are we.
+// what is it now, where is it headed over the next twelve months (the LSTM's
+// long-term outlook), and how sure are we.
 //
 // Built for a phone held in a field: a white card (it reads in sunlight, where
 // a dark one turns to a mirror), large figures, and nothing that has to be
@@ -24,8 +25,9 @@ import { haptic } from "../../lib/platform";
 //      months sit in their own tinted zone, labelled "Forecast", the rest
 //      "Past 12 months": no legend to match up. Touch and slide to read any
 //      month; the page still scrolls through it (touch-action: pan-y).
-//   4. The three forecast months as a list, each with its likely range, so
-//      no number needs the chart to be touched.
+//   4. The forecast months as a list, each with its likely range, so no
+//      number needs the chart to be touched: every third month (3, 6, 9 and
+//      12 months on), and all twelve a tap away.
 //   5. How sure: how far off the model was when tested on the last year.
 //      Where that is a lot (onion and calamansi swing by half in a month),
 //      the chip stops saying "expected to rise" and says it is too uncertain.
@@ -66,6 +68,8 @@ export function ForecastHero({ farmerCrops = [] }: { farmerCrops?: string[] }) {
   // First paint plays the full entrance; a switch replays a shorter one.
   const [switched, setSwitched] = useState(false);
   const [hover, setHover] = useState<number | null>(null);
+  // The list shows every third month; this opens all of them.
+  const [allMonths, setAllMonths] = useState(false);
   const svgRef = useRef<SVGSVGElement>(null);
 
   // None of their crops has a forecast yet: say so, in the same card.
@@ -74,7 +78,7 @@ export function ForecastHero({ farmerCrops = [] }: { farmerCrops?: string[] }) {
       <section className="fc" aria-labelledby="fc-t">
         <div className="fc-head">
           <h2 className="fc-t" id="fc-t">{t("ana_forecast")}</h2>
-          <span className="fc-s">{t("ana_next_months").replace("{n}", "3")}</span>
+          <span className="fc-s">{t("ana_next_months").replace("{n}", String(HORIZON.lstm))}</span>
         </div>
         <p className="fc-none">{t("ana_fc_none").replace("{crops}", listOf(farmerCrops))}</p>
       </section>
@@ -142,8 +146,13 @@ export function ForecastHero({ farmerCrops = [] }: { farmerCrops?: string[] }) {
 
   const hx = hover !== null ? x(hover) : 0;
   const tipLeft = hover !== null ? Math.min(82, Math.max(18, (hx / W) * 100)) : 0;
-  // Under the chart: every third month back from now, now itself, and the last.
-  const xLabels = [nowIdx - 9, nowIdx - 6, nowIdx - 3, nowIdx, n - 1].filter(i => i >= 0);
+  // Under the chart, a year back and a year on: the first month and the last
+  // (with their years, which take room), now, and half a year on. One too
+  // close to the last month to sit beside it is left out.
+  const xLabels = [0, nowIdx, nowIdx + 6, n - 1]
+    .filter((i, k, all) => i >= 0 && i <= n - 1 && all.indexOf(i) === k && (i === n - 1 || i === nowIdx || n - 1 - i > 2));
+  // The list: every third month on (3, 6, 9, 12), and the last, unless all are open.
+  const listed = allMonths ? run.next : run.next.filter((_, k) => (k + 1) % 3 === 0 || k === run.next.length - 1);
   const signed = (d: number) => `${d > 0.005 ? "+" : d < -0.005 ? "−" : "±"}${peso(Math.abs(d))}`;
   const past = `${line(0, nowIdx)} L${x(nowIdx).toFixed(1)} ${H - P.b} L${x(0).toFixed(1)} ${H - P.b} Z`;
 
@@ -179,7 +188,8 @@ export function ForecastHero({ farmerCrops = [] }: { farmerCrops?: string[] }) {
         </div>
         <ArrowRight size={22} strokeWidth={2.4} className="fc-to" aria-hidden="true" />
         <div className="fc-col">
-          <span className="fc-k">{month(n - 1, "long")}</span>
+          {/* With its year: a year on is often the same month name as now. */}
+          <span className="fc-k">{month(n - 1, "long", true)}</span>
           <span className="fc-v">{peso(next)}</span>
         </div>
       </div>
@@ -251,7 +261,7 @@ export function ForecastHero({ farmerCrops = [] }: { farmerCrops?: string[] }) {
           {xLabels.map(i => (
             <text key={i} x={x(i)} y={H - 9} className={`fc-axis${i === nowIdx ? " now" : ""}`}
               textAnchor={i === n - 1 ? "end" : i === xLabels[0] && x(i) - P.l < 20 ? "start" : "middle"}>
-              {i === nowIdx ? t("ana_now") : month(i)}
+              {i === nowIdx ? t("ana_now") : month(i, "short", i === 0 || i === n - 1)}
             </text>
           ))}
         </svg>
@@ -262,7 +272,7 @@ export function ForecastHero({ farmerCrops = [] }: { farmerCrops?: string[] }) {
       <div className="fc-months">
         <h3 className="fc-months-t">{t("ana_month_by_month")}</h3>
         <ul>
-          {run.next.map(p => (
+          {listed.map(p => (
             <li key={p.month} className="fc-mrow">
               <span className="fc-mrow-l">
                 <span className="fc-mrow-m">{monthLabel(p.month, "en", "long", true)}</span>
@@ -275,6 +285,12 @@ export function ForecastHero({ farmerCrops = [] }: { farmerCrops?: string[] }) {
             </li>
           ))}
         </ul>
+        {run.next.length > listed.length || allMonths ? (
+          <button type="button" className="fc-more" aria-expanded={allMonths}
+            onClick={() => { haptic.select(); setAllMonths(o => !o); }}>
+            {allMonths ? t("ana_fewer_months") : t("ana_all_months").replace("{n}", String(run.next.length))}
+          </button>
+        ) : null}
       </div>
 
       {/* How sure: the model's average miss on the last year of prices. */}

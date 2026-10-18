@@ -1286,6 +1286,15 @@ export const appCss = `
   .fc-mrow-r { font-size: 13.5px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
   .fc-mrow-p { font-family: var(--font-display); font-size: 17px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; white-space: nowrap; }
   .fc-mrow-d { font-size: 13.5px; font-weight: 600; color: var(--text-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  /* Every third month shows; this opens all twelve. A quiet full-width line,
+     tall enough to hit, under the last row. */
+  .fc-more {
+    display: block; width: 100%; min-height: 48px; margin-top: 2px; padding: 0 4px; border: 0; border-top: 1px solid var(--line);
+    background: none; color: var(--tanim); font: 700 15px var(--font-display); text-align: center; cursor: pointer;
+    transition: transform 140ms var(--ease-out); -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .fc-more:active { transform: scale(.97); }
+  .fc-more:focus-visible { outline: 3px solid var(--tanim); outline-offset: 2px; border-radius: 10px; }
 
   /* How sure: a shield when the forecast has a good record, a warning when not. */
   .fc-trust {

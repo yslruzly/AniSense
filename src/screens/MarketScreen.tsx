@@ -21,7 +21,7 @@ import basketBlink from "../assets/mascot-basket-blink.webp";
 //   2. What moved the most?      → a swipeable row of photo cards
 //   3. What's my crop at?        → search, filter, the full list
 // Every crop opens a sheet with its price story: this year's records from
-// January, and the next 3 months where the forecast has them
+// January, and the next 12 months where the LSTM forecast has them
 // (components/prices/PriceSheet.tsx, shared with Home).
 //
 // The list opens with AniSense's focus crops, the ones the study covers and

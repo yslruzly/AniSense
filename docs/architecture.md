@@ -87,7 +87,7 @@ The forecast models are not part of the running system. They are trained on a de
 | Users are 50 to 70 years old, on budget Android phones | One codebase tuned for one platform; large type and targets; no gestures required; English and Tagalog. |
 | Signal in the fields is unreliable | The app keeps a SQLite database on the phone: it opens with no signal, shows the lists it saved, and queues a farmer's records to sync later. Prices, their history and the forecasts ship inside the app. |
 | The study is in Nueva Ecija, but farmers elsewhere may join | Sign-up covers the whole country (island group, province, town, barangay); a farmer's form starts on Nueva Ecija. |
-| The price records are monthly | Every price move is worded "from the month before", never "today"; forecasts look three months ahead. |
+| The price records are monthly | Every price move is worded "from the month before", never "today"; ARIMA looks three months ahead, LSTM twelve. |
 | Forecasts can be badly wrong for volatile crops | Each forecast carries its tested error, and above a set error the app gives no sell-or-wait advice. |
 | A small team and no operations budget | A managed backend with no server to run; business rules in SQL, next to the data. |
 | The app must be demonstrable before the backend exists | A demo mode that runs entirely on bundled sample data. |
@@ -207,7 +207,7 @@ Every interface string is an entry in `src/i18n.tsx` with English and Tagalog te
 | `src/data/forecast.ts` | Reads the forecasts. Hides a forecast month once a real record exists for it, and marks a forecast as unreliable when its tested error is above `RELIABLE_MAPE` (20%). |
 
 - The catalog in `src/data/crops.ts` takes the price of the study's five varieties from the records as it loads. The other 18 varieties have no records and no price: they are ₱0, shown as ₱0, and `hasPrice` keeps them out of everything that compares or counts prices (the up/down counts, Biggest moves, "below market", the profit estimate, price alerts). The database holds no price row for them.
-- The LSTM forecast drives the price charts; the ARIMA forecast drives the sell-or-wait advice and the Home card.
+- The LSTM forecast (12 months, long term) drives the price charts; the ARIMA forecast (3 months, short term) drives the sell-or-wait advice and the Home card.
 - The phone runs no model and holds no machine-learning library.
 
 ### 3.8 Alerts

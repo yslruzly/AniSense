@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>AniSense · Crop prices, forecasts and a market for Nueva Ecija</title>
-<meta name="description" content="AniSense shows this month's crop prices in Nueva Ecija, forecasts for the next three months, and lets farmers sell straight to buyers. Free, in English and Tagalog, and it works offline.">
+<meta name="description" content="AniSense shows this month's crop prices in Nueva Ecija, forecasts up to a year ahead, and lets farmers sell straight to buyers. Free, in English and Tagalog, and it works offline.">
 <meta name="theme-color" content="#101814">
 <link rel="icon" href="assets/favicon.png" type="image/png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
@@ -615,7 +615,7 @@ main, .hdr-row { transition: opacity 140ms ease, filter 140ms ease; }
   <section class="hero ink" id="top">
     <div class="wrap hero-copy">
       <h1 class="rise" style="--i:1" data-i18n="hero_title">Know the price <span class="hl">before you sell.</span></h1>
-      <p class="hero-lead rise" style="--i:2" data-i18n="hero_lead">AniSense shows this month's crop prices, what the next three months may bring, and lets you sell straight to buyers.</p>
+      <p class="hero-lead rise" style="--i:2" data-i18n="hero_lead">AniSense shows this month's crop prices, where they may go over the next year, and lets you sell straight to buyers.</p>
       <div class="hero-cta rise" style="--i:3">
         <span class="play" data-play>
           <img src="assets/google-play-badge.png" width="564" height="167" alt="Get it on Google Play">
@@ -658,7 +658,7 @@ main, .hdr-row { transition: opacity 140ms ease, filter 140ms ease; }
       <div class="stats reveal">
         <div class="stat"><div class="stat-n">23</div><p data-i18n="stat_1">crop varieties, from rice to watermelon</p></div>
         <div class="stat"><div class="stat-n">320</div><p data-i18n="stat_2">monthly price records, back to 2021</p></div>
-        <div class="stat"><div class="stat-n">3<small data-i18n="stat_3_unit">months</small></div><p data-i18n="stat_3">of forecast, by ARIMA and LSTM</p></div>
+        <div class="stat"><div class="stat-n">12<small data-i18n="stat_3_unit">months</small></div><p data-i18n="stat_3">of forecast: ARIMA for the next 3, LSTM for the year</p></div>
         <div class="stat"><div class="stat-n">₱0</div><p data-i18n="stat_4">to use. No paid account, no ads.</p></div>
       </div>
     </div>
@@ -702,7 +702,7 @@ main, .hdr-row { transition: opacity 140ms ease, filter 140ms ease; }
       <div class="copy">
         <p class="tag reveal" data-i18n="fc_tag">Forecasts</p>
         <h2 class="reveal" style="--i:1" data-i18n="fc_h">Forecasts that say how sure they are</h2>
-        <p class="lead reveal" style="--i:2" data-i18n="fc_lead">Two models, ARIMA and LSTM, learned from monthly prices since 2021 and were tested on the last twelve months. AniSense shows how far off they were, and gives sell-or-wait advice only when that is 20% or less.</p>
+        <p class="lead reveal" style="--i:2" data-i18n="fc_lead">Two models learned from monthly prices since 2021 and were tested on the last twelve months: ARIMA looks three months ahead for the sell-or-wait advice, LSTM a year ahead for the price outlook. AniSense shows how far off they were, and gives advice only when that is 20% or less.</p>
         <div class="tested reveal" style="--i:3">
           <h3 data-i18n="fc_table">How far off the forecast was in testing</h3>
           <div class="trow"><span class="trow-name">Special Rice</span><span class="trow-err">4.5%</span><span class="verdict ok" data-i18n="fc_ok">Gives advice</span></div>
@@ -863,7 +863,7 @@ main, .hdr-row { transition: opacity 140ms ease, filter 140ms ease; }
         </button>
         <button type="button" class="how-step" role="tab" id="hf-t1" aria-selected="false" aria-controls="hf-panel" tabindex="-1">
           <span class="how-n" aria-hidden="true">2</span>
-          <span class="how-words"><b data-i18n="hf_2">Check the prices</b><span data-i18n="hf_2d">This month's price for each crop, and where it may go in the next three months.</span></span>
+          <span class="how-words"><b data-i18n="hf_2">Check the prices</b><span data-i18n="hf_2d">This month's price for each crop, and where it may go over the next year.</span></span>
           <span class="how-bar" aria-hidden="true"><i></i></span>
         </button>
         <button type="button" class="how-step" role="tab" id="hf-t2" aria-selected="false" aria-controls="hf-panel" tabindex="-1">
@@ -992,17 +992,17 @@ main, .hdr-row { transition: opacity 140ms ease, filter 140ms ease; }
       nav_features: "Features", nav_forecasts: "Forecasts", nav_how: "How it works", nav_faq: "FAQ",
       cta_get: "Get the app",
       hero_title: 'Know the price <span class="hl">before you sell.</span>',
-      hero_lead: "AniSense shows this month's crop prices, what the next three months may bring, and lets you sell straight to buyers.",
+      hero_lead: "AniSense shows this month's crop prices, where they may go over the next year, and lets you sell straight to buyers.",
       hero_how: "See what it does",
       stat_1: "crop varieties, from rice to watermelon", stat_2: "monthly price records, back to 2021",
-      stat_3_unit: "months", stat_3: "of forecast, by ARIMA and LSTM", stat_4: "to use. No paid account, no ads.",
+      stat_3_unit: "months", stat_3: "of forecast: ARIMA for the next 3, LSTM for the year", stat_4: "to use. No paid account, no ads.",
       prices_tag: "Prices", prices_h: "Prices you can plan around",
       prices_lead: "Monthly retail prices for Nueva Ecija, the newest first, with the crops you grow at the top.",
       prices_p1: "<b>See every move.</b> Each price says how far it went up or down from the month before.",
       prices_p2: "<b>Tap a crop for its year.</b> A chart of this year's prices, the low and the high, and where it may go next.",
       prices_p3: "<b>Name your price.</b> Set a price alert, and AniSense tells you when a crop reaches it.",
       fc_tag: "Forecasts", fc_h: "Forecasts that say how sure they are",
-      fc_lead: "Two models, ARIMA and LSTM, learned from monthly prices since 2021 and were tested on the last twelve months. AniSense shows how far off they were, and gives sell-or-wait advice only when that is 20% or less.",
+      fc_lead: "Two models learned from monthly prices since 2021 and were tested on the last twelve months: ARIMA looks three months ahead for the sell-or-wait advice, LSTM a year ahead for the price outlook. AniSense shows how far off they were, and gives advice only when that is 20% or less.",
       fc_table: "How far off the forecast was in testing", fc_ok: "Gives advice", fc_no: "Too uncertain: no advice",
       fc_note: "Average miss of the ARIMA model, which gives the advice. No model can see a sudden shock, like a typhoon or an import ban, coming: a forecast is a guide, not a promise.",
       mk_tag: "Market", mk_h: "Sell straight to the people who buy",
@@ -1026,7 +1026,7 @@ main, .hdr-row { transition: opacity 140ms ease, filter 140ms ease; }
       hf_tag: "How it works · Farmers", hf_h: "From your field to a fair price", hf_lead: "Three steps. Tap one to see it in the app.",
       hf_switch: "Buying? How it works for buyers",
       hf_1: "Create an account", hf_1d: "With your CP number or email. Choose Farmer.",
-      hf_2: "Check the prices", hf_2d: "This month's price for each crop, and where it may go in the next three months.",
+      hf_2: "Check the prices", hf_2d: "This month's price for each crop, and where it may go over the next year.",
       hf_3: "Post your harvest", hf_3d: "Choose the crop, then add a photo, the kilos and your price. Buyers call you.",
       hb_tag: "How it works · Buyers", hb_h: "Fresh from the farm, straight to you", hb_lead: "Three steps. Tap one to see it in the app.",
       hb_switch: "Farming? How it works for farmers",
@@ -1067,17 +1067,17 @@ main, .hdr-row { transition: opacity 140ms ease, filter 140ms ease; }
       nav_features: "Mga tampok", nav_forecasts: "Forecast", nav_how: "Paano gamitin", nav_faq: "Mga tanong",
       cta_get: "Kunin ang app",
       hero_title: 'Alamin ang presyo <span class="hl">bago ka magbenta.</span>',
-      hero_lead: "Ipinapakita ng AniSense ang presyo ng pananim ngayong buwan at ang posibleng presyo sa susunod na tatlong buwan. Puwede ka ring magbenta nang direkta sa mamimili.",
+      hero_lead: "Ipinapakita ng AniSense ang presyo ng pananim ngayong buwan at ang posibleng presyo sa susunod na isang taon. Puwede ka ring magbenta nang direkta sa mamimili.",
       hero_how: "Tingnan ang laman",
       stat_1: "uri ng pananim, mula palay hanggang pakwan", stat_2: "talaan ng presyo kada buwan, mula 2021",
-      stat_3_unit: "buwan", stat_3: "na forecast, gawa ng ARIMA at LSTM", stat_4: "ang bayad. Walang bayad na account, walang ads.",
+      stat_3_unit: "buwan", stat_3: "na forecast: ARIMA sa susunod na 3, LSTM sa buong taon", stat_4: "ang bayad. Walang bayad na account, walang ads.",
       prices_tag: "Presyo", prices_h: "Presyong mapagbabatayan",
       prices_lead: "Presyong tingi kada buwan sa Nueva Ecija, pinakabago muna, at nauuna ang mga pananim mo.",
       prices_p1: "<b>Kita ang bawat galaw.</b> Nakasaad kung magkano ang itinaas o ibinaba ng bawat presyo mula noong nakaraang buwan.",
       prices_p2: "<b>Pindutin ang pananim.</b> Lalabas ang tsart ng presyo ngayong taon, ang pinakamababa at pinakamataas, at ang posibleng susunod.",
       prices_p3: "<b>Itakda ang presyo mo.</b> Maglagay ng price alert, at sasabihan ka ng AniSense kapag naabot ito ng pananim.",
       fc_tag: "Forecast", fc_h: "Forecast na nagsasabi kung gaano ito kasigurado",
-      fc_lead: "Dalawang modelo, ARIMA at LSTM, ang natuto mula sa presyo kada buwan mula 2021, at sinubok sa huling labindalawang buwan. Ipinapakita ng AniSense kung gaano sila kalihis, at nagbibigay lang ng payo kung ibebenta o maghihintay kapag 20% pababa ito.",
+      fc_lead: "Dalawang modelo ang natuto mula sa presyo kada buwan mula 2021, at sinubok sa huling labindalawang buwan: ang ARIMA ay tumitingin nang tatlong buwan pasulong para sa payo kung ibebenta o maghihintay, at ang LSTM nang isang taon pasulong para sa takbo ng presyo. Ipinapakita ng AniSense kung gaano sila kalihis, at nagbibigay lang ng payo kapag 20% pababa ito.",
       fc_table: "Gaano kalihis ang forecast nang subukan", fc_ok: "May payo", fc_no: "Hindi sigurado: walang payo",
       fc_note: "Karaniwang lihis ng modelong ARIMA, na siyang nagbibigay ng payo. Walang modelong makakakita ng biglaang pangyayari, gaya ng bagyo o pagbabawal sa pag-angkat: gabay ang forecast, hindi pangako.",
       mk_tag: "Merkado", mk_h: "Magbenta nang direkta sa bumibili",
@@ -1101,7 +1101,7 @@ main, .hdr-row { transition: opacity 140ms ease, filter 140ms ease; }
       hf_tag: "Paano gamitin · Magsasaka", hf_h: "Mula sa bukid mo, sa patas na presyo", hf_lead: "Tatlong hakbang. Pindutin ang isa para makita ito sa app.",
       hf_switch: "Mamimili ka? Paano gamitin para sa mamimili",
       hf_1: "Gumawa ng account", hf_1d: "Gamit ang CP number o email mo. Piliin ang Magsasaka.",
-      hf_2: "Tingnan ang presyo", hf_2d: "Ang presyo ng bawat pananim ngayong buwan, at ang posibleng presyo sa susunod na tatlong buwan.",
+      hf_2: "Tingnan ang presyo", hf_2d: "Ang presyo ng bawat pananim ngayong buwan, at ang posibleng presyo sa susunod na isang taon.",
       hf_3: "I-post ang ani mo", hf_3d: "Piliin ang pananim, saka ilagay ang litrato, ilang kilo at ang presyo mo. Tatawagan ka ng mamimili.",
       hb_tag: "Paano gamitin · Mamimili", hb_h: "Sariwa mula sa bukid, diretso sa iyo", hb_lead: "Tatlong hakbang. Pindutin ang isa para makita ito sa app.",
       hb_switch: "Magsasaka ka? Paano gamitin para sa magsasaka",
