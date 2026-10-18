@@ -887,6 +887,18 @@ export const translations: Dict = {
     en: "Resetting a password is not ready yet. For help, email AniSense2026@gmail.com.",
     tl: "Hindi pa puwedeng palitan ang password. Para sa tulong, mag-email sa AniSense2026@gmail.com.",
   },
+  err_sms_signup_not_ready: {
+    en: "Signing up with a CP number is not ready yet. Use a Gmail address for now.",
+    tl: "Hindi pa puwedeng mag-sign up gamit ang CP number. Gumamit muna ng Gmail.",
+  },
+  err_signup_not_ready: {
+    en: "Creating an account is not ready yet. Try again later, or email AniSense2026@gmail.com.",
+    tl: "Hindi pa puwedeng gumawa ng account. Subukan ulit mamaya, o mag-email sa AniSense2026@gmail.com.",
+  },
+  err_signup_code_expired: {
+    en: "Your code has run out of time. Send a new code to finish creating your account.",
+    tl: "Nag-expire na ang code mo. Magpadala ng bagong code para matapos ang paggawa ng account.",
+  },
   auth_code_spam: { en: "Not in your inbox? Look in Spam.", tl: "Wala sa inbox? Tingnan sa Spam." },
   err_auth_generic: {
     en: "Something went wrong. Please try again.",

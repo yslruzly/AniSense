@@ -72,19 +72,24 @@ just paste and run it again.
 > table)? Run `supabase/reset.sql` first, then both files. It deletes all
 > AniSense data, so only do it before real people use the app.
 
-## Step 3: Turn off "Confirm email"
+## Step 3: Turn off public sign-up
 
-CP-number accounts have no inbox to confirm, and Supabase's free mailer only
-sends a couple of emails an hour.
+Every account is made by the `verify-code` function (Step 7), and only after
+the person has typed the 6-digit code it sent to their Gmail or CP number.
+Supabase's own public sign-up must be off: with it on, anyone could make an
+account in someone else's Gmail or number straight through Supabase's API,
+with the public key every APK carries, without any code.
 
-1. **Authentication → Sign In / Providers → Email**.
-2. Turn **Confirm email** OFF and save. Leave the Email provider itself ON,
-   because CP-number accounts use it underneath.
+1. **Authentication → Sign In / Providers**.
+2. Turn **Allow new users to sign up** OFF and save. Leave the **Email**
+   provider itself ON: signing in uses it, and CP-number accounts use it
+   underneath. (**Confirm email** no longer matters: the function confirms
+   each account it makes.)
 
 > A CP number is stored as a login address nobody types, such as
 > `639171234567@phone.anisense.app`, with the real number on the profile.
 > You'll see these under **Authentication → Users**; that's expected. The
-> number isn't verified by SMS, which is fine for a study. See "Later" below.
+> number is checked by a code sent by text (Step 8).
 
 ## Step 4: Put the keys in the app
 
@@ -112,7 +117,7 @@ checks that:
 
 - the key is the public one
 - the project answers
-- Confirm email is off
+- public sign-up is off (Step 3)
 - all 16 tables the app reads exist, section by section (the 17th, for codes,
   is checked through the function in Step 7)
 - every database function exists
@@ -136,19 +141,25 @@ cd android
 The APK is at `android/app/build/outputs/apk/debug/app-debug.apk`.
 **An APK built before `.env` existed still uses the sample data.**
 
-## Step 7 (optional): Real codes for Gmail, through Brevo
+## Step 7: Codes and accounts, through Brevo
 
-Without this step, the 6-digit codes on Create account and Forgot password
-are a demo: the app makes them itself and shows them on screen. With it,
-**Gmail** accounts get a real code by email, and Forgot password really
-changes a Gmail account's password. CP numbers keep the demo code for
-sign-up until Semaphore is connected (Step 8), and Forgot password for a CP
-number says it is not ready yet, rather than pretending.
+Needed: with public sign-up off (Step 3), this function is how every
+account is made. Without it, Create account says it is not ready; a build
+connected to the database never shows a code on screen, since that would
+let anyone claim any Gmail or number. With it, **Gmail** accounts get their
+code by email, the account is made once the code passes, and Forgot
+password really changes a Gmail account's password. CP numbers need
+Semaphore too (Step 8); until then Create account and Forgot password say
+CP numbers are not ready, and people use Gmail.
 
 How it works: a small server function in your Supabase project,
 `supabase/functions/verify-code/index.ts`, makes each code, keeps it on the
-server, emails it through Brevo, checks it, and sets the new password. The
-code never reaches the phone before the person types it.
+server as a keyed hash, emails it through Brevo and checks it. A passed code
+earns the phone a one-time token, with which the function then makes the
+account (or sets the new password). The code never reaches the phone before
+the person types it. Against guessing: 5 wrong tries a code, 5 codes an
+hour, and 10 codes and 10 wrong tries a day for each address or number.
+After a password reset, every phone signed in to the account is signed out.
 
 **A. Brevo (free, 300 emails a day)**
 
@@ -172,6 +183,11 @@ code never reaches the phone before the person types it.
    | `BREVO_API_KEY` | the key from A3 |
    | `BREVO_SENDER_EMAIL` | the sender from A2, e.g. `AniSense2026@gmail.com` |
    | `BREVO_SENDER_NAME` | `AniSense` |
+
+   Optional: `OTP_SECRET`, a long random string the codes are hashed with
+   (without it, the project's service key is used), and
+   `EMAIL_MAX_PER_HOUR`, the most code emails an hour to all addresses
+   together (200 if not set).
 3. **Edge Functions → Deploy a new function → Via Editor.** Name it exactly
    `verify-code`. Replace the sample code with all of
    `supabase/functions/verify-code/index.ts`, then **Deploy function**.
@@ -187,9 +203,13 @@ code never reaches the phone before the person types it.
 npm run check:db
 ```
 
-The last line should read `✓ Gmail codes: verify-code is deployed and sends
-through Brevo`. Then rebuild the APK (Step 6) and try Create account with
-your own Gmail: the code arrives by email, and no gold "Demo" note appears.
+The line should read `✓ Gmail codes: verify-code is deployed, sends through
+Brevo, and makes the accounts`. Then rebuild the APK (Step 6) and try Create
+account with your own Gmail: the code arrives by email, and no gold "Demo"
+note appears.
+
+**Changed the function?** Deploy it again: **Edge Functions → verify-code →
+Code**, paste all of `supabase/functions/verify-code/index.ts`, **Deploy**.
 
 If no email arrives:
 - Look in **Spam**. Mail sent through Brevo from a Gmail address is often
@@ -204,10 +224,11 @@ If no email arrives:
 
 ## Step 8 (optional): Real codes for CP numbers, through Semaphore
 
-Needs Step 7 first (the same function sends both). Without this step a CP
-number gets the on-screen demo code on Create account, and Forgot password
-says it is not ready. With it, the code arrives **by text**, and Forgot
-password really changes a CP-number account's password.
+Needs Step 7 first (the same function sends both). Without this step,
+Create account and Forgot password say CP numbers are not ready yet, and
+people use Gmail. With it, the code arrives **by text**, a CP-number account
+can be made once it passes, and Forgot password really changes a CP-number
+account's password.
 
 Each text costs credits, so the function guards them: one code every 30
 seconds and 5 an hour for each number, and at most 100 numbers an hour in
@@ -222,7 +243,7 @@ all (change it with the `SMS_MAX_PER_HOUR` secret).
 2. **Sender name (needed).** Under **Sender Names**, ask for `AniSense`
    (11 characters at most). Semaphore reviews it, which took about a week.
    Until one is approved, Semaphore refuses every text ("No active sender
-   name found"), so CP numbers keep the on-screen demo code until then.
+   name found"), so CP numbers can't get a code until then.
 3. **API key.** In the dashboard's account / API page, copy your API key.
    Keep it to yourself; it goes only into Supabase (B1), never into the app
    or GitHub.
@@ -371,10 +392,6 @@ set again under Authentication → Users → the account → **Reset password**.
 - Do NOT add the `READ_SMS` permission for code autofill; Google Play rejects it.
 
 ## Later (optional)
-
-**Verify Gmail sign-ups with a 6-digit code.** Step 7 above. Keep
-**Confirm email** OFF: the codes come from the verify-code function, not
-from Supabase's own confirmation email.
 
 **Verify CP numbers by SMS.** Step 8 above (Semaphore). It costs per text,
 so keep an eye on the credits in Semaphore's dashboard.

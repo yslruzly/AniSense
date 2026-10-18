@@ -364,9 +364,21 @@ export function AuthFormScreen({
       })
       .catch(err => {
         setLoading(false);
+        if (err instanceof CodeError) {
+          // The number or address and the password were answered earlier, so
+          // go back to that question and put the message under its field.
+          if (err.code === "ACCOUNT_EXISTS") { go("contact"); fail("contact", t(mode === "phone" ? "err_phone_taken" : "err_gmail_taken")); return; }
+          if (err.code === "WEAK_PASSWORD") { go("password"); fail("password", t("err_password_short")); return; }
+          // The code passed too long ago (or this phone lost its proof of
+          // it): send a new one, then finish.
+          if (err.code === "CODE_EXPIRED") {
+            setVerifiedFor(null); setSentTo(null); setVcode(""); setDemoCode("");
+            go("contact"); fail("contact", t("err_signup_code_expired")); return;
+          }
+          setError(t(err.code === "OFFLINE" ? "err_auth_offline" : err.code === "SIGNUP_NOT_READY" ? "err_signup_not_ready" : "err_auth_generic"));
+          return;
+        }
         const key = authErrorKey(err);
-        // Both of these were answered earlier, so go back to that question
-        // and put the message under the field that needs changing.
         if (key === "err_account_exists") { go("contact"); fail("contact", t(key)); return; }
         if (key === "err_password_short") { go("password"); fail("password", t(key)); return; }
         setError(t(key));
@@ -603,8 +615,9 @@ export function AuthFormScreen({
       else if (code === "ACCOUNT_EXISTS") fail("contact", t(mode === "phone" ? "err_phone_taken" : "err_gmail_taken"));
       else if (code === "NO_ACCOUNT") fail("contact", t(mode === "phone" ? "err_no_account_phone" : "err_no_account_gmail"));
       else if (code === "TOO_MANY_SENDS") fail("contact", t("err_code_sends"));
-      else if (code === "SMS_NOT_READY") fail("contact", t("err_sms_not_ready"));
+      else if (code === "SMS_NOT_READY") fail("contact", t(purpose === "signup" ? "err_sms_signup_not_ready" : "err_sms_not_ready"));
       else if (code === "RESET_NOT_READY") fail("contact", t("err_reset_not_ready"));
+      else if (code === "SIGNUP_NOT_READY") fail("contact", t("err_signup_not_ready"));
       else if (code === "OFFLINE") { setError(t("err_auth_offline")); setErrField(null); }
       else { setError(t("err_code_send_failed")); setErrField(null); }
     } finally {

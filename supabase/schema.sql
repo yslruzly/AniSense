@@ -880,12 +880,19 @@ create policy "farmers delete own listing photos"
 
 
 -- ═══ 9. CODES ════════════════════════════════════════════════════════════════
--- The 6-digit codes that prove a Gmail is the person's own (creating an
--- account, resetting a password). Written and read only by the verify-code
--- Edge Function (supabase/functions/verify-code), which runs on the server
--- with the service key. Row level security is on and there are no policies,
--- so the app, signed in or not, can neither read nor write a single row:
--- nobody can look a code up. Codes are stored as hashes.
+-- The 6-digit codes that prove a Gmail or a CP number is the person's own
+-- (creating an account, resetting a password). Written and read only by the
+-- verify-code Edge Function (supabase/functions/verify-code), which runs on
+-- the server with the service key. Row level security is on and there are no
+-- policies, so the app, signed in or not, can neither read nor write a single
+-- row: nobody can look a code up. Codes are stored as keyed hashes (HMAC with
+-- a secret only the function has), so even a copy of this table gives none
+-- of them away.
+--
+-- An account is made only by that function, and only with the one-time
+-- token a passed sign-up code earns: public sign-up is switched off in
+-- Supabase (docs/database-setup.md, Step 3), so nobody can make an account
+-- in someone else's Gmail or number by going round the code.
 create table if not exists public.verification_codes (
   key               text primary key,                    -- 'signup:gmail:juan@gmail.com'
   code_hash         text not null,                       -- sha-256, or 'used' once it has passed
@@ -894,9 +901,15 @@ create table if not exists public.verification_codes (
   sent_at           timestamptz not null default now(),  -- for the 30-second wait between codes
   hour_started      timestamptz not null default now(),  -- for at most 5 codes an hour
   sends_this_hour   int not null default 1,
-  token_hash        text,                                -- after a reset code passes: the one-time
-  token_expires_at  timestamptz                          -- right to set the new password
+  token_hash        text,                                -- after a code passes: the one-time right to
+  token_expires_at  timestamptz                          -- make the account, or set the new password
 );
+-- A day's ceiling for each address or number, against guessing: at most 10
+-- codes sent and 10 wrong tries in 24 hours, whatever new codes are asked
+-- for. Added to an existing database by running this file again.
+alter table public.verification_codes add column if not exists day_started timestamptz;
+alter table public.verification_codes add column if not exists sends_today int not null default 0;
+alter table public.verification_codes add column if not exists fails_today int not null default 0;
 alter table public.verification_codes enable row level security;
 revoke all on public.verification_codes from anon, authenticated;
 grant select, insert, update, delete on public.verification_codes to service_role;
@@ -910,6 +923,25 @@ returns uuid language sql stable security definer set search_path = '' as $$
 $$;
 revoke all on function public.auth_user_id_by_email(text) from public, anon, authenticated;
 grant execute on function public.auth_user_id_by_email(text) to service_role;
+
+-- Signs an account out everywhere: every phone's session ends, so none can
+-- renew it (what is already open lasts at most the hour its access token
+-- has left). After a password reset, all of them; after Change password on
+-- Profile, all but the phone that changed it (p_keep, its session). So a
+-- password changed because someone else got in also puts them out. Only the
+-- verify-code function may call it.
+create or replace function public.end_sessions(p_user uuid, p_keep uuid default null)
+returns int language plpgsql security definer set search_path = '' as $$
+declare
+  n int;
+begin
+  delete from auth.sessions s where s.user_id = p_user and (p_keep is null or s.id <> p_keep);
+  get diagnostics n = row_count;
+  return n;
+end;
+$$;
+revoke all on function public.end_sessions(uuid, uuid) from public, anon, authenticated;
+grant execute on function public.end_sessions(uuid, uuid) to service_role;
 
 
 -- ═══ 10. PASSWORDS: no password used twice ═══════════════════════════════════

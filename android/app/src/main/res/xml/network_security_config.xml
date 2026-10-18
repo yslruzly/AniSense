@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  How AniSense may talk to the network, against anyone in the middle (a fake
+  Wi-Fi hotspot, a tampered router):
+
+  · cleartextTrafficPermitted="false": every connection is encrypted (HTTPS).
+    Plain HTTP is refused outright, so nothing - a sign-in, a code, a
+    session - can ever be read or changed on the way.
+  · trust-anchors system only: a server's certificate is checked against the
+    certificate authorities built into Android, never one a user or another
+    app installed on the phone. That is what an attacker would install to
+    read the traffic.
+
+  Android already does both for an app like this one (targetSdk 36); this
+  file makes it explicit, so no later change or library can loosen it.
+  Used by AndroidManifest.xml (android:networkSecurityConfig).
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

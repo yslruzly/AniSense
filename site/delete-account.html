@@ -3,6 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- This page takes a password, so it runs only its own code: scripts from
+       this site, connections only to the Supabase project. If the project
+       ever moves to a custom domain, add it to connect-src. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://*.supabase.co; base-uri 'none'; object-src 'none'; form-action 'self'">
   <title>Delete your AniSense account</title>
   <meta name="description" content="How to delete your AniSense account and the data that goes with it.">
   <meta name="robots" content="noindex">
@@ -231,7 +235,8 @@
   // ── The web deletion, once the project is configured ────────────────────────
   if (cfg.supabaseUrl && cfg.supabaseKey) {
     $("web").hidden = false;
-    const { createClient } = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
+    // The library is served from this site (npm run site:vendor), never a CDN.
+    const { createClient } = await import("./vendor/supabase-js.mjs");
     // Nothing is kept in the browser: the sign-in lives only as long as the page.
     const db = createClient(cfg.supabaseUrl, cfg.supabaseKey, { auth: { persistSession: false, autoRefreshToken: false } });
 

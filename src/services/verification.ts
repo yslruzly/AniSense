@@ -9,30 +9,33 @@
 //   · ON THE DATABASE: real. The verify-code Edge Function
 //     (supabase/functions/verify-code) makes the code, keeps it on the server,
 //     emails it to a Gmail through Brevo or texts it to a CP number through
-//     Semaphore, checks it, and after a reset sets the new password. The
-//     phone never sees a code before the person types it.
+//     Semaphore, and checks it. A passed code earns a one-time token, kept
+//     here in memory, with which the function then makes the account
+//     (createAccountWithCode) or sets the new password. The phone never sees
+//     a code before the person types it, and cannot make an account without
+//     one: public sign-up is off on the database.
 //
 //   · A BUILD WITHOUT A DATABASE (no .env): a mockup made here, on the
 //     phone, and shown on screen in a "Demo" note.
 //
-//   · And while a sender is not set up yet (the function not deployed, Step 7
+//   · While a sender is not set up yet (the function not deployed, Step 7
 //     of docs/database-setup.md; or no Semaphore key, Step 8, for a CP
-//     number): sign-up falls back to the demo code, so nobody is shut out,
-//     and a reset is refused rather than faked: saying "your password has
-//     been changed" when it was not would lock the farmer out. npm run
-//     check:db says which sender is missing.
+//     number), sign-up and reset with it are refused, never faked: a code
+//     shown on screen would let anyone claim any number. npm run check:db
+//     says which sender is missing.
 
 import type { ContactMode } from "./auth";
 import { supabase, isSupabaseConfigured } from "../lib/supabase";
 
 export type CodePurpose = "signup" | "reset";
 
-/** Why a code could not be sent or a password saved, for the screen to say.
- *  ACCOUNT_EXISTS · NO_ACCOUNT · WAIT · TOO_MANY_SENDS · SMS_NOT_READY ·
- *  RESET_NOT_READY · OFFLINE · WEAK_PASSWORD · SEND_FAILED · USED_BEFORE (a
- *  password the account has had before) · and for Change password:
- *  WRONG_PASSWORD · SAME_AS_CURRENT · TOO_MANY_TRIES (wait = minutes) ·
- *  NOT_SIGNED_IN · NOT_DEPLOYED */
+/** Why a code could not be sent, an account made or a password saved, for
+ *  the screen to say. ACCOUNT_EXISTS · NO_ACCOUNT · WAIT · TOO_MANY_SENDS ·
+ *  SMS_NOT_READY · RESET_NOT_READY · SIGNUP_NOT_READY · CODE_EXPIRED (the
+ *  passed code's time ran out: send a new one) · OFFLINE · WEAK_PASSWORD ·
+ *  SEND_FAILED · USED_BEFORE (a password the account has had before) · and
+ *  for Change password: WRONG_PASSWORD · SAME_AS_CURRENT · TOO_MANY_TRIES
+ *  (wait = minutes) · NOT_SIGNED_IN · NOT_DEPLOYED */
 export class CodeError extends Error {
   constructor(public code: string, public wait?: number) { super(code); this.name = "CodeError"; }
 }
@@ -63,12 +66,10 @@ async function callServer(body: Record<string, unknown>): Promise<Record<string,
   return (data ?? {}) as Record<string, unknown>;
 }
 
-// After a reset code passes, the server hands back a one-time right to set
-// the new password. Kept in memory only, for the next page.
-const resetTokens = new Map<string, string>();
-// Sign-ups that fell back to the demo because their sender is missing (the
-// function, or Semaphore for a CP number): their code is checked here.
-const demoKeys = new Set<string>();
+// After a code passes, the server hands back a one-time right to make the
+// account (sign-up) or set the new password (reset). Kept in memory only,
+// for the pages that follow.
+const tokens = new Map<string, string>();
 
 // ── The demo, on the phone ──
 type Pending = { code: string; expires: number; tries: number };
@@ -91,15 +92,14 @@ export async function sendCode(purpose: CodePurpose, mode: ContactMode, contact:
     try {
       const r = await callServer({ action: "send", purpose, mode, contact });
       if (!r.ok) throw new CodeError(String(r.error ?? "SEND_FAILED"), typeof r.wait === "number" ? r.wait : undefined);
-      demoKeys.delete(key);
+      tokens.delete(key);
       return {};
     } catch (err) {
-      // No sender for this yet: the function is missing, or (for a CP
-      // number) Semaphore has no key. Anything else is a real refusal.
-      const missing = err instanceof CodeError && (err.code === "NOT_DEPLOYED" || (mode === "phone" && err.code === "SMS_NOT_READY"));
-      if (!missing) throw err;
-      if (purpose === "reset") throw new CodeError(mode === "phone" ? "SMS_NOT_READY" : "RESET_NOT_READY");
-      demoKeys.add(key);   // sign-up: the demo below, for now
+      // No sender for this yet: the function is missing. Refused, never
+      // faked with a code on screen (SMS_NOT_READY, for a CP number with no
+      // Semaphore key, comes through as it is).
+      if (err instanceof CodeError && err.code === "NOT_DEPLOYED") throw new CodeError(purpose === "reset" ? "RESET_NOT_READY" : "SIGNUP_NOT_READY");
+      throw err;
     }
   }
   const code = sixDigits();
@@ -114,10 +114,10 @@ export type CodeCheck = "ok" | "wrong" | "expired" | "too-many";
 /** Whether a typed code is the one sent to this number or address. */
 export async function checkCode(purpose: CodePurpose, mode: ContactMode, contact: string, code: string): Promise<CodeCheck> {
   const key = codeKey(purpose, mode, contact);
-  if (onServer() && !demoKeys.has(key)) {
+  if (onServer()) {
     const r = await callServer({ action: "check", purpose, mode, contact, code });
     const result = (["ok", "wrong", "expired", "too-many"].includes(String(r.result)) ? r.result : "expired") as CodeCheck;
-    if (result === "ok" && typeof r.token === "string") resetTokens.set(key, r.token);
+    if (result === "ok" && typeof r.token === "string") tokens.set(key, r.token);
     return result;
   }
   const p = pending.get(key);
@@ -135,11 +135,11 @@ export async function checkCode(purpose: CodePurpose, mode: ContactMode, contact
 export async function saveNewPassword(mode: ContactMode, contact: string, password: string): Promise<"ok" | "expired"> {
   const key = codeKey("reset", mode, contact);
   if (onServer()) {
-    const token = resetTokens.get(key);
+    const token = tokens.get(key);
     if (!token) return "expired";
     const r = await callServer({ action: "reset-password", mode, contact, token, password });
-    if (r.ok) { resetTokens.delete(key); return "ok"; }
-    if (r.error === "EXPIRED" || r.error === "NO_ACCOUNT") { resetTokens.delete(key); return "expired"; }
+    if (r.ok) { tokens.delete(key); return "ok"; }
+    if (r.error === "EXPIRED" || r.error === "NO_ACCOUNT") { tokens.delete(key); return "expired"; }
     throw new CodeError(String(r.error ?? "SEND_FAILED"));
   }
   const until = resetPassed.get(key);
@@ -150,6 +150,38 @@ export async function saveNewPassword(mode: ContactMode, contact: string, passwo
   resetPassed.delete(key);
   await demoRemember(password);
   return "ok";
+}
+
+/** What the sign-up form asked, for the new account's profile. */
+export interface NewProfile {
+  full_name: string;
+  /** Always set by the form; the server turns away an account without one. */
+  role: "farmer" | "buyer" | null;
+  location: string;
+  /** "+639171234567", or null. */
+  phone: string | null;
+  years_farming: number | null;
+  crops: string[];
+}
+
+/**
+ * Makes the account on the server, once the sign-up code for this number or
+ * address has passed on this phone: the verify-code function checks the
+ * one-time token that code earned, then makes the account. Throws a
+ * CodeError: CODE_EXPIRED (no token, or its time ran out: a new code is
+ * needed), ACCOUNT_EXISTS, WEAK_PASSWORD, OFFLINE, SIGNUP_NOT_READY, or
+ * SEND_FAILED for anything else.
+ */
+export async function createAccountWithCode(mode: ContactMode, contact: string, password: string, profile: NewProfile): Promise<void> {
+  const key = codeKey("signup", mode, contact);
+  const token = tokens.get(key);
+  if (!token) throw new CodeError("CODE_EXPIRED");
+  let r: Record<string, unknown>;
+  try { r = await callServer({ action: "create-account", mode, contact, token, password, profile }); }
+  catch (err) { throw err instanceof CodeError && err.code === "NOT_DEPLOYED" ? new CodeError("SIGNUP_NOT_READY") : err; }
+  if (r.ok) { tokens.delete(key); return; }
+  if (r.error === "EXPIRED") { tokens.delete(key); throw new CodeError("CODE_EXPIRED"); }
+  throw new CodeError(String(r.error ?? "SEND_FAILED"));
 }
 
 /**

@@ -65,6 +65,7 @@ drop function if exists
   public.delete_my_account(),
   public.catalog_status(),
   public.auth_user_id_by_email(text),
+  public.end_sessions(uuid, uuid),
   public.next_member_no(timestamptz),
   public.set_member_no(),
   public.remember_old_password(),

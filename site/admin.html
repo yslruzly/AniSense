@@ -6,10 +6,11 @@
   <title>AniSense Admin</title>
   <meta name="robots" content="noindex, nofollow">
   <meta name="referrer" content="no-referrer">
-  <!-- Only AniSense's own files, the Supabase project and the supabase-js
-       library may load here. If the project ever moves to a custom domain,
-       add it to img-src and connect-src. -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://*.supabase.co; connect-src https://*.supabase.co wss://*.supabase.co; base-uri 'none'; object-src 'none'">
+  <!-- Only AniSense's own files and the Supabase project may load here: the
+       supabase-js library is served from this site (npm run site:vendor),
+       never a CDN. If the project ever moves to a custom domain, add it to
+       img-src and connect-src. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://*.supabase.co; connect-src https://*.supabase.co wss://*.supabase.co; base-uri 'none'; object-src 'none'">
   <link rel="icon" href="assets/favicon.png" type="image/png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
@@ -517,7 +518,7 @@
 
 <script src="config.js"></script>
 <script type="module">
-  const SUPABASE_JS = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.2/+esm";
+  const SUPABASE_JS = "./vendor/supabase-js.mjs";   // served from this site, never a CDN
   const IDLE_MINUTES = 30;          // signed out after this long without use: members' details stay private
   const PAGE = 50;                  // rows a page
   const BADGES = [

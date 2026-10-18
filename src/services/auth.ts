@@ -8,6 +8,7 @@ import { Preferences } from "@capacitor/preferences";
 import { supabase, SESSION_KEY } from "../lib/supabase";
 import { kvGet, kvSet } from "../lib/localdb";
 import { PHOTO_BUCKET, storedPhoto, photoPath } from "./photos";
+import { createAccountWithCode } from "./verification";
 import { UserRole, FarmerProfile } from "../types";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -66,35 +67,28 @@ export interface NewAccount {
 /**
  * Creates the account with everything the form asked, in one call: the
  * database trigger copies it into the profile row, so there is no moment
- * where an account exists without a name or a town.
+ * where an account exists without a name or a town. Then signs in to it.
  *
- * `session` is null when the project still has email confirmation on: the
- * caller then asks for the 6-digit code and finishes with verifyEmailCode().
+ * The account is made by the verify-code function, and only with the
+ * one-time token this phone's passed sign-up code earned
+ * (createAccountWithCode): public sign-up is off on the database, so the
+ * code cannot be gone round. Throws a CodeError for what stops it
+ * (CODE_EXPIRED, ACCOUNT_EXISTS, WEAK_PASSWORD, OFFLINE, …), or the sign-in's
+ * own error.
  */
 export async function createAccount(a: NewAccount): Promise<{ session: Session | null; email: string }> {
   const email = loginEmail(a.mode, a.contact);
   const phone = a.phone ? toE164Phone(a.phone) : a.mode === "phone" ? toE164Phone(a.contact) : null;
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password: a.password,
-    options: {
-      data: {
-        full_name: a.name.trim(),
-        role: a.role,
-        location: a.location,
-        phone,
-        years_farming: a.years ?? null,
-        crops: a.crops,
-      },
-    },
+  await createAccountWithCode(a.mode, a.contact, a.password, {
+    full_name: a.name.trim(),
+    role: a.role,
+    location: a.location,
+    phone,
+    years_farming: a.years ?? null,
+    crops: a.crops,
   });
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password: a.password });
   if (error) throw error;
-  // With confirmation off, signing up an address that already exists returns
-  // a user with no identities instead of an error. Say so, rather than
-  // pretending a second account was made.
-  if (data.user && data.user.identities && data.user.identities.length === 0) {
-    throw new Error("User already registered");
-  }
   return { session: data.session, email };
 }
 

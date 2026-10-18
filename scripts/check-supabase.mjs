@@ -5,7 +5,8 @@
 //
 //   ✓ the key is the public one (never the secret / service_role key)
 //   ✓ the project answers
-//   ✓ "Confirm email" is OFF (CP-number accounts have no inbox)
+//   ✓ public sign-up is OFF: accounts are made only by verify-code, after
+//     a code passes, so nobody can sign up in someone else's number
 //   ✓ all 16 tables and the price view exist (schema.sql ran)
 //   ✓ every database function exists (checkout, farm-record sync, crops,
 //     account deletion)
@@ -15,8 +16,9 @@
 //   ✓ member numbers: profiles carry the database's member_no
 //   ✓ orders after the call: confirm with what it sold for, record what was
 //     paid, rate the farmer (the latest schema.sql ran)
-//   ✓ (optional) real Gmail codes: the verify-code Edge Function is deployed,
-//     open to the app, has its Brevo key, and its table exists
+//   ✓ real Gmail codes: the verify-code Edge Function is deployed (the
+//     version that makes the accounts), open to the app, has its Brevo key,
+//     and its table exists
 //   ✓ (optional) real CP-number codes: verify-code has its Semaphore key
 
 import { readFileSync, existsSync } from "node:fs";
@@ -77,10 +79,12 @@ if (settings.status !== 200) {
 }
 ok("Project is reachable");
 if (settings.body?.external?.email === false) bad("Email sign-in is turned off", "Authentication → Sign In / Providers → Email: turn it ON.");
-if (settings.body?.mailer_autoconfirm) ok("Confirm email is OFF: people sign up and land on Home");
-else bad("Confirm email is ON: CP-number accounts can't finish signing up",
-  "Authentication → Sign In / Providers → Email: turn “Confirm email” OFF. (docs/database-setup.md, Step 4)");
-if (settings.body?.disable_signup) bad("New sign-ups are disabled", "Authentication → Sign In / Providers: allow new users to sign up.");
+// Accounts are made by the verify-code function, after a code passes. With
+// public sign-up on, anyone could make one straight through the API with the
+// app's public key, in any Gmail or CP number, without a code.
+if (settings.body?.disable_signup) ok("Public sign-up is OFF: an account is made only after its code passes");
+else bad("Public sign-up is ON: anyone can make an account in someone else's Gmail or number, without a code",
+  "Authentication → Sign In / Providers → turn OFF “Allow new users to sign up” → Save. (docs/database-setup.md, Step 3)");
 
 // 2. Tables, section by section. With no one signed in, row security returns
 //    an empty list: that still proves the table is there. crop_prices is
@@ -124,6 +128,7 @@ const FUNCTIONS = {
   replace_my_price_alerts: { items: [] },
   replace_my_harvest_plans: { plans: {} },
   delete_my_account: {},
+  end_sessions: { p_user: "00000000-0000-0000-0000-000000000000" },
 };
 const noFn = [];
 for (const [fn, args] of Object.entries(FUNCTIONS)) {
@@ -198,26 +203,28 @@ try { photoMsg = JSON.stringify(await photo.json()); } catch { /* empty */ }
 if (/bucket not found/i.test(photoMsg)) bad("Storage bucket listing-photos is missing", "Run the latest supabase/schema.sql again (safe to re-run).");
 else ok("Storage bucket listing-photos");
 
-// 5. Real Gmail and CP-number codes (optional). Without the function the app keeps its
-//    on-screen demo code, so this is a note, not a failure, until it is
-//    deployed; once it is, anything half-done is a failure.
+// 5. Real Gmail and CP-number codes. The function also makes every account,
+//    so without it (or with an older one) nobody can sign up: a failure.
+//    Texts to CP numbers stay optional: without them, people sign up by Gmail.
 const note = (m, fix) => { console.log(`  ! ${m}`); if (fix) console.log(`      → ${fix}`); };
 const fn = await fetch(`${url}/functions/v1/verify-code`, {
   method: "POST", headers: { ...headers, "Content-Type": "application/json" }, body: JSON.stringify({ action: "ping" }),
 }).catch(() => null);
 let fb = null;
 try { fb = fn ? await fn.json() : null; } catch { /* empty */ }
-if (!fn || fn.status === 404) note("Gmail codes are still the on-screen demo: the verify-code function isn't deployed", "Optional. docs/database-setup.md, Step 7 (Brevo).");
+if (!fn || fn.status === 404) bad("The verify-code function isn't deployed: nobody can create an account", "docs/database-setup.md, Step 7 (Brevo).");
 else if (fn.status === 401) bad("verify-code is deployed, but \"Enforce JWT verification\" is ON", "Edge Functions → verify-code → Details → turn Enforce JWT verification OFF → Save.");
 else if (!fb?.ok) bad(`verify-code answered with an error (${fn.status})`, "Edge Functions → verify-code → Logs.");
 else if (!fb.table) bad("verify-code can't find its table", "Run the latest supabase/schema.sql again (safe to re-run).");
 else if (!fb.email) bad("verify-code has no Brevo key", "Edge Functions → Secrets: add BREVO_API_KEY and BREVO_SENDER_EMAIL.");
-else ok("Gmail codes: verify-code is deployed and sends through Brevo");
+else if (fb.accounts !== true) bad("verify-code is an older version: it doesn't make the accounts, so sign-up won't work with public sign-up off",
+  "Deploy the new supabase/functions/verify-code/index.ts (Edge Functions → verify-code → Code → paste → Deploy).");
+else ok("Gmail codes: verify-code is deployed, sends through Brevo, and makes the accounts");
 // Texts to CP numbers: optional too, and a note until the key is in. An older
 // verify-code (before texts) does not say at all.
 if (fn?.ok && fb?.ok && fb.table) {
   if (fb.sms === undefined) note("CP-number codes: this verify-code is the older one, without texts", "Deploy the new supabase/functions/verify-code/index.ts (docs/database-setup.md, Step 8).");
-  else if (!fb.sms) note("CP-number codes are still the on-screen demo: no Semaphore key", "Optional. docs/database-setup.md, Step 8 (Semaphore).");
+  else if (!fb.sms) note("Sign-up and password reset by CP number are off: no Semaphore key (people use Gmail)", "Optional. docs/database-setup.md, Step 8 (Semaphore).");
   else ok("CP-number codes: verify-code texts through Semaphore");
 }
 

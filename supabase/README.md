@@ -227,12 +227,14 @@ erDiagram
 | `admin_price_board(month)` | The Prices page: every variety with its price for the month, the record before it, its last 12 records, and when the forecasts were made |
 | `admin_set_prices(month, prices, source)` | Saves a month's prices from the Prices page, all or none: puts in, puts right or takes away, then works out each record's move from the one before again. Not a month still to come |
 | `admin_set_award(user, badge, on)` | Gives or takes back Farmer of the Month or Farmer of the Year, to a farmer only. The admin website's one change |
+| `end_sessions(user, keep)` | Signs an account out on every phone (but `keep`, the phone that changed the password). Used by the verify-code function after a password reset or change. Closed to the app |
 | `auth_user_id_by_email(email)` | Which account a login address belongs to, if any (a Gmail, or a CP number's `639…@phone.anisense.app`). Closed to the app; only the verify-code function may call it |
 
 ## Security
 
 Row Level Security is on for every table; the database enforces it, not the app.
 - Nobody signed out can read anything but the price catalog (for guest mode).
+- Accounts are made only by the `verify-code` function, after the 6-digit code it sent has passed: public sign-up is off in Supabase (docs/database-setup.md, Step 3). Codes are kept as keyed hashes; each address or number gets at most 10 codes and 10 wrong tries a day. A password reset signs the account out on every phone.
 - Only an account in `admins` can call the admin functions, and they only read, but for the month's prices and the two admin badges.
 - Prices are read by everyone (guests too) and written only through `admin_set_prices`. Which admin put a price in (`crop_prices.entered_by`) is never readable from the app or the web; where it came from (`source`) and when (`entered_at`) are.
 - Farmers manage only their own listings and records.

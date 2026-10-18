@@ -237,7 +237,7 @@ Both use `src/services/verification.ts`:
 
 Rules: a code is 6 random digits (`crypto.getRandomValues`), lasts 10 minutes, allows 5 wrong tries and works once; a sign-up code cannot reset a password. The form allows a new code after 30 seconds.
 
-**On the database the codes are real; without one they are a demo.** In a build with a database, the three functions call the `verify-code` Edge Function (`supabase/functions/verify-code/index.ts`): it makes the code, stores only its hash in `verification_codes`, emails it to a Gmail through Brevo or texts it to a CP number through Semaphore's OTP route, checks it, and after a reset code passes hands back a one-time token that `saveNewPassword` needs to set the password. A CP-number account is found by its login address (`639…@phone.anisense.app`), the same way as a Gmail one. Texts cost credits, so besides the per-number limits (one code every 30 seconds, 5 an hour) the function sends to at most `SMS_MAX_PER_HOUR` numbers an hour in all (100 by default). Until a sender is set up (the function not deployed, or no `SEMAPHORE_API_KEY` for a CP number), sign-up falls back to a code made on the phone and shown in a gold "Demo" note, and Forgot password is refused with a plain message rather than faked. In a build without a database it is the demo throughout.
+**On the database the codes are real; without one they are a demo.** In a build with a database, the functions call the `verify-code` Edge Function (`supabase/functions/verify-code/index.ts`): it makes the code, stores only a keyed hash of it (HMAC with a secret only the function has) in `verification_codes`, emails it to a Gmail through Brevo or texts it to a CP number through Semaphore's OTP route, and checks it. A passed code earns a one-time token: `createAccountWithCode` needs it to have the function make the account (sign-up), and `saveNewPassword` needs it to set the password (reset). Public sign-up is off in Supabase, so an account can be made no other way: the code cannot be gone round with the public key. A CP-number account is found by its login address (`639…@phone.anisense.app`), the same way as a Gmail one. Against guessing, besides 5 wrong tries a code and 5 codes an hour, each address or number gets at most 10 codes and 10 wrong tries a day. Texts and emails cost credits or allowance, so the function also sends to at most `SMS_MAX_PER_HOUR` numbers (100) and `EMAIL_MAX_PER_HOUR` addresses (200) an hour in all. Until a sender is set up (the function not deployed, or no `SEMAPHORE_API_KEY` for a CP number), sign-up and Forgot password with it are refused with a plain message, never faked with a code on screen. In a build without a database it is the demo throughout.
 
 ## 4. Backend architecture
 
@@ -287,13 +287,15 @@ sequenceDiagram
   Note over A,V: In a build without a database the code is made on the phone and shown as a demo
   U->>A: Types the 6 digits
   A->>V: checkCode
-  V-->>A: ok, so Continue turns green
+  V-->>A: ok, and a one-time token: Continue turns green
   U->>A: Answers the rest (password, years farming, where: island group, province, town, barangay, crops)
-  Note over A: Answers held in memory only
+  Note over A: Answers and token held in memory only
   U->>A: Create Account
-  A->>Auth: signUp(email or alias, password, details)
+  A->>V: create-account(token, password, details)
+  V->>Auth: admin createUser (only if the token holds)
   Auth->>DB: insert auth.users
   DB->>DB: handle_new_user trigger: profile, crops, first badge
+  A->>Auth: signInWithPassword
   Auth-->>A: session
   A->>DB: load profile and market data
   A-->>U: Welcome ID, then walkthrough
@@ -503,9 +505,11 @@ The SQL in `localdbSql.ts` runs against any SQLite engine through its driver, so
 - **Server-side operations.** Orders can be created only through `place_order`.
 - **No secrets in the client.** The app and the web pages use the publishable key only. `npm run check:db` refuses to run if it finds a secret key in `.env`.
 - **Passwords** are handled by Supabase Auth and stored hashed.
-- **Verification codes** are random, last 10 minutes, allow 5 wrong tries, work once, and are kept apart by purpose. With a database they are made and checked by the `verify-code` function, which keeps only their hash, so the phone never knows a code before the user types it. Only the demo build makes them on the phone.
+- **Verification codes** are random, last 10 minutes, allow 5 wrong tries (10 a day for each address or number, whatever new codes are asked for), work once, and are kept apart by purpose. With a database they are made and checked by the `verify-code` function, which keeps only a keyed hash, so the phone never knows a code before the user types it. Only the demo build makes them on the phone.
+- **Accounts only after a code.** Public sign-up is off in Supabase; `verify-code` makes an account only with the one-time token its passed code earned, so nobody can sign up in someone else's Gmail or number.
+- **Sessions after a password change.** A reset signs the account out on every phone, and Change password on every phone but the one that changed it (`end_sessions`).
 - **Data on the phone** is in the app's private storage: a SQLite database (not encrypted; no passwords in it) and the session in Preferences. Every saved list and queued change is filed under its account.
-- **Transport** is HTTPS throughout.
+- **Transport** is HTTPS throughout, against anyone in the middle. The app's network rule (`android/app/src/main/res/xml/network_security_config.xml`) refuses plain HTTP and trusts only the certificate authorities built into Android, never one installed on the phone. The website sends HSTS (browsers keep to HTTPS), loads no script from a CDN (supabase-js is served from the site, `npm run site:vendor`), and the pages that take a password carry a Content Security Policy.
 
 ## 8. Build and delivery
 

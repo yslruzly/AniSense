@@ -8,9 +8,20 @@
 // one or any of its last ten: schema.sql, section 10). The app calls it from
 // src/services/verification.ts.
 //
-// The code lives only here, on the server, as a hash; the phone never sees
-// it before the person types it in. Email goes out through Brevo, texts to
-// CP numbers through Semaphore.
+// The code lives only here, on the server, as a keyed hash; the phone never
+// sees it before the person types it in. Email goes out through Brevo, texts
+// to CP numbers through Semaphore.
+//
+// It is also the only way an account is made. Public sign-up is OFF in
+// Supabase (docs/database-setup.md, Step 3), so the app cannot make one
+// itself: a passed sign-up code earns a one-time token, and "create-account"
+// makes the account with it. Nobody can make an account in someone else's
+// Gmail or number by going round the code.
+//
+// Against guessing: 5 wrong tries a code, 5 codes an hour and, whatever new
+// codes are asked for, 10 codes and 10 wrong tries a day for each address or
+// number. After a password reset every phone signed in to the account is
+// signed out; after Change password, every phone but the one that changed it.
 //
 // SETUP (docs/database-setup.md, Steps 7 and 8):
 //   · run supabase/schema.sql again (it adds the verification_codes table,
@@ -21,6 +32,9 @@
 //               approved, exactly as its Sender Names page shows it: without an
 //               approved one Semaphore refuses every text), SMS_MAX_PER_HOUR
 //               (optional, 100)
+//       Also:   OTP_SECRET (optional: a long random string the codes are
+//               hashed with; without it, the service key is), EMAIL_MAX_PER_HOUR
+//               (optional, 200)
 //   · deploy this file as a function named  verify-code , with
 //     "Enforce JWT verification" OFF (the app calls it before anyone has an
 //     account, with the publishable key)
@@ -31,13 +45,17 @@
 // A CP-number account is an email account underneath, at an address nobody
 // types (639171234567@phone.anisense.app, src/services/auth.ts), so both
 // kinds of account are found the same way. Without SEMAPHORE_API_KEY a
-// CP number gets SMS_NOT_READY: the app keeps its on-screen demo code for
-// sign-up, and refuses a CP-number reset rather than pretending it worked.
+// CP number gets SMS_NOT_READY: no account can be made with one, and no
+// password reset by text, rather than either pretending it worked.
 //
 // Requests (POST, JSON):
-//   { action: "ping" }                                   → { ok, email, sms, table }
+//   { action: "ping" }                                   → { ok, email, sms, table, accounts }
 //   { action: "send",  purpose, mode, contact, lang }    → { ok } | { ok: false, error, wait? }
 //   { action: "check", purpose, mode, contact, code }    → { ok, result, token? }
+//   { action: "create-account", mode, contact, token, password, profile } → { ok } | { ok: false, error }
+//     (profile: full_name, role, location, phone, years_farming, crops: what
+//     the sign-up form asked, copied into the profile by the database's
+//     sign-up trigger)
 //   { action: "reset-password", mode, contact, token, password } → { ok } | { ok: false, error }
 //   { action: "change-password", current, password }    → { ok } | { ok: false, error, wait? }
 //     (signed in: the app's own session token comes in the Authorization
@@ -53,12 +71,17 @@ const CODE_LIFE_MIN = 10;      // a code works for 10 minutes
 const MAX_TRIES = 5;           // wrong tries before a new code is needed
 const RESEND_WAIT_S = 30;      // between two codes to the same address or number
 const MAX_SENDS_PER_HOUR = 5;  // codes to one address or number in an hour
+const MAX_SENDS_PER_DAY = 10;  // codes to one address or number in 24 hours
+const MAX_FAILS_PER_DAY = 10;  // wrong tries for one address or number in 24 hours, across codes
 const TOKEN_LIFE_MIN = 10;     // after a reset code passes, to save the password
+const SIGNUP_TOKEN_LIFE_MIN = 30; // after a sign-up code passes, to finish the form's questions
 const CHANGE_TRIES = 5;        // wrong current passwords on Profile before a wait
 const CHANGE_LOCK_MIN = 15;    // ... and how long that wait is
-// Every text costs credits, so all numbers together get a ceiling too: it
-// caps what anyone could cost by asking for codes to number after number.
+// Every text costs credits, and every email counts against Brevo's daily
+// allowance, so all numbers and all addresses together get a ceiling too: it
+// caps what anyone could cost by asking for codes to one after another.
 const smsPerHour = () => Number(Deno.env.get("SMS_MAX_PER_HOUR")) || 100;
+const emailPerHour = () => Number(Deno.env.get("EMAIL_MAX_PER_HOUR")) || 200;
 
 const PHONE_LOGIN_DOMAIN = "phone.anisense.app";
 
@@ -76,7 +99,30 @@ const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SE
 
 const hex = (buf: ArrayBuffer) => [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
 const sha256 = async (s: string) => hex(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)));
-const sixDigits = () => { const n = new Uint32Array(1); crypto.getRandomValues(n); return String(100000 + (n[0] % 900000)); };
+// A code's hash is keyed with a secret only this function has: a 6-digit
+// code hashed plainly could be found from its hash in a moment.
+let hmacKey: Promise<CryptoKey> | null = null;
+async function codeHash(key: string, code: string): Promise<string> {
+  hmacKey ??= crypto.subtle.importKey("raw",
+    new TextEncoder().encode(Deno.env.get("OTP_SECRET") || Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!),
+    { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  return "h1:" + hex(await crypto.subtle.sign("HMAC", await hmacKey, new TextEncoder().encode(`${key}:${code}`)));
+}
+/** Compares two hashes in the same time whatever they hold, so how long a
+ *  wrong guess takes says nothing about how close it was. */
+const sameHash = (a: string, b: string) => {
+  if (a.length !== b.length) return false;
+  let d = 0;
+  for (let i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return d === 0;
+};
+// Every code from 100000 to 999999 equally likely: draws that would favour
+// the low ones are thrown back.
+const sixDigits = () => {
+  const limit = Math.floor(0x100000000 / 900000) * 900000, n = new Uint32Array(1);
+  do crypto.getRandomValues(n); while (n[0] >= limit);
+  return String(100000 + (n[0] % 900000));
+};
 const randomToken = () => { const b = new Uint8Array(32); crypto.getRandomValues(b); return hex(b.buffer); };
 const isEmail = (s: string) => s.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
 const iso = (ms: number) => new Date(ms).toISOString();
@@ -98,7 +144,17 @@ type Row = {
   key: string; code_hash: string; expires_at: string; tries: number;
   sent_at: string; hour_started: string; sends_this_hour: number;
   token_hash: string | null; token_expires_at: string | null;
+  day_started: string | null; sends_today: number | null; fails_today: number | null;
 };
+
+/** This address's or number's day so far: when it began, and its codes and
+ *  wrong tries in it. A day over (or none yet) starts from nothing. */
+function today(row: Row | null, now: number) {
+  const started = row?.day_started ? Date.parse(row.day_started) : NaN;
+  return Number.isFinite(started) && now - started < 86_400_000
+    ? { started, sends: row!.sends_today ?? 0, fails: row!.fails_today ?? 0 }
+    : { started: now, sends: 0, fails: 0 };
+}
 
 async function rowFor(key: string): Promise<Row | null> {
   const { data, error } = await db.from("verification_codes").select("*").eq("key", key).maybeSingle();
@@ -112,12 +168,29 @@ async function userIdByEmail(email: string): Promise<string | null> {
   return (data as string | null) ?? null;
 }
 
-/** CP numbers that were sent a code in the last hour, all together. */
-async function textsThisHour(): Promise<number> {
+/** CP numbers (or Gmails) that were sent a code in the last hour, all together. */
+async function sentThisHour(mode: Mode): Promise<number> {
   const { count, error } = await db.from("verification_codes").select("key", { count: "exact", head: true })
-    .like("key", "%:phone:%").gte("sent_at", iso(Date.now() - 3_600_000));
+    .like("key", `%:${mode}:%`).gte("sent_at", iso(Date.now() - 3_600_000));
   if (error) throw error;
   return count ?? 0;
+}
+
+/** Signs the account out on every phone but `keep` (none kept: all of them).
+ *  A password is changed whether or not this works; it is logged if not. */
+async function endSessions(userId: string, keep: string | null) {
+  const { error } = await db.rpc("end_sessions", { p_user: userId, p_keep: keep });
+  if (error) console.error("verify-code could not end the account's other sessions:", error.message);
+}
+
+/** The session a signed-in request comes from, read from its token (already
+ *  checked by auth.getUser before this is asked). */
+function sessionIdOf(jwt: string): string | null {
+  try {
+    const part = jwt.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+    const claims = JSON.parse(atob(part.padEnd(Math.ceil(part.length / 4) * 4, "=")));
+    return typeof claims.session_id === "string" ? claims.session_id : null;
+  } catch { return null; }
 }
 
 // ── The email ──
@@ -215,14 +288,18 @@ async function send(key: string, mode: Mode, contact: string, loginEmail: string
 
   const row = await rowFor(key);
   let hourStarted = now, sends = 0;
+  const day = today(row, now);
   if (row) {
     const since = (now - Date.parse(row.sent_at)) / 1000;
     if (since < RESEND_WAIT_S) return reply({ ok: false, error: "WAIT", wait: Math.ceil(RESEND_WAIT_S - since) });
     if (now - Date.parse(row.hour_started) < 3_600_000) { hourStarted = Date.parse(row.hour_started); sends = row.sends_this_hour; }
     if (sends >= MAX_SENDS_PER_HOUR) return reply({ ok: false, error: "TOO_MANY_SENDS" });
   }
-  if (mode === "phone" && (await textsThisHour()) >= smsPerHour()) {
-    console.error(`verify-code: the hourly limit of ${smsPerHour()} texts was reached`);
+  // A new code starts its own 5 tries, so without a day's ceiling, asking
+  // for code after code would allow guess after guess.
+  if (day.sends >= MAX_SENDS_PER_DAY || day.fails >= MAX_FAILS_PER_DAY) return reply({ ok: false, error: "TOO_MANY_SENDS" });
+  if ((await sentThisHour(mode)) >= (mode === "phone" ? smsPerHour() : emailPerHour())) {
+    console.error(`verify-code: the hourly limit of ${mode === "phone" ? `${smsPerHour()} texts` : `${emailPerHour()} emails`} was reached`);
     return reply({ ok: false, error: "TOO_MANY_SENDS" });
   }
 
@@ -230,8 +307,9 @@ async function send(key: string, mode: Mode, contact: string, loginEmail: string
   // Saved before it is sent, so a code that arrives can always be checked.
   // A new code replaces the last one, and starts its tries again.
   const { error } = await db.from("verification_codes").upsert({
-    key, code_hash: await sha256(`${key}:${code}`), expires_at: iso(now + CODE_LIFE_MIN * 60_000), tries: 0,
+    key, code_hash: await codeHash(key, code), expires_at: iso(now + CODE_LIFE_MIN * 60_000), tries: 0,
     sent_at: iso(now), hour_started: iso(hourStarted), sends_this_hour: sends + 1,
+    day_started: iso(day.started), sends_today: day.sends + 1, fails_today: day.fails,
     token_hash: null, token_expires_at: null,
   });
   if (error) throw error;
@@ -240,7 +318,7 @@ async function send(key: string, mode: Mode, contact: string, loginEmail: string
   } else {
     const sent = await sendSms(contact, code, purpose, lang);
     if (!sent) return reply({ ok: false, error: "SEND_FAILED" });
-    if (sent !== code) await db.from("verification_codes").update({ code_hash: await sha256(`${key}:${sent}`) }).eq("key", key);
+    if (sent !== code) await db.from("verification_codes").update({ code_hash: await codeHash(key, sent) }).eq("key", key);
   }
   return reply({ ok: true });
 }
@@ -249,23 +327,68 @@ async function check(key: string, purpose: Purpose, code: string) {
   const now = Date.now();
   const row = await rowFor(key);
   if (!row || row.code_hash === "used" || Date.parse(row.expires_at) < now) return reply({ ok: true, result: "expired" });
-  if (row.tries >= MAX_TRIES) return reply({ ok: true, result: "too-many" });
-  if (!/^\d{6}$/.test(code) || (await sha256(`${key}:${code}`)) !== row.code_hash) {
-    const tries = row.tries + 1;
-    await db.from("verification_codes").update({ tries }).eq("key", key);
-    return reply({ ok: true, result: tries >= MAX_TRIES ? "too-many" : "wrong" });
+  const day = today(row, now);
+  if (row.tries >= MAX_TRIES || day.fails >= MAX_FAILS_PER_DAY) return reply({ ok: true, result: "too-many" });
+  if (!/^\d{6}$/.test(code) || !sameHash(await codeHash(key, code), row.code_hash)) {
+    const tries = row.tries + 1, fails = day.fails + 1;
+    await db.from("verification_codes").update({ tries, day_started: iso(day.started), fails_today: fails }).eq("key", key);
+    return reply({ ok: true, result: tries >= MAX_TRIES || fails >= MAX_FAILS_PER_DAY ? "too-many" : "wrong" });
   }
-  // It matches, so it is used up. A reset gets a one-time token for the next
-  // page, so only the phone that typed the code can set the new password.
-  if (purpose === "reset") {
-    const token = randomToken();
-    await db.from("verification_codes").update({
-      code_hash: "used", token_hash: await sha256(token), token_expires_at: iso(now + TOKEN_LIFE_MIN * 60_000),
-    }).eq("key", key);
-    return reply({ ok: true, result: "ok", token });
+  // It matches, so it is used up, and earns a one-time token for what comes
+  // next: making the account (sign-up), or setting the new password (reset).
+  // Only the phone that typed the code holds it.
+  const token = randomToken();
+  const life = purpose === "signup" ? SIGNUP_TOKEN_LIFE_MIN : TOKEN_LIFE_MIN;
+  await db.from("verification_codes").update({
+    code_hash: "used", token_hash: await sha256(token), token_expires_at: iso(now + life * 60_000),
+  }).eq("key", key);
+  return reply({ ok: true, result: "ok", token });
+}
+
+/** Whether `token` is the live one-time token a passed code earned for `key`. */
+async function tokenHolds(key: string, token: string): Promise<boolean> {
+  const row = await rowFor(key);
+  return !!row && !!row.token_hash && !!row.token_expires_at && Date.parse(row.token_expires_at) >= Date.now()
+    && /^[0-9a-f]{64}$/.test(token) && sameHash(await sha256(token), row.token_hash);
+}
+
+/** What the sign-up form asked, checked the way the database will check it,
+ *  ready for the sign-up trigger (schema.sql, handle_new_user). Null when
+ *  something is missing or not what the form could send. */
+function profileFrom(p: unknown, mode: Mode, contact: string): Record<string, unknown> | null {
+  const o = (p && typeof p === "object" ? p : {}) as Record<string, unknown>;
+  const fullName = String(o.full_name ?? "").trim();
+  const role = o.role === "farmer" || o.role === "buyer" ? o.role : null;
+  const location = String(o.location ?? "").trim();
+  let phone = o.phone == null || o.phone === "" ? null : String(o.phone).trim();
+  if (!phone && mode === "phone") phone = `+${contact}`;
+  const years = o.years_farming == null || o.years_farming === "" ? null : Number(o.years_farming);
+  const crops = Array.isArray(o.crops) ? o.crops.map(c => String(c).trim()).filter(Boolean) : [];
+  if (!fullName || fullName.length > 120 || !role || location.length > 200
+      || (phone !== null && !/^\+639\d{9}$/.test(phone))
+      || (years !== null && (!Number.isInteger(years) || years < 0 || years > 79))
+      || crops.length > 20 || crops.some(c => c.length > 40)) return null;
+  return { full_name: fullName, role, location: location || null, phone, years_farming: years, crops };
+}
+
+/** Makes the account, once the sign-up code for this address or number has
+ *  passed (its token), with the password and what the form asked. */
+async function createAccount(key: string, mode: Mode, contact: string, loginEmail: string, token: string, password: string, profile: unknown) {
+  if (!(await tokenHolds(key, token))) return reply({ ok: false, error: "EXPIRED" });
+  if (!strongEnough(password)) return reply({ ok: false, error: "WEAK_PASSWORD" });
+  const data = profileFrom(profile, mode, contact);
+  if (!data) return reply({ ok: false, error: "BAD_REQUEST" }, 400);
+  if (await userIdByEmail(loginEmail)) return reply({ ok: false, error: "ACCOUNT_EXISTS" });
+  const { error } = await db.auth.admin.createUser({ email: loginEmail, password, email_confirm: true, user_metadata: data });
+  if (error) {
+    if (/already|exists|registered/i.test(error.message)) return reply({ ok: false, error: "ACCOUNT_EXISTS" });
+    if (/password/i.test(error.message)) return reply({ ok: false, error: "WEAK_PASSWORD" });
+    console.error("verify-code could not make the account:", error.message);
+    return reply({ ok: false, error: "FAILED" });
   }
-  await db.from("verification_codes").update({ code_hash: "used" }).eq("key", key);
-  return reply({ ok: true, result: "ok" });
+  // The token is spent: another account needs another code.
+  await db.from("verification_codes").delete().eq("key", key);
+  return reply({ ok: true });
 }
 
 // The app's rule for a new password (src/lib/password.ts): 8 characters or
@@ -284,9 +407,7 @@ async function usedBefore(userId: string, password: string): Promise<boolean> {
 
 async function resetPassword(key: string, loginEmail: string, token: string, password: string) {
   if (!strongEnough(password)) return reply({ ok: false, error: "WEAK_PASSWORD" });
-  const row = await rowFor(key);
-  if (!row || !row.token_hash || !row.token_expires_at || Date.parse(row.token_expires_at) < Date.now()
-      || (await sha256(token)) !== row.token_hash) return reply({ ok: false, error: "EXPIRED" });
+  if (!(await tokenHolds(key, token))) return reply({ ok: false, error: "EXPIRED" });
   const userId = await userIdByEmail(loginEmail);
   if (!userId) return reply({ ok: false, error: "NO_ACCOUNT" });
   // One they have had before is turned away, and the token stays good, so
@@ -296,6 +417,9 @@ async function resetPassword(key: string, loginEmail: string, token: string, pas
   if (error) return reply({ ok: false, error: /password/i.test(error.message) ? "WEAK_PASSWORD" : "FAILED" });
   // The token is spent: another change needs another code.
   await db.from("verification_codes").delete().eq("key", key);
+  // Whoever else was signed in to this account is signed out: a password is
+  // often reset because someone else got in.
+  await endSessions(userId, null);
   return reply({ ok: true });
 }
 
@@ -340,6 +464,8 @@ async function changePassword(jwt: string, current: string, password: string) {
   if (updateErr) return reply({ ok: false, error: /password/i.test(updateErr.message) ? "WEAK_PASSWORD" : "FAILED" });
   // The old one is now in the history (the database's own trigger), and the count starts again.
   await db.from("verification_codes").delete().eq("key", key);
+  // Every other phone signed in to the account is signed out; this one stays.
+  await endSessions(user.id, sessionIdOf(jwt));
   return reply({ ok: true });
 }
 
@@ -352,8 +478,9 @@ Deno.serve(async (req) => {
   // For npm run check:db: are Brevo and Semaphore set up, and did schema.sql make the table?
   if (b.action === "ping") {
     const { error } = await db.from("verification_codes").select("key").limit(1);
+    // accounts: this version makes the accounts (public sign-up can be off).
     return reply({ ok: true, email: !!Deno.env.get("BREVO_API_KEY") && !!Deno.env.get("BREVO_SENDER_EMAIL"),
-      sms: !!Deno.env.get("SEMAPHORE_API_KEY"), table: !error });
+      sms: !!Deno.env.get("SEMAPHORE_API_KEY"), table: !error, accounts: true });
   }
 
   // Signed in, from Profile: no address or number involved.
@@ -379,6 +506,7 @@ Deno.serve(async (req) => {
   try {
     if (b.action === "send") return await send(`${purpose}:${mode}:${contact}`, mode, contact, loginEmail, purpose!, lang);
     if (b.action === "check") return await check(`${purpose}:${mode}:${contact}`, purpose!, String(b.code ?? ""));
+    if (b.action === "create-account") return await createAccount(`signup:${mode}:${contact}`, mode, contact, loginEmail, String(b.token ?? ""), String(b.password ?? ""), b.profile);
     if (b.action === "reset-password") return await resetPassword(`reset:${mode}:${contact}`, loginEmail, String(b.token ?? ""), String(b.password ?? ""));
     return reply({ ok: false, error: "BAD_REQUEST" }, 400);
   } catch (err) {
