@@ -1,4 +1,5 @@
-import { useLayoutEffect, useRef, useState } from "react";
+import { lazy, Suspense, useMemo, useRef, useState } from "react";
+import { ScreenContent, ScreenLoading } from "./components/layout/ScreenContent";
 import type { Session } from "@supabase/supabase-js";
 import { Screen, AuthScreen, UserRole, FarmDetails, TradeIntent } from "./types";
 import { useOffline } from "./hooks/useOffline";
@@ -16,16 +17,6 @@ import { BottomNav } from "./components/layout/BottomNav";
 import { LanguageScreen } from "./screens/auth/LanguageScreen";
 import { SplashScreen } from "./screens/auth/SplashScreen";
 import { RoleScreen } from "./screens/auth/RoleScreen";
-import { AuthFormScreen } from "./screens/auth/AuthFormScreen";
-import { HomeScreen } from "./screens/HomeScreen";
-import { MarketScreen } from "./screens/MarketScreen";
-import { ExpensesScreen } from "./screens/ExpensesScreen";
-import { AnalyticsScreen } from "./screens/AnalyticsScreen";
-import { TradeScreen } from "./screens/TradeScreen";
-import { WeatherScreen } from "./screens/WeatherScreen";
-import { GuideScreen } from "./screens/GuideScreen";
-import { GuestScreen } from "./screens/GuestScreen";
-import { ProfileScreen } from "./screens/ProfileScreen";
 import { WelcomeID, WelcomeInfo, makeMemberId } from "./components/profile/WelcomeID";
 import { Tour } from "./components/tour/Tour";
 import { loadTourSeen, saveTourSeen, TourName } from "./lib/tour";
@@ -44,6 +35,18 @@ import { useRetained } from "./hooks/usePresence";
 import { kvRemove } from "./lib/localdb";
 import { requireOnline, wipeAccountData } from "./lib/cache";
 import { dropOutboxFor } from "./lib/outbox";
+
+// Load each destination when opened; the chunks still ship inside the APK.
+const AuthFormScreen = lazy(() => import("./screens/auth/AuthFormScreen").then(m => ({ default: m.AuthFormScreen })));
+const HomeScreen = lazy(() => import("./screens/HomeScreen").then(m => ({ default: m.HomeScreen })));
+const MarketScreen = lazy(() => import("./screens/MarketScreen").then(m => ({ default: m.MarketScreen })));
+const ExpensesScreen = lazy(() => import("./screens/ExpensesScreen").then(m => ({ default: m.ExpensesScreen })));
+const AnalyticsScreen = lazy(() => import("./screens/AnalyticsScreen").then(m => ({ default: m.AnalyticsScreen })));
+const TradeScreen = lazy(() => import("./screens/TradeScreen").then(m => ({ default: m.TradeScreen })));
+const WeatherScreen = lazy(() => import("./screens/WeatherScreen").then(m => ({ default: m.WeatherScreen })));
+const GuideScreen = lazy(() => import("./screens/GuideScreen").then(m => ({ default: m.GuideScreen })));
+const GuestScreen = lazy(() => import("./screens/GuestScreen").then(m => ({ default: m.GuestScreen })));
+const ProfileScreen = lazy(() => import("./screens/ProfileScreen").then(m => ({ default: m.ProfileScreen })));
 
 // The bottom-nav destinations. Anything else is a page opened from one of them.
 const TABS: Screen[] = ["home", "market", "trade", "expenses", "profile"];
@@ -184,7 +187,10 @@ export default function App() {
   // demo. Their earnings are the typed sales plus what they sold through the
   // marketplace; only the typed ones are theirs to edit.
   const { priceAlerts, setPriceAlerts, plantings, setPlantings } = market;
-  const allSales = market.marketSales.length ? [...market.sales, ...market.marketSales] : market.sales;
+  const allSales = useMemo(
+    () => market.marketSales.length ? [...market.sales, ...market.marketSales] : market.sales,
+    [market.sales, market.marketSales],
+  );
   const setTypedSales = (next: Sale[]) => market.setSales(next.filter(s => !s.id.startsWith("tx-")));
 
   // Whose badges these are: the database account, or this phone's demo one.
@@ -217,7 +223,7 @@ export default function App() {
     })();
     return () => { alive = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [achOwner, market.loading, market.listings, market.sellers, market.awards, allSales.length]);
+  }, [achOwner, market.loading, market.listings, market.sellers, market.awards, allSales]);
 
   // Shown when nothing else is: never over the welcome ID or the walkthrough,
   // and a beat after the screen underneath has settled.
@@ -285,17 +291,6 @@ export default function App() {
   // Home sending the buyer to particular harvests: the Market opens fresh, at its top.
   const openMarketplace = (intent: TradeIntent) => { delete scrollAt.current.trade; navigate("trade"); setTradeIntent(intent); };
 
-  // Back on a page that was left part-way down: the same spot. Set before the
-  // first paint, then once more a frame later in case the page was still
-  // settling (a photo taking its height).
-  useLayoutEffect(() => {
-    const y = scrollAt.current[active];
-    const el = scroller();
-    if (!el || !y) return;
-    el.scrollTop = y;
-    const id = requestAnimationFrame(() => { if (Math.abs(el.scrollTop - y) > 1) el.scrollTop = y; });
-    return () => cancelAnimationFrame(id);
-  }, [active]);
   const { isOffline, lastUpdated } = useOffline();
 
   useEffect(() => { initKeyboard(); }, []);
@@ -535,6 +530,7 @@ export default function App() {
         {authScreen === "guest" && <style>{appCss}</style>}
         <div className="auth-outer">
           <div className="auth-shell">
+            <Suspense fallback={<ScreenLoading />}>
             {authScreen === "lang" && (
               <LanguageScreen
                 onDone={() => setAuthScreen("role")}
@@ -577,6 +573,7 @@ export default function App() {
                 onSession={applySession}
               />
             )}
+            </Suspense>
           </div>
         </div>
       </>
@@ -613,7 +610,11 @@ export default function App() {
       <MarketContext.Provider value={market}>
       <div className="outer">
         <div className="shell" data-nav={nav} data-revisit={revisit || undefined}>
-          {renderScreen()}
+          <Suspense fallback={<ScreenLoading />} key={active}>
+            <ScreenContent scrollTop={scrollAt.current[active] ?? 0}>
+              {renderScreen()}
+            </ScreenContent>
+          </Suspense>
           <BottomNav active={tabOf(active)} onNavigate={navigateTab} />
           <WelcomeID
             open={showWelcome}

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 // ─── useResource ──────────────────────────────────────────────────────────────
 // The seam the state components hang off. Wrap anything async (including
@@ -46,33 +46,34 @@ export function useResource<T>(
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [nonce, setNonce] = useState(0);
 
-  const shownAt = useRef<number | null>(null);
-  const alive = useRef(true);
-
   const reload = useCallback(() => setNonce(n => n + 1), []);
 
   useEffect(() => {
-    alive.current = true;
+    // Each request owns its lifetime. A new effect must not revive an older
+    // request (including StrictMode's first mount).
+    let alive = true;
+    let shownAt: number | null = null;
+    let finishTimer: number | undefined;
     setStatus("loading");
     setError(null);
+    setShowSkeleton(false);
 
     // Hold the skeleton back; most loads never reach this timer.
-    shownAt.current = null;
     const delay = window.setTimeout(() => {
-      if (!alive.current) return;
-      shownAt.current = Date.now();
+      if (!alive) return;
+      shownAt = Date.now();
       setShowSkeleton(true);
     }, SKELETON_DELAY);
 
     const settle = (fn: () => void) => {
-      const shown = shownAt.current;
-      const remaining = shown ? SKELETON_MIN - (Date.now() - shown) : 0;
+      if (!alive) return;
+      const remaining = shownAt !== null ? SKELETON_MIN - (Date.now() - shownAt) : 0;
       const finish = () => {
-        if (!alive.current) return;
+        if (!alive) return;
         setShowSkeleton(false);
         fn();
       };
-      if (remaining > 0) window.setTimeout(finish, remaining);
+      if (remaining > 0) finishTimer = window.setTimeout(finish, remaining);
       else finish();
     };
 
@@ -99,8 +100,9 @@ export function useResource<T>(
       });
 
     return () => {
-      alive.current = false;
+      alive = false;
       window.clearTimeout(delay);
+      window.clearTimeout(finishTimer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nonce, ...deps]);
